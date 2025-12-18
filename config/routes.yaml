@@ -9,3 +9,14 @@
 
 controllers:
     resource: routing.controllers
+
+
+pages:
+    resource: "../src/Web/Controllers/"
+    type: attribute
+    # resource: routing.controllers
+
+api:
+  resource: '../src/API/Controllers/'
+  type: attribute
+  prefix: /api
