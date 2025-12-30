@@ -2,11 +2,13 @@
 
 namespace App\Domain\Repositories;
 
-use App\Domain\Model\Post;
-
+use App\Domain\Model\PostData;
 
 interface PostRepositioryInterface
 {
     public function findAll(): array;
-    public function findOne(int $id): ?Post;
+    
+    public function findOne(string $id): ?object;
+    
+    public function create(string $title, array $content): void;
 }

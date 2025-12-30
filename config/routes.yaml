@@ -10,13 +10,12 @@
 controllers:
     resource: routing.controllers
 
-
-pages:
-    resource: "../src/Web/Controllers/"
+frontend:
     type: attribute
+    resource: "../src/Web/"
     # resource: routing.controllers
 
 api:
-  resource: '../src/API/Controllers/'
-  type: attribute
   prefix: /api
+  type: attribute
+  resource: '../src/Api/Controllers/'

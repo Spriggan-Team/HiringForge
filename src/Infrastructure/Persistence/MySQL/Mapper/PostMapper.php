@@ -10,14 +10,8 @@ use DateTime;
 
 class PostMapper{
 
-    public static function toDomain(PostEntity $entity): Post
+    public static function toDomain(PostEntity $entity)
     {
-        return new Post(
-            $entity->getId(),
-            $entity->getTitle(),
-            $entity->getContent(),
-            $entity->getCreatedAt(),
-            $entity->getUpdatedAt()
-        );
+
     }
 }

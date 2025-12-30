@@ -3,7 +3,9 @@
 namespace App\Infrastructure\Persistence\MySQL\Doctrine;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Domain\Model\AbstractPostEntity;
+
+use App\Infrastructure\Persistence\MySQL\Doctrine\AccountEntity;
+
 
 #[ORM\Entity]
 #[ORM\Table(name: "Post")]
@@ -24,6 +26,9 @@ class PostEntity
 
     #[ORM\Column]
     private \DateTimeImmutable $updatedAt;
+
+    #[ORM\ManyToOne( inversedBy: "posts", targetEntity: AccountEntity::class )]
+    private AccountEntity $account;
 
     /* =======================
      * GETTERS
