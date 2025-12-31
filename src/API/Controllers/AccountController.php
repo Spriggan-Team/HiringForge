@@ -11,8 +11,8 @@ use App\Api\DTO\Account\GetAccountRequest;
 use App\Api\DTO\Account\CreateAccountRequest;
 use App\Api\DTO\Account\DeleteAccountRequest;
 use App\Api\DTO\Account\MutateAccountRequest;
-use App\Api\DTO\Account\GetAccountCollectionRequest;
 use App\Api\DTO\Account\OverwriteAccountRequest;
+use App\Api\DTO\Account\GetAccountCollectionRequest;
 
 
 use App\Application\Command\Handlers\Account\MutateAccountCommandHandler;
@@ -39,6 +39,20 @@ class AccountController extends AbstractController
     public function __construct(private LoggerInterface $logger) {}
 
 
+    #[Route("/users", methods: ['GET'], name: "fetch_all_account")]
+    public function getAccountCollection(GetAccountCollectionQueryHandler $handler): JsonResponse
+    {
+        try {
+            $response = $handler->handle(new GetAccountCollectionRequest());
+            return $this->json($response, 200);
+        }
+        catch (Exception $exception) {
+            $this->logger->error("Caught Exception: ". $exception->getMessage(), ['exception'=>$exception]);
+            return $this->json(ApiResponseBuilder::error('Nothing Found'), 404);
+        }
+    }
+
+    
 
     #[Route("/users/{uuid}", methods: ["GET"], name: "fetch_one_account")]
     public function getAccountById(
@@ -55,23 +69,6 @@ class AccountController extends AbstractController
             return $this->json(ApiResponseBuilder::error('Account not found'), 404);
         }
     }
-
-
-
-
-    #[Route("/users", methods: ['GET'], name: "fetch_all_account")]
-    public function getAccountCollection(GetAccountCollectionQueryHandler $handler): JsonResponse
-    {
-        try {
-            $response = $handler->handle(new GetAccountCollectionRequest());
-            return $this->json($response, 200);
-        }
-        catch (Exception $exception) {
-            $this->logger->error("Caught Exception: ". $exception->getMessage(), ['exception'=>$exception]);
-            return $this->json(ApiResponseBuilder::error('Nothing Found'), 404);
-        }
-    }
-
 
 
 

@@ -2,13 +2,28 @@
 
 namespace App\Domain\Repositories;
 
-use App\Domain\Model\PostData;
+use App\Domain\Entity\Post;
+use App\Domain\ValueObject\MergeRule;
 
 interface PostRepositioryInterface
 {
-    public function findAll(): array;
+    /**
+     * @return array<Post>
+     * return a collection of all the post stored in bdd
+     */
+    public function getAll(string $accountId): array;
     
-    public function findOne(string $id): ?object;
+    /**
+     * @return Post
+     * @throws ApiRessourceNotFound
+     * seachr for an existing post in the bdd an return it
+     */
+    public function getById(string $id, string $postId): ?Post;
     
-    public function create(string $title, array $content): void;
+    /**
+     * @return void
+     * save the post in bdd
+     * adaptated for post, patch, put Htpp request
+     */
+    public function save(Post $post, string $accountId,  MergeRule $rule = MergeRule::FULL_OVERWRITE ): void;
 }

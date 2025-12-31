@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Api\DTO\Post;
+
+use Symfony\Component\Validator\Constraints as Assert;
+
+
+final class CreatePostRequest
+{
+
+    public function __construct(
+        #[Assert\NotBlank]
+        public string $title,
+        
+        #[Assert\NotBlank]
+        #[Assert\Uuid()]
+        public string $accountId,
+
+        #[Assert\NotBlank]
+        #[Assert\NotNull]
+        public array $content,
+    ){}
+}

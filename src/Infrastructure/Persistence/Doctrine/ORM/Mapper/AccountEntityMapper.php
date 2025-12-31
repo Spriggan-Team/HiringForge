@@ -1,16 +1,17 @@
 <?php
 
 
-namespace App\Infrastructure\Persistence\MySQL\Mapper;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Mapper;
 
-
-use App\Domain\Entity\Account as DomainEntity;
 use App\Domain\ValueObject\MergeRule;
-use App\Infrastructure\Persistence\MySQL\Doctrine\AccountEntity as DoctrineEntity;
+use App\Domain\Entity\Account as DomainEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\AccountEntity as DoctrineEntity;
 
 
 
-class AccountEntityMapper{
+class AccountEntityMapper 
+{
+    
     public static function toDoctrineEntity(DomainEntity $account): DoctrineEntity
     {
         return  DoctrineEntity::create(
@@ -22,14 +23,14 @@ class AccountEntityMapper{
         );
     }
 
-    public static function toDomainEntity(DoctrineEntity $doctrineAntity): DomainEntity
+    public static function toDomainEntity(DoctrineEntity $doctrineEntity): DomainEntity
     {
         return new DomainEntity(
-            id: $doctrineAntity->getId(),
-            name: $doctrineAntity->getName(),
-            email: $doctrineAntity->getEmail(),
-            password: $doctrineAntity->getPassword(),
-            siret:  $doctrineAntity->getSiret(),
+            id: $doctrineEntity->getId(),
+            name: $doctrineEntity->getName(),
+            email: $doctrineEntity->getEmail(),
+            password: $doctrineEntity->getPassword(),
+            siret:  $doctrineEntity->getSiret(),
         );
     }
 
@@ -43,7 +44,15 @@ class AccountEntityMapper{
 
     //-----------Mergers
 
-    public static function partialMerge(DomainEntity $account, DoctrineEntity  $entity)
+    public static function fullMerge(DomainEntity $account, DoctrineEntity  $entity): void
+    {
+        $entity->setName($account->getName());
+        $entity->setEmail($account->getEmail());
+        $entity->setPassword($account->getPassword());
+        $entity->setSiret($account->getSiret());
+    }
+
+    public static function partialMerge(DomainEntity $account, DoctrineEntity  $entity): void
     {
         if($account->hasChanged("email")){
             $entity->setEmail($account->getEmail());
@@ -53,12 +62,6 @@ class AccountEntityMapper{
         }
     }
 
-    public static function fullMerge(DomainEntity $account, DoctrineEntity  $entity)
-    {
-        $entity->setName($account->getName());
-        $entity->setEmail($account->getEmail());
-        $entity->setPassword($account->getPassword());
-        $entity->setSiret($account->getSiret());
-    }
+
 
 }

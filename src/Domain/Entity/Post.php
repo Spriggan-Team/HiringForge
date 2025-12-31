@@ -11,13 +11,17 @@ final class Post
     private string $id;
     private string $title;
     private array $content;
+    private array $snapshot;
     private DateTimeImmutable $createdAt;
     private DateTimeImmutable $updatedAt;
+
 
     public function __construct(
         string $id,
         string $title,
-        array $content
+        array $content,
+        DateTimeImmutable $createdAt,
+        DateTimeImmutable $updatedAt,
     ) {
         if ($id === '') {
             throw new InvalidArgumentException('Post id cannot be empty.');
@@ -34,34 +38,42 @@ final class Post
         $this->id = $id;
         $this->title = $title;
         $this->content = $content;
-        $this->createdAt = new DateTimeImmutable();
-        $this->updatedAt = $this->createdAt;
+        $this->createdAt = $createdAt;
+        $this->updatedAt = $updatedAt;
+
+        $this->takeSnapshot();
     }
 
-
-
-    public function id(): string
+    private function takeSnapshot(): void
     {
-        return $this->id;
+        $this->snapshot = [
+            'title'      => $this->title,
+            'content'    => $this->content,
+        ];
     }
 
-    public function title(): string
+    public function hasChanged(string $field)
     {
-        return $this->title;
+        if (!array_key_exists($field, $this->snapshot) && array_key_exists($field, $this->snapshot)) {
+            throw new \InvalidArgumentException("Unknown field $field");
+        }
+        return $this->$field !== $this->snapshot[$field];
     }
 
-    public function content(): array
-    {
-        return $this->content;
-    }
+    //  --------------- Business access
 
-    public function createdAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
+    public function getId(): string { return $this->id; }
 
-    public function updatedAt(): DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
+    public function getTitle(): string { return $this->title; }
+
+    public function getContent(): array { return $this->content; }
+
+    public function getCreatedAt(): DateTimeImmutable { return $this->createdAt; }
+
+    public function getUpdatedAt(): DateTimeImmutable { return $this->updatedAt; }
+
+    // ---------------- Business change ----------------setContent
+    public function setTitle(string $title):void { $this->title = $title; }
+
+    public function setContent(array $content):void { $this->content = $content; }
 }

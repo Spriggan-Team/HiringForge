@@ -4,28 +4,27 @@ namespace App\Application\Command\Handlers\Post;
 
 use Exception;
 
-use App\Api\DTO\Post\CreatePostRequest;
+use App\Api\DTO\Post\MutatePostRequest;
 use App\Api\Responder\ApiResponseBuilder;
-use App\Application\Command\Usecase\Post\PostRecorder;
-
-
+use App\Application\Command\Usecase\Post\PostModifier;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
-class CreatePostCommandHandler{
+class MutatePostCommandHandler
+{
+    public function __construct(private PostModifier $modifier, private ValidatorInterface $validator){}
 
-    public function __construct(private PostRecorder $recorder, private ValidatorInterface $validator){}
-
-    public function handle(CreatePostRequest $command): array
+    public function handle(MutatePostRequest $command): array
     {
         try{
             $errors = $this->validator->validate($command);
 
-            if(count($errors) > 0)
-                throw new BadRequestException("Bad fields validation");
+            if(count($errors) > 0){
+                throw new BadRequestException("Bad Fields Validation");
+            }
             
-            $this->recorder->execute($command);
+            $this->modifier->execute($command);
             return ApiResponseBuilder::notice("Everything went smoothly");
         }
         catch(Exception $exception){

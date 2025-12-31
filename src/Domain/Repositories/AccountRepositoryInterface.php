@@ -24,10 +24,17 @@ interface AccountRepositoryInterface {
 
     /**
      * @return Account[]
+     * @throws ApiRessourceNotFound
      * return an array of all the accounts existing in the bdd
      */
     public function getAll(): array;
 
+
+    /**
+     * @return void
+     * @throws ApiRessourceNotFound
+     * Used for deleting Account ressouce from bdd 
+     */
     public function delete(string $uuid): void;
 
 }

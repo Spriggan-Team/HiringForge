@@ -6,7 +6,7 @@ namespace App\Application\Command\Usecase\Account;
 
 use App\Domain\ValueObject\MergeRule;
 use App\Api\DTO\Account\OverwriteAccountRequest;
-use App\Infrastructure\Persistence\MySQL\Repositories\AccountRepository;
+use App\Infrastructure\Persistence\Doctrine\ORM\Repositories\AccountRepository;
 
 
 class AccountOverwritter

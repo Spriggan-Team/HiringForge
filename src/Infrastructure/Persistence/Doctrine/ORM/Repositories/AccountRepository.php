@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Infrastructure\Persistence\MySQL\Repositories;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Repositories;
 
 
 use App\Domain\Entity\Account;
 use App\Domain\ValueObject\MergeRule;
 use App\Api\Exceptions\ApiRessourceNotFound;
+
 use App\Domain\Repositories\AccountRepositoryInterface;
-use App\Infrastructure\Persistence\MySQL\Doctrine\AccountEntity;
-use App\Infrastructure\Persistence\MySQL\Mapper\AccountEntityMapper;
+use App\Infrastructure\Persistence\Doctrine\ORM\AccountEntity as ORMAccountEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Mapper\AccountEntityMapper;
 
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -21,13 +22,16 @@ class AccountRepository implements AccountRepositoryInterface
 
     public function getAll(): array
     {
-        $collection = $this->manager->getRepository(AccountEntity::class)->findAll();
+        $collection = $this->manager->getRepository(ORMAccountEntity::class)->findAll();
+        for ($i=0 ; $i < count($collection); $i++) { 
+            $collection[$i] = AccountEntityMapper::toDomainEntity($collection[$i]);            
+        }
         return $collection;
     }
 
     public function getById(int $uuid): Account
     {
-        $entity = $this->manager->find(AccountEntity::class, $uuid);
+        $entity = $this->manager->find(ORMAccountEntity::class, $uuid);
         if(!$entity){
             throw new ApiRessourceNotFound();
         }
@@ -50,7 +54,7 @@ class AccountRepository implements AccountRepositoryInterface
     
     public function delete(string $uuid): void
     {
-        $entity = $this->manager->find(AccountEntity::class, $uuid);
+        $entity = $this->manager->find(ORMAccountEntity::class, $uuid);
         if(!$entity)
             throw new ApiRessourceNotFound();
 

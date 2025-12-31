@@ -3,7 +3,7 @@
 namespace App\Application\Command\Usecase\Account;
 
 use App\Api\DTO\Account\DeleteAccountRequest;
-use App\Infrastructure\Persistence\MySQL\Repositories\AccountRepository;
+use App\Infrastructure\Persistence\Doctrine\ORM\Repositories\AccountRepository;
 
 class AccountEraser
 {

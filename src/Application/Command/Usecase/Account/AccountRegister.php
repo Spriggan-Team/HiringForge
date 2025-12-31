@@ -7,7 +7,7 @@ use Ramsey\Uuid\Uuid;
 
 use App\Domain\Entity\Account;
 use App\Api\DTO\Account\CreateAccountRequest;
-use App\Infrastructure\Persistence\MySQL\Repositories\AccountRepository;
+use App\Infrastructure\Persistence\Doctrine\ORM\Repositories\AccountRepository;
 
 
 class AccountRegister{
