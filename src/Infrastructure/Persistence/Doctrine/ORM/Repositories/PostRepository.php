@@ -3,13 +3,14 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Repositories;
 
-use App\Domain\Entity\Post;
 use App\Api\Exceptions\ApiRessourceNotFound;
 
 use Doctrine\ORM\EntityManagerInterface;
 
-use App\Domain\Repositories\PostRepositioryInterface;
+use App\Domain\Entity\Post;
 use App\Domain\ValueObject\MergeRule;
+use App\Domain\Repositories\PostRepositioryInterface;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\AccountEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Mapper\PostEntityMapper;
 use App\Infrastructure\Persistence\Doctrine\ORM\PostEntity as ORMPostEntity;
@@ -61,6 +62,17 @@ class PostRepository implements PostRepositioryInterface {
             PostEntityMapper::mergeIntoDoctrineEntity($postDomain, $postEntity,  $this->manager->find(AccountEntity::class, $accountId), $rule );
         }
         
+        $this->manager->flush();
+    }
+
+
+    public function delete(string $accountId, string $uuid): void
+    {
+        $entity = $this->manager->find(ORMPostEntity::class, $uuid);
+        if(!$entity)
+            throw new ApiRessourceNotFound();
+        
+        $this->manager->remove($entity);
         $this->manager->flush();
     }
 }

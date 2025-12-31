@@ -26,4 +26,7 @@ interface PostRepositioryInterface
      * adaptated for post, patch, put Htpp request
      */
     public function save(Post $post, string $accountId,  MergeRule $rule = MergeRule::FULL_OVERWRITE ): void;
+
+
+    public function delete(string $accountId, string $uuid ): void;
 }

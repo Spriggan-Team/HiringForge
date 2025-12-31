@@ -6,13 +6,16 @@ use Exception;
 
 use App\Api\DTO\Post\GetPostRequest;
 use App\Api\DTO\Post\CreatePostRequest;
+use App\Api\DTO\Post\DeletePostRequest;
 use App\Api\DTO\Post\MutatePostRequest;
 use App\Api\Responder\ApiResponseBuilder;
 use App\Api\DTO\Post\GetPostCollectiontRequest;
 
 
 use App\Application\Command\Handlers\Post\CreatePostCommandHandler;
+use App\Application\Command\Handlers\Post\DeletePostCommandHandler;
 use App\Application\Command\Handlers\Post\MutatePostCommandHandler;
+
 
 use App\Application\Query\Handlers\Post\GetPostQueryHandler;
 use App\Application\Query\Handlers\Post\GetPostsCollectionQueryHandler;
@@ -129,6 +132,25 @@ class PostController extends AbstractController
             return $this->json(ApiResponseBuilder::error( "Something wrong happenned" ), 400);
         }
     }
+
+
+    #[Route("/posts/{accountId}", methods: ['DELETE'] ,name: "")]
+    public function deletePost(
+        string $accountId,
+        Request $request,
+        DeletePostCommandHandler $handler
+    ){
+        try{
+            $response = $handler->handle( new DeletePostRequest( accountId: $accountId, uuid: $request->query->get("uuid") ) );
+            return $this->json($response, 200);
+        }
+        catch(Exception $ex){
+            $this->logger->error("Caught Exception: ". $ex->getMessage(), ['exception'=> $ex]);
+            return $this->json(ApiResponseBuilder::error( "Something wrong happenned" ), 400);
+        }
+    }
+
+    
 
 
 }
