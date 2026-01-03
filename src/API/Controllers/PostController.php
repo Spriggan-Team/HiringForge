@@ -59,15 +59,15 @@ class PostController extends AbstractController
 
 
 
-    #[Route("/posts/{userId}", methods: ["GET"], name: "fetch_one_post")]
+    #[Route("/posts/{accountId}", methods: ["GET"], name: "fetch_one_post")]
     public function fetchOnePost(
-        string $userId,
+        string $accountId,
         Request $request,
         GetPostQueryHandler $handler
     ): JsonResponse
     {
         try{
-            $response = $handler->handle(new GetPostRequest(accountId: $userId, uuid: $request->query->get("uuid")));
+            $response = $handler->handle(new GetPostRequest(accountId: $accountId, uuid: $request->query->get("uuid")));
             return $this->json($response, 200);
         }
         catch(Exception $ex){

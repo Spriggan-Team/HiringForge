@@ -27,7 +27,7 @@ class PostEntity
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\ManyToOne( inversedBy: "posts", targetEntity: AccountEntity::class )]
-    #[ORM\JoinColumn(nullable: false, unique: true)]
+    #[ORM\JoinColumn(nullable: false)]
     private AccountEntity $account;
 
     public static function create(
