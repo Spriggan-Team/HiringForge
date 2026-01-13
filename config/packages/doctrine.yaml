@@ -17,8 +17,8 @@ doctrine:
             App:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/MySQL/Doctrine'
-                prefix: 'App\Infrastructure\Persistence\MySQL\Doctrine'
+                dir: '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/ORM'
+                prefix: 'App\Infrastructure\Persistence\Doctrine\ORM'
                 alias: App
         controller_resolver:
             auto_mapping: false

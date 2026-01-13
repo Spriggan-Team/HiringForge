@@ -16,3 +16,10 @@ Otherwise, please download the appropriate version from the following site:  htt
 
 The next step is to make sure you have Composer installed on your computer.
 If Composer is not installed, you can install it from the following site:  https://getcomposer.org
+
+
+## Testing
+
+If you wish to test the API, you've some tools provided for you to perform it.
+
+
