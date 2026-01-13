@@ -4,13 +4,14 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Mapper;
 
 
 use App\Domain\ValueObject\MergeRule;
-use App\Domain\Entity\Post as PostDomainEntity;
+use App\Domain\Entity\JobOffer as PostDomainEntity;
 
-use App\Infrastructure\Persistence\Doctrine\ORM\PostEntity as PostDoctrineEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOfferEntity as PostDoctrineEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\AccountEntity  as AccountDoctrineEntity; 
 
 
-class PostEntityMapper{
+class JobOfferEntityMapper
+{
 
     public static function toDomainEntity(PostDoctrineEntity $entity): PostDomainEntity
     {

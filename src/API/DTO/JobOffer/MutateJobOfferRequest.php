@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Api\DTO\Post;
+namespace App\Api\DTO\JobOffer;
 
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-class MutatePostRequest
+class MutateJobOfferRequest
 {
     public function __construct(
         #[Assert\Uuid]

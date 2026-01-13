@@ -1,23 +1,24 @@
 <?php
 
-namespace App\Application\Command\Handlers\Post;
+namespace App\Application\Command\Handlers\JobOffer;
 
 use Exception;
 
-use App\Api\DTO\Post\CreatePostRequest;
 use App\Api\Responder\ApiResponseBuilder;
-use App\Application\Command\Usecase\Post\PostRecorder;
+
+use App\Api\DTO\JobOffer\CreateJobOfferRequest;
+use App\Application\Command\Usecase\JobOffer\JobOfferRecorder;
 
 
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
-class CreatePostCommandHandler{
+class CreateJobOfferCommandHandler{
 
-    public function __construct(private PostRecorder $recorder, private ValidatorInterface $validator){}
+    public function __construct(private JobOfferRecorder $recorder, private ValidatorInterface $validator){}
 
-    public function handle(CreatePostRequest $command): array
+    public function handle(CreateJobOfferRequest $command): array
     {
         try{
             $errors = $this->validator->validate($command);

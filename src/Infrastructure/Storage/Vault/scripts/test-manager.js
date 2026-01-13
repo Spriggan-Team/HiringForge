@@ -119,7 +119,7 @@ class ObjektraField {
 
 
 class Objektra {
-    constructor(entries, HShift = 20, className = "json-object-text", mode = "simple-json-object", flexibility = 0){
+    constructor({entries, HShift = 20, className = "json-object-text", mode = "simple-json-object", flexibility = 0}){
         if(!Array.isArray(entries)){
             console.log("[Objektra] Bad entries");
             return;
@@ -468,7 +468,7 @@ class Route {
 
         // Input object
         if(this.endpoint.inputObjektraEntries){
-            const inputObjektra = new Objektra(this.endpoint.inputObjektraEntries);
+            const inputObjektra = new Objektra({entries: this.endpoint.inputObjektraEntries});
             const inputSection = document.createElement('div');
             inputSection.className = 'input-schema-container';
             inputSection.append(this.getHeaderContentTypeHTMLNode(), inputObjektra.getHTMLNode());
@@ -477,7 +477,7 @@ class Route {
 
         // Output object
         if(this.endpoint.outputObjektraEntries){
-            const outputObjektra = new Objektra(this.endpoint.outputObjektraEntries);
+            const outputObjektra = new Objektra({entries: this.endpoint.outputObjektraEntries});
             const outputSection = document.createElement('div');
             outputSection.className = 'output-schema-container';
             outputSection.appendChild(outputObjektra.getHTMLNode());
@@ -488,6 +488,7 @@ class Route {
         return this.content;
     }
 
+    
 
 
     toggleContentVisibility(){
@@ -497,15 +498,28 @@ class Route {
     }
 
 
+
     //HTML helpers
 
     //HTMLResponseNode    (the section in the content used to draw the response)
     getResponseSectionHTMLNode(){
         const wrapper = document.createElement('div')
-        wrapper.className = "route-response-container"
         this.responseContainer = wrapper
+        
+        const headerSection  = document.createElement('div')
+        headerSection.className = "response-header-section"
+        const title = document.createElement('span')
+        title.textContent = "Response"
+
+        const status = document.createElement('div')
+        status.className = "response-status-container"
+
+        headerSection.append(title, status)
+        this.responseContainer.append(headerSection)
         return this.responseContainer
     }
+
+
     
     getHeaderContentTypeHTMLNode(){
         // Content-Type option
@@ -583,27 +597,48 @@ class Route {
 
     async execute(){
         const body = Objektra.parseObjektraEntriesIntoObject(this.endpoint.inputObjektraEntries);
-        console.log(BASE_URL + this.endpoint.path + this.endpoint.getQueriesStringinfied())
-        console.log(body)
-
         this.response = await fetch(
             BASE_URL + this.endpoint.path + this.endpoint.getQueriesStringinfied(),
             this.buildFetchOptions({body, headers: this.headers})
         )
-
-        const data = await response.json()
-        this.responseContainer.className = "response-section"
+        if(this.response){
+            this.mountHTMLResponseContent()
+        }
         this.incrementCounter()
     }
 
     // Builds a fetch configuration using the global auth key
      
-    buildFetchOptions({ body = null, headers }) {
+    buildFetchOptions({ body = null, headers={} }) {
         return {
             method: this.method,
             headers: {...headers, "Authorization": AUTH_KEY },
             body: body ? JSON.stringify(body) : null
         };
+    }
+
+    async mountHTMLResponseContent(){
+        const data = await response.json()
+        this.responseContainer.className = "response-section"
+        const contentType = this.response.headers['Content-Type']
+
+        document.querySelector('response-status-container').textContent = `${this.response.status} ${this.response.statusText}`
+
+        if(!contentType){
+            return
+        }
+        if(contentType == 'text/html'){
+            const a = document.createElement('a')
+            a.textContent = "server_html_response_link"
+            a.addEventListener("click", ()=>{
+                const blob = new Blob([data], { type: "text/html"})
+                window.open(URL.createObjectURL(blob), "_blank")
+            })
+            return;
+        }
+        const dataType = ValueType.extractValueType(data)
+        const responseObjektra = new Objektra({entries: data, mode: dataType == ValueType.Array ? "simple-json-array" : "simple-json-object" })
+        
     }
 
     incrementCounter(){
@@ -612,6 +647,7 @@ class Route {
             this.reloader.classList.remove('hidden')
         }
     }
+
 
 
 }

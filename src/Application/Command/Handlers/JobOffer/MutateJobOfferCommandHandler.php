@@ -1,21 +1,23 @@
 <?php
 
-namespace App\Application\Command\Handlers\Post;
+namespace App\Application\Command\Handlers\JobOffer;
+
 
 use Exception;
 
-use App\Api\DTO\Post\MutatePostRequest;
+use App\Api\DTO\JobOffer\MutateJobOfferRequest;
 use App\Api\Responder\ApiResponseBuilder;
-use App\Application\Command\Usecase\Post\PostModifier;
+use App\Application\Command\Usecase\JobOffer\JobOfferModifier;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
-class MutatePostCommandHandler
-{
-    public function __construct(private PostModifier $modifier, private ValidatorInterface $validator){}
 
-    public function handle(MutatePostRequest $command): array
+class MutateJobOfferCommandHandler
+{
+    public function __construct(private JobOfferModifier $modifier, private ValidatorInterface $validator){}
+
+    public function handle(MutateJobOfferRequest $command): array
     {
         try{
             $errors = $this->validator->validate($command);

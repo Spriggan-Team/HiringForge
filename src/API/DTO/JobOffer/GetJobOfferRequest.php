@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Api\DTO\Post; 
+namespace App\Api\DTO\JobOffer; 
 
 
 use Symfony\Component\Validator\Constraints as Assert;
 
 
-class GetPostRequest{
+class GetJobOfferRequest{
     public function __construct(
         #[Assert\Uuid]
         public string $accountId,

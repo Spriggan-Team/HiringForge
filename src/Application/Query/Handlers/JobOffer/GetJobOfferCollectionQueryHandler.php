@@ -1,22 +1,24 @@
 <?php
 
-namespace App\Application\Query\Handlers\Post;
+namespace App\Application\Query\Handlers\JobOffer;
 
 use Exception;
 
-use App\Api\DTO\Post\GetPostCollectiontRequest;
+
 use App\Api\Responder\ApiResponseBuilder;
-use App\Application\Query\Usecase\Post\PostCatalogReader;
 
-
+use App\Api\DTO\JobOffer\GetJobOfferCollectiontRequest;
+use App\Application\Query\Usecase\JobOffer\JobOfferCatalogReader;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class GetPostsCollectionQueryHandler {
 
-  public function __construct(private PostCatalogReader $catalog, private ValidatorInterface $validator){}
 
-  public function handle(GetPostCollectiontRequest $query): array
+class GetJobOfferCollectionQueryHandler {
+
+  public function __construct(private JobOfferCatalogReader $catalog, private ValidatorInterface $validator){}
+
+  public function handle(GetJobOfferCollectiontRequest $query): array
   {
     try{
       $errors = $this->validator->validate($query);

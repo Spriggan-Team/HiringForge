@@ -4,21 +4,22 @@ namespace App\Api\Controllers;
 
 use Exception;
 
-use App\Api\DTO\Post\GetPostRequest;
-use App\Api\DTO\Post\CreatePostRequest;
-use App\Api\DTO\Post\DeletePostRequest;
-use App\Api\DTO\Post\MutatePostRequest;
 use App\Api\Responder\ApiResponseBuilder;
-use App\Api\DTO\Post\GetPostCollectiontRequest;
+
+use App\Api\DTO\JobOffer\GetJobOfferRequest;
+use App\Api\DTO\JobOffer\GetJobOfferCollectiontRequest;
+use App\Api\DTO\JobOffer\CreateJobOfferRequest;
+use App\Api\DTO\JobOffer\DeleteJobOfferRequest;
+use App\Api\DTO\JobOffer\MutateJobOfferRequest;
 
 
-use App\Application\Command\Handlers\Post\CreatePostCommandHandler;
-use App\Application\Command\Handlers\Post\DeletePostCommandHandler;
-use App\Application\Command\Handlers\Post\MutatePostCommandHandler;
+use App\Application\Command\Handlers\JobOffer\CreateJobOfferCommandHandler;
+use App\Application\Command\Handlers\JobOffer\DeleteJobOfferCommandHandler;
+use App\Application\Command\Handlers\JobOffer\MutateJobOfferCommandHandler;
 
 
-use App\Application\Query\Handlers\Post\GetPostQueryHandler;
-use App\Application\Query\Handlers\Post\GetPostsCollectionQueryHandler;
+use App\Application\Query\Handlers\JobOffer\GetJobOfferCollectionQueryHandler;
+use App\Application\Query\Handlers\JobOffer\GetJobOfferQueryHandler;
 
 
 use Psr\Log\LoggerInterface;
@@ -29,7 +30,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
 
-class PostController extends AbstractController
+
+class JobOfferController extends AbstractController
 {
 
     public function __construct(private LoggerInterface $logger){}
@@ -40,15 +42,15 @@ class PostController extends AbstractController
 
 
 
-    #[Route('/posts/{accountId}', methods: ["GET"], name: "fetch_all_post")]
-    public function fetchAllPost(
+    #[Route('/job_offer/{accountId}', methods: ["GET"], name: "fetch_all_job_offer")]
+    public function fetchAllJobOffer(
         int $accountId,
-        GetPostsCollectionQueryHandler $handler
+        GetJobOfferCollectionQueryHandler $handler
     ): JsonResponse
     {
         try
         {
-            $response = $handler->handle(new GetPostCollectiontRequest(accountId: $accountId));
+            $response = $handler->handle(new GetJobOfferCollectiontRequest(accountId: $accountId));
             return $this->json($response, 200);
         }
         catch(Exception $ex){
@@ -59,15 +61,15 @@ class PostController extends AbstractController
 
 
 
-    #[Route("/posts/{accountId}", methods: ["GET"], name: "fetch_one_post")]
-    public function fetchOnePost(
+    #[Route("/job_offer/{accountId}", methods: ["GET"], name: "fetch_one_job_offer")]
+    public function fetchOneJobOffer(
         string $accountId,
         Request $request,
-        GetPostQueryHandler $handler
+        GetJobOfferQueryHandler $handler
     ): JsonResponse
     {
         try{
-            $response = $handler->handle(new GetPostRequest(accountId: $accountId, uuid: $request->query->get("uuid")));
+            $response = $handler->handle(new GetJobOfferRequest(accountId: $accountId, uuid: $request->query->get("uuid")));
             return $this->json($response, 200);
         }
         catch(Exception $ex){
@@ -82,15 +84,15 @@ class PostController extends AbstractController
     =====================================*/
 
 
-    #[Route("/posts", methods: ["POST"], name: "create_post" )]
-    public function createPost(
+    #[Route("/job_offer", methods: ["POST"], name: "create_job_offer" )]
+    public function createJobOffer(
         Request $request,
-        CreatePostCommandHandler $handler
+        CreateJobOfferCommandHandler $handler
     ): JsonResponse
     {
         try{
             $body = json_decode($request->getContent(), true);
-            $command =new CreatePostRequest(
+            $command =new CreateJobOfferRequest(
                 title: $body['title'],
                 content: $body['content'],
                 accountId: $body["accountId"],
@@ -108,16 +110,16 @@ class PostController extends AbstractController
 
 
 
-    #[Route("/posts", methods: ['PATCH'] ,name: "")]
-    public function updatePost(
+    #[Route("/job_offer", methods: ['PATCH'] ,name: "change_job_offer")]
+    public function updateJobOffer(
         Request $request,
-        MutatePostCommandHandler $handler
+        MutateJobOfferCommandHandler $handler
     ){
         try{
             $body = json_decode($request->getContent(), true);
             
             $response = $handler->handle(
-                new MutatePostRequest(
+                new MutateJobOfferRequest(
                     accountId: $body['accountId'],
                     uuid: $body['uuid'],
                     title: $body['title'],
@@ -134,14 +136,15 @@ class PostController extends AbstractController
     }
 
 
-    #[Route("/posts/{accountId}", methods: ['DELETE'] ,name: "")]
-    public function deletePost(
+
+    #[Route("/job_offer/{accountId}", methods: ['DELETE'] ,name: "")]
+    public function deleteJobOffer(
         string $accountId,
         Request $request,
-        DeletePostCommandHandler $handler
+        DeleteJobOfferCommandHandler $handler
     ){
         try{
-            $response = $handler->handle( new DeletePostRequest( accountId: $accountId, uuid: $request->query->get("uuid") ) );
+            $response = $handler->handle( new DeleteJobOfferRequest( accountId: $accountId, uuid: $request->query->get("uuid") ) );
             return $this->json($response, 200);
         }
         catch(Exception $ex){
@@ -149,9 +152,6 @@ class PostController extends AbstractController
             return $this->json(ApiResponseBuilder::error( "Something wrong happenned" ), 400);
         }
     }
-
-    
-
 
 }
 

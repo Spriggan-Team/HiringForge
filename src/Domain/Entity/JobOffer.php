@@ -6,7 +6,7 @@ use DateTimeImmutable;
 use InvalidArgumentException;
 
 
-final class Post
+final class JobOffer
 {
     private string $id;
     private string $title;

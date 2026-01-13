@@ -1,21 +1,27 @@
 <?php
 
-namespace App\Application\Command\Handlers\Post;
+namespace App\Application\Command\Handlers\JobOffer;
 
-use App\Api\DTO\Post\DeletePostRequest;
-use App\Api\Responder\ApiResponseBuilder;
-use App\Application\Command\Usecase\Post\PostEraser;
+
 use Exception;
+
+
+use App\Api\DTO\JobOffer\DeleteJobOfferRequest;
+use App\Api\Responder\ApiResponseBuilder;
+use App\Application\Command\Usecase\JobOffer\JobOfferEraser;
+
+
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
-class DeletePostCommandHandler
+
+class DeleteJobOfferCommandHandler
 {
 
-    public function __construct(private PostEraser $eraser,private ValidatorInterface $validator){}
+    public function __construct(private JobOfferEraser $eraser,private ValidatorInterface $validator){}
 
-    public function handle(DeletePostRequest $command): array
+    public function handle(DeleteJobOfferRequest $command): array
     {
         try{
             $errors = $this->validator->validate($command);

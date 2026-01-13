@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Api\DTO\Post;
+namespace App\Api\DTO\JobOffer;
 
-class PostResponse
+class JobOffertResponse
 {
     public function __construct(
         public string $id,

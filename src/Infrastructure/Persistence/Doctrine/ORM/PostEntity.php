@@ -7,8 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity]
-#[ORM\Table(name: "Post")]
-class PostEntity 
+#[ORM\Table(name: "JobOffer")]
+class JobOfferEntity 
 {
     #[ORM\Id]
     #[ORM\Column(type: 'guid', unique: true)]
@@ -37,7 +37,7 @@ class PostEntity
         AccountEntity $account,
         \DateTimeImmutable $createdAt,
         \DateTimeImmutable $updatedAt
-    ): PostEntity
+    ): JobOfferEntity
     {
         $entity = new self();
         $entity->setId($id);

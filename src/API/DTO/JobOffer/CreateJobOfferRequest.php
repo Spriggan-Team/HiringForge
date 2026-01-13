@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Api\DTO\Post;
+namespace App\Api\DTO\JobOffer;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
 
-final class CreatePostRequest
+final class CreateJobOfferRequest
 {
 
     public function __construct(
