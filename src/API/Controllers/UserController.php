@@ -74,7 +74,7 @@ class UserController extends AbstractController
 
 
 
-    #[Route("/users", methods: ["POST"], name: "create_user")]
+    #[Route("/users", methods: ["POST"], name: "register_user")]
     public function createUser(
         Request $request,
         CreateUserCommandHandler $commandHandler
@@ -88,6 +88,7 @@ class UserController extends AbstractController
                 email: $data['email'],
                 siret: $data['siret'],
                 password: $data['password'],
+                imagePath: $data['imagePath']
             );
             $response = $commandHandler->handle($command);
 

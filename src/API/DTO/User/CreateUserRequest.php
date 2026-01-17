@@ -19,5 +19,7 @@ class CreateUserRequest
 
         #[Assert\NotBlank]
         public string $siret,
+
+        public string $imagePath,
     ){}
 }

@@ -14,7 +14,7 @@ final class CreateJobOfferRequest
         
         #[Assert\NotBlank]
         #[Assert\Uuid()]
-        public string $accountId,
+        public string $userId,
 
         #[Assert\NotBlank]
         #[Assert\NotNull]

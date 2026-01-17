@@ -6,7 +6,15 @@ use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity]
-#[ORM\Table(name: "JobCategory")]
+#[ORM\Table(
+    name: "job_category",
+    uniqueConstraints: [
+        new ORM\UniqueConstraint(
+            name: "uniq_job_category",
+            columns: ["job_offer_id", "category_id"]
+        )
+    ]
+)]
 class JobCategoryEntity
 {
     #[ORM\Id]
@@ -14,15 +22,48 @@ class JobCategoryEntity
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(nullable: false)]
-    private string $name;
-    
+    #[ORM\ManyToOne(inversedBy: 'jobCategories')]
+    #[ORM\JoinColumn(nullable: false, name: "category_id")]
+    private CategoryEntity $category;
 
-    public function getId(): ?int { return $this->id; }
+    #[ORM\ManyToOne(inversedBy: 'jobCategories')]
+    #[ORM\JoinColumn(nullable: false, name: "job_offer_id")]
+    private JobOfferEntity $jobOffer;
 
-    public function setId(string $id): static
+    //-----GETTERS
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function getCategory()
+    {
+        return $this->category;
+    }
+
+    public function getJobOffer()
+    {
+        return $this->jobOffer;
+    }
+
+    //-------SETTERS
+
+    public function setId(int $id): static
     {
         $this->id = $id;
+        return $this;
+    }
+
+    public function setCategory(CategoryEntity $category): static
+    {
+        $this->category = $category;
+        return $this;
+    }
+
+    public function setJobOffer(JobOfferEntity $jobOffer): static
+    {
+        $this->jobOffer = $jobOffer;
         return $this;
     }
 }

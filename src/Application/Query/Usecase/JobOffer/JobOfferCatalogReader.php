@@ -4,14 +4,15 @@ namespace App\Application\Query\Usecase\JobOffer;
 
 
 use App\Api\DTO\JobOffer\GetJobOfferCollectiontRequest;
-use App\Api\DTO\JobOffer\JobOffertResponse;
-use App\Infrastructure\Persistence\Doctrine\ORM\Repositories\JobOfferRepository;
+use App\Api\DTO\JobOffer\JobOffertResponse; 
+
+use App\Domain\Repositories\JobOfferRepositioryInterface;
 
 
 class JobOfferCatalogReader
 {
 
-    public function __construct(private JobOfferRepository $repository){}
+    public function __construct(private JobOfferRepositioryInterface $repository){}
 
     public function execute(GetJobOfferCollectiontRequest $query): array
     {
@@ -19,11 +20,11 @@ class JobOfferCatalogReader
 
         for($i = 0; $i < count($data); $i++){
             $data[$i] = new JobOffertResponse(
-                id: $data[$i]->getId(),
-                title: $data[$i]->getTitle(),
-                content: $data[$i]->getContent(),
-                createdAt: $data[$i]->getCreatedAt(),
-                updatedAt: $data[$i]->getUpdatedAt(),
+                id: $data[$i]->id(),
+                title: $data[$i]->title(),
+                content: $data[$i]->content(),
+                createdAt: $data[$i]->createdAt(),
+                updatedAt: $data[$i]->updatedAt(),
             );
         }
         

@@ -2,8 +2,10 @@
 
 namespace App\Domain\Repositories;
 
-use App\Domain\Entity\JobOffer;
-use App\Domain\ValueObject\MergeRule;
+use App\Domain\User\UserId;
+use App\Domain\JobOffer\JobOffer;
+
+
 
 interface JobOfferRepositioryInterface
 {
@@ -25,8 +27,12 @@ interface JobOfferRepositioryInterface
      * save the JobOffer in bdd
      * adaptated for JobOffer, patch, put Htpp request
      */
-    public function save(JobOffer $offer, string $accountId,  MergeRule $rule = MergeRule::FULL_OVERWRITE ): void;
+    public function save(JobOffer $offer, UserId $userId): void;
 
 
+    /**
+     * @return void
+     * delete a JobOffer using accountId and uuid
+     */
     public function delete(string $accountId, string $uuid ): void;
 }

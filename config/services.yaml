@@ -24,3 +24,10 @@ services:
     App\Api\Controllers\:
         resource: '../src/Api/Controllers'
         tags: ['controller.service_arguments']
+
+    #Domain (Composition Root/Bootstrap)
+    #UserRepository
+    App\Domain\Repositories\UserRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Repositories\UserRepository
+    
+    

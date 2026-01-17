@@ -4,12 +4,12 @@ namespace App\Application\Query\Usecase\User;
 
 use App\Api\DTO\User\UserResponseDTO;
 use App\Api\DTO\User\GetUserCollectionRequest;
-use App\Infrastructure\Persistence\Doctrine\ORM\Repositories\UserRepository;
+use App\Domain\User\UserRepositoryInterface;
 
 class FetchUserCollection
 {
     
-    public function __construct(private UserRepository $repository){}
+    public function __construct(private UserRepositoryInterface $repository){}
 
     public function execute(GetUserCollectionRequest $query): array
     {
@@ -17,11 +17,11 @@ class FetchUserCollection
 
         for ($i=0; $i < count($collection) ; $i++) { 
             $collection = new UserResponseDTO(
-                id: $collection[$i]->getId(),
-                name: $collection[$i]->getName(),
-                email: $collection[$i]->getEmail(),
-                siret: $collection[$i]->getSiret(),
-                password: $collection[$i]->getPassword()
+                id: $collection[$i]->id()->value(),
+                name: $collection[$i]-> name(),
+                email: $collection[$i]->email(),
+                siret: $collection[$i]->siret(),
+                password: $collection[$i]->password()
             );
         }
         

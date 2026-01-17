@@ -3,8 +3,7 @@
 namespace App\Application\Command\Usecase\User;
 
 use App\Api\DTO\User\MutateUserRequest;
-use App\Domain\ValueObject\MergeRule;
-use App\Infrastructure\Persistence\Doctrine\ORM\Repositories\UserRepository;
+use App\Domain\User\UserRepositoryInterface;
 
 /**
  * Deal with patch request directed toward account 
@@ -12,7 +11,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Repositories\UserRepository;
 
 class UserModifier
 {
-    public function __construct(private UserRepository $repository ){}
+    public function __construct(private UserRepositoryInterface $repository ){}
 
     public function execute(MutateUserRequest $command): void
     {
@@ -26,6 +25,6 @@ class UserModifier
             $user->setPassword($command->password);
         }
 
-        $this->repository->save($user, MergeRule::PARTIAL_MERGE );
+        $this->repository->save($user);
     }
 }

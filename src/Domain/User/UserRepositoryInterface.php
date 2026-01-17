@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Domain\Repositories;
+namespace App\Domain\User;
 
-use App\Domain\Entity\User;
 use App\Domain\ValueObject\MergeRule;
 
 
@@ -13,7 +12,7 @@ interface UserRepositoryInterface {
      * @throws Exception
      * use to create/update a new ressource in the bdd
     */
-    public function save(User $user, MergeRule $rule= MergeRule::FULL_OVERWRITE ): void;
+    public function save(User $user): void;
 
     /**
      * @return User

@@ -4,23 +4,23 @@ namespace App\Application\Query\Usecase\User;
 
 use App\Api\DTO\User\UserResponseDTO;
 use App\Api\DTO\User\GetUserRequest;
-use App\Infrastructure\Persistence\Doctrine\ORM\Repositories\UserRepository;
+use App\Domain\User\UserRepositoryInterface;
 
 
 class FetchUser {
     
-    public function __construct(private UserRepository $repository){}
+    public function __construct(private UserRepositoryInterface $repository){}
 
     public function execute(GetUserRequest $query): UserResponseDTO
     {
         $user = $this->repository->getById($query->uuid);
         
         $accountResponse = new UserResponseDTO(
-            id: $user->getId(),
-            name: $user->getName(),
-            email: $user->getEmail(),
-            siret: $user->getSiret(),
-            password: $user->getPassword()
+            id: $user->id()->value(),
+            name: $user->name(),
+            email: $user->email(),
+            siret: $user->siret(),
+            password: $user->password()
         );
 
         return $accountResponse;

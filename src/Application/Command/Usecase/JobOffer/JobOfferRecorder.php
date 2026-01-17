@@ -3,30 +3,23 @@
 namespace App\Application\Command\Usecase\JobOffer;
 
 use Ramsey\Uuid\Uuid; 
-use App\Domain\Entity\Post;
  
 use App\Api\DTO\JobOffer\CreateJobOfferRequest;
-use App\Infrastructure\Persistence\Doctrine\ORM\Repositories\JobOfferRepository;
+
+use App\Domain\JobOffer\JobOffer;
+use App\Domain\User\UserId;
+use App\Domain\Repositories\JobOfferRepositioryInterface;
 
 
 
 class JobOfferRecorder
 {
-    public function __construct(private JobOfferRepository $repository){}
+    public function __construct(private JobOfferRepositioryInterface $repository){}
 
     public function execute(CreateJobOfferRequest $command): void
     {
-        $today = new  \DateTimeImmutable();
-        
-        $offre = new Post(
-            id: Uuid::uuid4(),
-            title: $command->title,
-            content: $command->content,
-            createdAt: $today,
-            updatedAt: $today
-        );
-        
-        $this->repository->save($offre, $command->accountId);
+        $offre = JobOffer::create(id: Uuid::uuid4(), title: $command->title, content: $command->content);
+        $this->repository->save($offre, UserId::fromString($command->userId));
     }
 }
 

@@ -4,27 +4,27 @@
 namespace App\Application\Command\Usecase\JobOffer;
 
 
-use App\Domain\ValueObject\MergeRule;
+use App\Domain\User\UserId;
 use App\Api\DTO\JobOffer\MutateJobOfferRequest;
-use App\Infrastructure\Persistence\Doctrine\ORM\Repositories\JobOfferRepository;
+use App\Domain\Repositories\JobOfferRepositioryInterface;
 
 
 
 class JobOfferModifier
 {
-    public function __construct(private JobOfferRepository $repository){}
+    public function __construct(private JobOfferRepositioryInterface $repository){}
 
     public function execute(MutateJobOfferRequest $command):void
     {
         $offer = $this->repository->getById($command->accountId, $command->uuid);
         if($command->title){
-            $offer->setTitle($command->title);
+            $offer->rename($command->title);
         }
 
         if($command->content){
-            $offer->setContent($command->content);
+            $offer->changeContent($command->content);
         }
 
-        $this->repository->save($offer, $command->uuid, MergeRule::PARTIAL_MERGE);
+        $this->repository->save($offer, UserId::fromString($command->uuid));
     }
 }

@@ -5,44 +5,56 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 
 
-#[ORM\Table(name: "User")]
+#[ORM\Table(name: "user")]
 #[ORM\Entity]
 class UserEntity
 {
     #[ORM\Id]
     #[ORM\Column(type: "guid", unique: true)]
-    public ?string $id = null;
+    private string $id;
 
     #[ORM\Column(length: 150)]
-    public ?string $name = null;
+    private string $name;
 
     #[ORM\Column(length: 255, unique: true, nullable: false)]
-    public ?string $email = null;
+    private string $email;
+
+    #[ORM\Column(nullable: false)]
+    private string $imagePath;
 
     #[ORM\Column(length: 255, nullable: false)]
-    public ?string $siret = null;
+    private string $siret;
 
     #[ORM\Column(length: 255, nullable: false)]
-    public ?string $password = null;
+    private string $password;
 
-    #[ORM\OneToMany(mappedBy: "post", targetEntity: JobOfferEntity::class )]
-    public Collection $posts;
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: JobOfferEntity::class )]
+    private Collection $jobOffers;
 
-    public static function create(
+
+    public function __construct()
+    {
+        $this->jobOffers = new ArrayCollection();
+    }
+
+    public static function reconstitue(
         string $id,
         string $name,
         string $email,
         string $password,
-        string $siret
+        string $siret,
+        string $imagePath,
     ): self {
         $entity = new self();
-        $entity->setId($id);
+        $entity->$id;
         $entity->name     = $name;
         $entity->email    = $email;
         $entity->password = $password;
         $entity->siret    = $siret;
+        $entity->imagePath = $imagePath;
         return $entity;
     }
 
@@ -59,21 +71,45 @@ class UserEntity
     public function getPassword():string { return $this->password; }
 
     public function getSiret(){ return $this->siret; }
+
+    public function getImagePath(){ return $this->imagePath; }
     
+    public function getJobOffer(): Collection { return $this->jobOffers; }
 
     /* =======================
      * SETTERS
      * ======================= */
 
-
-    public function setId(string $id): void { $this->id = $id; }
+    public function setId(string $id): static
+    {
+        $this->id = $id;
+        return $this;
+    }
     
-    public function setName(string $name): void { $this->name = $name; }
+    public function setName(string $name): static { 
+        $this->name = $name;
+        return $this;    
+    }
 
-    public function setEmail(string $email): void{ $this->email = $email; }
+    public function setEmail(string $email): static{ 
+        $this->email = $email;
+        return $this;
+    }
 
-    public function setPassword(string $hash): void { $this->password = $hash; }
+    public function setPassword(string $hash): static { 
+        $this->password = $hash;
+        return $this;
+    }
 
-    public function setSiret(string $siret): void{ $this->siret = $siret; }
+    public function setSiret(string $siret): static{
+        $this->siret = $siret;
+        return $this;    
+    }
+
+    public function setImagePath(string $path): static
+    {
+        $this->imagePath = $path;
+        return $this;
+    }
 
 }

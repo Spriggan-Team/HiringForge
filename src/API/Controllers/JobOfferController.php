@@ -95,7 +95,7 @@ class JobOfferController extends AbstractController
             $command =new CreateJobOfferRequest(
                 title: $body['title'],
                 content: $body['content'],
-                accountId: $body["accountId"],
+                userId: $body["userId"],
             );
 
             $response = $handler->handle($command);
