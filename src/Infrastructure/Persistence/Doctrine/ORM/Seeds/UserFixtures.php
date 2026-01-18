@@ -9,25 +9,44 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
 
-
 class UserFixtures extends Fixture
 {
-    public  const USER_1 = 'user_1';
-    public  const USER_2 = 'user_2';
+    public const USERS = [
+        ['TechNova', 'contact@technova.io'],
+        ['FinEdge', 'hr@finedge.com'],
+        ['GreenFuture', 'jobs@greenfuture.org'],
+        ['Cloudify', 'careers@cloudify.io'],
+        ['DataPulse', 'jobs@datapulse.ai'],
+        ['HealthPlus', 'recruit@healthplus.fr'],
+        ['AutoDrive', 'talent@autodrive.com'],
+        ['RetailPro', 'jobs@retailpro.eu'],
+        ['EduSmart', 'hr@edusmart.com'],
+        ['CyberShield', 'careers@cybershield.io'],
+        ['MediaSpark', 'jobs@mediaspark.tv'],
+        ['FinTrust', 'recruitment@fintrust.com'],
+        ['SmartCity', 'jobs@smartcity.io'],
+        ['AgroTech', 'talent@agrotech.fr'],
+        ['BioLife', 'jobs@biolife.org'],
+        ['TravelEase', 'careers@travelease.com'],
+        ['LogistiX', 'jobs@logistix.io'],
+        ['PayFlow', 'hr@payflow.com'],
+        ['EcoBuild', 'jobs@ecobuild.fr'],
+        ['GameForge', 'jobs@gameforge.io'],
+    ];
 
     public function load(ObjectManager $manager): void
     {
-        foreach ([self::USER_1, self::USER_2] as $i => $ref) {
+        foreach (self::USERS as $i => [$name, $email]) {
             $user = (new UserEntity())
                 ->setId(Uuid::uuid4()->toString())
-                ->setName('Company '.$i)
-                ->setEmail("company$i@test.com")
+                ->setName($name)
+                ->setEmail($email)
                 ->setPassword(password_hash('password', PASSWORD_DEFAULT))
-                ->setSiret('12345678901234')
-                ->setImagePath('/logo.png');
+                ->setSiret(str_pad((string) random_int(1, 99999999999999), 14, '0', STR_PAD_LEFT))
+                ->setImagePath('/logos/'.strtolower($name).'.png');
 
             $manager->persist($user);
-            $this->addReference($ref, $user);
+            $this->addReference('user_'.$i, $user);
         }
 
         $manager->flush();

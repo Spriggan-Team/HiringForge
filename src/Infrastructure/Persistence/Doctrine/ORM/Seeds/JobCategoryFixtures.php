@@ -10,18 +10,36 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
 
+
 class JobCategoryFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        $job = $this->getReference(JobOfferFixtures::JOB_1, JobOfferEntity::class);
+        $categories = CategoryFixtures::CATEGORIES;
+        $jobsCount  = count(JobOfferFixtures::JOBS);
 
-        foreach (['IT', 'Finance'] as $cat) {
-            $jc = (new JobCategoryEntity())
-                ->setJobOffer($job)
-                ->setCategory($this->getReference('category_'.$cat, CategoryEntity::class));
+        for ($i = 0; $i < $jobsCount; $i++) {
+            /** @var JobOfferEntity $job */
+            $job = $this->getReference('job_'.$i, JobOfferEntity::class);
 
-            $manager->persist($jc);
+            $assignedCategories = array_slice(
+                $categories,
+                $i % count($categories),
+                random_int(1, 3)
+            );
+
+            foreach ($assignedCategories as $categoryName) {
+                $jobCategory = (new JobCategoryEntity())
+                    ->setJobOffer($job)
+                    ->setCategory(
+                        $this->getReference(
+                            'category_'.$categoryName,
+                            CategoryEntity::class
+                        )
+                    );
+
+                $manager->persist($jobCategory);
+            }
         }
 
         $manager->flush();

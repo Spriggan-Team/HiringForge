@@ -18,14 +18,16 @@ class ApplicationFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        $application = new ApplicationEntity(
-            $this->getReference(CandidateFixtures::CANDIDATE_1, CandidateEntity::class),
-            $this->getReference(JobOfferFixtures::JOB_1, JobOfferEntity::class)
-        );
+        for ($i = 0; $i < 20; $i++) {
+            $application = new ApplicationEntity(
+                $this->getReference('candidate_'.($i % 10), CandidateEntity::class),
+                $this->getReference('job_'.($i % 20), JobOfferEntity::class)
+            );
 
-        $application->setId(Uuid::uuid4()->toString());
+            $application->setId(Uuid::uuid4()->toString());
+            $manager->persist($application);
+        }
 
-        $manager->persist($application);
         $manager->flush();
     }
 

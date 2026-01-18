@@ -10,7 +10,18 @@ use Doctrine\Persistence\ObjectManager;
 
 class CategoryFixtures extends Fixture
 {
-    public const CATEGORIES = ['IT', 'Finance', 'Marketing'];
+    public const CATEGORIES = [
+        'Backend',
+        'Frontend',
+        'DevOps',
+        'Data',
+        'AI',
+        'Mobile',
+        'Security',
+        'Marketing',
+        'Design',
+        'Management',
+    ];
 
     public function load(ObjectManager $manager): void
     {
