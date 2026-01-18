@@ -18,7 +18,7 @@ interface UserRepositoryInterface {
      * @return User
      * return the specified user requested if founded in the bdd storage
      */
-    public function getById(int $uuid): User;
+    public function getById(string $uuid): User;
 
 
     /**

@@ -30,6 +30,9 @@ class UserEntity
 
     #[ORM\Column(length: 255, nullable: false)]
     private string $password;
+    
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: AddressEntity::class, cascade: ['persist', 'remove'])]
+    private AddressEntity $address;
 
     #[ORM\OneToMany(mappedBy: "user", targetEntity: JobOfferEntity::class )]
     private Collection $jobOffers;
@@ -47,14 +50,16 @@ class UserEntity
         string $password,
         string $siret,
         string $imagePath,
+        AddressEntity $address,
     ): self {
         $entity = new self();
-        $entity->$id;
+        $entity->$id = $id;
         $entity->name     = $name;
         $entity->email    = $email;
         $entity->password = $password;
         $entity->siret    = $siret;
         $entity->imagePath = $imagePath;
+        $entity->address = $address;
         return $entity;
     }
 
@@ -69,6 +74,8 @@ class UserEntity
     public function getEmail():string { return $this->email; }
 
     public function getPassword():string { return $this->password; }
+
+    public function getAddress(): AddressEntity { return $this->address; }
 
     public function getSiret(){ return $this->siret; }
 
@@ -112,4 +119,9 @@ class UserEntity
         return $this;
     }
 
+    public function setAddress(AddressEntity $address): static
+    {
+        $this->address = $address;
+        return $this;
+    }
 }

@@ -27,7 +27,7 @@ class UserId
         return \Ramsey\Uuid\Uuid::isValid($id);
     }
 
-    public function value()
+    public function value(): string
     {
         return $this->id;
     }

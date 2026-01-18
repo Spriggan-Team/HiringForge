@@ -3,8 +3,11 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Mappers;
 
-use App\Domain\User\User as DomainEntity;
 use App\Domain\User\UserId;
+use App\Domain\Shared\ValueObject\Address;
+use App\Domain\User\User as DomainEntity;
+
+use App\Infrastructure\Persistence\Doctrine\ORM\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\UserEntity as DoctrineEntity;
 
 
@@ -20,19 +23,31 @@ class UserEntityMapper
             email: $user->email(),
             password: $user->password(),
             siret: $user->siret(),
-            imagePath: $user->imagePath()
+            imagePath: $user->imagePath(),
+            address:  AddressEntity::reconstitue(
+                city: $user->address()->city,
+                street: $user->address()->street,
+                postalCode: $user->address()->postalCode,
+                country: $user->address()->country
+            )
         );
     }
 
-    public static function toDomainEntity(DoctrineEntity $doctrineEntity): DomainEntity
+    public static function toDomainEntity(DoctrineEntity $doctrine): DomainEntity
     {
-        return new DomainEntity(
-            id: UserId::fromString($doctrineEntity->getId()),
-            name: $doctrineEntity->getName(),
-            email: $doctrineEntity->getEmail(),
-            password: $doctrineEntity->getPassword(),
-            siret:  $doctrineEntity->getSiret(),
-            imagePath: $doctrineEntity->getImagePath()
+        return  DomainEntity::create(
+            id: UserId::fromString($doctrine->getId()),
+            name: $doctrine->getName(),
+            email: $doctrine->getEmail(),
+            password: $doctrine->getPassword(),
+            siret:  $doctrine->getSiret(),
+            imagePath: $doctrine->getImagePath(),
+            address: new Address(
+                street: $doctrine->getAddress()->getStreet(),
+                city: $doctrine->getAddress()->getCity(),
+                postalCode: $doctrine->getAddress()->getPostalCode(),
+                country: $doctrine->getAddress()->getCountry()
+            )
         );
     }
 

@@ -2,6 +2,8 @@
 
 namespace App\Api\DTO\User;
 
+use App\Domain\Shared\ValueObject\Address;
+
 class UserResponseDTO
 {
     public function __construct(
@@ -9,6 +11,6 @@ class UserResponseDTO
         public string $name,
         public string $email,
         public string $siret,
-        public string $password,
+        public  $address,
     ){}
 }

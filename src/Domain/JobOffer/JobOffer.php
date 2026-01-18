@@ -103,12 +103,14 @@ final class JobOffer
         $this->updatedAt = new DateTimeImmutable();
     }
 
+    public function isPublished(): bool { return $this->status === JobStatus::PUBLISHED; }
+    
     // -------------------- Getters --------------------
 
     public function id(): string { return $this->id; }
     public function title(): string { return $this->title; }
     public function content(): array { return $this->content; }
-    public function isPublished(): bool { return $this->status === JobStatus::PUBLISHED; }
+    public function status(): JobStatus {return $this->status;}
     public function createdAt(): DateTimeImmutable { return $this->createdAt; }
     public function updatedAt(): DateTimeImmutable { return $this->updatedAt; }
 

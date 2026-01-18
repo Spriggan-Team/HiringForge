@@ -14,13 +14,11 @@ class JobOfferEntityMapper
 
     public static function toDomain(JobOfferDoctrineEntity $entity): DomainEntity
     {
-        return new DomainEntity(
+        return  DomainEntity::create(
             id: $entity->getId(),
             title: $entity->getTitle(),
             content: $entity->getContent(),
-            createdAt: $entity->getCreatedAt(),
-            updatedAt: $entity->getUpdatedAt(),
-            isPublished: $entity->getIsPublished()
+            status: $entity->getStatus()
         );
     }
 
@@ -32,7 +30,7 @@ class JobOfferEntityMapper
             content: $jobOfferDomain->content(),
             createdAt: $jobOfferDomain->createdAt(),
             updatedAt: $jobOfferDomain->updatedAt(),
-            user: $user, isPublished: $jobOfferDomain->isPublished()
+            user: $user, status: $jobOfferDomain->status()
         );
     }
 
@@ -40,7 +38,7 @@ class JobOfferEntityMapper
     {
         $doctrine->setTitle($offer->title())
                  ->setContent($offer->content())
-                 ->setIsPulished($offer->isPublished())
+                 ->setStatus($offer->status())
                  ->setUpdatedAt(new DateTimeImmutable());
     }
 }

@@ -3,6 +3,7 @@
 
 namespace App\Domain\User;
 
+use App\Domain\Shared\ValueObject\Address;
 
 final class User
 {
@@ -10,6 +11,7 @@ final class User
     public string  $name;
     private string $email;
     private string $siret;
+    private Address $address;
     private string $password;
     private string $imagePath;
 
@@ -20,6 +22,7 @@ final class User
         string $siret,
         string $password,
         string $imagePath,
+        Address $address,
     ) {
         $this->id    = $id;
         $this->name  = $name;
@@ -27,6 +30,7 @@ final class User
         $this->siret = $siret;
         $this->setPassword($password);
         $this->imagePath = $imagePath;
+        $this->address = $address;
     }
 
     public static function create(
@@ -36,6 +40,7 @@ final class User
         string $siret,
         string $password,
         string $imagePath,
+        Address $address,
     ){
         return new self(
             $id,
@@ -43,7 +48,8 @@ final class User
             $email,
             $siret,
             $password,
-            $imagePath
+            $imagePath,
+            $address,
         );
     }
     
@@ -62,6 +68,8 @@ final class User
     public function imagePath(): string { return $this->imagePath; }
 
     public function siret(){ return $this->siret; }
+
+    public function address(): Address { return $this->address; }
 
     // ---------------- Business change ----------------
 

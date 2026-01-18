@@ -25,7 +25,8 @@ class UserRegister
             email: $command->email,
             password: $command->password,
             siret: $command->siret,
-            imagePath: $command->imagePath
+            imagePath: $command->imagePath,
+            address: $command->address
         );
         
         $this->repository->save($user);

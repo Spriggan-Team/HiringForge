@@ -20,7 +20,12 @@ class FetchUser {
             name: $user->name(),
             email: $user->email(),
             siret: $user->siret(),
-            password: $user->password()
+            address: [
+                    "city"  => $user->address()->city,
+                    "street" => $user->address()->street,
+                    "postalCode" => $user->address()->postalCode,
+                    "country"    => $user->address()->country
+            ]
         );
 
         return $accountResponse;

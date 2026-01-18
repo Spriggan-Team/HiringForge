@@ -27,7 +27,10 @@ services:
 
     #Domain (Composition Root/Bootstrap)
     #UserRepository
-    App\Domain\Repositories\UserRepositoryInterface:
+    App\Domain\User\UserRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Repositories\UserRepository
+    
+    App\Domain\User\JobOfferRepositioryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Repositories\JobOfferEntityMapper
     
     

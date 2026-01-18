@@ -22,9 +22,7 @@ use App\Application\Command\Handlers\User\MutateUserCommandHandler;
 use App\Application\Command\Handlers\User\OverwriteUserCommandHandler;
 use App\Application\Query\Handlers\User\GetUserCollectionQueryHandler;
 use App\Application\Query\Handlers\User\GetUserQueryHandler;
-
-
-
+use App\Domain\Shared\ValueObject\Address;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
@@ -88,7 +86,13 @@ class UserController extends AbstractController
                 email: $data['email'],
                 siret: $data['siret'],
                 password: $data['password'],
-                imagePath: $data['imagePath']
+                imagePath: $data['imagePath'],
+                address: new Address(
+                    $data['address']['street'],
+                    $data['address']['city'], 
+                    $data['address']['postalCode'], 
+                    $data['address']['country']
+                )
             );
             $response = $commandHandler->handle($command);
 

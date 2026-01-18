@@ -31,7 +31,7 @@ class UserRepository implements UserRepositoryInterface
 
 
 
-    public function getById(int $uuid): DomainEntity
+    public function getById(string $uuid): DomainEntity
     {
         $entity = $this->manager->find(ORMEntity::class, $uuid);
         if(!$entity){

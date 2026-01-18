@@ -2,6 +2,7 @@
 
 namespace App\Api\DTO\User;
 
+use App\Domain\Shared\ValueObject\Address;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class CreateUserRequest
@@ -20,6 +21,10 @@ class CreateUserRequest
         #[Assert\NotBlank]
         public string $siret,
 
+        #[Assert\NotBlank]
         public string $imagePath,
+        
+        #[Assert\NotNull]
+        public Address $address,
     ){}
 }

@@ -13,19 +13,21 @@ class FetchUserCollection
 
     public function execute(GetUserCollectionRequest $query): array
     {
-        $collection = $this->repository->getAll();
-
-        for ($i=0; $i < count($collection) ; $i++) { 
-            $collection = new UserResponseDTO(
-                id: $collection[$i]->id()->value(),
-                name: $collection[$i]-> name(),
-                email: $collection[$i]->email(),
-                siret: $collection[$i]->siret(),
-                password: $collection[$i]->password()
-            );
-        }
-        
-        return $collection;
+        return array_map(
+            fn ($user) => new UserResponseDTO(
+                id: $user->id()->value(),
+                name: $user->name(),
+                email: $user->email(),
+                siret: $user->siret(),
+                address: [
+                    "city"  => $user->address()->city,
+                    "street" => $user->address()->street,
+                    "postalCode" => $user->address()->postalCode,
+                    "country"    => $user->address()->country
+                ]
+            ),
+            $this->repository->getAll()
+        );
     }
 
 }
