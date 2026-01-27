@@ -12,8 +12,8 @@ final class User
     private string $email;
     private string $siret;
     private Address $address;
-    private string $password;
-    private string $imagePath;
+    private string  $password;
+    private array   $images;
 
     private function __construct(
         UserId $id,
@@ -21,7 +21,7 @@ final class User
         string $email,
         string $siret,
         string $password,
-        string $imagePath,
+        array $images,
         Address $address,
     ) {
         $this->id    = $id;
@@ -29,26 +29,25 @@ final class User
         $this->email = $email;
         $this->siret = $siret;
         $this->setPassword($password);
-        $this->imagePath = $imagePath;
+        $this->images = $images;
         $this->address = $address;
     }
 
     public static function create(
-        UserId $id,
         string $name,
         string $email,
         string $siret,
         string $password,
-        string $imagePath,
+        array $images,
         Address $address,
     ){
         return new self(
-            $id,
+            new UserId(),
             $name,
             $email,
             $siret,
             $password,
-            $imagePath,
+            $images,
             $address,
         );
     }
@@ -65,7 +64,7 @@ final class User
 
     public function password(): string { return $this->password; }
 
-    public function imagePath(): string { return $this->imagePath; }
+    public function images(): array { return $this->images; }
 
     public function siret(){ return $this->siret; }
 
@@ -85,7 +84,7 @@ final class User
 
     public function setPassword(string $password): void
     {
-        $this->password = password_hash($password, PASSWORD_DEFAULT);
+        $this->password = password_hash($password, PASSWORD_BCRYPT);
     }
 
 }

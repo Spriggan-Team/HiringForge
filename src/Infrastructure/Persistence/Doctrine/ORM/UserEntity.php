@@ -12,6 +12,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 #[ORM\Entity]
 class UserEntity
 {
+    //------------------------
+    //  Columns
+    //-----------------------
+    
     #[ORM\Id]
     #[ORM\Column(type: "guid", unique: true)]
     private string $id;
@@ -22,25 +26,34 @@ class UserEntity
     #[ORM\Column(length: 255, unique: true, nullable: false)]
     private string $email;
 
-    #[ORM\Column(nullable: false)]
-    private string $imagePath;
-
     #[ORM\Column(length: 255, nullable: false)]
     private string $siret;
 
     #[ORM\Column(length: 255, nullable: false)]
     private string $password;
     
+    //------------------------
+    //  Relations
+    //-----------------------
+
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: AddressEntity::class, cascade: ['persist', 'remove'])]
     private AddressEntity $address;
 
     #[ORM\OneToMany(mappedBy: "user", targetEntity: JobOfferEntity::class )]
     private Collection $jobOffers;
 
+    #[ORM\OneToMany(mappedBy: "user", targetEntity: UserImageEntity::class, cascade:['persist', 'remove'])]
+    private Collection $userImages;
 
+
+    //------------------------
+    //  Construction...
+    //-----------------------
+    
     public function __construct()
     {
         $this->jobOffers = new ArrayCollection();
+        $this->userImages = new ArrayCollection();
     }
 
     public static function reconstitue(
@@ -49,7 +62,6 @@ class UserEntity
         string $email,
         string $password,
         string $siret,
-        string $imagePath,
         AddressEntity $address,
     ): self {
         $entity = new self();
@@ -58,8 +70,7 @@ class UserEntity
                ->setEmail($email)
                ->setPassword($password)
                ->setSiret($siret)
-               ->setImagePath($imagePath)
-               ->setAddress($address);
+               ->attachToAddress($address);
         return $entity;
     }
 
@@ -79,9 +90,9 @@ class UserEntity
 
     public function getSiret(){ return $this->siret; }
 
-    public function getImagePath(){ return $this->imagePath; }
     
     public function getJobOffer(): Collection { return $this->jobOffers; }
+    public function getUserImages(): Collection { return $this->userImages; }
 
     /* =======================
      * SETTERS
@@ -113,13 +124,7 @@ class UserEntity
         return $this;    
     }
 
-    public function setImagePath(string $path): static
-    {
-        $this->imagePath = $path;
-        return $this;
-    }
-
-    public function setAddress(AddressEntity $address): static
+    public function attachToAddress(AddressEntity $address): static
     {
         $this->address = $address;
         return $this;

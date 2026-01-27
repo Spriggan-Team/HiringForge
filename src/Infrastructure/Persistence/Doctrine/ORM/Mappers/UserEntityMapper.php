@@ -11,10 +11,8 @@ use App\Infrastructure\Persistence\Doctrine\ORM\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\UserEntity as DoctrineEntity;
 
 
-
 class UserEntityMapper 
 {
-    
     public static function toDoctrineEntity(DomainEntity $user): DoctrineEntity
     {
         $entity = DoctrineEntity::reconstitue(
@@ -23,7 +21,6 @@ class UserEntityMapper
             email: $user->email(),
             password: $user->password(),
             siret: $user->siret(),
-            imagePath: $user->imagePath(),
             address: new AddressEntity()
         );
 
@@ -34,22 +31,22 @@ class UserEntityMapper
             country: $user->address()->country
         );
 
-        $address->setUser($entity);
-        $entity->setAddress($address);
+        $address->attachToUser($entity);
+        $entity->attachToAddress($address);
 
         return $entity;
     }
 
-
     public static function toDomainEntity(DoctrineEntity $doctrine): DomainEntity
     {
-        return  DomainEntity::create(
-            id: UserId::fromString($doctrine->getId()),
+        $userImages = [];
+
+        return DomainEntity::create(
             name: $doctrine->getName(),
             email: $doctrine->getEmail(),
+            images: $userImages,
             password: $doctrine->getPassword(),
-            siret:  $doctrine->getSiret(),
-            imagePath: $doctrine->getImagePath(),
+            siret: $doctrine->getSiret(),
             address: new Address(
                 street: $doctrine->getAddress()->getStreet(),
                 city: $doctrine->getAddress()->getCity(),
@@ -59,12 +56,11 @@ class UserEntityMapper
         );
     }
 
-    public static function copy(DomainEntity $user, DoctrineEntity  $entity ):void
+    public static function copy(DomainEntity $user, DoctrineEntity $entity): void
     {
         $entity->setName($user->name())
                ->setEmail($user->email())
-               ->setImagePath($user->imagePath())
-               ->setPassword($user->password());
+               ->setPassword($user->password())
+               ->setSiret($user->siret());
     }
-
 }

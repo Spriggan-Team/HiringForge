@@ -3,11 +3,9 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Seeds;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\UserEntity;
-
 use Ramsey\Uuid\Uuid;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
-
 
 class UserFixtures extends Fixture
 {
@@ -41,9 +39,8 @@ class UserFixtures extends Fixture
                 ->setId(Uuid::uuid4()->toString())
                 ->setName($name)
                 ->setEmail($email)
-                ->setPassword(password_hash('password', PASSWORD_DEFAULT))
-                ->setSiret(str_pad((string) random_int(1, 99999999999999), 14, '0', STR_PAD_LEFT))
-                ->setImagePath('/logos/'.strtolower($name).'.png');
+                ->setPassword('$2y$10$fixtureHashPassword1234567890')
+                ->setSiret(str_pad((string) random_int(1, 99999999999999), 14, '0', STR_PAD_LEFT));
 
             $manager->persist($user);
             $this->addReference('user_'.$i, $user);

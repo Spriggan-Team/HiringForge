@@ -27,6 +27,11 @@ class MutateUserCommandHandler
             if(count($errors) > 0){
                 throw new BadRequestHttpException("Bad fields validation");
             }
+            
+            if (!$command->hasMutations()) {
+                throw new BadRequestHttpException("No fields to update");
+            }
+
 
             $this->modifier->execute($command);
             return ApiResponseBuilder::notice("Everything went smoothly");

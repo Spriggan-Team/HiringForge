@@ -109,7 +109,7 @@ class AddressEntity
 
 
 
-    public function setUser(UserEntity $user): static
+    public function attachToUser(UserEntity $user): static
     {
         $this->user = $user;
         return $this;

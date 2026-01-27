@@ -41,7 +41,7 @@ class JobOfferEntity
     private Collection $jobCategories;
 
 
-    #[ORM\ManyToOne( inversedBy: "posts", targetEntity: UserEntity::class )]
+    #[ORM\ManyToOne( inversedBy: "jobOffers", targetEntity: UserEntity::class )]
     #[ORM\JoinColumn(nullable: false)]
     private UserEntity $user;
 

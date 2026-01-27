@@ -8,7 +8,6 @@ use Exception;
 use App\Api\Responder\ApiResponseBuilder;
 
 
-use App\Api\DTO\User\CreateUserRequest;
 use App\Api\DTO\User\DeleteUserRequest;
 use App\Api\DTO\User\GetUserCollectionRequest;
 use App\Api\DTO\User\GetUserRequest;
@@ -16,13 +15,11 @@ use App\Api\DTO\User\MutateUserRequest;
 use App\Api\DTO\User\OverwriteUserRequest;
 
 
-use App\Application\Command\Handlers\User\CreateUserCommandHandler;
 use App\Application\Command\Handlers\User\DeleteUserCommandHandler;
 use App\Application\Command\Handlers\User\MutateUserCommandHandler;
 use App\Application\Command\Handlers\User\OverwriteUserCommandHandler;
 use App\Application\Query\Handlers\User\GetUserCollectionQueryHandler;
 use App\Application\Query\Handlers\User\GetUserQueryHandler;
-use App\Domain\Shared\ValueObject\Address;
 
 
 use Psr\Log\LoggerInterface;
@@ -73,54 +70,23 @@ class UserController extends AbstractController
 
 
 
-
-    #[Route("/users", methods: ["POST"], name: "register_user")]
-    public function createUser(
-        Request $request,
-        CreateUserCommandHandler $commandHandler
-    ): JsonResponse
-    {
-        try {
-            $data = json_decode($request->getContent(), true);
-
-            $command = new CreateUserRequest(
-                name:  $data['name'],
-                email: $data['email'],
-                siret: $data['siret'],
-                password: $data['password'],
-                imagePath: $data['imagePath'],
-                address: new Address(
-                    $data['address']['street'],
-                    $data['address']['city'], 
-                    $data['address']['postalCode'], 
-                    $data['address']['country']
-                )
-            );
-            $response = $commandHandler->handle($command);
-
-            return $this->json($response, 201);
-        }
-        catch (Exception $exception) {
-            $this->logger->error(
-                "Caught Exception: ". $exception->getMessage(), 
-                [   
-                    'exception'=>$exception,
-                ]
-            );
-            return $this->json(ApiResponseBuilder::error('Please check your data fields and formats'), 400);
-        }
-    }
-
-
     
     #[Route("/users/{uuid}", methods:["PATCH"], name: "update_user")]
     public function updateUser(
         string $uuid,
+        Request $request,
         MutateUserCommandHandler $handler
     ): JsonResponse
     {
         try {
-            $response = $handler->handle(new MutateUserRequest(uuid: $uuid));
+            $playload = json_decode($request->getContent(), true);
+            $command = new MutateUserRequest(
+                uuid: $uuid,
+                name: $playload['name'] ?? null,
+                password: $playload['password'] ?? null,
+                siret: $playload['siret'] ?? null
+            );
+            $response = $handler->handle($command);
             return $this->json($response, 200);
         }
         catch (Exception $exception) {
