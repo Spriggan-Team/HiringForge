@@ -53,13 +53,13 @@ class UserEntity
         AddressEntity $address,
     ): self {
         $entity = new self();
-        $entity->$id = $id;
-        $entity->name     = $name;
-        $entity->email    = $email;
-        $entity->password = $password;
-        $entity->siret    = $siret;
-        $entity->imagePath = $imagePath;
-        $entity->address = $address;
+        $entity->setId($id)
+               ->setName($name)
+               ->setEmail($email)
+               ->setPassword($password)
+               ->setSiret($siret)
+               ->setImagePath($imagePath)
+               ->setAddress($address);
         return $entity;
     }
 

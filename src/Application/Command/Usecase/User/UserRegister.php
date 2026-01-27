@@ -11,7 +11,6 @@ use App\Domain\User\UserId;
 use App\Api\DTO\User\CreateUserRequest;
 use App\Domain\User\UserRepositoryInterface;
 
-
 class UserRegister
 {
 
@@ -20,7 +19,7 @@ class UserRegister
     public function execute(CreateUserRequest $command)
     {
         $user =  User::create(
-            id: new UserId(Uuid::uuid4()),
+            id: UserId::fromString(Uuid::uuid4()),
             name:  $command->name,
             email: $command->email,
             password: $command->password,
@@ -28,7 +27,6 @@ class UserRegister
             imagePath: $command->imagePath,
             address: $command->address
         );
-        
         $this->repository->save($user);
     }
 }

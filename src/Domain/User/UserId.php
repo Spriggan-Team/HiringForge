@@ -17,7 +17,7 @@ class UserId
         $this->id = $id;
     }
 
-    public static function fromString(string $id)
+    public static function fromString(string $id): static
     {
         return new self($id);
     }

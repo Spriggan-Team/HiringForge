@@ -44,7 +44,7 @@ class UserRepository implements UserRepositoryInterface
 
     public function save(DomainEntity $user): void
     {
-        $entity = $this->manager->find(DomainEntity::class, $user->id()->value());
+        $entity = $this->manager->find(ORMEntity::class, $user->id()->value());
         if(!$entity){
             $entity = UserEntityMapper::toDoctrineEntity($user);
             $this->manager->persist($entity);

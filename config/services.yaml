@@ -33,4 +33,7 @@ services:
     App\Domain\User\JobOfferRepositioryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Repositories\JobOfferEntityMapper
     
+    monolog.formatter.console:
+        class: Symfony\Bridge\Monolog\Formatter\ConsoleFormatter
+    
     

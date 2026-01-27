@@ -5,6 +5,8 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\JoinColumn;
 
+
+
 #[ORM\Entity]
 #[ORM\Table(name: "address")]
 class AddressEntity

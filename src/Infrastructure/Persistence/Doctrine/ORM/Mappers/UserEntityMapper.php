@@ -17,21 +17,29 @@ class UserEntityMapper
     
     public static function toDoctrineEntity(DomainEntity $user): DoctrineEntity
     {
-        return  DoctrineEntity::reconstitue(
+        $entity = DoctrineEntity::reconstitue(
             id: $user->id()->value(),
             name: $user->name(),
             email: $user->email(),
             password: $user->password(),
             siret: $user->siret(),
             imagePath: $user->imagePath(),
-            address:  AddressEntity::reconstitue(
-                city: $user->address()->city,
-                street: $user->address()->street,
-                postalCode: $user->address()->postalCode,
-                country: $user->address()->country
-            )
+            address: new AddressEntity()
         );
+
+        $address = AddressEntity::reconstitue(
+            city: $user->address()->city,
+            street: $user->address()->street,
+            postalCode: $user->address()->postalCode,
+            country: $user->address()->country
+        );
+
+        $address->setUser($entity);
+        $entity->setAddress($address);
+
+        return $entity;
     }
+
 
     public static function toDomainEntity(DoctrineEntity $doctrine): DomainEntity
     {

@@ -23,6 +23,8 @@ use App\Application\Command\Handlers\User\OverwriteUserCommandHandler;
 use App\Application\Query\Handlers\User\GetUserCollectionQueryHandler;
 use App\Application\Query\Handlers\User\GetUserQueryHandler;
 use App\Domain\Shared\ValueObject\Address;
+
+
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
@@ -99,8 +101,13 @@ class UserController extends AbstractController
             return $this->json($response, 201);
         }
         catch (Exception $exception) {
-            $this->logger->error("Caught Exception: ". $exception->getMessage(), ['exception'=>$exception]);
-            return $this->json(ApiResponseBuilder::error('Something went wrong'), 400);
+            $this->logger->error(
+                "Caught Exception: ". $exception->getMessage(), 
+                [   
+                    'exception'=>$exception,
+                ]
+            );
+            return $this->json(ApiResponseBuilder::error('Please check your data fields and formats'), 400);
         }
     }
 
