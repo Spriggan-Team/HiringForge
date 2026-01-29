@@ -4,6 +4,11 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM;
 
 use Doctrine\ORM\Mapping as ORM;
 
+
+/**
+ * This one is used to add multiple images to an user (the inverse is also possible)
+ * It is a join table responsable to create a N-N relation between User and Image
+ */
 #[ORM\Entity()]
 #[ORM\Table(
       name: "user_image",
@@ -18,14 +23,25 @@ class UserImageEntity
     #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: ImageEntity::class, inversedBy: "userImages", cascade: ['persist'])]
+    #[ORM\ManyToOne(
+        targetEntity: ImageEntity::class,
+        inversedBy: "userImages",
+    )]
     #[ORM\JoinColumn(nullable: false)]
     private ImageEntity $image;
 
-    #[ORM\ManyToOne(targetEntity: UserEntity::class, inversedBy: "userImages", cascade: ['persist'])]
+    #[ORM\ManyToOne(
+        targetEntity: UserEntity::class,
+        inversedBy: "userImages",
+    )]
     #[ORM\JoinColumn(nullable: false)]
     private UserEntity $user;
 
+    public function __construc(UserEntity $user, ImageEntity $image)
+    {
+        $this->user = $user;
+        $this->image= $image;
+    }
 
     //-------------------------
     //  GETTERS
@@ -37,29 +53,9 @@ class UserImageEntity
         return $this->id;
     }
 
-    public function getUser(): UserEntity
-    {
-        return $this->user;
-    }
 
     public function getImage(): ImageEntity
     {
         return $this->image;
-    }
-
-    //-------------------------
-    //  SETTERS
-    //------------------------
-
-    public function  attachToUser(UserEntity $user) : static 
-    {
-        $this->user = $user;
-        return $this;    
-    }
-
-    public function  attachToImage(ImageEntity $image) : static 
-    {
-        $this->image = $image;
-        return $this;    
     }
 }

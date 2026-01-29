@@ -1,10 +1,8 @@
 <?php
 
-namespace App\Infrastructure\Storage\FileStorage;
+namespace App\Domain\services\FileStorage;
 
 use Exception;
 
 class FileStorageException extends Exception
-{
-    
-}
+{}

@@ -36,13 +36,24 @@ class UserEntity
     //  Relations
     //-----------------------
 
-    #[ORM\OneToOne(mappedBy: 'user', targetEntity: AddressEntity::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(
+        mappedBy: 'user',
+        targetEntity: AddressEntity::class,
+        cascade: ['persist', 'remove']
+    )]
     private AddressEntity $address;
 
-    #[ORM\OneToMany(mappedBy: "user", targetEntity: JobOfferEntity::class )]
+    #[ORM\OneToMany(
+        mappedBy: "user",
+        targetEntity: JobOfferEntity::class
+    )]
     private Collection $jobOffers;
 
-    #[ORM\OneToMany(mappedBy: "user", targetEntity: UserImageEntity::class, cascade:['persist', 'remove'])]
+    #[ORM\OneToMany(
+        mappedBy: "user",
+        targetEntity: UserImageEntity::class,
+        cascade:['persist', 'remove']
+    )]
     private Collection $userImages;
 
 
@@ -56,7 +67,7 @@ class UserEntity
         $this->userImages = new ArrayCollection();
     }
 
-    public static function reconstitue(
+    public static function create(
         string $id,
         string $name,
         string $email,
@@ -123,10 +134,29 @@ class UserEntity
         $this->siret = $siret;
         return $this;    
     }
+    //--------------------------------
+    // Utils
+    //--------------------------------
 
     public function attachToAddress(AddressEntity $address): static
     {
         $this->address = $address;
         return $this;
+    }
+
+    public function attachToImage(ImageEntity $image): static
+    {
+        $userImage = new UserImageEntity($this, $image);
+        $this->userImages->add($userImage);
+        return $this;
+    }
+
+    public function removeImage(ImageEntity $image): void
+    {
+        foreach ($this->userImages as $userImage) {
+            if ($userImage->getImage() === $image) {
+                $this->userImages->removeElement($userImage);
+            }
+        }
     }
 }

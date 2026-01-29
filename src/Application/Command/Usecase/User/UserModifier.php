@@ -3,6 +3,7 @@
 namespace App\Application\Command\Usecase\User;
 
 use App\Api\DTO\User\MutateUserRequest;
+use App\Domain\User\Siret;
 use App\Domain\User\UserRepositoryInterface;
 
 /**
@@ -17,8 +18,12 @@ class UserModifier
     {
         $user = $this->repository->getById($command->uuid);
         
-        if($command->email){
-            $user->setEmail($command->email);
+        if($command->name){
+            $user->rename($command->name);
+        }
+
+        if($command->siret){
+            $user->changeSiret(new Siret($command->siret));
         }
 
         if($command->password){

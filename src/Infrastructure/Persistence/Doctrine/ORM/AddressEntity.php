@@ -28,11 +28,14 @@ class AddressEntity
     #[ORM\Column(length: 255)]
     private string $country;
 
-    #[ORM\OneToOne(inversedBy: 'address', targetEntity: UserEntity::class)]
+    #[ORM\OneToOne(
+        inversedBy: 'address',
+        targetEntity: UserEntity::class
+    )]
     #[JoinColumn(nullable: false, unique: true)]
     private UserEntity $user;
 
-    public static function reconstitue(
+    public static function create(
         string $city,
         string $street,
         string $postalCode,

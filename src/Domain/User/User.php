@@ -3,31 +3,39 @@
 
 namespace App\Domain\User;
 
+use App\Domain\Image\UploadedImage;
 use App\Domain\Shared\ValueObject\Address;
 
 final class User
 {
     private UserId $id;
-    public string  $name;
+    public  string  $name;
     private string $email;
-    private string $siret;
+    private Siret $siret;
     private Address $address;
     private string  $password;
-    private array   $images;
 
+    /**
+     * @var array<UploadedImage>  $images
+     */
+    
+    private array  $images;
+    
     private function __construct(
         UserId $id,
         string $name,
         string $email,
-        string $siret,
+        Siret|int|string $siret,
         string $password,
         array $images,
         Address $address,
-    ) {
+        ) {
         $this->id    = $id;
         $this->name  = $name;
         $this->email = $email;
-        $this->siret = $siret;
+        $this->siret = !$siret instanceof Siret ?  
+                            new Siret($siret)
+                            : $siret;
         $this->setPassword($password);
         $this->images = $images;
         $this->address = $address;
@@ -39,10 +47,11 @@ final class User
         string $siret,
         string $password,
         array $images,
-        Address $address,
+        Address  $address,
+        ?UserId  $userId = null
     ){
         return new self(
-            new UserId(),
+            $userId ?? new UserId(),
             $name,
             $email,
             $siret,
@@ -56,7 +65,7 @@ final class User
 
     //  --------------- Business access
     
-    public function id(): UserId { return $this->id; }
+    public function id(): string { return $this->id->value(); }
 
     public function name(): string { return $this->name; }
 
@@ -64,27 +73,38 @@ final class User
 
     public function password(): string { return $this->password; }
 
-    public function images(): array { return $this->images; }
+    public function images(): array
+    { 
+        return $this->images;
+    }
 
-    public function siret(){ return $this->siret; }
+    public function siret(): string { return $this->siret->value(); }
 
     public function address(): Address { return $this->address; }
 
     // ---------------- Business change ----------------
 
-    public function rename(string $name): void
+    public function rename(string $name): static
     {
         $this->name = $name;
+        return $this;
     }
 
-    public function setEmail(string $email): void
+    public function setEmail(string $email): static
     {
         $this->email = $email;
+        return $this;
     }
 
-    public function setPassword(string $password): void
+    public function changeSiret(Siret $siret){
+        $this->siret = $siret;
+        return $this;
+    }
+
+    public function setPassword(string $password): static
     {
         $this->password = password_hash($password, PASSWORD_BCRYPT);
+        return $this;
     }
 
 }

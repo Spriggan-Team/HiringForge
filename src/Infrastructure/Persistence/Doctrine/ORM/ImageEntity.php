@@ -36,6 +36,7 @@ class ImageEntity
 
     public function __construct()
     {
+        $this->createdAt = new \DateTimeImmutable();
         $this->userImages = new ArrayCollection();
     }
     
@@ -75,6 +76,13 @@ class ImageEntity
     /* =======================
      * SETTERS
      * ======================= */
+
+    public function setId(?int $id): static
+    {
+        $this->id = $id;
+        return $this;     
+    }
+
     public function setOriginalName(string $originalName):static
     {
         $this->originalName = $originalName;
@@ -91,12 +99,6 @@ class ImageEntity
     public function setSize(float $size):static
     {
         $this->size = $size;
-        return $this;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt):static
-    {
-        $this->createdAt = $createdAt;
         return $this;
     }
 

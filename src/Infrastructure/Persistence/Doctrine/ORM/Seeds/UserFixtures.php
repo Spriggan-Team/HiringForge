@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Seeds;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\UserEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\AddressEntity;
 use Ramsey\Uuid\Uuid;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -35,12 +36,22 @@ class UserFixtures extends Fixture
     public function load(ObjectManager $manager): void
     {
         foreach (self::USERS as $i => [$name, $email]) {
-            $user = (new UserEntity())
-                ->setId(Uuid::uuid4()->toString())
-                ->setName($name)
-                ->setEmail($email)
-                ->setPassword('$2y$10$fixtureHashPassword1234567890')
-                ->setSiret(str_pad((string) random_int(1, 99999999999999), 14, '0', STR_PAD_LEFT));
+
+            $address = AddressEntity::create(
+                city: 'Paris',
+                street: '1 rue de la République',
+                postalCode: '75001',
+                country: 'France'
+            );
+
+            $user = UserEntity::create(
+                id: Uuid::uuid4()->toString(),
+                name: $name,
+                email: $email,
+                password: '$2y$10$fixtureHashPassword1234567890',
+                siret: str_pad((string) random_int(1, 99999999999999), 14, '0', STR_PAD_LEFT),
+                address: $address
+            );
 
             $manager->persist($user);
             $this->addReference('user_'.$i, $user);

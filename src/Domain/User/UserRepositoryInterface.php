@@ -8,13 +8,15 @@ use App\Domain\ValueObject\MergeRule;
 
 interface UserRepositoryInterface {
     /**
-     * @return void
+     * @param  User $user represents the user to persist
+     * @return void 
      * @throws Exception
      * use to create/update a new ressource in the bdd
     */
     public function save(User $user): void;
 
     /**
+     * @param string $uuid represents the uniq identifier of an user stored in the bdd
      * @return User
      * return the specified user requested if founded in the bdd storage
      */
@@ -22,7 +24,7 @@ interface UserRepositoryInterface {
 
 
     /**
-     * @return User[]
+     * @return User[] a collection of user
      * @throws ApiRessourceNotFound
      * return an array of all the users existing in the bdd
      */

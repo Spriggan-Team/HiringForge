@@ -4,17 +4,19 @@ namespace App\Domain\Services\FileStorage;
 
 use App\Domain\services\FileStorage\FileOwnerType;
 use App\Domain\services\FileStorage\FilePurpose;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-
+use App\Domain\Image\UploadedImage;
 
 interface FileStorageInterface
 {
     /**
-     * Stores the given files in the Storage vault.
-     *
-     * @param UploadedFile[] $files Array of uploaded files
-     * @return string[] Array of stored filenames (without extension). This array length can be 0
-     * @throws NFSWException inappropriate image uploaded
+     * This function stored an array of files into the followwing repertory: Infrastructure/Storage/vault
+     * 
+     * @param ?array $files                 UploadedFile - Currently the UploadedFile object of symfony
+     * @param ?string $id                   Here, you  pass the user/owner Id
+     * @param ?FileOwnerType $ownerType     Here you indicate what type of user this recording concern
+     * @param ?FilePurpose   $purpose
+     * @throws FileStorageException         This exception is thrown when recording one of the file failed
+     * @return array<UploadedImage>         An empty or filled array
      */
     public function store(array $files, ?string $id, ?FileOwnerType $ownerType, ?FilePurpose $purpose): array;
 }
