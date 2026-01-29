@@ -1,9 +1,9 @@
 <?php
-
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Seeds;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\UserEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\ImageEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\UserImageEntity;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -19,22 +19,23 @@ class UserImageFixtures extends Fixture implements DependentFixtureInterface
             $user = $this->getReference('user_'.$i, UserEntity::class);
 
             $nbImages = random_int(1, 3);
-            $usedIndexes = [];
+            $usedImages = [];
 
             for ($j = 0; $j < $nbImages; $j++) {
                 do {
                     $imageIndex = random_int(0, $imageIndexMax);
-                } while (in_array($imageIndex, $usedIndexes, true));
+                } while (in_array($imageIndex, $usedImages, true));
 
-                $usedIndexes[] = $imageIndex;
+                $usedImages[] = $imageIndex;
 
                 /** @var ImageEntity $image */
                 $image = $this->getReference('image_'.$imageIndex, ImageEntity::class);
 
-                $user->attachToImage($image);
-            }
+                // Création correcte avec le constructeur
+                $userImage = new UserImageEntity($user, $image);
 
-            $manager->persist($user);
+                $manager->persist($userImage);
+            }
         }
 
         $manager->flush();

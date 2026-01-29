@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\services\FileStorage;
+namespace App\Domain\Services\FileStorage;
 
 use Exception;
 

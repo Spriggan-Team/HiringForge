@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Seeds;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\UserEntity;
@@ -37,6 +36,7 @@ class UserFixtures extends Fixture
     {
         foreach (self::USERS as $i => [$name, $email]) {
 
+            // Crée l'adresse
             $address = AddressEntity::create(
                 city: 'Paris',
                 street: '1 rue de la République',
@@ -44,6 +44,7 @@ class UserFixtures extends Fixture
                 country: 'France'
             );
 
+            // Crée l'utilisateur
             $user = UserEntity::create(
                 id: Uuid::uuid4()->toString(),
                 name: $name,
@@ -52,6 +53,9 @@ class UserFixtures extends Fixture
                 siret: str_pad((string) random_int(1, 99999999999999), 14, '0', STR_PAD_LEFT),
                 address: $address
             );
+
+            // Ajoute le lien inverse pour que AddressEntity.user ne soit pas null
+            $address->attachToUser($user);
 
             $manager->persist($user);
             $this->addReference('user_'.$i, $user);

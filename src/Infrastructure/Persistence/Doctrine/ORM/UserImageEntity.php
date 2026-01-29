@@ -21,6 +21,7 @@ class UserImageEntity
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
+    #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
     #[ORM\ManyToOne(
@@ -37,7 +38,7 @@ class UserImageEntity
     #[ORM\JoinColumn(nullable: false)]
     private UserEntity $user;
 
-    public function __construc(UserEntity $user, ImageEntity $image)
+    public function __construct(UserEntity $user, ImageEntity $image)
     {
         $this->user = $user;
         $this->image= $image;

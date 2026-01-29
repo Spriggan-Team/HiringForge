@@ -141,6 +141,7 @@ class UserEntity
     public function attachToAddress(AddressEntity $address): static
     {
         $this->address = $address;
+        $address->attachToUser($this);
         return $this;
     }
 

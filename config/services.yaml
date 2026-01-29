@@ -35,11 +35,15 @@ services:
     App\Domain\User\JobOfferRepositioryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Repositories\JobOfferRepository
     
-    #ImageStotage
-    App\Domain\Services\FileStorage\FileStorageInterface:
-        alias: App\Infrastructure\Storage\FileStorage\FileStorage
+
+    # ImageStorage
+    App\Infrastructure\Storage\FileStorage\FileStorage:
         arguments:
             $baseStoragePath: '%uploads_base_directory%'
+
+    App\Domain\Services\FileStorage\FileStorageInterface:
+        alias: App\Infrastructure\Storage\FileStorage\FileStorage
+
         
     
     monolog.formatter.console:

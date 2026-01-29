@@ -2,8 +2,8 @@
 
 namespace App\Domain\Services\FileStorage;
 
-use App\Domain\services\FileStorage\FileOwnerType;
-use App\Domain\services\FileStorage\FilePurpose;
+use App\Domain\Services\FileStorage\FileOwnerType;
+use App\Domain\Services\FileStorage\FilePurpose;
 use App\Domain\Image\UploadedImage;
 
 interface FileStorageInterface

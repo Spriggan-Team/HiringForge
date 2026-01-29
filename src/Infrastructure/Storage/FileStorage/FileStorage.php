@@ -2,10 +2,10 @@
 
 namespace App\Infrastructure\Storage\FileStorage;
 
-use App\Domain\services\FileStorage\FileOwnerType;
-use App\Domain\services\FileStorage\FilePurpose;
-use App\Domain\services\FileStorage\FileStorageException;
-use App\Domain\services\FileStorage\FileStorageInterface;
+use App\Domain\Services\FileStorage\FileOwnerType;
+use App\Domain\Services\FileStorage\FilePurpose;
+use App\Domain\Services\FileStorage\FileStorageException;
+use App\Domain\Services\FileStorage\FileStorageInterface;
 use App\Domain\Image\UploadedImage;
 
 use Symfony\Component\HttpFoundation\File\Exception\FileException;

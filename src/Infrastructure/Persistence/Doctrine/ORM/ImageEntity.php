@@ -15,12 +15,13 @@ class ImageEntity
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
+    #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
     #[ORM\Column(length: 250)]
     private string $originalName;
 
-    #[ORM\Column()]
+    #[ORM\Column(length:15)]
     private string $mime;
 
     #[ORM\Column(type: "decimal", precision: 10, scale: 2)]
@@ -30,7 +31,11 @@ class ImageEntity
     private \DateTimeImmutable $createdAt;
 
 
-    #[ORM\OneToMany(mappedBy: "image", targetEntity: UserImageEntity::class, cascade:['persist', 'remove'])]
+    #[ORM\OneToMany(
+        mappedBy: "image",
+        targetEntity: UserImageEntity::class, 
+        cascade:['persist', 'remove']
+    )]
     private Collection $userImages;
 
 

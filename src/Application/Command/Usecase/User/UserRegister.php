@@ -7,9 +7,11 @@ namespace App\Application\Command\Usecase\User;
 use App\Domain\User\User;
 
 use App\Api\DTO\User\CreateUserRequest;
-use App\Domain\services\FileStorage\FileOwnerType;
-use App\Domain\services\FileStorage\FilePurpose;
+
+use App\Domain\Services\FileStorage\FileOwnerType;
+use App\Domain\Services\FileStorage\FilePurpose;
 use App\Domain\Services\FileStorage\FileStorageInterface;
+
 use App\Domain\User\UserId;
 use App\Domain\User\UserRepositoryInterface;
 
