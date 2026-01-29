@@ -46,8 +46,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $entity = $this->manager->find(ORMEntity::class, $user->id());
         if(!$entity){
-            [$entity, $userImage] = UserEntityMapper::toDoctrineEntity($user);
-            $this->manager->persist($userImage);
+            $entity = UserEntityMapper::toDoctrineEntity($user);
             $this->manager->persist($entity);
         }
         else{

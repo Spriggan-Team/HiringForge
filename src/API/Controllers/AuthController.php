@@ -20,8 +20,10 @@ class AuthController extends AbstractController
     {}
 
 
-    
-    public function login(){}
+    #[Route("/login", name: "login")]
+    public function login(){
+
+    }
 
     public function logout(){}
 

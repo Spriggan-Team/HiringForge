@@ -10,13 +10,12 @@ use App\Domain\User\User as DomainEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\ImageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\UserEntity as DoctrineEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\UserImageEntity;
 
 class UserEntityMapper 
 {
     /**
      * This function trun an existing a user domain entity into a doctrine entity
-     * @return array [DoctrineEntity, array<UserImageEntity>]
+     * @return DoctrineEntity
      */
     public static function toDoctrineEntity(DomainEntity $user): DoctrineEntity
     {
