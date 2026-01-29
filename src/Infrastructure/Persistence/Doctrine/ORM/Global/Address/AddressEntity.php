@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Address;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\User\UserAddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -30,13 +31,20 @@ class AddressEntity
     #[ORM\Column(length: 255)]
     private string $country;
 
-    #[ORM\OneToOne(
-        inversedBy: 'address',
-        targetEntity: UserEntity::class
-    )]
-    #[JoinColumn(nullable: false, unique: true)]
-    private UserEntity $user;
+    //--------------------
+    // Relations
+    //---------------------
 
+    #[ORM\OneToOne(
+        targetEntity: UserAddressEntity::class,
+        mappedBy: 'address'
+    )]
+    private UserAddressEntity $userAddress;
+
+    //-----------------
+    // Builder
+    //------------------
+    
     public static function create(
         string $city,
         string $street,
@@ -79,8 +87,9 @@ class AddressEntity
         return $this->country;
     }
 
-    public function getUser(): UserEntity{
-        return $this->user;
+    public function getUserAdress(): UserAddressEntity
+    {
+        return $this->userAddress;
     }
 
     //=================================
@@ -114,9 +123,9 @@ class AddressEntity
 
 
 
-    public function attachToUser(UserEntity $user): static
+    public function setUserAdress(UserAddressEntity $userAddress): static
     {
-        $this->user = $user;
+        $this->userAddress = $userAddress;
         return $this;
     }
 

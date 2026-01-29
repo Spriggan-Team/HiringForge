@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Fixtures;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Fixtures\JobOfferFixtures;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferFixtures;
 
 use Ramsey\Uuid\Uuid;
 use Doctrine\Bundle\FixturesBundle\Fixture;

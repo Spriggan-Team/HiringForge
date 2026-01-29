@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Fixtures;
 
 use App\Domain\JobOffer\JobStatus;
-
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\User\Fixtures\UserFixtures;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\User\UserFixtures;
+
 
 use Ramsey\Uuid\Uuid;
 use Doctrine\Persistence\ObjectManager;

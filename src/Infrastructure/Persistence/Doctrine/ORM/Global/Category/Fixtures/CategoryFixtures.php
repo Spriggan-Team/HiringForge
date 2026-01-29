@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Category;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Category\Fixtures;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\Category\CategoryEntity;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 

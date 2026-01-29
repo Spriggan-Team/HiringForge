@@ -1,13 +1,16 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Fixtures;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Category\CategoryEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\Category\CategoryFixtures;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\Category\Fixtures\CategoryFixtures;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobCategoryEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
+
+use Doctrine\Persistence\ObjectManager;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
-use Doctrine\Persistence\ObjectManager;
 
 
 

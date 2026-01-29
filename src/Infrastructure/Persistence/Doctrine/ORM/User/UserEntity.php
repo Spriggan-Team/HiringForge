@@ -39,12 +39,14 @@ class UserEntity
     //  Relations
     //-----------------------
 
+
     #[ORM\OneToOne(
+        targetEntity: UserAddressEntity::class,
         mappedBy: 'user',
-        targetEntity: AddressEntity::class,
         cascade: ['persist', 'remove']
     )]
-    private AddressEntity $address;
+    #[ORM\JoinColumn(nullable: false)]
+    private UserAddressEntity $userAddress;
 
     #[ORM\OneToMany(
         mappedBy: "user",
@@ -100,7 +102,9 @@ class UserEntity
 
     public function getPassword():string { return $this->password; }
 
-    public function getAddress(): AddressEntity { return $this->address; }
+    public function getAddress(): AddressEntity { 
+        return $this->userAddress->getAdrdress();
+    }
 
     public function getSiret(){ return $this->siret; }
 
@@ -143,13 +147,19 @@ class UserEntity
 
     public function attachToAddress(AddressEntity $address): static
     {
-        $this->address = $address;
-        $address->attachToUser($this);
+        $userAddress = new UserAddressEntity($this, $address);
+        $this->userAddress = $userAddress;
         return $this;
     }
 
     public function attachToImage(ImageEntity $image): static
     {
+        //Forbide duplicates
+        foreach($this->userImages as $image){
+            if($image->getImage() === $image){
+                return $this;
+            }
+        }
         $userImage = new UserImageEntity($this, $image);
         $this->userImages->add($userImage);
         return $this;

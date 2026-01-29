@@ -42,7 +42,6 @@ class UserEntityMapper
             $entity->attachToImage($image);
         }
 
-        $address->attachToUser($entity);
         $entity->attachToAddress($address);
         return $entity;
     }

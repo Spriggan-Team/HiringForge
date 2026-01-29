@@ -26,6 +26,7 @@ class UserId
         $this->id = $id;
     }
 
+
     public static function fromString(string $id): static
     {
         return new self($id);
@@ -37,12 +38,13 @@ class UserId
         return $this->id;
     }
 
+
     public static function isValid(string $id)
     {
         return \Ramsey\Uuid\Uuid::isValid($id);
     }
 
-    public static function generateId(){
+    private static function generateId(){
         return \Ramsey\Uuid\Uuid::uuid4();
     }
 }

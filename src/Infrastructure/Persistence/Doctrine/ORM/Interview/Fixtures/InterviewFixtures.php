@@ -1,13 +1,16 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\Interview;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Interview\Fixtures;
 
 use App\Domain\Interview\InterviewStatus;
-use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateFixtures;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Fixtures\CandidateFixtures;
+
+use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
+
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Fixtures\JobOfferFixtures;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferFixtures;
 
 
 use Ramsey\Uuid\Uuid;

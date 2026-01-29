@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Fixtures;
 
-
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use Ramsey\Uuid\Uuid;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;

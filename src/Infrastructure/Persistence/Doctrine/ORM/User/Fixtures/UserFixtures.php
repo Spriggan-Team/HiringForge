@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Fixtures;
 
+use App\Domain\User\UserId;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
-use Ramsey\Uuid\Uuid;
+use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
+
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
@@ -37,7 +39,6 @@ class UserFixtures extends Fixture
     {
         foreach (self::USERS as $i => [$name, $email]) {
 
-            // Crée l'adresse
             $address = AddressEntity::create(
                 city: 'Paris',
                 street: '1 rue de la République',
@@ -45,9 +46,8 @@ class UserFixtures extends Fixture
                 country: 'France'
             );
 
-            // Crée l'utilisateur
             $user = UserEntity::create(
-                id: Uuid::uuid4()->toString(),
+                id: new UserId()->value(),
                 name: $name,
                 email: $email,
                 password: '$2y$10$fixtureHashPassword1234567890',
@@ -55,13 +55,13 @@ class UserFixtures extends Fixture
                 address: $address
             );
 
-            // Ajoute le lien inverse pour que AddressEntity.user ne soit pas null
-            $address->attachToUser($user);
-
+            // 👉 UN SEUL persist
             $manager->persist($user);
+
             $this->addReference('user_'.$i, $user);
         }
 
         $manager->flush();
     }
 }
+

@@ -28,6 +28,7 @@ class UserImageEntity
     #[ORM\ManyToOne(
         targetEntity: ImageEntity::class,
         inversedBy: "userImages",
+        cascade: ['persist', 'remove']
     )]
     #[ORM\JoinColumn(nullable: false)]
     private ImageEntity $image;
