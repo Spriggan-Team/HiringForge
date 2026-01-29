@@ -2,9 +2,10 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\Image\ImageEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\MappedSupperClass\Actor;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\Image\ImageEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
@@ -13,28 +14,16 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Table(name: "user")]
 #[ORM\Entity]
-class UserEntity
+class UserEntity extends Actor
 {
     //------------------------
-    //  Columns
+    // Extra  Columns
     //-----------------------
-    
-    #[ORM\Id]
-    #[ORM\Column(type: "guid", unique: true)]
-    private string $id;
-
-    #[ORM\Column(length: 150)]
-    private string $name;
-
-    #[ORM\Column(length: 255, unique: true, nullable: false)]
-    private string $email;
 
     #[ORM\Column(length: 255, nullable: false)]
     private string $siret;
 
-    #[ORM\Column(length: 255, nullable: false)]
-    private string $password;
-    
+
     //------------------------
     //  Relations
     //-----------------------
@@ -94,13 +83,6 @@ class UserEntity
      * GETTERS
      * ======================= */
 
-    public function getId(): string { return $this->id; }
-
-    public function getName(): string { return $this->name; }
-
-    public function getEmail():string { return $this->email; }
-
-    public function getPassword():string { return $this->password; }
 
     public function getAddress(): AddressEntity { 
         return $this->userAddress->getAdrdress();
@@ -116,26 +98,6 @@ class UserEntity
      * SETTERS
      * ======================= */
 
-    public function setId(string $id): static
-    {
-        $this->id = $id;
-        return $this;
-    }
-    
-    public function setName(string $name): static { 
-        $this->name = $name;
-        return $this;    
-    }
-
-    public function setEmail(string $email): static{ 
-        $this->email = $email;
-        return $this;
-    }
-
-    public function setPassword(string $hash): static { 
-        $this->password = $hash;
-        return $this;
-    }
 
     public function setSiret(string $siret): static{
         $this->siret = $siret;
