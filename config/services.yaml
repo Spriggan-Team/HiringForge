@@ -6,8 +6,18 @@
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+
+#------------------------------
+#   Parameters
+#------------------------------
 parameters:
+    #-------Root Dir
     uploads_base_directory: '%kernel.project_dir%/public/uploads'
+
+
+#------------------------------
+#   Services
+#------------------------------
 
 services:
     # default configuration for services in *this* file
@@ -22,21 +32,29 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    #--------------------------------------
+    # API Services (Controller)
+    #-------------------------------------
     App\Api\Controllers\:
         resource: '../src/Api/Controllers'
         tags: ['controller.service_arguments']
 
-    #Domain (Composition Root/Bootstrap)
-    #UserRepository
-    App\Domain\User\UserRepositoryInterface:
-        alias: App\Infrastructure\Persistence\Doctrine\ORM\Repositories\UserRepository
+    #----------------------------
+    #   Domain (Composition Root/Bootstrap)
+    #--------------------------------
     
-    #JobOfferRepository
+    #-----------Repositories
+    #------ User ------
+    App\Domain\User\UserRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\User\UserRepository
+    
+    #----- JobOffer ------
     App\Domain\User\JobOfferRepositioryInterface:
-        alias: App\Infrastructure\Persistence\Doctrine\ORM\Repositories\JobOfferRepository
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferRepository
     
 
-    # ImageStorage
+    #----FileStorage Services----
     App\Infrastructure\Storage\FileStorage\FileStorage:
         arguments:
             $baseStoragePath: '%uploads_base_directory%'
@@ -45,7 +63,9 @@ services:
         alias: App\Infrastructure\Storage\FileStorage\FileStorage
 
         
-    
+    #----------------------------
+    #   Dev Packages
+    #---------------------------
     monolog.formatter.console:
         class: Symfony\Bridge\Monolog\Formatter\ConsoleFormatter
     
