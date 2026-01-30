@@ -47,7 +47,7 @@ class UserFixtures extends Fixture
             );
 
             $user = UserEntity::create(
-                id: new UserId()->value(),
+                id: (new UserId())->value(),
                 name: $name,
                 email: $email,
                 password: '$2y$10$fixtureHashPassword1234567890',

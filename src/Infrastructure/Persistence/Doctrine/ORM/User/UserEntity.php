@@ -20,6 +20,10 @@ class UserEntity extends Actor
     // Extra  Columns
     //-----------------------
 
+    
+    #[ORM\Column(length: 150)]
+    private string $name;
+
     #[ORM\Column(length: 255, nullable: false)]
     private string $siret;
 
@@ -34,7 +38,6 @@ class UserEntity extends Actor
         mappedBy: 'user',
         cascade: ['persist', 'remove']
     )]
-    #[ORM\JoinColumn(nullable: false)]
     private UserAddressEntity $userAddress;
 
     #[ORM\OneToMany(
@@ -83,6 +86,7 @@ class UserEntity extends Actor
      * GETTERS
      * ======================= */
 
+    public function getName(): string { return $this->name; }
 
     public function getAddress(): AddressEntity { 
         return $this->userAddress->getAdrdress();
@@ -98,6 +102,10 @@ class UserEntity extends Actor
      * SETTERS
      * ======================= */
 
+    public function setName(string $name): static { 
+        $this->name = $name;
+        return $this;    
+    }
 
     public function setSiret(string $siret): static{
         $this->siret = $siret;

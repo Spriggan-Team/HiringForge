@@ -40,6 +40,10 @@ class UserImageEntity
     #[ORM\JoinColumn(nullable: false)]
     private UserEntity $user;
 
+    //-------------------
+    //  Constructions...
+    //-------------------
+
     public function __construct(UserEntity $user, ImageEntity $image)
     {
         $this->user = $user;

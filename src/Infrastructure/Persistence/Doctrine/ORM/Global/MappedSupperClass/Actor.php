@@ -14,9 +14,6 @@ class Actor
     #[ORM\Column(type: "guid", unique: true)]
     private string $id;
 
-    #[ORM\Column(length: 150)]
-    private string $name;
-
     #[ORM\Column(length: 255, unique: true, nullable: false)]
     private string $email;
 
@@ -28,7 +25,6 @@ class Actor
     //--------------
     public function getId(): string { return $this->id; }
 
-    public function getName(): string { return $this->name; }
 
     public function getEmail():string { return $this->email; }
 
@@ -44,10 +40,6 @@ class Actor
         return $this;
     }
     
-    public function setName(string $name): static { 
-        $this->name = $name;
-        return $this;    
-    }
 
     public function setEmail(string $email): static{ 
         $this->email = $email;

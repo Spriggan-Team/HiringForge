@@ -11,7 +11,7 @@ class UserId
 {
     private string $id;
 
-    private function __construct(?string $id = null)
+    public function __construct(?string $id = null)
     {
         //Generate Id if nothing pass down to the constructor
         if(!$id){
@@ -27,7 +27,7 @@ class UserId
     }
 
 
-    public static function fromString(string $id): static
+    public static function fromString(?string $id = null): static
     {
         return new self($id);
     }
