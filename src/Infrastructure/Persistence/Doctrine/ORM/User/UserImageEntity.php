@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Image\ImageEntity;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -25,13 +26,17 @@ class UserImageEntity
     #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
+    /**-----------------------
+     * Relations
+     ---------------------------*/
+
     #[ORM\ManyToOne(
-        targetEntity: ImageEntity::class,
+        targetEntity: FileEntity::class,
         inversedBy: "userImages",
         cascade: ['persist', 'remove']
     )]
     #[ORM\JoinColumn(nullable: false)]
-    private ImageEntity $image;
+    private FileEntity $image;
 
     #[ORM\ManyToOne(
         targetEntity: UserEntity::class,
@@ -40,11 +45,12 @@ class UserImageEntity
     #[ORM\JoinColumn(nullable: false)]
     private UserEntity $user;
 
+
     //-------------------
     //  Constructions...
     //-------------------
 
-    public function __construct(UserEntity $user, ImageEntity $image)
+    public function __construct(UserEntity $user, FileEntity $image)
     {
         $this->user = $user;
         $this->image= $image;
@@ -61,7 +67,7 @@ class UserImageEntity
     }
 
 
-    public function getImage(): ImageEntity
+    public function getImage(): FileEntity
     {
         return $this->image;
     }

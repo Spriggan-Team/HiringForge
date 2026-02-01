@@ -3,75 +3,100 @@
 
 namespace App\Domain\User;
 
-use App\Domain\Image\UploadedImage;
-use App\Domain\Shared\ValueObject\Address;
+use App\Domain\File\StaticMedia;
+use App\Domain\File\TimedMedia;
 
-final class User
+use App\Domain\Shared\Address;
+use App\Domain\Shared\Actor\Actor;
+use App\Domain\Shared\Actor\ActorRole;
+
+final class User implements Actor
 {
     private UserId $id;
     public  string  $name;
-    private string $email;
     private Siret $siret;
     private Address $address;
-    private string  $password;
+
+    private string  $email;
+    private string  $passwordHash;
 
     /**
-     * @var array<UploadedImage>  $images
+     * @var array<StaticMedia>  $images
      */
-    
     private array  $images;
+
+    /**
+     * @var ?UploadedFile
+     * This property is a video presentation of the user
+     * it is optionnal
+     */
+    private ?TimedMedia $presentation = null;
     
     private function __construct(
         UserId $id,
         string $name,
         string $email,
-        Siret|int|string $siret,
-        string $password,
+        Siret $siret,
+        string $passwordHash,
         array $images,
-        Address $address,
-        ) {
+        Address $address, 
+        ?TimedMedia $presentation = null,
+    ) {
         $this->id    = $id;
         $this->name  = $name;
         $this->email = $email;
-        $this->siret = !$siret instanceof Siret ?  
-                            new Siret($siret)
-                            : $siret;
-        $this->setPassword($password);
+        $this->siret = $siret;
+        $this->passwordHash = $passwordHash;
         $this->images = $images;
         $this->address = $address;
+        $this->presentation = $presentation;
     }
 
     public static function create(
         string $name,
         string $email,
-        string $siret,
-        string $password,
+        Siret $siret,
+        string $passwordHash,
         array $images,
         Address  $address,
-        ?UserId  $userId = null
+        ?UserId  $userId = null,
+        ?TimedMedia $presentation=null,
     ){
         return new self(
             $userId ?? new UserId(),
             $name,
             $email,
             $siret,
-            $password,
+            $passwordHash,
             $images,
             $address,
+            $presentation,
         );
     }
     
 
-
-    //  --------------- Business access
+    //----------------------------
+    //   Business access
+    //--------------------------
     
-    public function id(): string { return $this->id->value(); }
+    public function id(): string 
+    {
+        return $this->id->value();
+    }
 
-    public function name(): string { return $this->name; }
+    public function name(): string {
+        return $this->name;
+    }
 
-    public function email(): string { return $this->email; }
+    public function email(): string 
+    { 
+        return $this->email;
+    }
 
-    public function password(): string { return $this->password; }
+    public function passwordHash(): string
+    {
+        return $this->passwordHash;
+    }
 
     public function images(): array
     { 
@@ -82,7 +107,9 @@ final class User
 
     public function address(): Address { return $this->address; }
 
-    // ---------------- Business change ----------------
+    //------------------------------------------
+    // - Business change --
+    //-----------------------------------------
 
     public function rename(string $name): static
     {
@@ -101,10 +128,16 @@ final class User
         return $this;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(
+        string $passwordHash, 
+    ): static
     {
-        $this->password = password_hash($password, PASSWORD_BCRYPT);
+        $this->passwordHash = $passwordHash;
         return $this;
     }
 
+    public function role(): ActorRole
+    {
+        throw new \Exception('Not implemented');
+    }
 }

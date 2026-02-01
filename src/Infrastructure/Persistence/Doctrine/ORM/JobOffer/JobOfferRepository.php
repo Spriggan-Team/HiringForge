@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer;
 
 
-use App\Api\Exceptions\ApiRessourceNotFound;
+use App\Domain\Exception\RessourceNotFound;
 
 use App\Domain\JobOffer\JobOffer;
 use App\Domain\User\UserId;
@@ -40,7 +40,7 @@ class JobOfferRepository implements JobOfferRepositioryInterface
             "account" => $userId
         ]);
         if(!$entity){
-           throw new ApiRessourceNotFound("Ressource not found"); 
+           throw new RessourceNotFound("Ressource not found"); 
         }
         return JobOfferEntityMapper::toDomain($entity);
     }
@@ -67,7 +67,7 @@ class JobOfferRepository implements JobOfferRepositioryInterface
     {
         $entity = $this->manager->find(JobOfferEntity::class, $uuid);
         if(!$entity)
-            throw new ApiRessourceNotFound();
+            throw new RessourceNotFound();
         
         $this->manager->remove($entity);
         $this->manager->flush();

@@ -2,11 +2,11 @@
 
 namespace App\Infrastructure\Storage\FileStorage;
 
-use App\Domain\Services\FileStorage\FileOwnerType;
-use App\Domain\Services\FileStorage\FilePurpose;
-use App\Domain\Services\FileStorage\FileStorageException;
-use App\Domain\Services\FileStorage\FileStorageInterface;
-use App\Domain\Image\UploadedImage;
+use App\Domain\File\FileOwnerType;
+use App\Domain\File\FilePurpose;
+use App\Domain\File\FileStorageInterface;
+use App\Domain\File\FileUploadResult;
+use App\Domain\File\StaticMedia;
 
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -37,17 +37,22 @@ class FileStorage implements FileStorageInterface
      * @param ?string $id                   Here, you  pass the user/owner Id
      * @param ?FileOwnerType $ownerType     Here you indicate what type of user this recording concern
      * @param ?FilePurpose   $purpose
-     * @throws FileStorageException         This exception is throw when recording one of the file failed
-     * @return array<UploadedImage>                An empty or filled array
+     * @return FileUploadResult
      */
-    public function store(array $files, ?string $id, ?FileOwnerType $ownerType, ?FilePurpose $purpose): array
+    public function store(
+        array $files,
+        ?string $id = null,
+        ?FileOwnerType $ownerType =null,
+        ?FilePurpose $purpose =null
+    ): FileUploadResult
     {
-        $filenameCollection = [];
+        
         if(count($files) < 1){
-            return $filenameCollection;
+            return new FileUploadResult();
         }
             
-        $count = 0;
+        $result = [];
+        
         foreach($files as $file){
             if(!$file instanceof UploadedFile){
                 continue;
@@ -66,17 +71,14 @@ class FileStorage implements FileStorageInterface
                 $file->move($targetDir, $filename);
             }
             catch(FileException $e){
-                throw new FileStorageException(
-                    'Failed to store' . $file->getClientOriginalName(),
-                    previous: $e
-                );
+                //record all the failed attemps by using the image name
+                $errors["failed"][] = $file->getClientOriginalName();
             }
 
-            $filenameCollection[] = new UploadedImage($count, $filename, $file->getSize(), $mimeType);
-            $count++;
+            $result["succeed"][] = new StaticMedia($filename, $file->getSize(), $mimeType);
         }
 
-        return $filenameCollection;
+        return new FileUploadResult($result['succeed'], $result['failed']);
     }
 
     /**
@@ -87,27 +89,36 @@ class FileStorage implements FileStorageInterface
      * @param ?FilePurpose    $purpose      The purpose indicates the owner sub directory that is follow
      * @return string                       This is the new  file path generated
      */
-    private function resolveTargetDirectory(?string $mimeType, ?string $id,  ?FileOwnerType $ownerType, ?FilePurpose $purpose): string
+    private function resolveTargetDirectory(
+        ?string $mimeType,
+        ?string $id, 
+        ?FileOwnerType $ownerType,
+        ?FilePurpose $purpose
+    ): string
     {
-        $base = match(true){
-                str_starts_with((string)$mimeType, '/image') => $this->baseStoragePath . $this->relatifPath  . '/images',
-                str_starts_with((string)$mimeType, '/video') => $this->baseStoragePath . $this->relatifPath  . '/videos',
-                str_starts_with((string)$mimeType, '/audio') => $this->baseStoragePath . $this->relatifPath  . '/audios',
-                str_starts_with((string)$mimeType, '/application/pdf') => $this->baseStoragePath . 'documents',
-                default => $this->baseStoragePath . '/others'
-        };
+
+        $base = $this->baseStoragePath . $this->relatifPath ;
+
         if($ownerType){
             $base .= '/' .$ownerType;
         }
 
+        $path  = match(true){
+                str_starts_with((string)$mimeType, '/image') => $base . '/images',
+                str_starts_with((string)$mimeType, '/video') => $base . '/videos',
+                str_starts_with((string)$mimeType, '/audio') => $base . '/audios',
+                str_starts_with((string)$mimeType, '/application/pdf') => $base . 'documents',
+                default => $base . '/others'
+        };
+
         if($id){
-            $base .= '/' .  $id;
+            $path .= '/' .  $id;
         }
 
         if($purpose){
-            $base .= '/' . $purpose;
+            $path .= '/' . $purpose;
         }
 
-        return $base;
+        return $path;
     }
 }

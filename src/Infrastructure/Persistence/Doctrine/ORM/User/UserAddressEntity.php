@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Entity]
 #[ORM\Table(
-    name: 'user_entity',
+    name: 'user_address',
     uniqueConstraints: [
         new ORM\UniqueConstraint(name: 'uniq_user_address', columns: ['user_id', 'address_id'])
     ]

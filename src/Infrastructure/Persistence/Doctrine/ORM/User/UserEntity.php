@@ -4,13 +4,13 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\MappedSupperClass\Actor;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\Image\ImageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-
+use Doctrine\ORM\Mapping\JoinColumn;
 
 #[ORM\Table(name: "user")]
 #[ORM\Entity]
@@ -28,9 +28,18 @@ class UserEntity extends Actor
     private string $siret;
 
 
+
     //------------------------
     //  Relations
     //-----------------------
+
+    #[ORM\OneToOne(
+        inversedBy: 'userPresentation',
+        targetEntity: FileEntity::class,
+        cascade: ['persist', 'remove']
+    )]
+    #[JoinColumn(nullable: true)]
+    private ?FileEntity $presentation = null;
 
 
     #[ORM\OneToOne(
@@ -40,18 +49,19 @@ class UserEntity extends Actor
     )]
     private UserAddressEntity $userAddress;
 
+
     #[ORM\OneToMany(
         mappedBy: "user",
         targetEntity: JobOfferEntity::class
     )]
-    private Collection $jobOffers;
+    private ?Collection $jobOffers = null;
 
     #[ORM\OneToMany(
         mappedBy: "user",
         targetEntity: UserImageEntity::class,
         cascade:['persist', 'remove']
     )]
-    private Collection $userImages;
+    private ?Collection $userImages = null;
 
 
     //------------------------
@@ -94,7 +104,8 @@ class UserEntity extends Actor
 
     public function getSiret(){ return $this->siret; }
 
-    
+    public function getVideoPresentation(){ return $this->presentation; }
+
     public function getJobOffer(): Collection { return $this->jobOffers; }
     public function getUserImages(): Collection { return $this->userImages; }
 
@@ -122,7 +133,7 @@ class UserEntity extends Actor
         return $this;
     }
 
-    public function attachToImage(ImageEntity $image): static
+    public function attachToImage(FileEntity $image): static
     {
         //Forbide duplicates
         foreach($this->userImages as $image){
@@ -135,12 +146,21 @@ class UserEntity extends Actor
         return $this;
     }
 
-    public function removeImage(ImageEntity $image): void
+    public function removeImage(FileEntity $image): void
     {
         foreach ($this->userImages as $userImage) {
             if ($userImage->getImage() === $image) {
                 $this->userImages->removeElement($userImage);
             }
         }
+    }
+
+    public function attachPresentation(FileEntity $video): static
+    {
+        if(!str_contains($video->getMime(), 'video')){
+            return $this;
+        }
+        $this->presentation = $video;
+        return $this;
     }
 }

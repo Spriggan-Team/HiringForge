@@ -3,45 +3,59 @@
 
 namespace App\Application\Command\Usecase\User;
 
-
 use App\Domain\User\User;
+use App\Application\DTO\User\RegisterUserCommand;
+use App\Domain\Exception\EmailAlreadyRegistered;
 
-use App\Api\DTO\User\CreateUserRequest;
-
-use App\Domain\Services\FileStorage\FileOwnerType;
-use App\Domain\Services\FileStorage\FilePurpose;
-use App\Domain\Services\FileStorage\FileStorageInterface;
-
+use App\Domain\User\Siret;
 use App\Domain\User\UserId;
+use App\Domain\File\FilePurpose;
+use App\Domain\File\FileOwnerType;
+
+use App\Domain\File\FileStorageInterface;
+use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\User\UserRepositoryInterface;
+
+
 
 class UserRegister
 {
 
-    public function __construct(private UserRepositoryInterface $repository, private FileStorageInterface $storage){}
+    public function __construct(
+        private FileStorageInterface $storage,
+        private UserRepositoryInterface $repository,
+        private PasswordHasherInterface $hasher
+    ){}
 
-    public function execute(CreateUserRequest $command)
+    public function execute(RegisterUserCommand $command): array
     {    
+        $existingUser = $this->repository->findByEmail($command->email);
+
+        if($existingUser){
+            throw new EmailAlreadyRegistered("This user already exist"); 
+        }
+
         $userId = new UserId();
 
-        $fileNames = $this->storage->store(
+        $images = $this->storage->store(
             $command->images,
             $userId->value(),
             FileOwnerType::USER,
-            FilePurpose::PROFILE_IMAGE
-        );
+            FilePurpose::PROFILE_IMAGE);
 
-        $user =  User::create(
+        $user =  User::create(       
             userId: $userId,
             name:   $command->name,
             email:  $command->email,
-            password: $command->password,
-            siret:  $command->siret,
-            images: $fileNames,
-            address: $command->address
+            passwordHash: $this->hasher->hash($command->password),
+            siret:  new Siret($command->siret),
+            images: $images["succeed"],
+            address: $command->address,
         );
 
-
+        
         $this->repository->save($user);
+        
+        return [$userId->value(), $images->failed];
     }
 }

@@ -2,9 +2,10 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileFixtures;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Image\ImageEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\Image\ImageFixtures;
-
+use App\Infrastructure\Persistence\Doctrine\ORM\User\Fixtures\UserFixtures;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -13,7 +14,7 @@ class UserImageFixtures extends Fixture implements DependentFixtureInterface
 {
     public function load(ObjectManager $manager): void
     {
-        $imageIndexMax = ImageFixtures::IMAGE_COUNT - 1;
+        $imageIndexMax = FileFixtures::IMAGE_COUNT - 1;
 
         foreach (UserFixtures::USERS as $i => $_) {
             /** @var UserEntity $user */
@@ -29,8 +30,8 @@ class UserImageFixtures extends Fixture implements DependentFixtureInterface
 
                 $usedImages[] = $imageIndex;
 
-                /** @var ImageEntity $image */
-                $image = $this->getReference('image_'.$imageIndex, ImageEntity::class);
+                /** @var FileEntity $image */
+                $image = $this->getReference('image_'.$imageIndex, FileEntity::class);
 
                 // Création correcte avec le constructeur
                 $userImage = new UserImageEntity($user, $image);
@@ -46,7 +47,7 @@ class UserImageFixtures extends Fixture implements DependentFixtureInterface
     {
         return [
             UserFixtures::class,
-            ImageFixtures::class,
+            FileFixtures::class,
         ];
     }
 }

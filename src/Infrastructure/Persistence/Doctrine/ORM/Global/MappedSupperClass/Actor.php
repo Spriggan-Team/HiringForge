@@ -20,6 +20,9 @@ class Actor
     #[ORM\Column(length: 255, nullable: false)]
     private string $password;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $description = null;
+
     //---------------
     //  GETTER
     //--------------
@@ -29,6 +32,8 @@ class Actor
     public function getEmail():string { return $this->email; }
 
     public function getPassword():string { return $this->password; }
+
+    public function getDescription(): string { return $this->description; }
     
     //---------------------------
     //  SETTERS
@@ -51,4 +56,9 @@ class Actor
         return $this;
     }
 
+    public function setDescription(string $description): static
+    {
+        $this->description = $description;
+        return $this;
+    }
 }

@@ -7,7 +7,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 
-#------------------------------
+
+#--------------------
 #   Parameters
 #------------------------------
 parameters:
@@ -15,11 +16,15 @@ parameters:
     uploads_base_directory: '%kernel.project_dir%/public/uploads'
 
 
-#------------------------------
+#---------------------
 #   Services
 #------------------------------
 
 services:
+    #---------------------
+    #  Main Config
+    #-----------------------------
+
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
@@ -44,26 +49,47 @@ services:
     #   Domain (Composition Root/Bootstrap)
     #--------------------------------
     
-    #-----------Repositories
+    #-----------
+    #   Repositories
+    #-----------------------
+
     #------ User ------
     App\Domain\User\UserRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\User\UserRepository
-    
+
+    #------ Candidate ----
+    App\Domain\Shared\Actor\ActorRepositoryInterface\CandidateRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateRepository
+
     #----- JobOffer ------
     App\Domain\User\JobOfferRepositioryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferRepository
     
 
-    #----FileStorage Services----
+
+    #--------------
+    # FileStorage Services
+    #-------------------------------
     App\Infrastructure\Storage\FileStorage\FileStorage:
         arguments:
             $baseStoragePath: '%uploads_base_directory%'
 
-    App\Domain\Services\FileStorage\FileStorageInterface:
+    App\Domain\File\FileStorageInterface:
         alias: App\Infrastructure\Storage\FileStorage\FileStorage
 
-        
-    #----------------------------
+
+
+    #-----------------
+    # Secutity Services
+    #-------------------------------
+    App\Domain\Auth\AuthSecurityInterface:
+        alias: App\Infrastructure\Security\AuthSecurityService
+
+    App\Domain\Shared\PasswordHasherInterface:
+        alias: App\Infrastructure\Security\PasswordHasher
+
+
+    #------------------
     #   Dev Packages
     #---------------------------
     monolog.formatter.console:

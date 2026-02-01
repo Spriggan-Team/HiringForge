@@ -2,7 +2,10 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Agent;
 
-class AgentEntity
+
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\MappedSupperClass\Actor;
+
+class AgentEntity extends Actor
 {
     
 }

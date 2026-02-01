@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
 use App\Domain\User\User as DomainEntity;
-use App\Api\Exceptions\ApiRessourceNotFound;
+use App\Domain\Exception\RessourceNotFound;
 use App\Domain\User\UserRepositoryInterface;
 
 
@@ -17,7 +17,7 @@ class UserRepository implements UserRepositoryInterface
 
 
     
-    public function getAll(): array
+    public function findAll(): array
     {
         $collection = $this->manager->getRepository(UserEntity::class)->findAll();
         for ($i=0 ; $i < count($collection); $i++) { 
@@ -28,37 +28,35 @@ class UserRepository implements UserRepositoryInterface
 
 
 
-    public function getById(string $uuid): DomainEntity
+    public function findById(string $uuid): ?DomainEntity
     {
         $entity = $this->manager->find(UserEntity::class, $uuid);
         if(!$entity){
-            throw new ApiRessourceNotFound();
+            throw new RessourceNotFound();
         }
         return UserEntityMapper::toDomainEntity($entity);
     }
 
+    
+    public function findByEmail(string $email): ?DomainEntity
+    {
+        throw new \Exception('Not implemented');
+    }
 
 
     public function save(DomainEntity $user): void
     {
-        $entity = $this->manager->find(UserEntity::class, $user->id());
-        if(!$entity){
-            $entity = UserEntityMapper::toDoctrineEntity($user);
-            $this->manager->persist($entity);
-        }
-        else{
-            UserEntityMapper::copy($user, $entity);
-        }
+        $entity = UserEntityMapper::toDoctrineEntity($user);
+        $this->manager->persist($entity);
         $this->manager->flush();
     }
-
 
     
     public function delete(string $uuid): void
     {
         $entity = $this->manager->find(UserEntity::class, $uuid);
         if(!$entity)
-            throw new ApiRessourceNotFound();
+            throw new RessourceNotFound();
 
         $this->manager->remove($entity);
         $this->manager->flush();

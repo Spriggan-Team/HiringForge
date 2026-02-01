@@ -2,11 +2,27 @@
 
 namespace App\Domain\User;
 
-use App\Domain\ValueObject\MergeRule;
+use App\Domain\Shared\Actor\ActorRepositoryInterface;
+
+interface UserRepositoryInterface  extends ActorRepositoryInterface
+{
+    /**
+     * @param string                $uuid represents the uniq identifier of an actor stored in the bdd
+     * @return ?User
+     * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
+     * return the specified actor requested if founded in the bdd storage
+     */
+    public function findById(string $uuid): ?User;
 
 
+    /**
+     * This function is meant to retreive an actor from the bdd uisng his email
+     * @return ?User                the retriving actor (user, candidate, agent ...)
+     * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
+     */
+    public function findByEmail(string $email): ?User;
 
-interface UserRepositoryInterface {
+
     /**
      * @param  User $user represents the user to persist
      * @return void 
@@ -15,25 +31,10 @@ interface UserRepositoryInterface {
     */
     public function save(User $user): void;
 
-    /**
-     * @param string $uuid represents the uniq identifier of an user stored in the bdd
-     * @return User
-     * return the specified user requested if founded in the bdd storage
-     */
-    public function getById(string $uuid): User;
-
-
-    /**
-     * @return User[] a collection of user
-     * @throws ApiRessourceNotFound
-     * return an array of all the users existing in the bdd
-     */
-    public function getAll(): array;
-
 
     /**
      * @return void
-     * @throws ApiRessourceNotFound
+     * @throws RessourceNotFound this exception should be throw when a user does not exist in bdd
      * Used for deleting User ressouce from bdd 
      */
     public function delete(string $uuid): void;

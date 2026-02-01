@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -30,11 +31,24 @@ class CandidateEntity
     #[ORM\Column(length: 255, nullable: false)]
     private string $password;
 
-    #[ORM\Column(length: 255, nullable: false)]
-    private string $imageFilePath;
 
-    #[ORM\Column(length: 255, nullable: false)]
-    private string $CVFilePath;
+    #[ORM\OneToOne(
+        inversedBy: 'candidateImage',
+        targetEntity: FileEntity::class,
+        cascade: ['persist'],
+        orphanRemoval: true
+    )]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?FileEntity $image = null;
+
+    #[ORM\OneToOne(
+        inversedBy: 'candidateCV',
+        targetEntity: FileEntity::class,
+        cascade: ['persist'],
+        orphanRemoval: true
+    )]
+    #[ORM\JoinColumn(nullable: false)]
+    private FileEntity $cv;
 
     #[ORM\OneToMany(
         mappedBy: 'candidate',
@@ -64,8 +78,12 @@ class CandidateEntity
     public function getEmail():           string  { return $this->email; }
     public function getPassword():        string  { return $this->password; }
 
-    public function getImageFilePath():       string  { return $this->imageFilePath; }
-    public function getCVFilePath():          string  { return $this->CVFilePath; }
+    public function getImage(): ?FileEntity{ 
+        return $this->image;
+    }
+    public function getCV(): FileEntity {
+        return $this->cv;
+    }
 
     public function getApplication():   Collection  { return $this->applications; }
     public function getInterviews():    Collection  { return $this->interviews; }
@@ -97,13 +115,13 @@ class CandidateEntity
         return $this;
     }     
     
-    public function setImageFilePath(string $imageFilePath): static {
-        $this->imageFilePath = $imageFilePath;
+    public function attachImage(FileEntity $image): static {
+        $this->image = $image;
         return $this;
     } 
     
-    public function setCVFilePath(string $CVFilePath): static {
-        $this->CVFilePath = $CVFilePath;
+    public function attachCV(FileEntity $cv): static {
+        $this->cv = $cv;
         return $this;
     }
 }

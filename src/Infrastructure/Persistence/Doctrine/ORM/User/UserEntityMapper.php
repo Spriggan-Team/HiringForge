@@ -3,10 +3,12 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
-use App\Domain\Shared\ValueObject\Address;
+use App\Domain\Shared\Address;
+use App\Domain\User\Siret;
 use App\Domain\User\User as DomainEntity;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Image\ImageEntity;
 
 class UserEntityMapper 
@@ -21,7 +23,7 @@ class UserEntityMapper
             id: $user->id(),
             name: $user->name(),
             email: $user->email(),
-            password: $user->password(),
+            password: $user->passwordHash(),
             siret: $user->siret(),
             address: new AddressEntity()
         );
@@ -35,7 +37,7 @@ class UserEntityMapper
 
         //Insert user image collection
         foreach($user->images() as $uploadedImage){
-           $image   = new ImageEntity()
+            $image   = new FileEntity()
                             ->setId($uploadedImage->id ?? null)
                             ->setMime($uploadedImage->mime)
                             ->setSize($uploadedImage->size);
@@ -61,8 +63,8 @@ class UserEntityMapper
             name: $doctrine->getName(),
             email: $doctrine->getEmail(),
             images: $userImages,
-            password: $doctrine->getPassword(),
-            siret: $doctrine->getSiret(),
+            passwordHash: $doctrine->getPassword(),
+            siret: new Siret($doctrine->getSiret()),
             address: new Address(
                 street: $doctrine->getAddress()->getStreet(),
                 city: $doctrine->getAddress()->getCity(),
@@ -80,7 +82,7 @@ class UserEntityMapper
     {
         $entity->setName($user->name())
                ->setEmail($user->email())
-               ->setPassword($user->password())
+               ->setPassword($user->passwordHash())
                ->setSiret($user->siret());
     }
 }

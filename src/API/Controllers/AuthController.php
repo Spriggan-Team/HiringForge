@@ -2,93 +2,195 @@
 
 namespace App\Api\Controllers;
 
-use App\Api\DTO\Candidate\CreateCandidateRequest;
+use App\Api\DTO\Candidate\RegisterCandidateCommand;
+use App\Api\Responder\ApiResponseBuilder;
 use  Psr\Log\LoggerInterface;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
-use App\Domain\Shared\ValueObject\Address;
-use App\Api\Responder\ApiResponseBuilder;
+use App\Domain\Shared\Address;
 
-use App\Api\DTO\User\CreateUserRequest;
 
-use App\Application\Command\Handlers\User\CreateUserCommandHandler;
-use App\Application\Command\Handlers\Candidate\CreateCandidateCommandHandler;
+use App\Application\Command\Handlers\Auth\UserAuthCommandHandler;
+use App\Application\Command\Handlers\Auth\AgentAuthCommandHandler;
+use App\Application\Command\Handlers\Auth\CandidateAuthCommandHandler;
+use App\Application\Command\Handlers\Auth\DeAuthenticateCommandHandler;
+
+use App\Application\Command\Handlers\User\RegisterUserCommandHandler;
+use App\Application\Command\Handlers\Candidate\RegisterCandidateCommandHandler;
+
+use App\Application\DTO\AuthentificateActor;
+use App\Application\DTO\User\RegisterUserCommand;
+
 use Exception;
+
+
 
 class AuthController extends AbstractController
 {
     public function __construct(private LoggerInterface $logger)
-    {}
-
-
-    #[Route("/login", name: "login")]
-    public function login(){
-
+    {
+        ApiResponseBuilder::init($this->logger);
     }
 
-    public function logout(){}
+
+    #[Route('/candidate/login', name: "candidate.login")]
+    public function candidateLogin(
+        Request $request,
+        AuthentificateActor $command,
+        CandidateAuthCommandHandler $handler
+    ){
+        try
+        {
+            $body = json_decode($request->getContent(), true);
+            $command = new AuthentificateActor(
+                $body['email'], $body['password']
+            );
+            $response = $handler->handle($command);
+            return $this->json($response, 200);
+        } 
+        catch (\Throwable $exception) 
+        {
+            return $this->json(
+                ApiResponseBuilder::error("Something wen wrong", $exception),
+                400
+            );
+        }
+    }
+
+
+
+    #[Route("/users/login", name: "user.login")]
+    public function userLogin(
+        Request $request,
+        UserAuthCommandHandler $handler
+    ){
+        try
+        {
+            $body = json_decode($request->getContent(), true);
+            $command = new AuthentificateActor(
+                $body['email'], $body['password']
+            );
+            $response = $handler->handle($command);
+            return $this->json($response, 200);
+        } 
+        catch (\Throwable $exception) 
+        {
+            return $this->json(ApiResponseBuilder::error("Something wen wrong", $exception), 400);
+        }
+    }
+
+
+
+    #[Route('/agent/login', name: 'agent.login')]
+    public function agentLogin(
+        Request $request,
+        AgentAuthCommandHandler $handler
+    )
+    {
+        try{
+            $body = json_decode($request->getContent(), true);
+            $command = new AuthentificateActor(
+                $body['email'], $body['password']
+            );
+            $response = $handler->handle($command);
+            return $this->json($response, 200);
+        } 
+        catch (\Throwable $exception) 
+        {
+            return $this->json(ApiResponseBuilder::error("Something wen wrong", $exception), 400);
+        }
+    }
+
+
+
+    #[Route('/logout', name: 'actor.logout')]
+    public function logout(
+        Request $request,
+        DeAuthenticateCommandHandler $handler
+    ){
+        try{
+            $body = json_decode($request->getContent(), true);
+            $response = $handler->handle($body['token']);
+            return $this->json($response, 200);
+        }
+        catch(\Throwable $exception)
+        {
+            return $this->json(ApiResponseBuilder::error("Something wen wrong", $exception), 400);
+        }
+    }
+
 
 
     #[Route('/candaidate/register', methods: ("POST"))]
     public function candidateRegister(
         Request $request,
-        CreateCandidateCommandHandler $command
+        RegisterCandidateCommandHandler $commandhandler
     ): JsonResponse
     {
         try{
-            $request = new CreateCandidateRequest();
-            $response = $command->handle($request);
+            /** @var InputBag FormData stored in request by Symfony  */
+            $inputBag = $request->request;
+
+            $command = new RegisterCandidateCommand(
+                lastName: $inputBag->get('firstName'),
+                firstName: $inputBag->get('firstName'),
+                email: $inputBag->get('email'),
+                password: $inputBag->get('password'),
+                image: $request->files->get('image', null),
+                cv: $request->files->get('cv', null),
+                address: new Address(
+                    street: $inputBag->get("address[street]"),
+                    city: $inputBag->get("address[city]"),
+                    postalCode: $inputBag->get("address[postalCode]"),
+                    country: $inputBag->get("address[country]"),
+                )
+            );
+            $response = $commandhandler->handle($command);
             return $this->json($response, 201);
         }
-        catch(Exception $exception){
-            $this->logger->error(
-                "Caught Exception: ". $exception->getMessage(), 
-                [   
-                    'exception'=>$exception,
-                ]
-            );
-            return $this->json(ApiResponseBuilder::error("Something wen wrong"), 400);
+        catch(Exception $exception)
+        {
+            return $this->json(ApiResponseBuilder::error("Something wen wrong", $exception), 400);
         }
     }
+
+
 
     #[Route("/users/register", methods: ["POST"], name: "register_user")]
     public function userRegister(
         Request $request,
-        CreateUserCommandHandler $commandHandler
+        RegisterUserCommandHandler $commandHandler
     ): JsonResponse
     {
         try {
             /** @var InputBag FormData stored in request by Symfony  */
-            $request = $request->request;
+            $inputBag = $request->request;
 
-            $command = new CreateUserRequest(
-                name:  $request->get('name'),
-                email: $request->get('email'),
-                siret: $request->get('siret'),
-                password: $request->get('password'),
-                images: $request->get('images', []),
+            $command = new RegisterUserCommand(
+                name:  $inputBag->get('name'),
+                email: $inputBag->get('email'),
+                siret: $inputBag->get('siret'),
+                password: $inputBag->get('password'),
+                images: $request->files->get('images', []),
+                presentation: $request->files->get('presentation',null),
                 address: new Address(
-                    street: $request->get("address[street]"),
-                    city: $request->get("address[city]"),
-                    postalCode: $request->get("address[postalCode]"),
-                    country: $request->get("address[country]"),
+                    street: $inputBag->get("address[street]"),
+                    city: $inputBag->get("address[city]"),
+                    postalCode: $inputBag->get("address[postalCode]"),
+                    country: $inputBag->get("address[country]"),
                 )
             );
             $response = $commandHandler->handle($command);
             return $this->json($response, 201);
         }
-        catch (\Exception $exception) {
-            $this->logger->error(
-                "Caught Exception: ". $exception->getMessage(), 
-                [   
-                    'exception'=>$exception,
-                ]
-            );
-            return $this->json(ApiResponseBuilder::error('Please check your data fields and formats'), 400);
+        catch (\Exception $exception)
+        {
+            return $this->json(ApiResponseBuilder::error('Please check your data fields and formats', $exception), 400);
         }
     }
 

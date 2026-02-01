@@ -17,7 +17,7 @@ interface JobOfferRepositioryInterface
     
     /**
      * @return JobOffer
-     * @throws ApiRessourceNotFound
+     * @throws RessourceNotFound
      * seachr for an existing JobOffer in the bdd an return it
      */
     public function getById(string $id, string $offerId): ?JobOffer;
