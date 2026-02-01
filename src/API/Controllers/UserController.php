@@ -9,8 +9,6 @@ use App\Api\Responder\ApiResponseBuilder;
 
 
 use App\Api\DTO\User\DeleteUserRequest;
-use App\Api\DTO\User\GetUserCollectionRequest;
-use App\Api\DTO\User\GetUserRequest;
 use App\Api\DTO\User\MutateUserRequest;
 use App\Api\DTO\User\OverwriteUserRequest;
 
@@ -18,10 +16,8 @@ use App\Api\DTO\User\OverwriteUserRequest;
 use App\Application\Command\Handlers\User\DeleteUserCommandHandler;
 use App\Application\Command\Handlers\User\MutateUserCommandHandler;
 use App\Application\Command\Handlers\User\OverwriteUserCommandHandler;
-use App\Application\Query\Handlers\User\GetUserCollectionQueryHandler;
 use App\Application\Query\Handlers\User\GetUserQueryHandler;
-
-
+use App\Domain\User\UserId;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
@@ -34,37 +30,23 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class UserController extends AbstractController
 {
 
-    public function __construct(private LoggerInterface $logger) {}
-
-
-    #[Route("/users", methods: ['GET'], name: "fetch_all_users")]
-    public function getUsersCollection(GetUserCollectionQueryHandler $handler): JsonResponse
-    {
-        try {
-            $response = $handler->handle(new GetUserCollectionRequest());
-            return $this->json($response, 200);
-        }
-        catch (Exception $exception) {
-            $this->logger->error("Caught Exception: ". $exception->getMessage(), ['exception'=>$exception]);
-            return $this->json(ApiResponseBuilder::error('Nothing Found'), 404);
-        }
+    public function __construct(private LoggerInterface $logger) {
+        ApiResponseBuilder::init($logger);
     }
 
-    
 
-    #[Route("/users/{uuid}", methods: ["GET"], name: "fetch_one_user")]
+    #[Route("/users/{uuid}", methods: ["GET"], name: "fetch.user")]
     public function getAccountById(
         string $uuid,
         GetUserQueryHandler $handler
     ): JsonResponse
     {
         try {
-            $response = $handler->handle(new GetUserRequest(uuid: $uuid));
+            $response = $handler->handle(new UserId($uuid));
             return $this->json($response, 200);
         }
         catch (Exception $exception) {
-            $this->logger->error("Caught Exception: ". $exception->getMessage(), ['exception'=>$exception]);
-            return $this->json(ApiResponseBuilder::error('Account not found'), 404);
+            return $this->json(ApiResponseBuilder::error('User not found', $exception), 404);
         }
     }
 

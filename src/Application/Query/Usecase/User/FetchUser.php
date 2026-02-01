@@ -4,6 +4,7 @@ namespace App\Application\Query\Usecase\User;
 
 use App\Api\DTO\User\UserResponseDTO;
 use App\Api\DTO\User\GetUserRequest;
+use App\Domain\User\UserId;
 use App\Domain\User\UserRepositoryInterface;
 
 
@@ -11,7 +12,7 @@ class FetchUser {
     
     public function __construct(private UserRepositoryInterface $repository){}
 
-    public function execute(GetUserRequest $query): UserResponseDTO
+    public function execute(UserId $query): UserResponseDTO
     {
         $user = $this->repository->getById($query->uuid);
         

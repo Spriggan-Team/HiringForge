@@ -4,11 +4,10 @@ namespace App\Application\Query\Handlers\User;
 
 use Exception;
 
-use App\Api\DTO\User\GetUserRequest;
+use App\Domain\User\UserId;
 use App\Api\Responder\ApiResponseBuilder;
 use App\Application\Query\Usecase\User\FetchUser;
-
-
+use App\Domain\Exception\RessourceNotFound;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -22,7 +21,7 @@ class GetUserQueryHandler
         private ValidatorInterface $validator
     ){}
 
-    public function handle(GetUserRequest $query): array
+    public function handle(UserId $query): array
     {
         try{
             $error = $this->validator->validate($query);
@@ -34,8 +33,8 @@ class GetUserQueryHandler
             $user = $this->picker->execute($query);
             return ApiResponseBuilder::success($user);
         }
-        catch(Exception $exception){
-            throw $exception;
+        catch(RessourceNotFound $exception){
+            return ApiResponseBuilder::error();
         }
     }
 }

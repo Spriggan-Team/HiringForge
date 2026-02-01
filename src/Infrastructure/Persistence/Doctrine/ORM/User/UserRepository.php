@@ -13,13 +13,13 @@ use Doctrine\ORM\EntityManagerInterface;
 class UserRepository implements UserRepositoryInterface
 {
 
-    public function __construct(private EntityManagerInterface $manager){}
+    public function __construct(private EntityManagerInterface $em){}
 
 
     
     public function findAll(): array
     {
-        $collection = $this->manager->getRepository(UserEntity::class)->findAll();
+        $collection = $this->em->getRepository(UserEntity::class)->findAll();
         for ($i=0 ; $i < count($collection); $i++) { 
             $collection[$i] = UserEntityMapper::toDomainEntity($collection[$i]);            
         }
@@ -28,38 +28,44 @@ class UserRepository implements UserRepositoryInterface
 
 
 
-    public function findById(string $uuid): ?DomainEntity
+    public function findById(string $uuid): DomainEntity
     {
-        $entity = $this->manager->find(UserEntity::class, $uuid);
+        $entity = $this->em->find(UserEntity::class, $uuid);
         if(!$entity){
-            throw new RessourceNotFound();
+            throw new RessourceNotFound("[USER] This id is not registered");
         }
         return UserEntityMapper::toDomainEntity($entity);
     }
 
     
-    public function findByEmail(string $email): ?DomainEntity
+    public function findByEmail(string $email): DomainEntity
     {
-        throw new \Exception('Not implemented');
+        $entity = $this->em->getRepository(UserEntity::class)->findOneBy([
+            "email" => $email
+        ]);
+        if(!$email){
+            throw new RessourceNotFound("[USER] This email belogns to no user");
+        }
+        return UserEntityMapper::toDomainEntity($entity);
     }
 
 
     public function save(DomainEntity $user): void
     {
         $entity = UserEntityMapper::toDoctrineEntity($user);
-        $this->manager->persist($entity);
-        $this->manager->flush();
+        $this->em->persist($entity);
+        $this->em->flush();
     }
 
     
     public function delete(string $uuid): void
     {
-        $entity = $this->manager->find(UserEntity::class, $uuid);
-        if(!$entity)
-            throw new RessourceNotFound();
-
-        $this->manager->remove($entity);
-        $this->manager->flush();
+        $entity = $this->em->find(UserEntity::class, $uuid);
+        if(!$entity){
+            throw new RessourceNotFound("This ressource does not exist");
+        }
+        $this->em->remove($entity);
+        $this->em->flush();
     }
 
 }

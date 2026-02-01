@@ -4,10 +4,13 @@ namespace App\Application\Command\Handlers\Auth;
 
 use App\Api\Responder\ApiResponseBuilder;
 use App\Application\Command\Usecase\Auth\CandidateAuthentificator;
+
 use App\Application\DTO\AuthentificateActor;
-use App\Application\Serializer\ActorView;
 use App\Domain\Exception\RessourceNotFound;
+
+use App\Application\Serializer\ActorView;
 use App\Domain\Shared\Actor\ActorRole;
+
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 

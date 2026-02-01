@@ -15,7 +15,7 @@ interface CandidateRepositoryInterface extends ActorRepositoryInterface
      * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
      * return the specified actor requested if founded in the bdd storage
      */
-    public function findById(string $uuid): ?Candidate;
+    public function findById(string $uuid): Candidate;
 
 
     /**
@@ -23,7 +23,7 @@ interface CandidateRepositoryInterface extends ActorRepositoryInterface
      * @return Candidate                the retriving actor (user, candidate, agent ...)
      * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
      */
-    public function findByEmail(string $email): ?Candidate;
+    public function findByEmail(string $email): Candidate;
 
     /**
      * This function is used to persist a  new candidate in the bdd
