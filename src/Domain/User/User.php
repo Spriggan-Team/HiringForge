@@ -9,6 +9,7 @@ use App\Domain\File\TimedMedia;
 use App\Domain\Shared\Address;
 use App\Domain\Shared\Actor\Actor;
 use App\Domain\Shared\Actor\ActorRole;
+use App\Domain\Shared\EmailAddress;
 
 final class User implements Actor
 {
@@ -17,7 +18,7 @@ final class User implements Actor
     private Siret $siret;
     private Address $address;
 
-    private string  $email;
+    private EmailAddress  $email;
     private string  $passwordHash;
 
     /**
@@ -35,7 +36,7 @@ final class User implements Actor
     private function __construct(
         UserId $id,
         string $name,
-        string $email,
+        EmailAddress $email,
         Siret $siret,
         string $passwordHash,
         array $images,
@@ -54,7 +55,7 @@ final class User implements Actor
 
     public static function create(
         string $name,
-        string $email,
+        EmailAddress $email,
         Siret $siret,
         string $passwordHash,
         array $images,
@@ -103,6 +104,10 @@ final class User implements Actor
         return $this->images;
     }
 
+    public function presentation(): ?TimedMedia{
+        return $this->presentation;
+    }
+
     public function siret(): string { return $this->siret->value(); }
 
     public function address(): Address { return $this->address; }
@@ -133,6 +138,12 @@ final class User implements Actor
     ): static
     {
         $this->passwordHash = $passwordHash;
+        return $this;
+    }
+
+    public function setPresentation($presentation): static
+    {
+        $this->presentation = $presentation;
         return $this;
     }
 

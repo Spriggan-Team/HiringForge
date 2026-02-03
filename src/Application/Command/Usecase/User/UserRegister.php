@@ -13,6 +13,7 @@ use App\Domain\File\FilePurpose;
 use App\Domain\File\FileOwnerType;
 
 use App\Domain\File\FileStorageInterface;
+use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\User\UserRepositoryInterface;
 
@@ -46,7 +47,7 @@ class UserRegister
         $user =  User::create(       
             userId: $userId,
             name:   $command->name,
-            email:  $command->email,
+            email:  new EmailAddress($command->email),
             passwordHash: $this->hasher->hash($command->password),
             siret:  new Siret($command->siret),
             images: $images["succeed"],

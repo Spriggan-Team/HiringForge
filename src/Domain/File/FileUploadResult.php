@@ -11,7 +11,7 @@ final class FileUploadResult
         /** @var StaticMedia|TimedMedia  */
         public readonly array $stored = [],
 
-        /** @var  array<string> */
+        /** @var array<string> */
         public readonly array $failed = [],
     ) {}
 }

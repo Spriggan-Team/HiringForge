@@ -15,14 +15,20 @@ class UserRepository implements UserRepositoryInterface
 
     public function __construct(private EntityManagerInterface $em){}
 
-
+    public function exists(string $uuid): array
+    {
+        return $this->em->createQueryBuilder()
+            ->select('u.id, u.name, u.email')
+            ->from(UserEntity::class, 'u')
+            ->where('u.id = :id')
+            ->setParameter('id', $uuid)
+            ->getQuery()
+            ->getSingleResult();
+    }
     
     public function findAll(): array
     {
         $collection = $this->em->getRepository(UserEntity::class)->findAll();
-        for ($i=0 ; $i < count($collection); $i++) { 
-            $collection[$i] = UserEntityMapper::toDomainEntity($collection[$i]);            
-        }
         return $collection;
     }
 
@@ -55,6 +61,18 @@ class UserRepository implements UserRepositoryInterface
         $entity = UserEntityMapper::toDoctrineEntity($user);
         $this->em->persist($entity);
         $this->em->flush();
+    }
+
+    public function changePassword(string $uuid, string $hash): void
+    {
+        $this->em->createQueryBuilder()
+                  ->update(UserEntity::class, 'u')
+                  ->set("u.password", ":pwd")
+                  ->where("u.id = :id")
+                  ->setParameter("pwd", $hash)
+                  ->setParameter("id", $uuid)
+                  ->getQuery()
+                  ->execute();
     }
 
     

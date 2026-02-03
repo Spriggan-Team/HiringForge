@@ -21,20 +21,15 @@ class GetUserQueryHandler
         private ValidatorInterface $validator
     ){}
 
-    public function handle(UserId $query): array
+    public function handle(string $uuid): array
     {
         try{
-            $error = $this->validator->validate($query);
             
-            if(count($error) > 0){
-                throw new BadRequestHttpException("Bad fields validation");
-            }
-
-            $user = $this->picker->execute($query);
-            return ApiResponseBuilder::success($user);
+            $user = $this->picker->execute($uuid);
+            return ApiResponseBuilder::success($user, "Everything went smoothly");
         }
         catch(RessourceNotFound $exception){
-            return ApiResponseBuilder::error();
+            return ApiResponseBuilder::error("Something wrong happened",$exception);
         }
     }
 }

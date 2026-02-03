@@ -17,13 +17,9 @@ class DeleteUserCommandHandler
 {
     public function __construct(private UserEraser $eraser, private ValidatorInterface $validator){}
 
-    public function handle(DeleteUserRequest $command)
+    public function handle(string $command)
     {
         try{
-            $errors = $this->validator->validate($command);
-            if(count($errors) > 0)
-                throw new BadRequestHttpException();
-            
             $this->eraser->execute($command);
         }
         catch(Exception $exception){

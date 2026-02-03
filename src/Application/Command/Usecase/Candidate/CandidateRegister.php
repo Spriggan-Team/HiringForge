@@ -12,6 +12,7 @@ use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Exception\UnbaleToStoreFile;
 
 use App\Domain\File\FileStorageInterface;
+use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
 
 
@@ -41,14 +42,14 @@ class CandidateRegister
         $uploadCVResult = $this->storage->store([$command->cv]);
 
         if(count($uploadCVResult->failed) > 0){
-            throw new UnbaleToStoreFile();
+            throw new UnbaleToStoreFile(); //An user must upload an image to be elligble t o this service
         }
 
         $candidate = Candidate::create(
             id: $candidateId,
             firstName: $command->firstName,
             lastName: $command->lastName,
-            email: $command->email,
+            email: new EmailAddress($command->email),
             passwordHash: $this->hasher->hash($command->password),
             image: $uploadImageResult->stored[0] ?? null,
             cv: $uploadCVResult->stored[0]

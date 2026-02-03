@@ -4,6 +4,7 @@ namespace App\Domain\Candidate;
 
 use App\Domain\File\StaticMedia;
 use App\Domain\Shared\Actor\Actor;
+use App\Domain\Shared\EmailAddress;
 
 class Candidate implements Actor
 {
@@ -12,7 +13,7 @@ class Candidate implements Actor
     private string $firstName;
     private string $lastName;
 
-    private string $email;
+    private EmailAddress $email;
     private string $passwordHash;
 
     private ?StaticMedia $image = null;
@@ -23,7 +24,7 @@ class Candidate implements Actor
         CandidateId $id, 
         string $firstName,
         string $lastName,
-        string $email,
+        EmailAddress $email,
         string $passwordHash,
         ?StaticMedia $image = null,
         StaticMedia $cv,
@@ -41,7 +42,7 @@ class Candidate implements Actor
         CandidateId $id, 
         string $firstName,
         string $lastName,
-        string $email,
+        EmailAddress $email,
         string $passwordHash,
         ?StaticMedia $image = null,
         StaticMedia $cv,
@@ -79,7 +80,7 @@ class Candidate implements Actor
 
     public function email(): string
     {
-        return $this->email;
+        return $this->email->value();
     }
 
     public function passwordHash(): string
@@ -113,7 +114,7 @@ class Candidate implements Actor
         return $this;
     }
 
-    public function setEmail(string $email): static
+    public function setEmail(EmailAddress $email): static
     {
         $this->email = $email;
         return $this;

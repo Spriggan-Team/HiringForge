@@ -30,27 +30,17 @@ class FileStorage implements FileStorageInterface
         $this->baseStoragePath = rtrim($baseStoragePath, '/');
     }
 
-    /**
-     * This function stored an array of files into the followwing repertory: Infrastructure/Storage/vault
-     * 
-     * @param ?array $files                 UploadedFile - Currently the UploadedFile object of symfony
-     * @param ?string $id                   Here, you  pass the user/owner Id
-     * @param ?FileOwnerType $ownerType     Here you indicate what type of user this recording concern
-     * @param ?FilePurpose   $purpose
-     * @return FileUploadResult
-     */
+
     public function store(
         array $files,
         ?string $id = null,
         ?FileOwnerType $ownerType =null,
-        ?FilePurpose $purpose =null
+        ?FilePurpose $purpose =null,
     ): FileUploadResult
     {
-        
         if(count($files) < 1){
             return new FileUploadResult();
         }
-            
         $result = [];
         
         foreach($files as $file){
@@ -72,13 +62,19 @@ class FileStorage implements FileStorageInterface
             }
             catch(FileException $e){
                 //record all the failed attemps by using the image name
-                $errors["failed"][] = $file->getClientOriginalName();
+                $result["failed"][] = $file->getClientOriginalName();
             }
 
             $result["succeed"][] = new StaticMedia($filename, $file->getSize(), $mimeType);
         }
 
         return new FileUploadResult($result['succeed'], $result['failed']);
+    }
+
+
+    public function read(string $name, ?string $id = null, ?FileOwnerType $ownerType = null, ?FilePurpose $purpose = null): void
+    {
+        throw new \Exception('Not implemented');
     }
 
     /**
