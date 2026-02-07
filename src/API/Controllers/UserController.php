@@ -5,8 +5,11 @@ namespace App\Api\Controllers;
 
 use Exception;
 
-use App\Api\Responder\ApiResponseBuilder;
+use App\Domain\Shared\Address;
 
+use App\Api\Responder\ApiResponseBuilder;
+use App\Application\Command\Handlers\User\ChangeUserEmailCommandHandler;
+use App\Application\Command\Handlers\User\ChangeUserProfilCommandHandler;
 use App\Application\DTO\ChangePassword;
 use App\Application\DTO\User\ChangeUserProfileCommand;
 
@@ -15,8 +18,6 @@ use App\Application\Command\Handlers\User\ResetPasswordCommandHandler;
 use App\Application\Command\Handlers\User\SendVerificationCodeCommandHandler;
 
 use App\Application\Query\Handlers\User\GetUserQueryHandler;
-
-use App\Infrastructure\Security\UnauthorizedAction;
 use App\Infrastructure\Security\UserGuard;
 
 use Psr\Log\LoggerInterface;
@@ -34,11 +35,14 @@ class UserController extends AbstractController
         private LoggerInterface $logger,
         private UserGuard $userguard
     ) {
+        //This is mandatory that permit ApiResponseBuilder to log exception in a special format
+        //It purpose is to reduce the resposability of the http controller.
         ApiResponseBuilder::init($logger);
     }
 
+
     #[Route("/users", methods: ["GET"], name: "fetch_user")]
-    public function getAccountById(
+    public function getUserById(
         Request $request,
         GetUserQueryHandler $handler
     ): JsonResponse
@@ -49,19 +53,32 @@ class UserController extends AbstractController
             $response = $handler->handle($uuid);
             return $this->json($response, 200);
         }
-        catch(UnauthorizedAction $unauthorizedAction)
-        {
-            return $this->json(ApiResponseBuilder::error('Please, try connecting before', $unauthorizedAction), 401);
-        }
         catch (Exception $exception) {
             return $this->json(ApiResponseBuilder::error('User not found', $exception), 404);
         }
     }
 
 
+    #[Route('/user/change/email', methods: ['PATCH'], name: "")]
+    public function changeEmail(
+        Request $request,
+        ChangeUserEmailCommandHandler $handler
+    )
+    {
+        try
+        {
+            //TODO: Implement
+        }
+        catch(\Throwable $th)
+        {
+            return $this->json(ApiResponseBuilder::error('User not found', $th), 404);
+        }
+    }
+
+
 
     #[Route("/user/password/verificationcode", methods:["PUT"], name: "update_account")]
-    public function overwriteAccount(
+    public function sendVerificationCode(
         Request $request,
         SendVerificationCodeCommandHandler $handler
     ): JsonResponse
@@ -79,7 +96,7 @@ class UserController extends AbstractController
 
     
     #[Route("/user/resetpassword", methods:["PATCH"], name: "reset_password")]
-    public function updateUser(
+    public function resetPassword(
         Request $request,
         ResetPasswordCommandHandler $handler
     ): JsonResponse
@@ -101,21 +118,41 @@ class UserController extends AbstractController
     }
 
 
-    #[Route("/user/change", methods: ['PUT'], name: "change_user_data")]
+
+    #[Route("/user/change", methods: ['PATCH'], name: "change_user_data")]
     public function modify(
         Request $request,
-        ChangeUserProfileCommand $handler
-    )
+        ChangeUserProfilCommandHandler $handler
+    ): JsonResponse
     {
         try
         {
-            $command = new ChangeUserProfileCommand();
+            $body = json_decode($request->getContent());
+            $uuid = $this->userguard
+                         ->assertAuthorization($request->headers->get("Authorization", null));
+            $command = new ChangeUserProfileCommand(
+                uuid: $uuid,
+                name: $body['name'],
+                siret: $body['siret'],
+                addImages: $body['images']['add'] ?? [],
+                deleteImages: $body['images']['delete'] ?? [],
+                presentation: $body['presentation'],
+                address: new Address(
+                    street:     $body['street'],
+                    city:       $body['city'],
+                    postalCode: $body['postalCode'],
+                    country:    $body['country']
+                )
+            );
+            $response = $handler->handle($command);
+            return $this->json($response, 200);
         }
-        catch(\Exception $excption)
+        catch(\Exception $exception)
         {
-
+            return $this->json(ApiResponseBuilder::error('Nothing Found',$exception), 404);
         }
     }
+
 
     
     #[Route('/delete/{uuid}', methods: ['DELETE'], name: "delete_account")]
@@ -131,10 +168,6 @@ class UserController extends AbstractController
                          ->assertAuthorization($request->headers->get("Authorization", null));
             $response = $handler->handle($uuid);
             return $this->json($response, 200);
-        }
-        catch(UnauthorizedAction $unauthorizedAction)
-        {
-            return $this->json(ApiResponseBuilder::error('Please, try connecting before', $unauthorizedAction), 401);
         }
         catch (Exception $exception) {
             return $this->json(ApiResponseBuilder::error('Nothing Found',$exception), 404);

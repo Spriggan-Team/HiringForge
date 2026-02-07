@@ -7,7 +7,7 @@ use App\Domain\File\FilePurpose;
 use App\Domain\File\FileStorageInterface;
 use App\Domain\File\FileUploadResult;
 use App\Domain\File\StaticMedia;
-
+use App\Domain\File\TimedMedia;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -32,43 +32,15 @@ class FileStorage implements FileStorageInterface
 
 
     public function store(
-        array $files,
-        ?string $id = null,
-        ?FileOwnerType $ownerType =null,
-        ?FilePurpose $purpose =null,
+        StaticMedia | TimedMedia $file,
+        ?string $userId = null,
+        ?FileOwnerType $ownerType = null,
+        ?FilePurpose $purpose  =null,
+        ?int $timeLimitation   = null,
+        ?float $sizeLimitation = null,
     ): FileUploadResult
     {
-        if(count($files) < 1){
-            return new FileUploadResult();
-        }
-        $result = [];
-        
-        foreach($files as $file){
-            if(!$file instanceof UploadedFile){
-                continue;
-            }
-            $mimeType = $file->getMimeType();
-            $targetDir = $this->resolveTargetDirectory($mimeType, $id, $ownerType, $purpose);
-            
-            if(!is_dir($targetDir)){
-                mkdir($targetDir, 0775, true);
-            }
-            
-            $extension = $file->guessClientExtension() ?? $file->getClientOriginalExtension() ?? '';
-            $filename = uniqid('', true) . "." . $extension;
-
-            try{
-                $file->move($targetDir, $filename);
-            }
-            catch(FileException $e){
-                //record all the failed attemps by using the image name
-                $result["failed"][] = $file->getClientOriginalName();
-            }
-
-            $result["succeed"][] = new StaticMedia($filename, $file->getSize(), $mimeType);
-        }
-
-        return new FileUploadResult($result['succeed'], $result['failed']);
+        throw new \Exception('Not implemented');
     }
 
 

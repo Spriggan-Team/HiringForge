@@ -29,13 +29,14 @@ class UserResetPassword
         $plainPassword = new PlainPassword($password);
 
         $identity = $this->userRepository->exists($userId->value());
-        $email   =  $this->emailRepository->getEmailWithPurpose($identity->email, EmailPurpose::VERIFICATION_CODE);
+        $emailMessage   =  $this->emailRepository->getEmailWithPurpose($identity->email, EmailPurpose::VERIFICATION_CODE);
 
-        if(trim($verificationCode) === $email->verificationCode()){
+        if(trim($verificationCode) === $emailMessage->verificationCode()){
             $this->userRepository->changePassword(
                 $identity->email,
                 $this->hasher->hash($plainPassword->value())
             );
+            $this->emailRepository->deleteEmail($emailMessage->id);
         }
     }
 }

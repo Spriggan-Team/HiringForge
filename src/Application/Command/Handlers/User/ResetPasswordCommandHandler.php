@@ -19,9 +19,14 @@ class ResetPasswordCommandHandler
         private ValidatorInterface $validator
     ){}
 
+    /**
+     * This is an handler.
+     * A function that enforce major techinical validation and call for the usecase
+     */
     public function handle(ChangePassword $changePassword): array
     {
         try{
+            //Call for the usecase
             $this->modifier->execute(
                 $changePassword->uuid,
                 $changePassword->password,

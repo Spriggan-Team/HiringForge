@@ -5,8 +5,8 @@ namespace App\Application\Serializer;
 use App\Domain\Auth\TokenPurpose;
 use App\Domain\Auth\AuthTokenData;
 use App\Domain\Auth\AuthSecurityServiceInterface;
+
 use App\Domain\Auth\RegisterTokenData;
-use App\Domain\Shared\Actor\ActorId;
 use App\Domain\Shared\Actor\ActorRole;
 
 class ActorView

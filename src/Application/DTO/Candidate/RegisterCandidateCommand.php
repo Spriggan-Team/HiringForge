@@ -2,8 +2,8 @@
 
 namespace App\Api\DTO\Candidate;
 
+use App\Domain\File\StaticMedia;
 use App\Domain\Shared\Address;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class RegisterCandidateCommand
@@ -21,8 +21,8 @@ final class RegisterCandidateCommand
         #[Assert\NotBlank]
         public string $password,
 
-        public ?UploadedFile $image,
-        public ?UploadedFile $cv,
+        public ?StaticMedia $image,
+        public StaticMedia $cv,
 
         public Address $address
     ){}

@@ -10,11 +10,14 @@ use App\Domain\Candidate\CandidateId;
 use App\Domain\Candidate\CandidateRepositoryInterface;
 use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Exception\UnbaleToStoreFile;
-
+use App\Domain\File\FileOwnerType;
+use App\Domain\File\FilePurpose;
 use App\Domain\File\FileStorageInterface;
+use App\Domain\File\StaticMedia;
+use App\Domain\Shared\Actor\ActorRegister;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
-
+use App\Domain\Shared\PlainPassword;
 
 class CandidateRegister
 {
@@ -25,37 +28,51 @@ class CandidateRegister
     ){}
 
     /**
-     * @return array{0: string, 1: string[]} A tuple where the first element is the CandidateId object,
-     *                                          and the second element is an array of filenames that failed to upload
+     * @throws EmailAlreadyRegistered|RessourceNotFound
+     * @return ActorRegister
      */
-    public function execute(RegisterCandidateCommand $command): array
+    public function execute(
+        string $lastName,
+        string $firstName,
+        string $email,
+        string $password,
+        ?StaticMedia $image = null,
+        StaticMedia $cv,
+    ): ActorRegister
     {
-
-        $candidate = $this->repository->findByEmail($command->email);
-        if($candidate){
+        $email = new EmailAddress($email);
+        $identity = $this->repository->exists(null, $email);
+        if($identity){
           throw new EmailAlreadyRegistered();
         }
         
         $candidateId = new  CandidateId();
-        
-        $uploadImageResult = $this->storage->store([$command->image]);
-        $uploadCVResult = $this->storage->store([$command->cv]);
 
-        if(count($uploadCVResult->failed) > 0){
+        if($image){
+            $uploadImageResult = $this->storage->store($image);
+        }
+        $uploadCVResult = $this->storage->store(
+            file: $cv,
+            userId: $candidateId->value(),
+            ownerType: FileOwnerType::CANDIDATE,
+            purpose: FilePurpose::CV
+        );
+
+        if(!(count($uploadCVResult->stored) > 0)){
             throw new UnbaleToStoreFile(); //An user must upload an image to be elligble t o this service
         }
 
         $candidate = Candidate::create(
             id: $candidateId,
-            firstName: $command->firstName,
-            lastName: $command->lastName,
-            email: new EmailAddress($command->email),
-            passwordHash: $this->hasher->hash($command->password),
+            firstName: $firstName,
+            lastName: $lastName,
+            email: $email,
+            passwordHash: $this->hasher->hash((new PlainPassword($password))->value()),
             image: $uploadImageResult->stored[0] ?? null,
             cv: $uploadCVResult->stored[0]
         );
 
         $this->repository->save($candidate);
-        return [$candidateId->value(), $uploadImageResult->failed];
+        return new ActorRegister($candidateId->value(), $uploadImageResult->failed);
     }
 }

@@ -36,10 +36,17 @@ class RegisterUserCommandHandler
                 throw new BadRequestHttpException("Bad fields validation");
             }
             
-            [$userId, $failed_upload] = $this->register->execute($command);
+            $registerData = $this->register->execute(
+                name: $command->name,
+                siret: $command->siret,
+                email: $command->email,
+                password: $command->password,
+                address: $command->address,
+                images: $command->images,
+            );
 
             return ApiResponseBuilder::success(
-                $this->viewer->register($userId, $failed_upload),
+                $this->viewer->register($registerData->id, $registerData->failedImages),
                 "Everything went suceesfully"
             );
         }

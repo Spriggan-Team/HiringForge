@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Domain\User;
+namespace App\Domain\Sharedp;
 
 
 
 
-class KnownUserIdentity {
+class KnownIdentity {
     public function __construct(
         public string $uuid,
         public string $email,

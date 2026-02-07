@@ -1,3 +1,4 @@
 <?php
 
-class ImmediateResponseException{}
+class ImmediateResponseException extends Exception
+{}

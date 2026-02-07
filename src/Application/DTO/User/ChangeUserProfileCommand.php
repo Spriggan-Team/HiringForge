@@ -2,26 +2,27 @@
 
 namespace App\Application\DTO\User;
 
-use Symfony\Component\Validator\Constraints as Assert;
+use App\Domain\Shared\Address;
 
 final class ChangeUserProfileCommand
 {
-    #[Assert\NotBlank]
-    public string $uuid;
+    public function __construct(
+        public string $uuid,
 
-    #[Assert\NotBlank]
-    public ?string $name = null;
+        public ?string $name = null,
 
-    #[Assert\NotBlank]
-    public ?string $password = null;
+        public ?string $siret = null,
 
-    #[Assert\Length(min: 14, max: 14)]
-    public ?string $siret = null;
+        /** @var array represents an array of images to add*/
+        public array $addImages = [],
 
-    public function hasMutations(): bool
-    {
-        return $this->name != null ||
-               $this->password != null ||
-               $this->siret !=null;
-    }
+        /** @var array<string> $deleteImages represents an array of images to add*/
+        public array $deleteImages = [],
+
+        /** @var array<string> $address represents an array of images to delete*/
+        public ?Address $address = null,
+
+        /** @var array<string> $presentation represents a video presentation*/
+        public array $presentation = [], 
+    ){}
 }

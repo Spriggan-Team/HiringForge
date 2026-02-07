@@ -65,6 +65,9 @@ services:
     App\Domain\User\JobOfferRepositioryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferRepository
     
+    #------ Email -------
+    App\Domain\Exception\RessourceNotFound\EmailRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Email\EmailRepository
 
 
     #--------------
@@ -77,6 +80,13 @@ services:
     App\Domain\File\FileStorageInterface:
         alias: App\Infrastructure\Storage\FileStorage\FileStorage
 
+
+    #--------------
+    # Email Services
+    #-------------------------------
+    
+    App\Domain\Email\EmailServicesInterface:
+        alias: App\Infrastructure\Email\EmailServices
 
 
     #-----------------

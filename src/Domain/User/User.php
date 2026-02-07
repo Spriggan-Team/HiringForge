@@ -21,6 +21,8 @@ final class User implements Actor
     private EmailAddress  $email;
     private string  $passwordHash;
 
+    private ?string $desc = null;
+
     /**
      * @var array<StaticMedia>  $images
      */
@@ -53,6 +55,9 @@ final class User implements Actor
         $this->presentation = $presentation;
     }
 
+    /***
+     * The public methode for creating an user domain object.
+     */
     public static function create(
         string $name,
         EmailAddress $email,
@@ -91,7 +96,7 @@ final class User implements Actor
 
     public function email(): string 
     { 
-        return $this->email;
+        return $this->email->value();
     }
 
     public function passwordHash(): string
@@ -122,14 +127,14 @@ final class User implements Actor
         return $this;
     }
 
-    public function setEmail(string $email): static
+    public function setEmail(EmailAddress $email): static
     {
         $this->email = $email;
         return $this;
     }
 
     public function changeSiret(Siret $siret){
-        $this->siret = $siret;
+        $this->siret->change($siret);
         return $this;
     }
 
@@ -141,7 +146,13 @@ final class User implements Actor
         return $this;
     }
 
-    public function setPresentation($presentation): static
+    public function addImages(StaticMedia $image)
+    {}
+
+    public function removeImage(string $uniqName)
+    {}
+
+    public function setPresentation(?TimedMedia $presentation): static
     {
         $this->presentation = $presentation;
         return $this;

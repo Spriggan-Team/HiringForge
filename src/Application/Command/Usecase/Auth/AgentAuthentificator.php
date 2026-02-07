@@ -14,7 +14,8 @@ class AgentAuthentificator
     ){}
 
     /**
-     * @return ?string the agentId
+     * This is an usecase that enforce buisness login rules
+     * @return ?string the identifier of an actor (user, agent, candidate...ect)
      */
     public function execute(AuthentificateActor $actor): ?string
     {

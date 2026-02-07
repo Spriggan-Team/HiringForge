@@ -21,10 +21,14 @@ class GetUserQueryHandler
         private ValidatorInterface $validator
     ){}
 
+    /**
+     * This handler enforce technique validation for users data retreiving
+     * and call for the associated usecase
+     */
     public function handle(string $uuid): array
     {
         try{
-            
+            //
             $user = $this->picker->execute($uuid);
             return ApiResponseBuilder::success($user, "Everything went smoothly");
         }

@@ -4,17 +4,19 @@ namespace App\Domain\User;
 
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\Actor\ActorRepositoryInterface;
+use App\Domain\Sharedp\KnownIdentity;
 
 interface UserRepositoryInterface  extends ActorRepositoryInterface
 {
     /**
      * Check if an user exists in bdd (using wether his uuid or email)
+     * This function throw  an Exception that indicates wether or not an user exist
      * @param ?string                   $uuid
      * @param ?string                   $email
      * @throws RessourceNotFound        This exception should be sent when a ressource is not found in bdd
      * @return KnownUserIdentity        contains basics information about user
      */
-    public function exists(?string $uuid = null, ?EmailAddress $email = null): KnownUserIdentity;
+    public function exists(?string $uuid = null, ?EmailAddress $email = null): KnownIdentity;
 
     /**
      * @param string                $uuid is the user's id
@@ -45,12 +47,21 @@ interface UserRepositoryInterface  extends ActorRepositoryInterface
 
 
     /**
+     * A method to save a new ressource in storage/bdd
      * @param  User $user represents the user to persist
      * @return void 
      * @throws Exception
      * use to create/update a new ressource in the bdd
     */
     public function save(User $user): void;
+
+    /**
+     * @param User  The user aggregate you want to change
+     * This function take in a user and change all of its property except those sensitive
+     * (such as email and password...)
+     * @return void
+     */
+    public function change(User $user, string $uuid): void;
 
     /**
      * As its name indicate, this function is used to change the password of an existing user

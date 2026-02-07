@@ -18,6 +18,10 @@ class SendVerificationCodeCommandHandler
         private ValidatorInterface $validator
     ){}
 
+    /**
+     * This handler enforce validaion if needed and
+     * call for the usecase 
+     */
     public function handle(string $email): array
     {
         try{

@@ -10,7 +10,7 @@ interface EmailServicesInterface
      * to be send as an email to an user (actor)
      * @param 
      */
-    public function buildEmail(EmailMessage $emailMessage): \DOMDocument;
+    public function prepareEmail(EmailMessage $emailMessage): \DOMDocument;
 
     /**
      * This function send an email to an existing user.

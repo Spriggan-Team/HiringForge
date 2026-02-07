@@ -4,6 +4,10 @@ namespace App\Domain\Auth;
 
 use App\Domain\Shared\Actor\Actor;
 
+/**
+ * Just a proposition for any token service,
+ * It should not directly use by any use case.
+ */
 interface AuthSecurityServiceInterface
 {
     /**

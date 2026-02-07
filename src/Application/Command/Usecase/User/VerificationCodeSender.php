@@ -33,7 +33,7 @@ class VerificationCodeSender
 
         $this->emailServices->sendTo(
             receiver: $identity->email,
-            document: $this->emailServices->buildEmail($emailMessage)
+            document: $this->emailServices->prepareEmail($emailMessage)
         );
     }
 }
