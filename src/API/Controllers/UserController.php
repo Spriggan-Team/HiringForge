@@ -10,13 +10,14 @@ use App\Domain\Shared\Address;
 use App\Api\Responder\ApiResponseBuilder;
 use App\Application\Command\Handlers\User\ChangeUserEmailCommandHandler;
 use App\Application\Command\Handlers\User\ChangeUserProfilCommandHandler;
+
+use App\Application\DTO\ChangeEmail;
 use App\Application\DTO\ChangePassword;
 use App\Application\DTO\User\ChangeUserProfileCommand;
 
 use App\Application\Command\Handlers\User\DeleteUserCommandHandler;
 use App\Application\Command\Handlers\User\ResetPasswordCommandHandler;
 use App\Application\Command\Handlers\User\SendVerificationCodeCommandHandler;
-
 use App\Application\Query\Handlers\User\GetUserQueryHandler;
 use App\Infrastructure\Security\UserGuard;
 
@@ -25,7 +26,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
+use Symfony\Component\HttpFoundation\Response;
 
 
 class UserController extends AbstractController
@@ -67,7 +68,15 @@ class UserController extends AbstractController
     {
         try
         {
-            //TODO: Implement
+            $body = json_decode($request->getContent());
+            $command = new ChangeEmail(
+                oldEMail: $body['oldEmail'],
+                newEmail: $body['newEmail'],
+                password: $body['password']
+            );
+
+            $reponse = $handler->handle($command);
+            return $this->json($reponse, Response::HTTP_OK);
         }
         catch(\Throwable $th)
         {

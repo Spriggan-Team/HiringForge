@@ -2,6 +2,7 @@
 
 namespace App\Domain\JobOffer;
 
+use App\Domain\File\StaticMedia;
 use DateTimeImmutable;
 use DomainException;
 
@@ -10,8 +11,10 @@ final class JobOffer
 {
     private string $id;
     private string $title;
-    private array $content;
+    private array  $content;
+    private  array  $categories;
     private JobStatus $status;
+    private ?StaticMedia $image;
     private DateTimeImmutable $createdAt;
     private DateTimeImmutable $updatedAt;
 
@@ -19,7 +22,9 @@ final class JobOffer
         string $id,
         string $title,
         array $content,
+        array $categories,
         JobStatus $status,
+        ?StaticMedia $image,
         DateTimeImmutable $createdAt,
         DateTimeImmutable $updatedAt
     ) {
@@ -27,12 +32,21 @@ final class JobOffer
         $this->title       = $title;
         $this->content     = $content;
         $this->status      = $status;
+        $this->image       = $image;
+        $this->categories  = $categories;
         $this->createdAt   = $createdAt;
         $this->updatedAt   = $updatedAt;
     }
 
     // Create an offer
-    public static function create(string $id, string $title, array $content, ?JobStatus $status = null): self
+    public static function create(
+        string $id,
+        string $title,
+        array  $content,
+        array  $categories = [],
+        ?JobStatus $status = null,
+        ?StaticMedia $image = null,
+    ): self
     {
         if ($id === '') {
             throw new DomainException("JobOffer id cannot be empty");
@@ -52,7 +66,9 @@ final class JobOffer
             id: $id,
             title: $title,
             content: $content,
+            categories: $categories,
             status: $status ?? JobStatus::DRAFT,
+            image: $image,
             createdAt: $now,
             updatedAt: $now
         );
@@ -110,8 +126,8 @@ final class JobOffer
     public function id(): string { return $this->id; }
     public function title(): string { return $this->title; }
     public function content(): array { return $this->content; }
-    public function status(): JobStatus {return $this->status;}
+    public function status():    JobStatus {return $this->status;}
     public function createdAt(): DateTimeImmutable { return $this->createdAt; }
     public function updatedAt(): DateTimeImmutable { return $this->updatedAt; }
-
+    public function categories(): array { return $this->categories;  } 
 }

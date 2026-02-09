@@ -8,16 +8,14 @@ use App\Api\Responder\ApiResponseBuilder;
 
 use App\Api\DTO\JobOffer\GetJobOfferRequest;
 use App\Api\DTO\JobOffer\GetJobOfferCollectiontRequest;
-use App\Api\DTO\JobOffer\CreateJobOfferRequest;
 use App\Api\DTO\JobOffer\DeleteJobOfferRequest;
 use App\Api\DTO\JobOffer\MutateJobOfferRequest;
 
+use App\Application\DTO\JobOffer\CreateJobOffer;
 
 use App\Application\Command\Handlers\JobOffer\CreateJobOfferCommandHandler;
 use App\Application\Command\Handlers\JobOffer\DeleteJobOfferCommandHandler;
 use App\Application\Command\Handlers\JobOffer\MutateJobOfferCommandHandler;
-
-
 use App\Application\Query\Handlers\JobOffer\GetJobOfferCollectionQueryHandler;
 use App\Application\Query\Handlers\JobOffer\GetJobOfferQueryHandler;
 
@@ -42,7 +40,7 @@ class JobOfferController extends AbstractController
 
 
 
-    #[Route('/job_offer/{accountId}', methods: ["GET"], name: "fetch_all_job_offer")]
+    #[Route('/job_offer', methods: ["GET"], name: "fetch_all_job_offer")]
     public function fetchAllJobOffer(
         int $accountId,
         GetJobOfferCollectionQueryHandler $handler
@@ -92,13 +90,16 @@ class JobOfferController extends AbstractController
     {
         try{
             $body = json_decode($request->getContent(), true);
-            $command =new CreateJobOfferRequest(
-                title: $body['title'],
-                content: $body['content'],
-                userId: $body["userId"],
+            $command =new CreateJobOffer(
+                title:    $body['title'],
+                content:  $body['content'],
+                categories: $body['categories'],
+                image: $request->files->get('image', null),
             );
 
-            $response = $handler->handle($command);
+            $userId = "must decode the id here"; //TODO: validation
+
+            $response = $handler->handle($command, $userId);
             return $this->json($response, 201);
         }
         catch(Exception $ex){

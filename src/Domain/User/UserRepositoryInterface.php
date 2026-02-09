@@ -18,12 +18,16 @@ interface UserRepositoryInterface  extends ActorRepositoryInterface
      */
     public function exists(?string $uuid = null, ?EmailAddress $email = null): KnownIdentity;
 
+
+    
     /**
      * @param string                $uuid is the user's id
      * @throws RessourceNotFound    This is raised when an user is not identify in the bdd
      * @return UserListItem         This is a view of all basics info about the user. It represents it profile information
      */
     public function fectchUserView(string $uuid): UserListItem;
+
+
 
     /**
      * 
@@ -46,6 +50,7 @@ interface UserRepositoryInterface  extends ActorRepositoryInterface
     public function findByEmail(string $email): User;
 
 
+
     /**
      * A method to save a new ressource in storage/bdd
      * @param  User $user represents the user to persist
@@ -55,6 +60,8 @@ interface UserRepositoryInterface  extends ActorRepositoryInterface
     */
     public function save(User $user): void;
 
+
+
     /**
      * @param User  The user aggregate you want to change
      * This function take in a user and change all of its property except those sensitive
@@ -63,11 +70,21 @@ interface UserRepositoryInterface  extends ActorRepositoryInterface
      */
     public function change(User $user, string $uuid): void;
 
+
+
     /**
      * As its name indicate, this function is used to change the password of an existing user
      * @return void;
      */
     public function changePassword(string $email, string $hash): void;
+
+
+
+    /**
+     * This function hepl us changing the email in the bdd
+     * @throws Exception
+     */
+    public function changeEmail(string $email): void;
 
 
     /**
