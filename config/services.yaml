@@ -58,27 +58,31 @@ services:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\User\UserRepository
 
     #------ Candidate ----
-    App\Domain\Shared\Actor\ActorRepositoryInterface\CandidateRepositoryInterface:
+    App\Domain\Candidate\CandidateRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateRepository
 
     #----- JobOffer ------
-    App\Domain\User\JobOfferRepositioryInterface:
+    App\Domain\JobOffer\JobOfferRepositioryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferRepository
     
     #------ Email -------
-    App\Domain\Exception\RessourceNotFound\EmailRepositoryInterface:
+    App\Domain\Email\EmailRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Email\EmailRepository
+    
 
 
     #--------------
     # FileStorage Services
     #-------------------------------
-    App\Infrastructure\Storage\FileStorage\FileStorage:
+    App\Infrastructure\Storage\FileStorage\MediaStorage:
         arguments:
             $baseStoragePath: '%uploads_base_directory%'
 
-    App\Domain\File\FileStorageInterface:
-        alias: App\Infrastructure\Storage\FileStorage\FileStorage
+    App\Domain\File\MediaStorageInterface:
+        alias: App\Infrastructure\Storage\FileStorage\MediaStorage
+    
+    App\Domain\File\MediaFactoryInterface:
+        alias: App\Infrastructure\Storage\FileStorage\MediaFactory
 
 
     #--------------
@@ -88,15 +92,6 @@ services:
     App\Domain\Email\EmailServicesInterface:
         alias: App\Infrastructure\Email\EmailServices
 
-
-    #-----------------
-    # Secutity Services
-    #-------------------------------
-    App\Domain\Auth\AuthSecurityInterface:
-        alias: App\Infrastructure\Security\AuthSecurityService
-
-    App\Domain\Shared\PasswordHasherInterface:
-        alias: App\Infrastructure\Security\PasswordHasher
 
 
     #------------------

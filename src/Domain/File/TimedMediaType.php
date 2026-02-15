@@ -2,8 +2,8 @@
 
 namespace App\Domain\File;
 
-enum TimedMediaType
+enum TimedMediaType: string
 {
-    case VIDEO;
-    case AUDIO;
+    case VIDEO = 'video'; // "video" !important 
+    case AUDIO = 'audio'; // "audio" !important
 }

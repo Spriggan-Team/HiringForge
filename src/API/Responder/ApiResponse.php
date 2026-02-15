@@ -1,0 +1,64 @@
+<?php
+
+
+namespace App\Api\Responder;
+
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
+class ApiResponse
+{
+    private static ?LoggerInterface $logger = null;
+
+    public function __construct(
+        private array $data,
+        private int $statusCode = 200
+    ) {}
+
+    public static function init(LoggerInterface $logger): void
+    {
+        self::$logger = $logger;
+    }
+
+    public static function success(mixed $data, string $message = "", int $statusCode = 200): self
+    {
+        return new self([
+            'status'  => 'success',
+            'message' => $message,
+            'data'    => $data
+        ], $statusCode);
+    }
+
+    public static function notice(string $message, int $statusCode = 200): self
+    {
+        return new self(['message' => $message], $statusCode);
+    }
+
+    public static function error(string $message = '', ?\Throwable $throwable = null, int $statusCode = 400): self
+    {
+        if ($throwable && self::$logger) {
+            self::$logger->error("Caught Exception: ". $throwable->getMessage(), ['exception' => $throwable]);
+        }
+
+        return new self([
+            'status'  => 'error',
+            'message' => $message,
+            'data'    => []
+        ], $statusCode);
+    }
+
+    public function toJsonResponse(): JsonResponse
+    {
+        return new JsonResponse($this->data, $this->statusCode);
+    }
+
+    public function getData(): array
+    {
+        return $this->data;
+    }
+
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
+    }
+}

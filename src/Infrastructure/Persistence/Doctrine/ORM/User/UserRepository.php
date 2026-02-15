@@ -4,6 +4,9 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
 use App\Domain\User\User as DomainEntity;
 use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Shared\EmailAddress;
+use App\Domain\Sharedp\KnownIdentity;
+use App\Domain\User\UserListItem;
 use App\Domain\User\UserRepositoryInterface;
 
 
@@ -15,18 +18,29 @@ class UserRepository implements UserRepositoryInterface
 
     public function __construct(private EntityManagerInterface $em){}
 
-    public function exists(string $uuid): array
+
+    public function exists(?string $uuid = null, ?EmailAddress $email = null): KnownIdentity
     {
-        return $this->em->createQueryBuilder()
-            ->select('u.id, u.name, u.email')
-            ->from(UserEntity::class, 'u')
-            ->where('u.id = :id')
-            ->setParameter('id', $uuid)
-            ->getQuery()
-            ->getSingleResult();
+        if ($uuid) {
+            $user = $this->em->find(UserEntity::class, $uuid);
+        }
+        elseif ($email) {
+            $user = $this->em->getRepository(UserEntity::class)->findOneBy(['email' => $email]);
+        }
+        else {
+            throw new \InvalidArgumentException('UUID or Email must be provided');
+        }
+
+        if (!$user) {
+            throw new \DomainException('User not found');
+        }
+
+        return new KnownIdentity($user->getId(), $user->getRoles(), $user->getPassword());
     }
     
-    public function findAll(): array
+
+    
+    public function findAll(?int $skip=null, ?int $limit = null): array
     {
         $collection = $this->em->getRepository(UserEntity::class)->findAll();
         return $collection;
@@ -44,16 +58,24 @@ class UserRepository implements UserRepositoryInterface
     }
 
     
+    public function fectchUserView(string $uuid): UserListItem
+    {
+        throw new \Exception('Not implemented');
+    }
+
+
     public function findByEmail(string $email): DomainEntity
     {
         $entity = $this->em->getRepository(UserEntity::class)->findOneBy([
             "email" => $email
         ]);
-        if(!$email){
+        if(!$entity){
             throw new RessourceNotFound("[USER] This email belogns to no user");
         }
         return UserEntityMapper::toDomainEntity($entity);
     }
+
+
 
 
     public function save(DomainEntity $user): void
@@ -63,19 +85,8 @@ class UserRepository implements UserRepositoryInterface
         $this->em->flush();
     }
 
-    public function changePassword(string $uuid, string $hash): void
-    {
-        $this->em->createQueryBuilder()
-                  ->update(UserEntity::class, 'u')
-                  ->set("u.password", ":pwd")
-                  ->where("u.id = :id")
-                  ->setParameter("pwd", $hash)
-                  ->setParameter("id", $uuid)
-                  ->getQuery()
-                  ->execute();
-    }
-
     
+
     public function delete(string $uuid): void
     {
         $entity = $this->em->find(UserEntity::class, $uuid);
@@ -85,5 +96,33 @@ class UserRepository implements UserRepositoryInterface
         $this->em->remove($entity);
         $this->em->flush();
     }
+
+
+
+    public function change(DomainEntity $user, string $uuid, ?array $deleteImages=null): void
+    {
+        throw new \Exception('Not implemented');
+    }
+
+
+    public function changeEmail(string $email): void
+    {
+        throw new \Exception('Not implemented');
+    }
+ 
+
+    
+    public function changePassword(string $email, string $hash): void
+    {
+        $this->em->createQueryBuilder()
+                  ->update(UserEntity::class, 'u')
+                  ->set("u.password", ":pwd")
+                  ->where("u.id = :id")
+                  ->setParameter("pwd", $hash)
+                  ->setParameter("id", $email)
+                  ->getQuery()
+                  ->execute();
+    }
+
 
 }

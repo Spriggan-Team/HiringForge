@@ -2,19 +2,22 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\MappedSupperClass\Actor;
+
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\MappedSupperClass\AccountEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
+
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping\JoinColumn;
 
+
 #[ORM\Table(name: "user")]
 #[ORM\Entity]
-class UserEntity extends Actor
+class UserEntity extends AccountEntity
 {
     //------------------------
     // Extra  Columns
@@ -27,19 +30,17 @@ class UserEntity extends Actor
     #[ORM\Column(length: 255, nullable: false)]
     private string $siret;
 
-
-
     //------------------------
     //  Relations
     //-----------------------
 
     #[ORM\OneToOne(
-        inversedBy: 'userPresentation',
+        inversedBy: 'userVideoPresentation',
         targetEntity: FileEntity::class,
         cascade: ['persist', 'remove']
     )]
     #[JoinColumn(nullable: true)]
-    private ?FileEntity $presentation = null;
+    private ?FileEntity $videoPresentation = null;
 
 
     #[ORM\OneToOne(
@@ -104,7 +105,7 @@ class UserEntity extends Actor
 
     public function getSiret(){ return $this->siret; }
 
-    public function getVideoPresentation(){ return $this->presentation; }
+    public function getVideoPresentation(){ return $this->videoPresentation; }
 
     public function getJobOffer(): Collection { return $this->jobOffers; }
     public function getUserImages(): Collection { return $this->userImages; }
@@ -145,6 +146,7 @@ class UserEntity extends Actor
         $this->userImages->add($userImage);
         return $this;
     }
+    
 
     public function removeImage(FileEntity $image): void
     {
@@ -160,7 +162,7 @@ class UserEntity extends Actor
         if(!str_contains($video->getMime(), 'video')){
             return $this;
         }
-        $this->presentation = $video;
+        $this->videoPresentation = $video;
         return $this;
     }
 }

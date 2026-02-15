@@ -40,14 +40,13 @@ class UserFixtures extends Fixture
         foreach (self::USERS as $i => [$name, $email]) {
 
             $address = AddressEntity::create(
-                city: 'Paris',
                 street: '1 rue de la République',
                 postalCode: '75001',
                 country: 'France'
             );
 
             $user = UserEntity::create(
-                id: (new UserId())->value(),
+                id: (UserId::create())->value(),
                 name: $name,
                 email: $email,
                 password: '$2y$10$fixtureHashPassword1234567890',

@@ -16,7 +16,6 @@ framework:
         buses:
             user_auth_middleware:
                 middleware:
-                    - 'App\Api\Middlewares\UserAuthMiddlewares'
 
 # when@test:
 #    framework:

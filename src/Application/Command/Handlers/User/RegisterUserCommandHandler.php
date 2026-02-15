@@ -3,16 +3,13 @@
 
 namespace App\Application\Command\Handlers\User;
 
-use Exception;
 
-use App\Api\Responder\ApiResponseBuilder;
+use App\Api\Responder\ApiResponse;
 
-use App\Application\Serializer\ActorView;
-use App\Application\Command\Usecase\User\UserRegister;
 use App\Application\DTO\User\RegisterUserCommand;
 use App\Domain\Exception\EmailAlreadyRegistered;
+use App\Application\Usecases\User\UserRegisterUseCase;
 
-use DomainException;
 
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -22,20 +19,21 @@ class RegisterUserCommandHandler
 {
 
     public function __construct(
-        private ActorView $viewer,
-        private UserRegister $register,
+        private UserRegisterUseCase $register,
         private ValidatorInterface $validator
     ){}
 
 
-    public function handle(RegisterUserCommand $command): array
+    public function handle(
+        RegisterUserCommand $command,
+    ): ApiResponse
     {
         try{
             $errors = $this->validator->validate($command);
             if(count($errors) > 0){
                 throw new BadRequestHttpException("Bad fields validation");
             }
-            
+
             $registerData = $this->register->execute(
                 name: $command->name,
                 siret: $command->siret,
@@ -43,19 +41,21 @@ class RegisterUserCommandHandler
                 password: $command->password,
                 address: $command->address,
                 images: $command->images,
+                videoPresentation: $command->videoPresentation
             );
 
-            return ApiResponseBuilder::success(
-                $this->viewer->register($registerData->id, $registerData->failedImages),
-                "Everything went suceesfully"
+            return ApiResponse::success(
+                data: $registerData->failedUploading,
+                message: "You've been registered"
             );
         }
-        catch(EmailAlreadyRegistered $alreadyExist){
-            return ApiResponseBuilder::error("Is something wrong with your email ? ", $alreadyExist);
+        catch(EmailAlreadyRegistered $alreadyExist)
+        {
+            return ApiResponse::error("Is something wrong with your email ? ", throwable: $alreadyExist);
         }
         catch(BadRequestHttpException $exception)
         {
-            return ApiResponseBuilder::error("Please check you data format and try again!", $exception);
+            return ApiResponse::error("Please check you data format and try again!", throwable: $exception);
         }
     }
 

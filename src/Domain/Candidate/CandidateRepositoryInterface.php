@@ -2,23 +2,13 @@
 
 namespace App\Domain\Candidate;
 
-use App\Domain\Shared\Actor\ActorRepositoryInterface;
-use App\Domain\Shared\EmailAddress;
-use App\Domain\Sharedp\KnownIdentity;
+use App\Domain\Shared\Account\AccountRepositoryInterface;
 
 /**
  * This interface describe how we can interact with the bdd
  */
-interface CandidateRepositoryInterface extends ActorRepositoryInterface
+interface CandidateRepositoryInterface extends AccountRepositoryInterface
 {
-    /**
-     * Check if a candidate exists in bdd (using wether his uuid or email)
-     * @param ?string                   $uuid
-     * @param ?string                   $email
-     * @throws RessourceNotFound        This exception should be sent when a ressource is not found in bdd
-     * @return KnownUserIdentity        contains basics information about candidate
-     */
-    public function exists(?string $uuid = null, ?EmailAddress $email = null): KnownIdentity;
 
     /**
      * @param string                $uuid represents the uniq identifier of an actor stored in the bdd

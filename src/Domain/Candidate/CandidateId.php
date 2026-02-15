@@ -2,7 +2,7 @@
 
 namespace App\Domain\Candidate;
 
-use App\Domain\Shared\Actor\ActorId;
+use App\Domain\Shared\Account\AccountId;
 
-class CandidateId extends ActorId
+class CandidateId extends AccountId
 {}

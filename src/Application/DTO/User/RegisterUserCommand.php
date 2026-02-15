@@ -23,14 +23,14 @@ class RegisterUserCommand
         #[Assert\NotBlank]
         public string $siret,
 
+        /** @var UploadedFile[] */
         public array $images = [],
 
-        public ?UploadedFile $presentation = null,
+        public ?UploadedFile $videoPresentation = null,
         
         #[Assert\NotNull]
         public Address $address,
 
-        #[Assert\NotBlank]
         public ?string $desc = null,
     ){}
 

@@ -4,11 +4,9 @@ namespace App\Application\Query\Handlers\User;
 
 use Exception;
 
-use App\Domain\User\UserId;
-use App\Api\Responder\ApiResponseBuilder;
-use App\Application\Query\Usecase\User\FetchUser;
+use App\Api\Responder\ApiResponse;
+use App\Application\Usecases\User\FetchUser;
 use App\Domain\Exception\RessourceNotFound;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 
@@ -25,15 +23,15 @@ class GetUserQueryHandler
      * This handler enforce technique validation for users data retreiving
      * and call for the associated usecase
      */
-    public function handle(string $uuid): array
+    public function handle(string $uuid): ApiResponse
     {
         try{
             //
             $user = $this->picker->execute($uuid);
-            return ApiResponseBuilder::success($user, "Everything went smoothly");
+            return ApiResponse::success($user, "Everything went smoothly");
         }
         catch(RessourceNotFound $exception){
-            return ApiResponseBuilder::error("Something wrong happened",$exception);
+            return ApiResponse::error("Something wrong happened",$exception);
         }
     }
 }

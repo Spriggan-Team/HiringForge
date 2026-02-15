@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Address;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserAddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
@@ -20,16 +21,13 @@ class AddressEntity
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private string $street;
+    private ?string $street = null;
 
     #[ORM\Column(length: 255)]
-    private string $city;
+    private ?string $postalCode = null;
 
     #[ORM\Column(length: 255)]
-    private string $postalCode;
-
-    #[ORM\Column(length: 255)]
-    private string $country;
+    private ?string $country = null;
 
     //--------------------
     // Relations
@@ -41,20 +39,24 @@ class AddressEntity
     )]
     private UserAddressEntity $userAddress;
 
+    #[ORM\OneToOne(
+        targetEntity: CandidateEntity::class,
+        mappedBy: 'address'
+    )]
+    private CandidateEntity $candidate;
+
     //-----------------
-    // Builder
+    // Constructing...
     //------------------
     
     public static function create(
-        string $city,
         string $street,
         string $postalCode,
         string $country,
     ): static
     {
         $address = new self();
-        $address->setCity($city)
-                ->setStreet($street)
+        $address->setStreet($street)
                 ->setPostalCode($postalCode)
                 ->setCountry($country);
         return $address;
@@ -79,17 +81,19 @@ class AddressEntity
         return $this->postalCode;
     }
 
-    public function getCity(): string{
-        return $this->city;
-    }
 
     public function getCountry(): string{
         return $this->country;
     }
 
-    public function getUserAdress(): UserAddressEntity
+    public function getUserAddress(): UserAddressEntity
     {
         return $this->userAddress;
+    }
+
+    public function getCandidate(): CandidateEntity
+    {
+        return $this->candidate;
     }
 
     //=================================
@@ -109,11 +113,6 @@ class AddressEntity
         return $this;
     }
 
-    public function setCity(string $city): static
-    {
-        $this->city = $city;
-        return $this;
-    }
 
     public function setCountry(string $country): static
     {
@@ -123,9 +122,16 @@ class AddressEntity
 
 
 
-    public function setUserAdress(UserAddressEntity $userAddress): static
+    public function setUserAddress(UserAddressEntity $userAddress): static
     {
         $this->userAddress = $userAddress;
+        return $this;
+    }
+    
+
+    public function setCandidate(CandidateEntity $candidate):static
+    {
+        $this->candidate = $candidate;
         return $this;
     }
 

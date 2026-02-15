@@ -8,6 +8,18 @@ security:
         users_in_memory: { memory: null }
 
     firewalls:
+        login:
+            pattern: ^/(candidate|agent|user)/login
+            stateless: true
+            custom_authenticators:
+                - App\Api\Controllers\Auth\LoginAuthentictorController
+        
+        api:
+            pattern: ^/(candidate|agent|user)
+            stateless: true
+            custom_authenticators:
+                - App\Api\Controllers\Auth\JwtAuthenticatorController
+
         dev:
             # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
@@ -24,8 +36,9 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        # - { path: ^/user, roles: ROLE_USER }
+        # - { path: ^/candidate, roles: ROLE_CANDIDATE }
+        # - { path: ^/agent,      roles: ROLE_AGENT }
 
 when@test:
     security:

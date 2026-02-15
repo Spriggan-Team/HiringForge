@@ -7,60 +7,80 @@ use Exception;
 
 use App\Domain\Shared\Address;
 
-use App\Api\Responder\ApiResponseBuilder;
+use App\Api\Responder\ApiResponse;
+use App\Application\Command\Handlers\Account\DeleteAccountCommandHandler;
+use App\Application\Command\Handlers\Account\ResetPasswordCommandHandler;
+use App\Application\Command\Handlers\Account\SendVerificationCodeCommandHandler;
 use App\Application\Command\Handlers\User\ChangeUserEmailCommandHandler;
 use App\Application\Command\Handlers\User\ChangeUserProfilCommandHandler;
 
+
 use App\Application\DTO\ChangeEmail;
 use App\Application\DTO\ChangePassword;
+use App\Application\Command\Utils\AuthenticatedPerson;
 use App\Application\DTO\User\ChangeUserProfileCommand;
 
-use App\Application\Command\Handlers\User\DeleteUserCommandHandler;
-use App\Application\Command\Handlers\User\ResetPasswordCommandHandler;
-use App\Application\Command\Handlers\User\SendVerificationCodeCommandHandler;
+
+use App\Domain\Shared\Account\AccountRole;
+
 use App\Application\Query\Handlers\User\GetUserQueryHandler;
-use App\Infrastructure\Security\UserGuard;
+
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
 
 
+
+#[Route('/users')]
 class UserController extends AbstractController
 {
 
     public function __construct(
         private LoggerInterface $logger,
-        private UserGuard $userguard
     ) {
         //This is mandatory that permit ApiResponseBuilder to log exception in a special format
         //It purpose is to reduce the resposability of the http controller.
-        ApiResponseBuilder::init($logger);
+        ApiResponse::init($logger);
     }
 
 
-    #[Route("/users", methods: ["GET"], name: "fetch_user")]
+    /**
+     * This one allow you to get a  users' information with the appropriate persmission
+     */
+    #[IsGranted(AccountRole::USER->value)]
+    #[Route("/", methods: ["GET"], name: "fetch_user")]
     public function getUserById(
         Request $request,
         GetUserQueryHandler $handler
     ): JsonResponse
     {
         try {
-            $uuid = $this->userguard
-                         ->assertAuthorization($request->headers->get("Authorization", null));
-            $response = $handler->handle($uuid);
-            return $this->json($response, 200);
+            /** @var AuthenticatedPerson */
+            $user = $this->getUser();
+
+            $response = $handler->handle($user->getId());
+            return $response->toJsonResponse();
         }
-        catch (Exception $exception) {
-            return $this->json(ApiResponseBuilder::error('User not found', $exception), 404);
+        catch (Exception $exception)
+        {
+            return ApiResponse::error('User not found', $exception)->toJsonResponse();
         }
     }
 
 
-    #[Route('/user/change/email', methods: ['PATCH'], name: "")]
+    /**
+     * This one allow a user to change its email;
+     * The requirements here, are to submit the old email along side the new one.
+     * You must provide the password and be authentificated here too, because just the authentification
+     * is not secure enough if the user momentary/temporary lost its devices (and as for other concerns)...
+     */
+    #[IsGranted(AccountRole::USER->value)]
+    #[Route('/change/email', methods: ['PATCH'], name: "")]
     public function changeEmail(
         Request $request,
         ChangeUserEmailCommandHandler $handler
@@ -75,36 +95,39 @@ class UserController extends AbstractController
                 password: $body['password']
             );
 
-            $reponse = $handler->handle($command);
-            return $this->json($reponse, Response::HTTP_OK);
+            $response = $handler->handle($command);
+            return $response->toJsonResponse();
         }
         catch(\Throwable $th)
         {
-            return $this->json(ApiResponseBuilder::error('User not found', $th), 404);
+            return ApiResponse::error('User not found', $th, 404)->toJsonResponse();
         }
     }
 
 
 
-    #[Route("/user/password/verificationcode", methods:["PUT"], name: "update_account")]
-    public function sendVerificationCode(
+    #[Route("/password/verificationcode", methods:["PUT"], name: "update_account")]
+    public function resetPasswordVerificationCode(
         Request $request,
         SendVerificationCodeCommandHandler $handler
     ): JsonResponse
     {
         try {
             $data = json_decode($request->getContent(), true);
-            $response = $handler->handle($data['email']);
-            return $this->json($response, 200);
+            $response = $handler->handle($data['email'], AccountRole::USER);
+            return $response->toJsonResponse();
         }
         catch (Exception $exception) {
-            $this->logger->error("Caught Exception: ". $exception->getMessage(), ['exception'=>$exception]);
-            return $this->json(ApiResponseBuilder::error('Nothing Found'), 404);
+            return ApiResponse::error(
+                message:'Nothing Found',
+                statusCode: 400, throwable: $exception
+            )->toJsonResponse();
         }
     }
 
     
-    #[Route("/user/resetpassword", methods:["PATCH"], name: "reset_password")]
+
+    #[Route("/resetpassword", methods:["PATCH"], name: "reset_password")]
     public function resetPassword(
         Request $request,
         ResetPasswordCommandHandler $handler
@@ -116,19 +139,20 @@ class UserController extends AbstractController
                 new ChangePassword(
                     $body['id'],
                     $body['password'],
-                    $body['verificationCode'])
+                    $body['verificationCode']),
+                AccountRole::USER
             );
-            return $this->json($response, 200);
+            return $response->toJsonResponse();
         }
         catch (Exception $exception)
         {
-            return $this->json(ApiResponseBuilder::error('Nothing Found', $exception), 404);
+            return ApiResponse::error('Nothing Found', $exception, 400)->toJsonResponse();
         }
     }
 
 
-
-    #[Route("/user/change", methods: ['PATCH'], name: "change_user_data")]
+    #[IsGranted(AccountRole::USER->value)]
+    #[Route("/change", methods: ['PATCH'], name: "change_user_data")]
     public function modify(
         Request $request,
         ChangeUserProfilCommandHandler $handler
@@ -136,50 +160,52 @@ class UserController extends AbstractController
     {
         try
         {
-            $body = json_decode($request->getContent());
-            $uuid = $this->userguard
-                         ->assertAuthorization($request->headers->get("Authorization", null));
+            /** @var AuthenticatedPerson */
+            $user = $this->getUser();
+
+            $formData = $request->request;
             $command = new ChangeUserProfileCommand(
-                uuid: $uuid,
-                name: $body['name'],
-                siret: $body['siret'],
-                addImages: $body['images']['add'] ?? [],
-                deleteImages: $body['images']['delete'] ?? [],
-                presentation: $body['presentation'],
-                address: new Address(
-                    street:     $body['street'],
-                    city:       $body['city'],
-                    postalCode: $body['postalCode'],
-                    country:    $body['country']
+                uuid: $user->getId(),
+                name: $formData->get('name'),
+                siret: $formData->get('siret'),
+                addImages: $formData->get('images[add]') ?? [],
+                deleteImages: $formData->get('images[delete]') ?? [],
+                videoPresentation: $request->files->get("videoPresentation"),
+                address: Address::create(
+                    street:     $formData->get('address[street]'),
+                    postalCode: $formData->get("address[postalCode]"),
+                    country:    $formData->get("address[country]")
                 )
             );
             $response = $handler->handle($command);
-            return $this->json($response, 200);
+            return $response->toJsonResponse();
         }
         catch(\Exception $exception)
         {
-            return $this->json(ApiResponseBuilder::error('Nothing Found',$exception), 404);
+            return ApiResponse::error('Something went wrong',$exception)->toJsonResponse();
         }
     }
 
 
-    
-    #[Route('/delete/{uuid}', methods: ['DELETE'], name: "delete_account")]
+    #[IsGranted(AccountRole::USER->value)]
+    #[Route('/delete', methods: ['DELETE'], name: "delete_account")]
     public function deleteAccount(
-        string $uuid,
         Request $request,
-        DeleteUserCommandHandler $handler
+        DeleteAccountCommandHandler $handler
     ): JsonResponse
     {
         try
         {
-            $uuid = $this->userguard
-                         ->assertAuthorization($request->headers->get("Authorization", null));
-            $response = $handler->handle($uuid);
-            return $this->json($response, 200);
+            /** @var AuthenticatedPerson */
+            $user = $this->getUser();
+
+            $response = $handler->handle(
+                $user->getId(), AccountRole::USER
+            );
+            return $response->toJsonResponse();
         }
         catch (Exception $exception) {
-            return $this->json(ApiResponseBuilder::error('Nothing Found',$exception), 404);
+            return ApiResponse::error('Nothing Found',$exception)->toJsonResponse();
         }
     }
 

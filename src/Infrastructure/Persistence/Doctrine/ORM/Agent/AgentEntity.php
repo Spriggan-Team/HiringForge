@@ -3,9 +3,9 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Agent;
 
 
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\MappedSupperClass\Actor;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\MappedSupperClass\AccountEntity;
 
-class AgentEntity extends Actor
+class AgentEntity extends AccountEntity
 {
     
 }

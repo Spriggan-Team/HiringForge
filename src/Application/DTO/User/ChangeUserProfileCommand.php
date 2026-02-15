@@ -7,7 +7,7 @@ use App\Domain\Shared\Address;
 final class ChangeUserProfileCommand
 {
     public function __construct(
-        public string $uuid,
+        public string $uuid, //must match the id of the account
 
         public ?string $name = null,
 
@@ -23,6 +23,6 @@ final class ChangeUserProfileCommand
         public ?Address $address = null,
 
         /** @var array<string> $presentation represents a video presentation*/
-        public array $presentation = [], 
+        public array $videoPresentation = [], 
     ){}
 }

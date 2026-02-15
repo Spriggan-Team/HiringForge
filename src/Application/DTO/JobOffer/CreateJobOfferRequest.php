@@ -11,7 +11,6 @@ final class CreateJobOffer
         #[Assert\NotBlank]
         public string $title,
 
-
         #[Assert\NotBlank]
         #[Assert\NotNull]
         public array $content,
@@ -21,6 +20,7 @@ final class CreateJobOffer
          * @var mixed
          */
         public mixed $image = null,
+        
         /**
          * @param array<int>
          */

@@ -24,6 +24,8 @@ final class RegisterCandidateCommand
         public ?StaticMedia $image,
         public StaticMedia $cv,
 
-        public Address $address
+        public ?Address $address,
+
+        public ?int $searchRadius,
     ){}
 }

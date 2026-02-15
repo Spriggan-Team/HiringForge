@@ -5,13 +5,11 @@ namespace App\Domain\User;
 
 use App\Domain\File\StaticMedia;
 use App\Domain\File\TimedMedia;
-
+use App\Domain\Shared\Account\Account;
 use App\Domain\Shared\Address;
-use App\Domain\Shared\Actor\Actor;
-use App\Domain\Shared\Actor\ActorRole;
 use App\Domain\Shared\EmailAddress;
 
-final class User implements Actor
+final class User implements Account
 {
     private UserId $id;
     public  string  $name;
@@ -21,7 +19,7 @@ final class User implements Actor
     private EmailAddress  $email;
     private string  $passwordHash;
 
-    private ?string $desc = null;
+    private ?string $description = null;
 
     /**
      * @var array<StaticMedia>  $images
@@ -33,7 +31,7 @@ final class User implements Actor
      * This property is a video presentation of the user
      * it is optionnal
      */
-    private ?TimedMedia $presentation = null;
+    private ?TimedMedia $videoPresentation = null;
     
     private function __construct(
         UserId $id,
@@ -43,7 +41,7 @@ final class User implements Actor
         string $passwordHash,
         array $images,
         Address $address, 
-        ?TimedMedia $presentation = null,
+        ?TimedMedia $videoPresentation = null,
     ) {
         $this->id    = $id;
         $this->name  = $name;
@@ -52,21 +50,21 @@ final class User implements Actor
         $this->passwordHash = $passwordHash;
         $this->images = $images;
         $this->address = $address;
-        $this->presentation = $presentation;
+        $this->videoPresentation = $videoPresentation;
     }
 
     /***
      * The public methode for creating an user domain object.
      */
     public static function create(
+        UserId  $userId,
         string $name,
         EmailAddress $email,
         Siret $siret,
         string $passwordHash,
-        array $images,
+        array $images= [],
         Address  $address,
-        ?UserId  $userId = null,
-        ?TimedMedia $presentation=null,
+        ?TimedMedia $videoPresentation=null,
     ){
         return new self(
             $userId ?? new UserId(),
@@ -76,7 +74,7 @@ final class User implements Actor
             $passwordHash,
             $images,
             $address,
-            $presentation,
+            $videoPresentation,
         );
     }
     
@@ -104,18 +102,26 @@ final class User implements Actor
         return $this->passwordHash;
     }
 
+    /**
+     * @return array<StaticMedia> images
+     */
     public function images(): array
     { 
         return $this->images;
     }
 
-    public function presentation(): ?TimedMedia{
-        return $this->presentation;
+    public function videoPresentation(): ?TimedMedia{
+        return $this->videoPresentation;
     }
 
     public function siret(): string { return $this->siret->value(); }
 
     public function address(): Address { return $this->address; }
+
+    public function description() : ?string
+    {
+        return $this->description;    
+    }
 
     //------------------------------------------
     // - Business change --
@@ -133,11 +139,26 @@ final class User implements Actor
         return $this;
     }
 
-    public function changeSiret(Siret $siret){
-        $this->siret->change($siret);
-        return $this;
+    /**
+     * This function change the value of the siret while enforcing
+     * mandatory control
+     * @param Siret $other      The new value object to use to make change
+     * @throws \DomainException It is raised when the control failed
+     * @return void             If the function make its way here without any exception thrown,
+     *                          then everything went smoothly
+     */
+    public function changeSiret(Siret $other){
+        if(
+            $this->siret->siren() === $other->siren()
+        ){
+            $this->siret = $other;
+            return $this;
+        }
+        throw new \DomainException("You must meet the conditions of validation to change a siret");
     }
 
+
+    
     public function setPassword(
         string $passwordHash, 
     ): static
@@ -146,20 +167,38 @@ final class User implements Actor
         return $this;
     }
 
-    public function addImages(StaticMedia $image)
-    {}
 
-    public function removeImage(string $uniqName)
-    {}
-
-    public function setPresentation(?TimedMedia $presentation): static
+    /**
+     * Tell if the image respect the format, size limitation and ....
+     * before associting it to an user
+     */
+    public function addImages(StaticMedia $image):static
     {
-        $this->presentation = $presentation;
+        $image->mustBe(sizeLimitation: 10485760);
+        $this->images[] = $image;
         return $this;
     }
 
-    public function role(): ActorRole
+    public function removeImage(StaticMedia $image)
+    {}
+
+
+    public function addVideoPresentation(?TimedMedia $videoPresentation): static
     {
-        throw new \Exception('Not implemented');
+        $videoPresentation->mustBe(type: "video", secondsLimitation: 15);
+        $this->videoPresentation = $videoPresentation;
+        return $this;
+    }
+
+    public function removeVideoPresentation(): static
+    {
+        $this->videoPresentation = null;
+        return $this;
+    }
+
+    public function setDescription(string $description): static
+    {
+        $this->description = $description;
+        return $this;
     }
 }

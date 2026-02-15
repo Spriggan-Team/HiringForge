@@ -9,5 +9,6 @@ class RequireAuthentification
 {
     public function __construct(
         public string $token,
+        public ?string $actorId=null      //can represents any actor of the application
     ){}
 }

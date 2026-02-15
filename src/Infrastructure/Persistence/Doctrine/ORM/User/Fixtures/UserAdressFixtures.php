@@ -20,7 +20,6 @@ class UserAddressFixtures extends Fixture implements DependentFixtureInterface
             $user = $this->getReference('user_'.$i, UserEntity::class);
 
             $address = AddressEntity::create(
-                city: 'Paris',
                 street: 'Rue '.$i,
                 postalCode: '7500'.$i,
                 country: 'France'

@@ -6,15 +6,32 @@ use DomainException;
 
 class Siret
 {
-    private string $value;
-    public function __construct(string $value)
+
+    private function __construct(
+      private  string $value
+    ){}
+
+    /**
+     * Enforce logic buisness
+     */
+    public static function create(string $value)
     {
-        if($this->isValid($value)){
-            $this->value = $value;
-            return;
+        if(!self::isValid($value))
+        {
+            throw new DomainException("Invalid User Siret"); 
         }
-        throw new DomainException("Invalid User Siret"); 
+        return new self($value);
     }
+
+
+    /**
+     * WRNING: this function doesn't apply buisness logic
+     */
+    public static function hydrate(string $value):self
+    {
+        return new self($value);
+    }
+
 
     /**
      * This function return the value (int) of the siret
@@ -43,24 +60,6 @@ class Siret
         return $this->value;
     }
 
-    /**
-     * This function change the value of the siret while enforcing
-     * mandatory control
-     * @param Siret $other      The new value object to use to make change
-     * @throws \DomainException It is raised when the control failed
-     * @return void             If the function make its way here without any exception thrown,
-     *                          then everything went smoothly
-     */
-    public function change(Siret $other)
-    {
-        if(
-            $this->siren() === $other->siren()
-        ){
-            $this->value = $other->value();
-            return;
-        }
-        throw new DomainException("You must meet the conditions of validation to change a siret");
-    }
 
     /**
      * This function verify if a string is valid as an siret
@@ -75,10 +74,12 @@ class Siret
         return true;
     }
 
+    
     public function siren():string
     {
         return substr($this->value, 0, 8);
     }
+
 
     public function nic(): string
     {

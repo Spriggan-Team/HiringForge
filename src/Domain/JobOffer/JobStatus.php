@@ -4,7 +4,7 @@ namespace App\Domain\JobOffer;
 
 enum JobStatus: string
 {
-    case DRAFT = 'draft';
-    case CLOSED = 'closed';
-    case PUBLISHED = 'published';
+    case DRAFT = 'draft';           // Is the initiate state of an offer
+    case CLOSED = 'closed';         // means the data is deleted or not longer use
+    case PUBLISHED = 'published';   // publish it to all user
 }

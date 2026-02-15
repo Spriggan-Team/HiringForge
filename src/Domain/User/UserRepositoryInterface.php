@@ -2,52 +2,17 @@
 
 namespace App\Domain\User;
 
-use App\Domain\Shared\EmailAddress;
-use App\Domain\Shared\Actor\ActorRepositoryInterface;
-use App\Domain\Sharedp\KnownIdentity;
+use App\Domain\Shared\Account\AccountRepositoryInterface;
 
-interface UserRepositoryInterface  extends ActorRepositoryInterface
+interface UserRepositoryInterface  extends AccountRepositoryInterface
 {
-    /**
-     * Check if an user exists in bdd (using wether his uuid or email)
-     * This function throw  an Exception that indicates wether or not an user exist
-     * @param ?string                   $uuid
-     * @param ?string                   $email
-     * @throws RessourceNotFound        This exception should be sent when a ressource is not found in bdd
-     * @return KnownUserIdentity        contains basics information about user
-     */
-    public function exists(?string $uuid = null, ?EmailAddress $email = null): KnownIdentity;
-
-
     
     /**
-     * @param string                $uuid is the user's id
-     * @throws RessourceNotFound    This is raised when an user is not identify in the bdd
-     * @return UserListItem         This is a view of all basics info about the user. It represents it profile information
+     * @param string                                         $uuid is the user's id
+     * @throws RessourceNotFound|InvalidArgumentException    This is raised when an user is not identify in the bdd
+     * @return UserListItem                                  This is a view of all basics info about the user. It represents it profile information
      */
     public function fectchUserView(string $uuid): UserListItem;
-
-
-
-    /**
-     * 
-     * This function must only be use when your want to apply a consequent/very important rules
-     * @param string                $uuid represents the uniq identifier of an actor stored in the bdd
-     * @return ?User
-     * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
-     * return the specified actor requested if founded in the bdd storage
-     */
-    public function findById(string $uuid): User;
-
-
-    /**
-     * 
-     * This function must only be use when your want to apply a consequent/very important rules.
-     * This function is meant to retreive an actor from the bdd uisng his email.
-     * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
-     * @return ?User                the retriving actor (user, candidate, agent ...)
-     */
-    public function findByEmail(string $email): User;
 
 
 
@@ -63,35 +28,32 @@ interface UserRepositoryInterface  extends ActorRepositoryInterface
 
 
     /**
-     * @param User  The user aggregate you want to change
-     * This function take in a user and change all of its property except those sensitive
-     * (such as email and password...)
+     *      This function take in a user and change all of its property except those sensitive
+     *      (such as email and password...)
+     * @param User          The user aggregate you want to change
+     * @param string[]      $deleteImages the array of name of the files you want to erase
      * @return void
      */
-    public function change(User $user, string $uuid): void;
-
-
-
-    /**
-     * As its name indicate, this function is used to change the password of an existing user
-     * @return void;
-     */
-    public function changePassword(string $email, string $hash): void;
-
+    public function change(User $user, string $uuid, ?array $deleteImages = null): void;
 
 
     /**
-     * This function hepl us changing the email in the bdd
-     * @throws Exception
+     * 
+     * This function must only be use when your want to apply a consequent/very important rules.
+     * This function is meant to retreive an actor from the bdd uisng his email.
+     * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
+     * @return ?User                the retriving actor (user, candidate, agent ...)
      */
-    public function changeEmail(string $email): void;
-
+    public function findByEmail(string $email): User;
 
     /**
-     * This function purpose is to delete an existing user stored in the bdd
-     * @return void
-     * @throws RessourceNotFound this exception should be throw when we try to delte an user that does not exist in bdd;
+     * 
+     * This function must only be use when your want to apply a consequent/very important rules
+     * @param string                $uuid represents the uniq identifier of an actor stored in the bdd
+     * @return ?User
+     * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
+     * return the specified actor requested if founded in the bdd storage
      */
-    public function delete(UserId $uuid): void;
+    public function findById(string $uuid): User;
     
 }

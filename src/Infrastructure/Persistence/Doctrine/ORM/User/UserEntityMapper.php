@@ -4,12 +4,13 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
 use App\Domain\Shared\Address;
+use App\Domain\Shared\EmailAddress;
 use App\Domain\User\Siret;
 use App\Domain\User\User as DomainEntity;
-
+use App\Domain\User\UserId;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\Image\ImageEntity;
+
 
 class UserEntityMapper 
 {
@@ -29,7 +30,6 @@ class UserEntityMapper
         );
 
         $address = AddressEntity::create(
-            city: $user->address()->city,
             street: $user->address()->street,
             postalCode: $user->address()->postalCode,
             country: $user->address()->country
@@ -38,7 +38,6 @@ class UserEntityMapper
         //Insert user image collection
         foreach($user->images() as $uploadedImage){
             $image   = new FileEntity()
-                            ->setId($uploadedImage->id ?? null)
                             ->setMime($uploadedImage->mime)
                             ->setSize($uploadedImage->size);
             $entity->attachToImage($image);
@@ -60,14 +59,14 @@ class UserEntityMapper
             $userImages[] = $userImageEntity->image->originalName;
         }
         return DomainEntity::create(
+            userId: UserId::hydrate($doctrine->getId()),
             name: $doctrine->getName(),
-            email: $doctrine->getEmail(),
+            email: new EmailAddress($doctrine->getEmail()),
             images: $userImages,
             passwordHash: $doctrine->getPassword(),
-            siret: new Siret($doctrine->getSiret()),
-            address: new Address(
+            siret:  Siret::hydrate($doctrine->getSiret()),
+            address:  Address::hydrate(
                 street: $doctrine->getAddress()->getStreet(),
-                city: $doctrine->getAddress()->getCity(),
                 postalCode: $doctrine->getAddress()->getPostalCode(),
                 country: $doctrine->getAddress()->getCountry()
             )

@@ -76,15 +76,17 @@ final class JobOffer
 
     // -------------------- Business behaviors --------------------
 
+
     public function publish(): void
     {
-        if ($this->status) {
+        if ($this->status == JobStatus::PUBLISHED) {
             throw new DomainException("Job offer already published");
         }
 
         $this->status = JobStatus::PUBLISHED;
         $this->touch();
     }
+
 
     public function rename(string $newTitle): void
     {
@@ -100,6 +102,18 @@ final class JobOffer
         $this->touch();
     }
 
+
+    public function changeImage(StaticMedia $image): void
+    {
+        if ($this->status === JobStatus::PUBLISHED) {
+            throw new DomainException("Published job offers cannot be renamed");
+        }
+        $this->$image = $image;
+        $this->touch();
+    }
+
+
+    
     public function changeContent(array $newContent): void
     {
         if ($this->status === JobStatus::PUBLISHED) {
@@ -114,10 +128,12 @@ final class JobOffer
         $this->touch();
     }
 
+
     private function touch(): void
     {
         $this->updatedAt = new DateTimeImmutable();
     }
+
 
     public function isPublished(): bool { return $this->status === JobStatus::PUBLISHED; }
     

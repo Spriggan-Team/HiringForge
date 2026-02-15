@@ -3,10 +3,11 @@
 namespace App\Domain\Candidate;
 
 use App\Domain\File\StaticMedia;
-use App\Domain\Shared\Actor\Actor;
+use App\Domain\Shared\Account\Account;
+use App\Domain\Shared\Address;
 use App\Domain\Shared\EmailAddress;
 
-class Candidate implements Actor
+class Candidate implements Account
 {
     private CandidateId $id;
 
@@ -17,8 +18,12 @@ class Candidate implements Actor
     private string $passwordHash;
 
     private ?StaticMedia $image = null;
-    private StaticMedia $cv;
+    private ?StaticMedia $cv;
 
+    private ?Address $address;
+    private int $searchRadius = 10; //default search radius on map
+
+    private ?string $description = null;
 
     private function __construct(
         CandidateId $id, 
@@ -26,16 +31,25 @@ class Candidate implements Actor
         string $lastName,
         EmailAddress $email,
         string $passwordHash,
-        ?StaticMedia $image = null,
-        StaticMedia $cv,
+        ?StaticMedia $image,
+        ?StaticMedia $cv,
+        ?Address $address,
+        ?int $searchRadius,
     ){
         $this->id = $id;
+
         $this->firstName = $firstName;
         $this->lastName = $lastName;
         $this->email = $email;
+
         $this->passwordHash = $passwordHash;
         $this->image = $image;
         $this->cv = $cv;
+
+        $this->address = $address;
+        if($searchRadius){
+            $this->searchRadius = $searchRadius;
+        }
     }
 
     public static function create(
@@ -45,8 +59,10 @@ class Candidate implements Actor
         EmailAddress $email,
         string $passwordHash,
         ?StaticMedia $image = null,
-        StaticMedia $cv,
-    )
+        ?StaticMedia $cv = null,
+        ?Address $address = null,
+        ?int $searchRadius = null,
+    ): self
     {
         return new self(
             $id,
@@ -55,7 +71,9 @@ class Candidate implements Actor
             $email,
             $passwordHash,
             $image,
-            $cv
+            $cv,
+            $address,
+            $searchRadius
         );
     }
 
@@ -93,11 +111,25 @@ class Candidate implements Actor
         return $this->image;
     }
 
-    public function cv(): StaticMedia
+    public function cv(): ?StaticMedia
     {
         return $this->cv;
     }
 
+    public function description(): ?string
+    {
+        return $this->description;
+    }
+
+    public function address(): ?Address
+    {
+        return $this->address;
+    }
+
+    public function searchRadius(): int
+    {
+        return $this->searchRadius;
+    }
     //------------------------------------------
     // - Business change --
     //-----------------------------------------
@@ -120,15 +152,45 @@ class Candidate implements Actor
         return $this;
     }
 
-    public function setImage(StaticMedia $image): static
+    public function setImage(?StaticMedia $image): static
     {
         $this->image = $image;
         return $this;
     }
 
-    public function setCv(StaticMedia $cv):static
+    public function removeImage():static
+    {
+        $this->image = null;
+        return $this;
+    }
+
+    public function setCv(?StaticMedia $cv):static
     {
         $this->cv =$cv;
+        return $this;
+    }
+
+    public function removeCv():static
+    {
+        $this->cv = null;
+        return $this;
+    }
+
+    public function setDescription(?string $description):static
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    public function setAddress(?Address $address): static
+    {
+        $this->address = $address;
+        return $this;
+    }
+
+    public function setSearchRadius(int $searchRadius): static
+    {
+        $this->searchRadius = $searchRadius;
         return $this;
     }
 }

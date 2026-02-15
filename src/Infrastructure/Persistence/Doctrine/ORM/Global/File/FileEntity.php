@@ -25,15 +25,14 @@ class FileEntity
     private ?int $id = null;
 
     #[ORM\Column(length: 250)]
-    private string $originalName;
+    /** @var string  $originalName a uniq name - genrated while uploading file on server */
+    private ?string $originalName = null;
 
     #[ORM\Column(length:15)]
-    private string $mime;
+    private ?string $mime = null;
 
     #[ORM\Column(type: "decimal", precision: 10, scale: 2)]
-    private float $size;
-
- 
+    private ?float $size = null;
 
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
@@ -55,10 +54,10 @@ class FileEntity
     private ?CandidateEntity $candidateCV = null;
 
     #[ORM\OneToOne(
-        mappedBy: 'presentation',
+        mappedBy: 'videoPresentation',
         targetEntity: UserEntity::class
     )]
-    private ?UserEntity $userPresentation = null;
+    private ?UserEntity $userVideoPresentation = null;
 
     #[ORM\OneToMany(
         mappedBy: "image",
@@ -82,23 +81,34 @@ class FileEntity
      * GETTERS
      * ======================= */
     
-    public function getId(){
+    public function getId():int
+    {
         return $this->id;
     }
     
-    public function getOriginalName() {
+    /** This function return a string that represent the original  and uniq name genrated By the server
+     *  when the file was uploaded
+     */
+    public function getOriginalName():string
+    {
         return $this->originalName;
     }
     
-
-    
-    public function getMime(){
+    /**
+     * This function return a string that represent the mime type of the designated file
+     */
+    public function getMime():string
+    {
         return $this->mime;
     }
 
-    public function getSize(){
+    /**
+     * This function return the fyle size (wich must be stored in bytes format)
+     */
+    public function getSize(): float {
         return $this->size;
     }
+
     public function getCreatedAt(){
         return $this->createdAt;
     }
@@ -114,12 +124,10 @@ class FileEntity
      * SETTERS
      * ======================= */
 
-    public function setId(?int $id): static
-    {
-        $this->id = $id;
-        return $this;     
-    }
 
+    /**
+     * Here you must insert an originame and uniq name (genreated by your server or your system)
+     */
     public function setOriginalName(string $originalName):static
     {
         $this->originalName = $originalName;
@@ -132,7 +140,10 @@ class FileEntity
         return $this;
     }    
     
-    
+    /**
+     * Here you can define a size for you file to be recorded.
+     * But this size must be in bytes
+     */
     public function setSize(float $size):static
     {
         $this->size = $size;
