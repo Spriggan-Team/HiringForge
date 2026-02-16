@@ -4,28 +4,34 @@ namespace App\Api\Controllers;
 
 use Exception;
 
-use App\Api\Responder\ApiResponseBuilder;
+use App\Api\Responder\ApiResponse;
 
-use App\Application\DTO\RequireAuthentification;
 use App\Application\DTO\JobOffer\CreateJobOffer;
 use App\Application\DTO\JobOffer\GetJobOfferCollectiontRequest;
 use App\Application\DTO\JobOffer\ChangeJobOffferRequest;
+use App\Application\Command\Utils\AuthenticatedPerson;
 
+use App\Domain\Shared\Account\AccountRole;
 
 use App\Application\Command\Handlers\JobOffer\CreateJobOfferCommandHandler;
 use App\Application\Command\Handlers\JobOffer\ChangeJobOfferCommandHandler;
 use App\Application\Command\Handlers\JobOffer\DeleteJobOfferCommandHandler;
 use App\Application\Command\Handlers\JobOffer\PublishJobOfferCommandHandler;
+
 use App\Application\Query\Handlers\JobOffer\GetJobOfferCollectionQueryHandler;
 use App\Application\Query\Handlers\JobOffer\GetJobOfferQueryHandler;
+
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 
+
+#[Route('/job_offer')]
 class JobOfferController extends AbstractController
 {
 
@@ -39,7 +45,7 @@ class JobOfferController extends AbstractController
 
 
 
-    #[Route('/job_offer', methods: ["GET"], name: "fetch_all_job_offer")]
+    #[Route('/', methods: ["GET"], name: "fetch_all_job_offer")]
     public function fetchAllJobOffer(
         Request $request,
         GetJobOfferCollectionQueryHandler $handler
@@ -51,17 +57,17 @@ class JobOfferController extends AbstractController
                 skip: $request->query->get('skip'),
                 limit: $request->query->get('limit')
             ));
-            return $this->json($response, 200);
+            return $response->toJsonResponse();
         }
-        catch(Exception $ex){
-            $this->logger->error("Caught Exception: ". $ex->getMessage() . '\n', ["exception"=> $ex]);
-            return $this->json(ApiResponseBuilder::error("Something went wrong"), 404 );
+        catch(Exception $ex)
+        {
+            return ApiResponse::error(message: "Something went wrong", throwable: $ex, statusCode:404  )->toJsonResponse();
         }
     }
 
 
 
-    #[Route("/job_offer/{offerId}", methods: ["GET"], name: "fetch_one_job_offer")]
+    #[Route("/{offerId}", methods: ["GET"], name: "fetch_one_job_offer")]
     public function fetchOneJobOffer(
         string $offerId,
         GetJobOfferQueryHandler $handler
@@ -70,11 +76,13 @@ class JobOfferController extends AbstractController
         try
         {
             $response = $handler->handle($offerId);
-            return $this->json($response, 200);
+            return $response->toJsonResponse();
         }
         catch(Exception $ex){
-            $this->logger->error("Caught Exception: ". $ex->getMessage(). '\n', ['exception'=>$ex]);
-            return $this->json(ApiResponseBuilder::error("Something went Found"), 404);
+            return  ApiResponse::error(
+                message: "Something went Found",
+                throwable: $ex
+            )->toJsonResponse();
         }
     }
 
@@ -83,56 +91,69 @@ class JobOfferController extends AbstractController
         INSERT/UPDATE/DELETE  REQUEST
     =====================================*/
 
-
-    #[Route("/job_offer", methods: ["POST"], name: "create_job_offer" )]
+    #[IsGranted(AccountRole::USER->value)]
+    #[Route("/", methods: ["POST"], name: "create_job_offer" )]
     public function createJobOffer(
         Request $request,
         CreateJobOfferCommandHandler $handler
     ): JsonResponse
     {
         try{
+            /** @var AuthenticatedPerson */
+            $account = $this->getUser();
+
             $body = json_decode($request->getContent(), true);
             $command =new CreateJobOffer(
                 title:    $body['title'],
                 content:  $body['content'],
-                categories: $body['categories'],
-                image: $request->files->get('image', null),
+                categories: $body['categories'], //an array of categories' ids
             );
-            $response = $handler->handle($command, $auth);
-            return $this->json($response, 201);
+            $response = $handler->handle($command, $account->getId(), $account->getRoles());
+            return $response->toJsonResponse();
         }
         catch(Exception $ex){
-            $this->logger->error("Caught Exception: ". $ex->getMessage(), ['exception'=> $ex]);
-            return $this->json(ApiResponseBuilder::error( "Something wrong happenned" ), 400);
+            return ApiResponse::error(
+                message: "Something wrong happenned",
+                throwable: $ex
+            )->toJsonResponse();
         }
     }
 
 
-
-    #[Route("/job_offer/{offerId}", methods: ['PATCH'])]
+    #[IsGranted(AccountRole::USER->value)]
+    #[Route("/publish/{offerId}", methods: ['PATCH'])]
     public function publish(
         string $offerId,
         PublishJobOfferCommandHandler $handler,
-    )
+    ): JsonResponse
     {
         try{
-            $response = $handler->handle($auth->actorId, $offerId);
-            return $this->json($response, 201);
+            /** @var AuthenticatedPerson */
+            $user = $this->getUser();
+
+            $response = $handler->handle($user->getId(), $offerId);
+            return $response->toJsonResponse();
         }
         catch(Exception $ex){
-            $this->logger->error("Caught Exception: ". $ex->getMessage(), ['exception'=> $ex]);
-            return $this->json(ApiResponseBuilder::error( "Something wrong happenned" ), 400);
+            return ApiResponse::error( 
+                "Something wrong happenned",
+                throwable: $ex,
+            )->toJsonResponse();
         }
     }
 
 
-
-    #[Route("/job_offer", methods: ['PATCH'] ,name: "change_job_offer")]
+    #[IsGranted(AccountRole::USER->value)]
+    #[Route("/change", methods: ['PATCH'] ,name: "change_job_offer")]
     public function changeJobOffer(
         Request $request,
         ChangeJobOfferCommandHandler $handler
-    ){
+    ): JsonResponse
+    {
         try{
+            /** @var AuthenticatedPerson */
+            $user = $this->getUser();
+
             $body = json_decode($request->getContent(), true);
             
             $response = $handler->handle(
@@ -141,31 +162,39 @@ class JobOfferController extends AbstractController
                     title: $body['title'],
                     content: $body['content'],
                     image: $request->files->get("image"),
-                ), $auth
+                ), $user->getId()
             );
             
-            return $this->json($response, 200);
+            return $response->toJsonResponse();
         }
         catch(Exception $ex){
             $this->logger->error("Caught Exception: ". $ex->getMessage(), ['exception'=> $ex]);
-            return $this->json(ApiResponseBuilder::error( "Something wrong happenned" ), 400);
+            return ApiResponse::error( "Something wrong happenned" )->toJsonResponse();
         }
     }
 
 
-
+    #[IsGranted(AccountRole::USER->value)]
     #[Route("/job_offer/{offerId}", methods: ['DELETE'] ,name: "job_offer_delete")]
     public function deleteJobOffer(
         string $offerId,
         DeleteJobOfferCommandHandler $handler,
     ){
         try{
-            $response = $handler->handle($offerId,$auth);
+            /** @var AuthenticatedPerson */
+            $user = $this->getUser();
+
+            $response = $handler->handle(
+                $offerId,
+                $user->getId()
+            );
             return $this->json($response, 200);
         }
         catch(Exception $ex){
             $this->logger->error("Caught Exception: ". $ex->getMessage(), ['exception'=> $ex]);
-            return $this->json(ApiResponseBuilder::error( "Something wrong happenned" ), 400);
+            return ApiResponse::error(
+                "Something wrong happenned"
+            );
         }
     }
 

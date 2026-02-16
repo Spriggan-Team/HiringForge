@@ -21,10 +21,9 @@ class JobOfferModifier
         string $jobOfferId,
         ?string $title,
         ?array  $content,
-        ? StaticMedia $image,
     ):void
     {
-        $offer = $this->repository->getById($userId, $jobOfferId);
+        $offer = $this->repository->findById($userId, $jobOfferId);
 
         if($title){
             $offer->rename($title);

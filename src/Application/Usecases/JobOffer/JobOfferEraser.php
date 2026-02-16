@@ -11,8 +11,8 @@ class JobOfferEraser
 {
     public function __construct(private JobOfferRepositioryInterface $repository){}
 
-    public function execute(string $offerId, string $userId): void
+    public function execute(string $offerId, string $accountId): void
     {
-        $this->repository->delete($offerId,  $userId);
+        $this->repository->delete($offerId,  $accountId);
     }
 }

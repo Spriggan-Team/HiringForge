@@ -17,8 +17,8 @@ use App\Application\Command\Handlers\User\ChangeUserProfilCommandHandler;
 
 use App\Application\DTO\ChangeEmail;
 use App\Application\DTO\ChangePassword;
-use App\Application\Command\Utils\AuthenticatedPerson;
 use App\Application\DTO\User\ChangeUserProfileCommand;
+use App\Application\Command\Utils\AuthenticatedPerson;
 
 
 use App\Domain\Shared\Account\AccountRole;

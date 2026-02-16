@@ -34,6 +34,9 @@ class ApiResponse
         return new self(['message' => $message], $statusCode);
     }
 
+    /**
+     * The trowable is only used to  display message in the terminal 
+     */
     public static function error(string $message = '', ?\Throwable $throwable = null, int $statusCode = 400): self
     {
         if ($throwable && self::$logger) {

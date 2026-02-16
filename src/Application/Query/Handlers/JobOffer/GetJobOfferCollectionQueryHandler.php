@@ -5,8 +5,7 @@ namespace App\Application\Query\Handlers\JobOffer;
 use Exception;
 
 
-use App\Api\Responder\ApiResponseBuilder;
-use App\Application\DTO\RequireAuthentification;
+use App\Api\Responder\ApiResponse;
 use App\Application\DTO\JobOffer\GetJobOfferCollectiontRequest;
 
 use App\Application\Query\Usecase\JobOffer\JobOfferCatalogReader;
@@ -23,7 +22,7 @@ class GetJobOfferCollectionQueryHandler {
     private ValidatorInterface $validator
   ){}
 
-  public function handle( GetJobOfferCollectiontRequest $query): array
+  public function handle(GetJobOfferCollectiontRequest $query): ApiResponse
   {
       $errors = $this->validator->validate($query);
 
@@ -35,7 +34,7 @@ class GetJobOfferCollectionQueryHandler {
         limit: $query->limit
       );
 
-      return ApiResponseBuilder::success($catalog, "Evrything went smootly");
+      return ApiResponse::success($catalog, "Evrything went smootly");
     }
 }
 

@@ -20,22 +20,20 @@ class JobOfferRecorder
     public function execute(
         string $title,
         array $content,
-        string $userId,
+        string $accountId,
         array $categories,
-        ?StaticMedia $image =null,
     ): void
     {
-        $userId = new UserId($userId);    
+        $accountId =  UserId::create($accountId);    
 
         $offre = JobOffer::create(
             id: Uuid::uuid4()->toString(),
             title: $title,
             content: $content,
             categories: $categories,
-            image: $image,
         );
 
-        $this->repository->save($offre, $userId);
+        $this->repository->save($offre, $accountId);
     }
 }
 

@@ -7,9 +7,8 @@ use Exception;
 
 
 use Ramsey\Uuid\Uuid;
-use App\Api\Responder\ApiResponseBuilder;
+use App\Api\Responder\ApiResponse;
 use App\Application\Command\Usecase\JobOffer\JobOfferEraser;
-use App\Application\DTO\RequireAuthentification;
 
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -24,15 +23,15 @@ class DeleteJobOfferCommandHandler
         private ValidatorInterface $validator
     ){}
 
-    public function handle(string $offerId, RequireAuthentification $auth): array
+    public function handle(string $offerId, ?string $accountId = null): ApiResponse
     {
         try{
-            if(!Uuid::isValid($offerId) && Uuid::isValid($auth->actorId)){
+            if(!Uuid::isValid($offerId) && Uuid::isValid($accountId)){
                 throw new BadRequestHttpException();
             }
 
-            $this->eraser->execute($offerId, $auth->actorId);
-            return ApiResponseBuilder::notice("Everything went smoothly");
+            $this->eraser->execute($offerId, $accountId);
+            return ApiResponse::notice("Everything went smoothly");
         }
         catch(Exception $exception){
             throw $exception;

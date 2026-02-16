@@ -2,6 +2,9 @@
 
 namespace App\Domain\JobOffer;
 
+/**
+ * An object that only pupose is to shaped the return value of a domain event (ex: repository)
+ */
 class JobOffertListItem
 {
     public function __construct(

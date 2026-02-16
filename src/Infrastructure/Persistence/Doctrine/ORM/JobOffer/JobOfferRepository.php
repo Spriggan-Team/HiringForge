@@ -5,10 +5,11 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer;
 
 use App\Domain\Exception\RessourceNotFound;
 
+use App\Domain\Shared\Account\AccountId;
 use App\Domain\JobOffer\JobOffer;
-use App\Domain\User\UserId;
+use App\Domain\JobOffer\JobOffertListItem;
+use App\Domain\JobOffer\JobOfferRepositioryInterface;
 
-use App\Domain\Repositories\JobOfferRepositioryInterface;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,7 +21,7 @@ class JobOfferRepository implements JobOfferRepositioryInterface
     public function __construct(private EntityManagerInterface $manager){}
 
 
-    public function getAll(string $accountId): array
+    public function findAll(string $accountId, string $offerId): array
     {
        $posts = $this->manager->getRepository(JobOfferEntity::class)->findBy([
         "account" => $accountId
@@ -33,11 +34,11 @@ class JobOfferRepository implements JobOfferRepositioryInterface
 
 
 
-    public function getById(string $userId, string $jobOfferId): JobOffer
+    public function findById(string $accountId, string $jobOfferId): JobOffer
     {
         $entity = $this->manager->getRepository(JobOfferEntity::class)->findOneBy([
             "id" => $jobOfferId,
-            "account" => $userId
+            "account" => $accountId
         ]);
         if(!$entity){
            throw new RessourceNotFound("Ressource not found"); 
@@ -45,8 +46,18 @@ class JobOfferRepository implements JobOfferRepositioryInterface
         return JobOfferEntityMapper::toDomain($entity);
     }
 
+    public function fetchJobOfferViewCollection(?int $limit = null, ?int $skip = null): array
+    {
+        throw new \Exception('Not implemented');
+    }
 
-    public function save(JobOffer $offer, UserId $userId): void
+    public function fetchJobOfferViewById(string $offerId): JobOffertListItem
+    {
+        throw new \Exception('Not implemented');
+    }
+
+
+    public function save(JobOffer $offer, AccountId $userId): void
     {
         $entity = $this->manager->find(JobOffer::class, $offer->id());
 
@@ -61,6 +72,16 @@ class JobOfferRepository implements JobOfferRepositioryInterface
         $this->manager->flush();
     }
 
+    public function change(JobOffer $jobOffer, string $offerId, string $accountId): void
+    {
+        throw new \Exception('Not implemented');
+    }
+
+
+    public function publish(string $offerId, string $userId): void
+    {
+        throw new \Exception('Not implemented');
+    }
 
 
     public function delete(string $userId, string $uuid): void

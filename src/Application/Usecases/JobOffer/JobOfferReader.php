@@ -8,9 +8,9 @@ class JobOfferReader
 {
     public function __construct(private JobOfferRepositioryInterface $repository){}
 
-    public function execute( string $offerId)
+    public function execute(string $offerId)
     {
-        $offer = $this->repository->findById($offerId);
+        $offer = $this->repository->fetchJobOfferViewById($offerId);
         return $offer;
     }
 }

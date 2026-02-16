@@ -16,11 +16,11 @@ class JobOfferCatalogReader
         ?int $limit = null,
     ): array
     {
-        $data = $this->repository->getAll(
+        $data = $this->repository->fetchJobOfferViewCollection(
             limit: $limit,
             skip: $skip
         );
+
         return $data;
     }
-
 }
