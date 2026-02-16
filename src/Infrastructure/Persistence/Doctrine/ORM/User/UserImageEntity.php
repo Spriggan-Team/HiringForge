@@ -3,7 +3,6 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\Image\ImageEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 

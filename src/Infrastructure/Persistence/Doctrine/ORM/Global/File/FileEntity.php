@@ -2,7 +2,6 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\File;
 
-use App\Domain\Candidate\Candidate;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserImageEntity;
@@ -42,13 +41,13 @@ class FileEntity
     //---------------------------
     
     #[ORM\OneToOne(
-        targetEntity: Candidate::class,
+        targetEntity: CandidateEntity::class,
         mappedBy: 'image'
     )]
     private ?CandidateEntity $candidateImage = null;
 
     #[ORM\OneToOne(
-        targetEntity: Candidate::class,
+        targetEntity: CandidateEntity::class,
         mappedBy: 'cv'
     )]
     private ?CandidateEntity $candidateCV = null;
