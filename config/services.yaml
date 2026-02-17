@@ -69,7 +69,10 @@ services:
     App\Domain\Email\EmailRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Email\EmailRepository
     
+    #------ OTP -------
 
+    App\Domain\OTP\OTPRepositoryInterface:
+        alias:App\Infrastructure\Persistence\Doctrine\ORM\Security\OTPRepository
 
     #--------------
     # FileStorage Services

@@ -2,12 +2,11 @@
 
 namespace App\Application\Usecases\account;
 
-use App\Domain\Email\EmailPurpose;
-use App\Domain\Email\EmailRepositoryInterface;
+use App\Domain\OTP\OTPRepositoryInterface;
+use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
-use App\Domain\User\UserRepositoryInterface;
 
-use App\Domain\User\UserId;
+use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PlainPassword;
 
 use App\Domain\Shared\PasswordHasherInterface;
@@ -16,32 +15,50 @@ use App\Domain\Shared\PasswordHasherInterface;
 class AccountPasswordRenitializer
 {
     public function __construct(
-        private EmailRepositoryInterface $emailRepository,
+        private OTPRepositoryInterface $OTPRepository,
         private PasswordHasherInterface $hasher
     ){}
 
+
     /**
-     * This function reset a user's password based
+     * This function reset a user's password based on OTP verfication
+     * @throws DomainException  this is throwned when something went wrong (A logical error, with a message that can be exposed)
+     *                          It is recommended to use error handling structure for managing fallback here
      */
     public function execute(
-        string $uuid,
+        string $email,
         string $password,
         string $verificationCode,
         AccountRepositoryInterface $repository,
     )
     {
-        $userId =  UserId::create($uuid);
+        //---idendity checking
+        $address =  EmailAddress::create($email);
         $plainPassword = new PlainPassword($password);
 
-        $identity = $repository->exists($userId->value());
-        $emailMessage  =  $this->emailRepository->getEmailWithPurpose($identity->email, EmailPurpose::VERIFICATION_CODE);
+        $identity = $repository->exists(null, $address);
 
-        if(trim($verificationCode) === $emailMessage->verificationCode()){
-            $repository->changePassword(
-                $identity->email,
-                $this->hasher->hash($plainPassword->value())
-            );
-            $this->emailRepository->deleteEmail($emailMessage->id);
+        //---OTP recuperation & verification
+        $otp  =  $this->OTPRepository->getLastVerificationTokenWithPurpose(
+            $address->value(),
+            AccountFlowPurpose::PASSWORD_RESET
+        );
+
+        $isOtpVerified = $otp->verify(
+            plainCode: $verificationCode,
+            hasher: $this->hasher
+        );
+
+        //Throws logic exception when hash verification not succeed
+        if(!$isOtpVerified)
+        {
+            throw new \DomainException("OTP code not correct!!");
         }
+
+        //succedd
+        $repository->changePassword(
+            $identity->email,
+            $this->hasher->hash($plainPassword->value())
+        );
     }
 }

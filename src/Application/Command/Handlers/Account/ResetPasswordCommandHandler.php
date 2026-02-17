@@ -39,7 +39,7 @@ class ResetPasswordCommandHandler
 
             //Call for the usecase
             $this->accountPasswordRenitializer->execute(
-                $changePassword->uuid,
+                $changePassword->email,
                 $changePassword->password,
                 $changePassword->verificationCode,
                 $repository
@@ -50,4 +50,5 @@ class ResetPasswordCommandHandler
             throw $exception;
         }
     }
+    
 }

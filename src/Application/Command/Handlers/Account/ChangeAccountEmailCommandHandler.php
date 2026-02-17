@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Command\Handlers\User;
+namespace App\Application\Command\Handlers\Account;
 
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\ChangeEmail;
@@ -10,7 +10,7 @@ use App\Domain\Shared\Account\AccountRole;
 
 use Exception;
 
-class ChangeUserEmailCommandHandler
+class ChangeAccountEmailCommandHandler
 {
     public function __construct(
         private AccountEmailRenitializer $AccountEmailRenitializer,
@@ -18,11 +18,11 @@ class ChangeUserEmailCommandHandler
     )
     {}
 
-    public function handle(ChangeEmail $command): ApiResponse
+    public function handle(ChangeEmail $command, AccountRole $role): ApiResponse
     {
         try
         {
-            $repository = $this->accountRepositoryFactory->create(AccountRole::USER->value);
+            $repository = $this->accountRepositoryFactory->create($role->value);
 
             $this->AccountEmailRenitializer->execute(
                 oldEmail: $command->oldEMail,

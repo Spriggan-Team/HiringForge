@@ -4,7 +4,12 @@ namespace App\Domain\Shared\Account;
 
 enum AccountRole : string
 {
-    case USER = 'ROLE_USER';
-    case AGENT = 'ROLE_AGENT';
-    case CANDIDATE = 'ROLE_CANDIDATE';
+    case USER = 'USER';
+    case AGENT = 'AGENT';
+    case CANDIDATE = 'CANDIDATE';
+
+    public static function fromString(string  $str):?self
+    {
+        return self::tryFrom(strtoupper($str));
+    }
 }
