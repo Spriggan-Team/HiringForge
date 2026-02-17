@@ -72,7 +72,7 @@ services:
     #------ OTP -------
 
     App\Domain\OTP\OTPRepositoryInterface:
-        alias:App\Infrastructure\Persistence\Doctrine\ORM\Security\OTPRepository
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Security\OTPRepository
 
     #--------------
     # FileStorage Services
@@ -95,6 +95,12 @@ services:
     App\Domain\Email\EmailServicesInterface:
         alias: App\Infrastructure\Email\EmailServices
 
+    #-------------------------------
+    #   Security
+    #-------------------------------
+
+    App\Domain\Shared\PasswordHasherInterface:
+        alias: App\Infrastructure\Security\PasswordHasher
 
 
     #------------------

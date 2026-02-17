@@ -94,19 +94,27 @@ class LoginAuthentictorController extends AbstractAuthenticator
         string $firewallName
     ): ?Response
     {
-        /** @var AuthenticatedPerson $user * */
-        $user =  $token->getUser();
+        try{
+            /** @var AuthenticatedPerson $user * */
+            $user =  $token->getUser();
 
-        $jwt = $this->jwtService->generate([
-            'id' => $user->getId(),
-            'sub' => $user->getUserIdentifier(), //currently the email
-            'roles' => $user->getRoles(),
-        ]);
+            $jwt = $this->jwtService->generate([
+                'id' => $user->getId(),
+                'sub' => $user->getUserIdentifier(), //currently the email
+                'roles' => $user->getRoles(),
+            ]);
 
-        return ApiResponse::success(
-            data: ['token' => $jwt],
-            message: "You've successfully been connected to the service !!"
-        )->toJsonResponse();
+            return ApiResponse::success(
+                data: ['token' => $jwt],
+                message: "You've successfully been connected to the service !!"
+            )->toJsonResponse();
+        }
+        catch(\Exception $exception){
+            return ApiResponse::error(
+                message: "Something went wrong",
+                throwable: $exception
+            )->toJsonResponse();
+        }
     }
 
 

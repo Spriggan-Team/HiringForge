@@ -6,12 +6,12 @@ use App\Domain\Shared\PasswordHasherInterface;
 
 class PasswordHasher implements PasswordHasherInterface
 {
-    public function hash(string $password): string
+    public function hash(string $password, ?string $algorithm = null): string
     {
         return password_hash($password, PASSWORD_BCRYPT);
     }
 
-    public function verify(string $password, string $hash): bool
+    public function verify(string $password, string $hash, ?string $algorithm = null): bool
     {
         throw new \Exception('Not implemented');
     }
