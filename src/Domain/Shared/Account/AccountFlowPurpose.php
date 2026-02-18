@@ -15,7 +15,7 @@ namespace App\Domain\Shared\Account;
 enum AccountFlowPurpose: string
 {
     case PASSWORD_RESET = "PASSWORD_RESET";
-    case EMAIL_CHANGE = "EMAIL_CHANGE";
+    case EMAIL_CHANGE = "EMAIL_CHANGE";         // Defines change context on email
     case SIGN_UP = "SIGNUP";
     case LOGIN_WARNING = "LOGIN_WARNING";
 

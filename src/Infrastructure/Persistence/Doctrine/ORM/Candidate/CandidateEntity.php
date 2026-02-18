@@ -5,7 +5,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\MappedSupperClass\AccountEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;

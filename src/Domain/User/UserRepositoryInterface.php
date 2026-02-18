@@ -4,7 +4,7 @@ namespace App\Domain\User;
 
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 
-interface UserRepositoryInterface  extends AccountRepositoryInterface
+interface UserRepositoryInterface 
 {
     
     /**

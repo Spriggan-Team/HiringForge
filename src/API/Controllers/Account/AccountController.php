@@ -13,11 +13,13 @@ use App\Application\Command\Handlers\Account\ResetPasswordCommandHandler;
 
 use App\Application\Command\Handlers\Account\SendVerificationCodeCommandHandler;
 use App\Domain\Shared\Account\AccountFlowPurpose;
+
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
 
 
 #[Route('/account')]
@@ -34,14 +36,12 @@ class AccountController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true);
-            $accountRole = AccountRole::tryFrom($data['origin']);
             $purpose = AccountFlowPurpose::from($data['purpose']);
             if($purpose)
             {
                 $response = $handler->handle(
                     $data['email'],
                     $purpose,
-                    $accountRole
                 );
                 return $response->toJsonResponse();
             }
@@ -67,18 +67,13 @@ class AccountController extends AbstractController
     {
         try {
             $body = json_decode($request->getContent(), true);
-            $accountRole  = AccountRole::fromString($body['origin']);
-            if($accountRole){
-                $response = $handler->handle(
-                    new ChangePassword(
-                        $body['email'],
-                        $body['password'],
-                        $body['verificationCode']),
-                    $accountRole
-                );
-                return $response->toJsonResponse();
-            }
-            return ApiResponse::error("Missing or Invalid origin field")->toJsonResponse();
+            $response = $handler->handle(
+                new ChangePassword(
+                    $body['email'],
+                    $body['password'],
+                    $body['verificationToken']),
+            );
+            return $response->toJsonResponse();
         }
         catch (Exception $exception)
         {
@@ -90,7 +85,7 @@ class AccountController extends AbstractController
      * This one allow a user to change its email;
      * The requirements here, are to submit the old email along side the new one.
      * You must provide the password and be authentificated here too, because just the authentification
-     * is not secure enough if the user momentary/temporary lost its devices (and as for other concerns)...
+     * is not secure enough if the user momentary/temporary lost its credentials or devices (and as for other concerns)...
      */
     #[Route('/change/email', methods: ['PATCH'], name: "")]
     public function changeEmail(
@@ -105,10 +100,9 @@ class AccountController extends AbstractController
                 oldEMail: $body['oldEmail'],
                 newEmail: $body['newEmail'],
                 password: $body['password'],
-                verificationCode: $body['verificationCode'],
+                verificationToken: $body['verificationCode'],
             );
-            $accountRole  = AccountRole::from($body['origin']);
-            $response = $handler->handle($command, $accountRole);
+            $response = $handler->handle($command);
             return $response->toJsonResponse();
         }
         catch(\Throwable $th)

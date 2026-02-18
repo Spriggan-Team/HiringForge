@@ -11,6 +11,7 @@ use Lcobucci\Clock\SystemClock;
 use Lcobucci\JWT\Validation\ValidAt; 
 use Lcobucci\JWT\UnencryptedToken;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
+use Ramsey\Uuid\Uuid;
 
 class JwtAuthentificator
 {
@@ -36,6 +37,7 @@ class JwtAuthentificator
                         ->issuedBy('Hiring_forge')  //iss
                         ->permittedFor('hiring_forge_front') //aud
                         ->issuedAt($now)    //iat
+                        ->identifiedBy(Uuid::uuid4())
                         ->expiresAt($now->modify("+1 hour")) //exp
                         ->withClaim("playload", $playload)
                         ->getToken(

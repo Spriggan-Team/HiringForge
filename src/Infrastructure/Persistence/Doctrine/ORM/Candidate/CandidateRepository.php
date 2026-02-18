@@ -18,10 +18,6 @@ class CandidateRepository implements CandidateRepositoryInterface
         private EntityManagerInterface $em
     ){}
 
-    public function exists(?string $uuid = null, ?EmailAddress $email = null): KnownIdentity
-    {
-        throw new \Exception('Not implemented');
-    }
 
     public function findByEmail(string $email): Candidate
     {
@@ -42,29 +38,12 @@ class CandidateRepository implements CandidateRepositoryInterface
         throw new \Exception('Not implemented');
     }
 
-    public function findAll(?int $skip=null, ?int $limit = null): array
-    {
-        throw new \Exception('Not implemented');
-    }
-
 
     public function save(Candidate $candidate): void
     {
         $entity = CandidateEntityMapper::toEntity($candidate);
         $this->em->persist($entity);
         $this->em->flush();
-    }
-
-
-    public function changeEmail(string $email): void
-    {
-        throw new \Exception('Not implemented');
-    }
-
-
-    public function changePassword(string $email, string $hash): void
-    {
-        throw new \Exception('Not implemented');
     }
 
 

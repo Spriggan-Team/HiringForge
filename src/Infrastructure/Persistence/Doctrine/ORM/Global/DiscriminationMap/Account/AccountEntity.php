@@ -1,13 +1,27 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\MappedSupperClass;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account;
 
+use App\Domain\Shared\Account\AccountRole;
+use App\Infrastructure\Persistence\Doctrine\ORM\Agent\AgentEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Security\VerificationTokenEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * This is a technical Class used to simplify Actor definiton (ex: User, Candidate, Agent)
+ * This is a class used to simplify Actor definiton (ex: User, Candidate, Agent)
  */
-#[ORM\MappedSuperclass]
+#[ORM\Entity]
+#[ORM\Table(name: 'account')]
+#[ORM\InheritanceType('JOINED')]
+#[ORM\DiscriminatorColumn(name: "account_role", type: 'string')]
+#[ORM\DiscriminatorMap([
+    AccountRole::USER->value => UserEntity::class,
+    AccountRole::AGENT->value => AgentEntity::class,
+    AccountRole::CANDIDATE->value => CandidateEntity::class
+])]
 class AccountEntity
 {
     #[ORM\Id]
@@ -26,9 +40,24 @@ class AccountEntity
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
+    //--------------------
+    //---- Relations
+    //--------------------
+
+    #[ORM\OneToMany(
+        mappedBy: "account",
+        targetEntity: VerificationTokenEntity::class
+    )]
+    private ?Collection $verificationTokens = null;
+
+    //---------
+    //----Object Creating ..
+    //-----------
     public function __construct(){
         $this->createdAt = new \DateTimeImmutable();
     }
+
+
     //---------------
     //  GETTER
     //--------------
@@ -43,6 +72,10 @@ class AccountEntity
 
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     
+    public function getVerificationTokens() {
+        return $this->verificationTokens;
+    }
+
     //---------------------------
     //  SETTERS
     //--------------------------

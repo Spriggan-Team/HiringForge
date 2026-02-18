@@ -29,7 +29,6 @@ interface AccountRepositoryInterface
      */
     public function changePassword(string $email, string $hash): void;
 
-
     
     /**
      * This function hepl us changing the email in the bdd
@@ -37,11 +36,6 @@ interface AccountRepositoryInterface
      */
     public function changeEmail(string $email): void;
 
-    /**
-     * This function purpose is to delete an existing account stored in the bdd
-     * @return void
-     * @throws RessourceNotFound this exception should be throw when we try to delte an user that does not exist in bdd;
-    */
-    public function delete(string $uuid): void;
     
+    public function delete():void;
 }

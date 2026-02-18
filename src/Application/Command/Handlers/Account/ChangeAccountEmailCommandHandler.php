@@ -4,9 +4,7 @@ namespace App\Application\Command\Handlers\Account;
 
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\ChangeEmail;
-use App\Application\Command\Utils\AccountRepositoryFactory;
 use App\Application\Usecases\account\AccountEmailRenitializer;
-use App\Domain\Shared\Account\AccountRole;
 
 use Exception;
 
@@ -14,28 +12,31 @@ class ChangeAccountEmailCommandHandler
 {
     public function __construct(
         private AccountEmailRenitializer $AccountEmailRenitializer,
-        private AccountRepositoryFactory $accountRepositoryFactory
     )
     {}
 
-    public function handle(ChangeEmail $command, AccountRole $role): ApiResponse
+    public function handle(ChangeEmail $command): ApiResponse
     {
         try
         {
-            $repository = $this->accountRepositoryFactory->create($role->value);
 
             $this->AccountEmailRenitializer->execute(
                 oldEmail: $command->oldEMail,
                 newEmail: $command->newEmail,
                 password: $command->password,
-                repository: $repository
+                verificationToken: $command->verificationToken
             );
 
             return ApiResponse::notice('Your email has been updated');
         }
+        catch(\DomainException $domainException)
+        {
+            //contains logic domain message (something that coulb be return to the client);
+            return ApiResponse::error($domainException->getMessage()); 
+        }
         catch(Exception $exceptions)
         {
-            return ApiResponse::error('Your email has been updated', $exceptions);
+            return ApiResponse::error('Something wrong happened', $exceptions);
         }
     }
 }

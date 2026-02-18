@@ -6,7 +6,9 @@ use App\Domain\Shared\Account\AccountRepositoryInterface;
 
 class AccountEraser
 {
-    public function __construct()
+    public function __construct(
+        private AccountRepositoryInterface $accountRepository
+    )
     {}
 
     /**
@@ -14,9 +16,8 @@ class AccountEraser
      */
     public function execute(
         string $id,
-        AccountRepositoryInterface $repository
     ):void
     {
-        $repository->delete($id);
+        $this->accountRepository->delete($id);
     }
 }

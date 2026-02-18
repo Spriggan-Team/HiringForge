@@ -16,7 +16,8 @@ class AccountPasswordRenitializer
 {
     public function __construct(
         private OTPRepositoryInterface $OTPRepository,
-        private PasswordHasherInterface $hasher
+        private PasswordHasherInterface $hasher,
+        private AccountRepositoryInterface $repository,
     ){}
 
 
@@ -28,24 +29,23 @@ class AccountPasswordRenitializer
     public function execute(
         string $email,
         string $password,
-        string $verificationCode,
-        AccountRepositoryInterface $repository,
+        string $verificationToken,
     )
     {
         //---idendity checking
-        $address =  EmailAddress::create($email);
+        $clearEmail =  EmailAddress::create($email);
         $plainPassword = new PlainPassword($password);
 
-        $identity = $repository->exists(null, $address);
+        $identity = $this->repository->exists(null, $clearEmail);
 
         //---OTP recuperation & verification
         $otp  =  $this->OTPRepository->getLastVerificationTokenWithPurpose(
-            $address->value(),
+            $clearEmail->value(),
             AccountFlowPurpose::PASSWORD_RESET
         );
 
         $isOtpVerified = $otp->verify(
-            plainCode: $verificationCode,
+            plainCode: $verificationToken,
             hasher: $this->hasher
         );
 
@@ -56,7 +56,7 @@ class AccountPasswordRenitializer
         }
 
         //succedd
-        $repository->changePassword(
+        $this->repository->changePassword(
             $identity->email,
             $this->hasher->hash($plainPassword->value())
         );

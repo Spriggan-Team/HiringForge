@@ -3,15 +3,16 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Security;
 
 use App\Domain\Shared\Account\AccountFlowPurpose;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity]
-#[ORM\Table('user_email')]
+#[ORM\Table('verification_token')]
 class VerificationTokenEntity
 {
-    #[ORM\GeneratedValue]
+    #[ORM\Id]
     #[ORM\Column(type: "guid", unique: true)]
     private ?string $id = null;
 
@@ -24,7 +25,7 @@ class VerificationTokenEntity
     #[ORM\Column(enumType: AccountFlowPurpose::class, nullable: false)]
     private ?AccountFlowPurpose $purpose = null;
 
-    #[ORM\Column(type: "date",nullable: false)]
+    #[ORM\Column(nullable: false)]
     private ?\DateTimeImmutable $expiresAt = null;
 
     #[ORM\Column]
@@ -33,14 +34,20 @@ class VerificationTokenEntity
     //------------------
     //----Relations
     //-----------------
-        //TODO...
+
+    #[ORM\ManyToOne(
+        targetEntity: AccountEntity::class,
+        inversedBy: 'verificationTokens'
+    )]
+    private AccountEntity $account;
 
     //---------
     //----Object Creating ..
     //-----------
 
-    public function __construct()
+    public function __construct(AccountEntity $account)
     {
+        $this->account = $account;
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -76,6 +83,11 @@ class VerificationTokenEntity
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getRelatedAccount(): AccountEntity
+    {
+        return $this->account;
     }
 
     //-----------------

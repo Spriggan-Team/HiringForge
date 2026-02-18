@@ -2,13 +2,11 @@
 
 namespace App\Application\Query\Handlers\User;
 
-use Exception;
 
 use App\Api\Responder\ApiResponse;
 use App\Application\Usecases\User\FetchUser;
 use App\Domain\Exception\RessourceNotFound;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-
 
 
 class GetUserQueryHandler

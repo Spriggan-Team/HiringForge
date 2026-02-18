@@ -9,7 +9,8 @@ use App\Domain\Shared\PasswordHasherInterface;
 class AuthentificateAccountUseCase
 {
     public function __construct(
-        private PasswordHasherInterface $hasher
+        private PasswordHasherInterface $hasher,
+        private AccountRepositoryInterface $accountRepository
     ){}
 
     /**
@@ -21,10 +22,9 @@ class AuthentificateAccountUseCase
     public function execute(
         string $email,
         string $password,
-        AccountRepositoryInterface $repository
     ):string
     {
-        $identity = $repository->exists(null,  EmailAddress::create($email));
+        $identity = $this->accountRepository->exists(null,  EmailAddress::create($email));
         $isPasswordCorrect = $identity && $this->hasher->verify($identity->password, $password);
 
         if(!$isPasswordCorrect){

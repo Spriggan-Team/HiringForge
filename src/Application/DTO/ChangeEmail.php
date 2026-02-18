@@ -10,6 +10,6 @@ class ChangeEmail
         public string $oldEMail,
         public string $newEmail,
         public string $password,
-        public string $verificationCode
+        public string $verificationToken
     ){}
 }

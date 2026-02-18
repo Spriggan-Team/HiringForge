@@ -7,7 +7,7 @@ use App\Domain\Shared\Account\AccountRepositoryInterface;
 /**
  * This interface describe how we can interact with the bdd
  */
-interface CandidateRepositoryInterface extends AccountRepositoryInterface
+interface CandidateRepositoryInterface 
 {
 
     /**
@@ -19,6 +19,7 @@ interface CandidateRepositoryInterface extends AccountRepositoryInterface
     public function findById(string $uuid): Candidate;
 
 
+    
     /**
      * This function is meant to retreive an actor from the bdd uisng his email
      * @return Candidate                the retriving actor (user, candidate, agent ...)

@@ -15,7 +15,6 @@ use App\Domain\Shared\Account\AccountRole;
 use App\Infrastructure\Security\JwtAuthentificator;
 
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\HttpFoundation\Response;
 

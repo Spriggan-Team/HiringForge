@@ -16,17 +16,14 @@ class AccountRepositoryFactory
     ){}
 
     /**
+     * @depracated - Should no longer be used
      * This function is used to choose the specific type of account repository
      * you want to use
      * @param string $type  A value between 'candidate' | 'user'
      * @return AccountRepositoryInterface
      */
-    public function create(string $type): AccountRepositoryInterface
+    public function create(string $type): void
     {
-        return match($type) {
-            AccountRole::CANDIDATE->value => new CandidateRepository($this->em),
-            AccountRole::USER->value      => new UserRepository($this->em),
-            default    => throw new \InvalidArgumentException("Unknown user type $type"),
-        };
+
     }
 }

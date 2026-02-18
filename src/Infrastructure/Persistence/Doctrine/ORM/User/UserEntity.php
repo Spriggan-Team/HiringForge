@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
 
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\MappedSupperClass\AccountEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;

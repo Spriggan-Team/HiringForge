@@ -4,10 +4,7 @@ namespace App\Application\Command\Handlers\Auth;
 
 use App\Domain\Exception\RessourceNotFound;
 use App\Application\DTO\AuthentificateAccount;
-
-use App\Application\Command\Utils\AccountRepositoryFactory;
 use App\Application\Usecases\Auth\AuthentificateAccountUseCase;
-
 
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
@@ -19,11 +16,10 @@ class AuthenticateCommandHandler
     public function __construct(
         private ValidatorInterface $validator,
         private AuthentificateAccountUseCase $authentificator,
-        private AccountRepositoryFactory $accountRepositoryFactory
     )
     {} 
 
-    public function handle(AuthentificateAccount $account, array $roles): string
+    public function handle(AuthentificateAccount $account): string
     {
         try{
             $errors = $this->validator->validate($account);
@@ -31,12 +27,10 @@ class AuthenticateCommandHandler
                 throw new BadRequestHttpException('Email et mot de passe requis');
             }
 
-            $repo = $this->accountRepositoryFactory->create($roles[0] ?? "");
             
             $personId = $this->authentificator->execute(
                 email: $account->email,
                 password: $account->password,
-                repository: $repo
             );
 
             return $personId;

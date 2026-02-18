@@ -5,9 +5,7 @@ namespace App\Application\Command\Handlers\Account;
 use Exception;
 
 use App\Api\Responder\ApiResponse;
-use App\Application\Command\Utils\AccountRepositoryFactory;
 use App\Application\DTO\ChangePassword;
-use App\Domain\Shared\Account\AccountRole;
 use App\Application\Usecases\account\AccountPasswordRenitializer;
 
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -18,7 +16,6 @@ class ResetPasswordCommandHandler
 {
     public function __construct(
         private AccountPasswordRenitializer $accountPasswordRenitializer,
-        private AccountRepositoryFactory $accountRepositoryfactory,
         private ValidatorInterface $validator
     ){}
 
@@ -26,7 +23,7 @@ class ResetPasswordCommandHandler
      * This is an handler.
      * A function that enforce major techinical validation and call for the usecase
      */
-    public function handle(ChangePassword $changePassword, AccountRole $role): ApiResponse
+    public function handle(ChangePassword $changePassword): ApiResponse
     {
         try{
             $errors = $this->validator->validate($changePassword);
@@ -35,14 +32,11 @@ class ResetPasswordCommandHandler
                 throw new  BadRequestHttpException();
             }
 
-            $repository =  $this->accountRepositoryfactory->create($role->value);
-
             //Call for the usecase
             $this->accountPasswordRenitializer->execute(
                 $changePassword->email,
                 $changePassword->password,
                 $changePassword->verificationCode,
-                $repository
             );
             return ApiResponse::notice("Everything went smoothly");
         }

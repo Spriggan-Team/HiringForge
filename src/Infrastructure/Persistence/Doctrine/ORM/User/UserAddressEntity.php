@@ -7,7 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 
 /**
- * This entity class is used to construct a one-to-one relationship between User and Address
+ * This entity class is used to construct a one-to-one relationship between User and Address;
+ * It may in the future build a many to many relationship between user and address (then this table will represent the user's sites )
  */
 #[ORM\Entity]
 #[ORM\Table(

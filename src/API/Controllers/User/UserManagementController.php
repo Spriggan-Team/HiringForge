@@ -5,23 +5,18 @@ namespace App\Api\Controllers\User;
 
 use Exception;
 
-use App\Domain\Shared\Address;
-
 use App\Api\Responder\ApiResponse;
-use App\Application\Command\Handlers\Account\ChangeAccountEmailCommandHandler;
-use App\Application\Command\Handlers\Account\DeleteAccountCommandHandler;
-use App\Application\Command\Handlers\User\ChangeUserProfilCommandHandler;
 
+use App\Domain\Shared\Address;
+use App\Domain\Shared\Account\AccountRole;
 
-use App\Application\DTO\ChangeEmail;
 use App\Application\DTO\User\ChangeUserProfileCommand;
 use App\Application\Command\Utils\AuthenticatedPerson;
 
-
-use App\Domain\Shared\Account\AccountRole;
+use App\Application\Command\Handlers\User\ChangeUserProfilCommandHandler;
+use App\Application\Command\Handlers\User\DeleteUserCommandHandler;
 
 use App\Application\Query\Handlers\User\GetUserQueryHandler;
-
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,6 +25,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
 
 
 #[IsGranted(AccountRole::USER->value)]
@@ -106,7 +102,7 @@ class UserManagementController extends AbstractController
     #[Route('/delete', methods: ['DELETE'], name: "delete_account")]
     public function deleteAccount(
         Request $request,
-        DeleteAccountCommandHandler $handler
+        DeleteUserCommandHandler $handler
     ): JsonResponse
     {
         try

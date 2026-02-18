@@ -6,7 +6,6 @@ use App\Api\Responder\ApiResponse;
 use App\Application\DTO\User\ChangeUserProfileCommand;
 use App\Application\Command\Usecase\User\UserModifier;
 
-
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 

@@ -8,12 +8,13 @@ use App\Domain\Shared\EmailAddress;
 use App\Domain\Email\EmailMessage;
 
 
+use App\Domain\Shared\Account\AccountFlowPurpose;
+
 use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Email\EmailServicesInterface;
-
-use App\Domain\Shared\Account\AccountFlowPurpose;
-use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\PasswordHasherInterface;
+use App\Domain\Shared\Account\AccountRepositoryInterface;
+
 
 class VerificationCodeSender
 {
@@ -21,15 +22,16 @@ class VerificationCodeSender
         private PasswordHasherInterface $hasher,
         private OTPRepositoryInterface $OTPRepository,
         private EmailServicesInterface  $emailServices,
+        private AccountRepositoryInterface $repository,
     ){}
 
     public function execute(
         string $email,
         AccountFlowPurpose $purpose,
-        AccountRepositoryInterface $repository
     ): void
     {
-        $identity = $repository->exists(uuid: null, email: EmailAddress::create($email));
+        $clearEmail = EmailAddress::create($email);
+        $identity = $this->repository->exists(uuid: null, email: $clearEmail );
 
         
         $emailMessage =  EmailMessage::create(
@@ -39,7 +41,11 @@ class VerificationCodeSender
         );
         
         //---Verify if an existing token validation code is not stored in the bdd
-        $lastOtp = $this->OTPRepository->getLastVerificationTokenWithPurpose(email: $email, purpose: $purpose);
+        $lastOtp = $this->OTPRepository->getLastVerificationTokenWithPurpose(
+            email: $email,
+            purpose: $purpose
+        );
+
         if($lastOtp && !$lastOtp->isExpired())
         {
             $emailMessage->code = $lastOtp->hashCode;
@@ -55,7 +61,7 @@ class VerificationCodeSender
             hasher: $this->hasher,
             purpose: $purpose
         );
-        $this->OTPRepository->save($otp);
+        $this->OTPRepository->save($clearEmail->value() ,$otp);
 
         $emailMessage->code = $otp->hashCode;
         $this->emailServices->sendTo(

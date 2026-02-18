@@ -4,6 +4,7 @@ namespace App\Domain\OTP;
 
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountFlowPurpose;
+use App\Domain\Shared\Account\AccountRole;
 
 interface OTPRepositoryInterface
 {
@@ -23,6 +24,6 @@ interface OTPRepositoryInterface
      * @throws Exception
      * @return void 
      */
-    public function save(OTP $otp): void;
+    public function save(string $email, OTP $otp): void;
 
 }
