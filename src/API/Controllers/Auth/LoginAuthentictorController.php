@@ -6,11 +6,12 @@ use App\Api\Responder\ApiResponse;
 use App\Application\DTO\AuthentificateAccount;
 
 
-use App\Application\Command\Handlers\Auth\AuthenticateCommandHandler;
 
 use Exception;
 
-use App\Application\Command\Utils\AuthenticatedPerson;
+use App\Application\DTO\Auth\AuthenticatedPerson;
+use App\Application\Usecases\Auth\AuthentificateAccountUseCase;
+use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountRole;
 use App\Infrastructure\Security\JwtAuthentificator;
 
@@ -19,6 +20,7 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\HttpFoundation\Response;
 
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
@@ -32,7 +34,7 @@ class LoginAuthentictorController extends AbstractAuthenticator
 {
 
     public function __construct(
-        private AuthenticateCommandHandler $handler,
+        private AuthentificateAccountUseCase $usecase,
         private JwtAuthentificator $jwtService,
     ){}
 
@@ -69,7 +71,20 @@ class LoginAuthentictorController extends AbstractAuthenticator
                     default => AccountRole::USER->value,
             };
             
-            $personId = $this->handler->handle($account, [$role]);
+            //---------------Authentificator
+            try{
+                $personId = $this->usecase->execute($account);
+            }
+            catch(RessourceNotFound $notFound){
+                throw new CustomUserMessageAuthenticationException('Utilisateur introuvable');
+            }
+            catch(\DomainException $domainException){
+                throw new CustomUserMessageAuthenticationException(
+                    $domainException->getMessage() ?? "sOmething wrong happened"
+                );
+            }
+            //-------------------------
+
             $actor = new AuthenticatedPerson(
                 $personId,
                 sub: $account->email,

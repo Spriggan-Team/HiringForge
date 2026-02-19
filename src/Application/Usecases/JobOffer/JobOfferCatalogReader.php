@@ -2,23 +2,23 @@
 
 namespace App\Application\Query\Usecase\JobOffer;
 
-use App\Domain\JobOffer\JobOfferRepositioryInterface;
+use App\Application\DTO\JobOffer\GetJobOfferCollectiontRequest;
+use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
 
 class JobOfferCatalogReader
 {
 
     public function __construct(
-        private JobOfferRepositioryInterface $repository
+        private JobOfferQueryRepositoryInterace $repository
     ){}
 
     public function execute(
-        ?int $skip  = null,
-        ?int $limit = null,
+        GetJobOfferCollectiontRequest $query
     ): array
     {
         $data = $this->repository->fetchJobOfferViewCollection(
-            limit: $limit,
-            skip: $skip
+            limit: $query->limit,
+            skip: $query->skip
         );
 
         return $data;

@@ -29,4 +29,9 @@ class AccountRepository implements AccountRepositoryInterface
         throw new \Exception('Not implemented');
     }
 
+    public function delete(): void
+    {
+        throw new \Exception('Not implemented');
+    }
+
 }

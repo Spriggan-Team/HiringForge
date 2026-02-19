@@ -5,7 +5,7 @@ namespace App\Api\Controllers\Auth;
 
 use App\Api\Responder\ApiResponse;
 use App\Infrastructure\Security\JwtAuthentificator;
-use App\Application\Command\Utils\AuthenticatedPerson;
+use App\Application\DTO\Auth\AuthenticatedPerson;
 
 
 use Symfony\Component\HttpFoundation\Request;

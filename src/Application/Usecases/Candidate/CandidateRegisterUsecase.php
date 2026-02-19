@@ -2,6 +2,7 @@
 
 namespace App\Application\Usecases\Candidate;
 
+use App\Api\DTO\Candidate\RegisterCandidateCommand;
 use App\Application\Usecases\account\AccountRegister;
 use App\Domain\Candidate\Candidate;
 use App\Domain\Candidate\CandidateId;
@@ -12,6 +13,7 @@ use App\Domain\Candidate\CandidateRepositoryInterface;
 use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
+use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\Address;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
@@ -21,7 +23,8 @@ use App\Infrastructure\Storage\FileStorage\MediaFactory;
 class CandidateRegisterUsecase
 {
     public function __construct(
-        private CandidateRepositoryInterface $repository,
+        private AccountRepositoryInterface $accountRepository,
+        private CandidateRepositoryInterface $candidateRepository,
         private PasswordHasherInterface $hasher,
         private MediaStorageInterface $storage,
         private MediaFactory   $mediaFactory,
@@ -32,20 +35,11 @@ class CandidateRegisterUsecase
      * @return ActorRegister
      */
     public function execute(
-        string $lastName,
-        string $firstName,
-        string $email,
-        string $password,
-        /** @var StaticMedia */
-        mixed $uploadedImage = null,
-        /** @var StaticMedia */
-        mixed $uploadedCV,
-        ?Address $address = null,
-        ?int $searchRadius = null,
+        RegisterCandidateCommand $command
     ): AccountRegister
     {
-        $email =  EmailAddress::create($email);
-        $identity = $this->repository->exists(null, $email);
+        $email =  EmailAddress::create($command->email);
+        $identity = $this->accountRepository->exists(null, $email);
         if($identity){
           throw new EmailAlreadyRegistered();
         }
@@ -56,20 +50,20 @@ class CandidateRegisterUsecase
 
         $candidate = Candidate::create(
             id: $candidateId,
-            firstName: $firstName,
-            lastName: $lastName,
+            firstName: $command->firstName,
+            lastName: $command->lastName,
             email: $email,
-            passwordHash: $this->hasher->hash((new PlainPassword($password))->value()),
-            address: $address,
-            searchRadius: $searchRadius
+            passwordHash: $this->hasher->hash((new PlainPassword($command->password))->value()),
+            address: $command->address,
+            searchRadius: $command->searchRadius
         );
 
-        if($uploadedImage){
-            $staticImage = $this->mediaFactory->createStaticMedia($uploadedImage);
+        if($command->image){
+            $staticImage = $this->mediaFactory->createStaticMedia($command->image);
             $candidate->setImage($staticImage);
 
             $this->storage->store(
-                $uploadedImage,
+                $command->image,
                 storedFileName: $staticImage->name,
                 ownerId: $candidateId->value(),
                 ownerType: MediaOwnerType::CANDIDATE,
@@ -82,12 +76,12 @@ class CandidateRegisterUsecase
             );
         }
 
-        if($uploadedCV){
-            $staticCV = $this->mediaFactory->createStaticMedia($uploadedCV);
+        if($command->cv){
+            $staticCV = $this->mediaFactory->createStaticMedia($command->cv);
             $candidate->setCv($staticCV);
               
             $this->storage->store(
-                file: $uploadedCV,
+                file: $command->cv,
                 ownerId: $candidateId->value(),
                 storedFileName: $staticCV->name,
                 ownerType: MediaOwnerType::CANDIDATE,
@@ -100,7 +94,7 @@ class CandidateRegisterUsecase
         }
 
 
-        $this->repository->save($candidate);
+        $this->candidateRepository->save($candidate);
 
         return new AccountRegister(
             $candidateId->value(),

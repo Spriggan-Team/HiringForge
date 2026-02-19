@@ -2,6 +2,7 @@
 
 namespace App\Application\Usecases\Auth;
 
+use App\Application\DTO\AuthentificateAccount;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
@@ -15,17 +16,16 @@ class AuthentificateAccountUseCase
 
     /**
      * This one is to authenticate account
-     * @throws DomainException  This is an exception that can be throw when something is not correct
+     * @throws RessourceNotFound|DomainException  This is an exception that can be throw when something is not correct
      *                          or do not the the buisness logic in the data provided
      * @return string
      */
     public function execute(
-        string $email,
-        string $password,
+        AuthentificateAccount $authentificateAccount
     ):string
     {
-        $identity = $this->accountRepository->exists(null,  EmailAddress::create($email));
-        $isPasswordCorrect = $identity && $this->hasher->verify($identity->password, $password);
+        $identity = $this->accountRepository->exists(null,  EmailAddress::create($authentificateAccount->email));
+        $isPasswordCorrect = $identity && $this->hasher->verify($identity->password, $authentificateAccount->password);
 
         if(!$isPasswordCorrect){
             throw new \DomainException("The password is not correct");

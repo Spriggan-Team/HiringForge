@@ -2,6 +2,7 @@
 
 namespace App\Application\Usecases\account;
 
+use App\Application\DTO\ChangePassword;
 use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
@@ -27,14 +28,12 @@ class AccountPasswordRenitializer
      *                          It is recommended to use error handling structure for managing fallback here
      */
     public function execute(
-        string $email,
-        string $password,
-        string $verificationToken,
+        ChangePassword $command
     )
     {
         //---idendity checking
-        $clearEmail =  EmailAddress::create($email);
-        $plainPassword = new PlainPassword($password);
+        $clearEmail =  EmailAddress::create($command->email);
+        $plainPassword = new PlainPassword($command->password);
 
         $identity = $this->repository->exists(null, $clearEmail);
 
@@ -45,7 +44,7 @@ class AccountPasswordRenitializer
         );
 
         $isOtpVerified = $otp->verify(
-            plainCode: $verificationToken,
+            plainCode: $command->verificationToken,
             hasher: $this->hasher
         );
 

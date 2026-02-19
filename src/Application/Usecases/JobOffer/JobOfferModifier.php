@@ -3,8 +3,7 @@
 
 namespace App\Application\Command\Usecase\JobOffer;
 
-use App\Domain\File\StaticMedia;
-use App\Domain\User\UserId;
+use App\Application\DTO\JobOffer\ChangeJobOffferRequest;
 use App\Domain\JobOffer\JobOfferRepositioryInterface;
 
 class JobOfferModifier
@@ -18,21 +17,19 @@ class JobOfferModifier
      */
     public function execute(
         string $userId,
-        string $jobOfferId,
-        ?string $title,
-        ?array  $content,
+        ChangeJobOffferRequest $command
     ):void
     {
-        $offer = $this->repository->findById($userId, $jobOfferId);
+        $offer = $this->repository->findById($userId, $command->uuid);
 
-        if($title){
-            $offer->rename($title);
+        if($command->title){
+            $offer->rename($command->title);
         }
 
-        if($content){
-            $offer->changeContent($content);
+        if($command->content){
+            $offer->changeContent($command->content);
         }
 
-        $this->repository->change($offer, $jobOfferId, $userId);
+        $this->repository->change($offer, $command->uuid, $userId);
     }
 }

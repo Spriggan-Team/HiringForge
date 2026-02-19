@@ -2,31 +2,33 @@
 
 namespace App\Application\Usecases\User;
 
-use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\User\UserId;
-use App\Domain\User\UserListItem;
-use App\Domain\User\UserRepositoryInterface;
+use App\Application\Query\Handlers\User\UserListItem;
+use App\Application\Query\Handlers\User\UserProfileItem;
+use App\Application\Query\Handlers\User\UserQueryRepositoryInterface;
 
 
 class FetchUser {
     public function __construct(
-        private UserRepositoryInterface $userRepositoryRepository,
-        private AccountRepositoryInterface $accountRepository
+        private UserQueryRepositoryInterface $userQueryRepository,
     ){}
 
     /**
-     * This usecase is able to get an user from the bdd
-     * with domain validation
-     * @throws RessourceNotFound|DomainException
+     * Application use case responsible for retrieving
+     * a lightweight user projection.
+     *
+     * This use case operates on the query side and
+     * returns a read model optimized for presentation.
+     * It does not reconstruct the full domain aggregate.
+     *
+     * @throws RessourceNotFound
      */
-    public function execute(string $id): UserListItem
+    public function execute(string $id): UserProfileItem
     {
         $userId = new UserId($id);
 
-        $this->accountRepository->exists($userId->value());
-        $userView = $this->userRepositoryRepository->fectchUserView($userId->value());
-
-        return $userView;
+        return $this->userQueryRepository
+            ->fetchUserView($userId->value());
     }
 }
 

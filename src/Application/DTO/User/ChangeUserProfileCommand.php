@@ -3,26 +3,19 @@
 namespace App\Application\DTO\User;
 
 use App\Domain\Shared\Address;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class ChangeUserProfileCommand
 {
     public function __construct(
-        public string $uuid, //must match the id of the account
-
+        public string $uuid, // must match account id
         public ?string $name = null,
-
         public ?string $siret = null,
-
-        /** @var array represents an array of images to add*/
+        /** @var UploadedFile[] */
         public array $addImages = [],
-
-        /** @var array<string> $deleteImages represents an array of images to add*/
+        /** @var string[] names of images to delete */
         public array $deleteImages = [],
-
-        /** @var array<string> $address represents an array of images to delete*/
         public ?Address $address = null,
-
-        /** @var array<string> $presentation represents a video presentation*/
-        public array $videoPresentation = [], 
-    ){}
+        public ?UploadedFile $videoPresentation = null
+    ) {}
 }

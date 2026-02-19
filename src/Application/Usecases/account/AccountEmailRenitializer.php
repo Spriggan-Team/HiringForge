@@ -2,6 +2,7 @@
 
 namespace App\Application\Usecases\account;
 
+use App\Application\DTO\ChangeEmail;
 use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
@@ -26,15 +27,12 @@ class AccountEmailRenitializer
      * @throws \DomainException  Is thrown when a domain exception is raised; here it is when the provided password doesn't match the user
      */
     public function execute(
-        string $oldEmail,
-        string $newEmail,
-        string $password,
-        string $verificationToken
+        ChangeEmail $command
     )
     {
-        $clearOldEmail =  EmailAddress::create($oldEmail);
-        $clearNewEmail =  EmailAddress::create($newEmail);
-        $plainPassword = new PlainPassword($password);
+        $clearOldEmail =  EmailAddress::create($command->oldEmail);
+        $clearNewEmail =  EmailAddress::create($command->newEmail);
+        $plainPassword = new PlainPassword($command->password);
 
         $user = $this->repository->exists(null, $clearOldEmail);
 
@@ -45,7 +43,7 @@ class AccountEmailRenitializer
                 purpose: AccountFlowPurpose::EMAIL_CHANGE
             );
             $otp->verify(
-                plainCode: $verificationToken,
+                plainCode: $command->verificationToken,
                 hasher: $this->hasher
             );
 

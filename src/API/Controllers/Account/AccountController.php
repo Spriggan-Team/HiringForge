@@ -6,12 +6,11 @@ use App\Api\Responder\ApiResponse;
 
 use App\Application\DTO\ChangeEmail;
 use App\Application\DTO\ChangePassword;
-use App\Domain\Shared\Account\AccountRole;
 
-use App\Application\Command\Handlers\Account\ChangeAccountEmailCommandHandler;
-use App\Application\Command\Handlers\Account\ResetPasswordCommandHandler;
 
-use App\Application\Command\Handlers\Account\SendVerificationCodeCommandHandler;
+use App\Application\Command\Usecase\Account\VerificationCodeSender;
+use App\Application\Usecases\account\AccountEmailRenitializer;
+use App\Application\Usecases\account\AccountPasswordRenitializer;
 use App\Domain\Shared\Account\AccountFlowPurpose;
 
 use Exception;
@@ -31,7 +30,7 @@ class AccountController extends AbstractController
     #[Route("/verificationcode", methods:["GET"], name: "update_account")]
     public function sendPasswordOTP(
         Request $request,
-        SendVerificationCodeCommandHandler $handler
+        VerificationCodeSender $usecase
     ): JsonResponse
     {
         try {
@@ -39,11 +38,11 @@ class AccountController extends AbstractController
             $purpose = AccountFlowPurpose::from($data['purpose']);
             if($purpose)
             {
-                $response = $handler->handle(
-                    $data['email'],
-                    $purpose,
+                $usecase->execute(
+                    email: $data['email'],
+                    purpose: $purpose,
                 );
-                return $response->toJsonResponse();
+                return ApiResponse::notice("Everything went smoothly")->toJsonResponse();
             }
             return ApiResponse::error("Missing or invalid purpose field")->toJsonResponse();
         }
@@ -62,18 +61,17 @@ class AccountController extends AbstractController
     #[Route("/resetpassword", methods:["PATCH"], name: "reset_password")]
     public function resetPassword(
         Request $request,
-        ResetPasswordCommandHandler $handler
+        AccountPasswordRenitializer $usecase
     ): JsonResponse
     {
         try {
             $body = json_decode($request->getContent(), true);
-            $response = $handler->handle(
-                new ChangePassword(
+            $command = new ChangePassword(
                     $body['email'],
                     $body['password'],
-                    $body['verificationToken']),
-            );
-            return $response->toJsonResponse();
+                    $body['verificationToken']);
+            $usecase->execute($command);
+            return ApiResponse::notice('Everything is ok')->toJsonResponse();
         }
         catch (Exception $exception)
         {
@@ -90,20 +88,20 @@ class AccountController extends AbstractController
     #[Route('/change/email', methods: ['PATCH'], name: "")]
     public function changeEmail(
         Request $request,
-        ChangeAccountEmailCommandHandler $handler
+        AccountEmailRenitializer $usecase
     )
     {
         try
         {
             $body = json_decode($request->getContent());
             $command = new ChangeEmail(
-                oldEMail: $body['oldEmail'],
+                oldEmail: $body['oldEmail'],
                 newEmail: $body['newEmail'],
                 password: $body['password'],
                 verificationToken: $body['verificationCode'],
             );
-            $response = $handler->handle($command);
-            return $response->toJsonResponse();
+            $usecase->execute($command);
+            return ApiResponse::notice("Your email has been updated")->toJsonResponse();
         }
         catch(\Throwable $th)
         {

@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Api\Controllers\User;
+
+
+use App\Api\Responder\ApiResponse;
+
+
+use App\Application\Usecases\User\FetchUser;
+
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Attribute\Route;
+
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+
+
+class UserQueryManagement extends AbstractController
+{
+    public function __construct(
+    private LoggerInterface $logger,
+    ) {
+        //This is mandatory that permit ApiResponseBuilder to log exception in a special format
+        //It purpose is to reduce the resposability of the http controller.
+        ApiResponse::init($logger);
+    }
+
+    #[Route('/basic-info', methods: ['GET'])]
+    public function getBasicInfo(){
+
+    }
+
+    /**
+     * This one allow you to get a  users' information with the appropriate persmission
+     */
+    #[Route("/profile", methods: ["GET"], name: "fetch_user")]
+    public function getUserById(
+        Request $request,
+        FetchUser $handler
+    ): JsonResponse
+    {
+        try {
+            /** @var AuthenticatedPerson */
+            $user = $this->getUser();
+
+            $response = $handler->execute($user->getId());
+            return ApiResponse::success($response, "Everything went smoothly")->toJsonResponse();
+        }
+        catch (\Exception $exception)
+        {
+            return ApiResponse::error('User not found', $exception)->toJsonResponse();
+        }
+    }
+}

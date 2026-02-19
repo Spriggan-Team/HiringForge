@@ -55,7 +55,10 @@ services:
 
     #------ User ------
     App\Domain\User\UserRepositoryInterface:
-        alias: App\Infrastructure\Persistence\Doctrine\ORM\User\UserRepository
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories\UserRepository
+    
+    App\Application\Query\Handlers\User\UserQueryRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories\UserQueryRepository
 
     #------ Candidate ----
     App\Domain\Candidate\CandidateRepositoryInterface:
@@ -63,7 +66,10 @@ services:
 
     #----- JobOffer ------
     App\Domain\JobOffer\JobOfferRepositioryInterface:
-        alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferRepository
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferRepository
+    
+    App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferQueryRepository
     
     #------ Email -------
     App\Domain\Email\EmailRepositoryInterface:

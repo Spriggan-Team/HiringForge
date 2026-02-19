@@ -2,19 +2,10 @@
 
 namespace App\Domain\User;
 
-use App\Domain\Shared\Account\AccountRepositoryInterface;
 
 interface UserRepositoryInterface 
 {
     
-    /**
-     * @param string                                         $uuid is the user's id
-     * @throws RessourceNotFound|InvalidArgumentException    This is raised when an user is not identify in the bdd
-     * @return UserListItem                                  This is a view of all basics info about the user. It represents it profile information
-     */
-    public function fectchUserView(string $uuid): UserListItem;
-
-
 
     /**
      * A method to save a new ressource in storage/bdd
@@ -55,5 +46,7 @@ interface UserRepositoryInterface
      * return the specified actor requested if founded in the bdd storage
      */
     public function findById(string $uuid): User;
+
+    public function delete(string $id): void;
     
 }

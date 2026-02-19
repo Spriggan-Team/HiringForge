@@ -3,6 +3,7 @@
 
 namespace App\Application\Usecases\User;
 
+use App\Application\DTO\User\RegisterUserCommand;
 use App\Domain\Exception\EmailAlreadyRegistered;
 
 use App\Domain\User\User;
@@ -39,18 +40,10 @@ class UserRegisterUseCase
      *                                                                      (most of them are exception from /Domain)
      */
     public function execute(
-        string  $name,
-        string  $siret,
-        string  $email,
-        string  $password,
-        Address $address,
-        /** @var mixed[] $images an array of file as image; mixed should match the type of file you/we use */
-        array   $images,
-        /** @var mixed $presentation a file (video) use by user as personnal description */
-        mixed  $videoPresentation = null 
+        RegisterUserCommand $command
     ): AccountRegister
     {    
-        $email =  EmailAddress::create($email);
+        $email =  EmailAddress::create($command->email);
         $existingUser = $this->repository->findByEmail($email->value());    //check for any existing user
 
         if($existingUser){
@@ -64,18 +57,18 @@ class UserRegisterUseCase
 
         $user =  User::create(       
             userId: $userId,
-            name:   $name,
+            name:   $command->name,
             email:  $email,
-            passwordHash: $this->hasher->hash((new PlainPassword($password))->value()),
-            siret:  Siret::create($siret),
-            address: $address,
+            passwordHash: $this->hasher->hash((new PlainPassword($command->password))->value()),
+            siret:  Siret::create($command->siret),
+            address: $command->address,
         );
 
-        if($videoPresentation){
-            $timedMedia = $this->mediaFactory->createTimedMedia($videoPresentation);
+        if($command->videoPresentation){
+            $timedMedia = $this->mediaFactory->createTimedMedia($command->videoPresentation);
             $user->addVideoPresentation($timedMedia);
             $this->storage->store(
-                $videoPresentation,
+                $command->videoPresentation,
                 storedFileName: $timedMedia->name,
                 ownerId: $userId->value(),
                 ownerType: MediaOwnerType::USER,
@@ -88,7 +81,7 @@ class UserRegisterUseCase
             );
         }
 
-        foreach($images as $uploadedImage)
+        foreach($command->images as $uploadedImage)
         {
            $staticMedia = $this->mediaFactory->createStaticMedia($uploadedImage);
            $this->storage->store(

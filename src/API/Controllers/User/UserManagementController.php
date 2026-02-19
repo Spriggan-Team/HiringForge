@@ -11,12 +11,10 @@ use App\Domain\Shared\Address;
 use App\Domain\Shared\Account\AccountRole;
 
 use App\Application\DTO\User\ChangeUserProfileCommand;
-use App\Application\Command\Utils\AuthenticatedPerson;
+use App\Application\DTO\Auth\AuthenticatedPerson;
 
-use App\Application\Command\Handlers\User\ChangeUserProfilCommandHandler;
-use App\Application\Command\Handlers\User\DeleteUserCommandHandler;
-
-use App\Application\Query\Handlers\User\GetUserQueryHandler;
+use App\Application\Usecase\User\UserModifier;
+use App\Application\Usecases\User\UserEraser;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,68 +39,63 @@ class UserManagementController extends AbstractController
         ApiResponse::init($logger);
     }
 
+
     /**
-     * This one allow you to get a  users' information with the appropriate persmission
+     * PATCH /change
+     * 
+     * Updates authenticated user's profile information.
+     * Supports changing name, SIRET, address, profile images, and video presentation.
+     * Files added or removed are processed via media services with proper validation.
      */
-    #[Route("/", methods: ["GET"], name: "fetch_user")]
-    public function getUserById(
-        Request $request,
-        GetUserQueryHandler $handler
-    ): JsonResponse
+
+    #[Route("/change", methods: ['PATCH'], name: "change_user_data")]
+    public function modify(Request $request, UserModifier $handler): JsonResponse
     {
         try {
             /** @var AuthenticatedPerson */
             $user = $this->getUser();
 
-            $response = $handler->handle($user->getId());
-            return $response->toJsonResponse();
-        }
-        catch (Exception $exception)
-        {
-            return ApiResponse::error('User not found', $exception)->toJsonResponse();
-        }
-    }
-
-
-    #[Route("/change", methods: ['PATCH'], name: "change_user_data")]
-    public function modify(
-        Request $request,
-        ChangeUserProfilCommandHandler $handler
-    ): JsonResponse
-    {
-        try
-        {
-            /** @var AuthenticatedPerson */
-            $user = $this->getUser();
-
             $formData = $request->request;
+            $videoFile = $request->files->get("videoPresentation");
+
             $command = new ChangeUserProfileCommand(
                 uuid: $user->getId(),
                 name: $formData->get('name'),
                 siret: $formData->get('siret'),
-                addImages: $formData->get('images[add]') ?? [],
-                deleteImages: $formData->get('images[delete]') ?? [],
-                videoPresentation: $request->files->get("videoPresentation"),
-                address: Address::create(
-                    street:     $formData->get('address[street]'),
+                addImages: $request->files->get('images[add]', []),
+                deleteImages: (array) $formData->get('images[delete]', []),
+                address: new Address(
+                    street: $formData->get('address[street]'),
                     postalCode: $formData->get("address[postalCode]"),
-                    country:    $formData->get("address[country]")
-                )
+                    country: $formData->get("address[country]")
+                ),
+                videoPresentation: $videoFile
             );
-            $response = $handler->handle($command);
-            return $response->toJsonResponse();
-        }
-        catch(\Exception $exception)
-        {
-            return ApiResponse::error('Something went wrong',$exception)->toJsonResponse();
+
+            $failedUploads = $handler->execute($command);
+
+            return ApiResponse::success(
+                data: ["failedUploads" => $failedUploads],
+                message: "User profile updated successfully."
+            )->toJsonResponse();
+
+        } catch (\Exception $exception) {
+            return ApiResponse::error('Something went wrong', $exception)->toJsonResponse();
         }
     }
 
 
+    /**
+     * DELETE /delete
+     * 
+     * Deletes the authenticated user's account.
+     * Removes all associated data and media, and invalidates active sessions.
+     * This action is irreversible and requires valid authentication.
+     */
     #[Route('/delete', methods: ['DELETE'], name: "delete_account")]
     public function deleteAccount(
         Request $request,
-        DeleteUserCommandHandler $handler
+        UserEraser $usecase
     ): JsonResponse
     {
         try
@@ -110,10 +103,10 @@ class UserManagementController extends AbstractController
             /** @var AuthenticatedPerson */
             $user = $this->getUser();
 
-            $response = $handler->handle(
-                $user->getId(), AccountRole::USER
+            $usecase->execute(
+                $user->getId()
             );
-            return $response->toJsonResponse();
+            return ApiResponse::success("Everything went smoothly")->toJsonResponse();
         }
         catch (Exception $exception) {
             return ApiResponse::error('Nothing Found',$exception)->toJsonResponse();
