@@ -12,7 +12,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * It requires CANDIDATE permissions
  */
 #[IsGranted(AccountRole::CANDIDATE->value)]
-class CandidateController extends AbstractController
+class CandidateManagementController extends AbstractController
 {
     /**
      * This controller allow any connected user to access to its informations

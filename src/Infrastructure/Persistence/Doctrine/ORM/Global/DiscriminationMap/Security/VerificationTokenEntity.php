@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\Security;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Security;
 
 use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table('verification_token')]
+#[ORM\InheritanceType('JOINED')]
 class VerificationTokenEntity
 {
     #[ORM\Id]
@@ -19,8 +20,6 @@ class VerificationTokenEntity
     #[ORM\Column(length: 255, nullable: false)]
     private ?string $code_hash = null;
 
-    #[ORM\Column(type: 'integer')]
-    private int $attemps = 0;
 
     #[ORM\Column(enumType: AccountFlowPurpose::class, nullable: false)]
     private ?AccountFlowPurpose $purpose = null;
@@ -31,15 +30,6 @@ class VerificationTokenEntity
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
-    //------------------
-    //----Relations
-    //-----------------
-
-    #[ORM\ManyToOne(
-        targetEntity: AccountEntity::class,
-        inversedBy: 'verificationTokens'
-    )]
-    private AccountEntity $account;
 
     //---------
     //----Object Creating ..
@@ -47,7 +37,6 @@ class VerificationTokenEntity
 
     public function __construct(AccountEntity $account)
     {
-        $this->account = $account;
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -65,10 +54,6 @@ class VerificationTokenEntity
         return $this->code_hash;
     }
 
-    public function getAttemps(): int
-    {
-        return $this->attemps;
-    }
 
     public function getPurpose(): AccountFlowPurpose
     {
@@ -85,10 +70,6 @@ class VerificationTokenEntity
         return $this->createdAt;
     }
 
-    public function getRelatedAccount(): AccountEntity
-    {
-        return $this->account;
-    }
 
     //-----------------
     //-------SETTERS--
@@ -105,12 +86,6 @@ class VerificationTokenEntity
         if(!$this->code_hash){
             $this->code_hash = $code_hash;
         }
-        return $this;
-    }
-
-    public function incrementAttemps(): static
-    {
-        $this->attemps++;
         return $this;
     }
 

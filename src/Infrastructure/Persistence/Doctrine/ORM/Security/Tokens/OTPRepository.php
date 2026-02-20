@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\Security;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens;
 
 use App\Domain\OTP\OTP;
 use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Shared\Account\AccountFlowPurpose;
-use App\Domain\Shared\Account\AccountRole;
 
 class OTPRepository implements OTPRepositoryInterface
 {

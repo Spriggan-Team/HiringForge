@@ -22,7 +22,7 @@ use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\PlainPassword;
 
-use App\Application\Usecases\account\AccountRegister;
+use App\Application\Usecases\Account\AccountRegister;
 
 
 class UserRegisterUseCase

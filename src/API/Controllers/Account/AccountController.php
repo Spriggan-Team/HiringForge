@@ -9,8 +9,8 @@ use App\Application\DTO\ChangePassword;
 
 
 use App\Application\Command\Usecase\Account\VerificationCodeSender;
-use App\Application\Usecases\account\AccountEmailRenitializer;
-use App\Application\Usecases\account\AccountPasswordRenitializer;
+use App\Application\Usecases\Account\AccountEmailRenitializer;
+use App\Application\Usecases\Account\AccountPasswordRenitializer;
 use App\Domain\Shared\Account\AccountFlowPurpose;
 
 use Exception;

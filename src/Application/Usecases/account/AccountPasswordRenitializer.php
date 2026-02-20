@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Usecases\account;
+namespace App\Application\Usecases\Account;
 
 use App\Application\DTO\ChangePassword;
 use App\Domain\OTP\OTPRepositoryInterface;

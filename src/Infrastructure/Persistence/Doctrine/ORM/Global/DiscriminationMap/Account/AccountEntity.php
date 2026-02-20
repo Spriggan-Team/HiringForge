@@ -5,10 +5,13 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\A
 use App\Domain\Shared\Account\AccountRole;
 use App\Infrastructure\Persistence\Doctrine\ORM\Agent\AgentEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Security\VerificationTokenEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
+
+use App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens\OTPVerificationTokenEntity;
+
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\OneToMany;
 
 /**
  * This is a class used to simplify Actor definiton (ex: User, Candidate, Agent)
@@ -20,7 +23,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\DiscriminatorMap([
     AccountRole::USER->value => UserEntity::class,
     AccountRole::AGENT->value => AgentEntity::class,
-    AccountRole::CANDIDATE->value => CandidateEntity::class
+    AccountRole::CANDIDATE->value => CandidateEntity::class,
 ])]
 class AccountEntity
 {
@@ -37,6 +40,7 @@ class AccountEntity
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -44,11 +48,15 @@ class AccountEntity
     //---- Relations
     //--------------------
 
+    #[ORM\OneToOne(mappedBy: "account", targetEntity: AdminSupervisionEntity::class)]
+    private ?AdminSupervisionEntity $adminSupervision = null;
+
     #[ORM\OneToMany(
         mappedBy: "account",
-        targetEntity: VerificationTokenEntity::class
+        targetEntity: OTPVerificationTokenEntity::class
     )]
-    private ?Collection $verificationTokens = null;
+    private ?Collection $otpTokens = null;
+
 
     //---------
     //----Object Creating ..
@@ -72,8 +80,13 @@ class AccountEntity
 
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     
-    public function getVerificationTokens() {
-        return $this->verificationTokens;
+    public function getAdminUser()
+    {
+        return $this->adminSupervision;
+    }
+
+    public function getOTPToken() {
+        return $this->otpTokens;
     }
 
     //---------------------------
@@ -101,5 +114,18 @@ class AccountEntity
     {
         $this->description = $description;
         return $this;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->adminSupervision !== null;
+    }
+
+    public function promoteToAdmin(): void
+    {
+        if ($this->isAdmin()) {
+            return;
+        }
+        $this->adminSupervision = new AdminSupervisionEntity($this);
     }
 }

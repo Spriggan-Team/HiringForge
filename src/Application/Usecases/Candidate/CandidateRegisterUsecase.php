@@ -3,7 +3,7 @@
 namespace App\Application\Usecases\Candidate;
 
 use App\Api\DTO\Candidate\RegisterCandidateCommand;
-use App\Application\Usecases\account\AccountRegister;
+use App\Application\Usecases\Account\AccountRegister;
 use App\Domain\Candidate\Candidate;
 use App\Domain\Candidate\CandidateId;
 

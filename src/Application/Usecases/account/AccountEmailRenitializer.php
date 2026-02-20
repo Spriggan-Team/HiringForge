@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Application\Usecases\account;
+namespace App\Application\Usecases\Account;
 
 use App\Application\DTO\ChangeEmail;
-use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Shared\Account\AccountFlowPurpose;
-use App\Domain\Shared\Account\AccountRepositoryInterface;
+
 use App\Domain\Shared\EmailAddress;
-use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\PlainPassword;
+
+use App\Domain\OTP\OTPRepositoryInterface;
+use App\Domain\Shared\PasswordHasherInterface;
+use App\Domain\Shared\Account\AccountRepositoryInterface;
 
 
 class AccountEmailRenitializer
