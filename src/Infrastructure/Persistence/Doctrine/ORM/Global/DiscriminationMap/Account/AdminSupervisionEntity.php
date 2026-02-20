@@ -25,7 +25,7 @@ class AdminSupervisionEntity
     private AccountEntity $account;
 
     #[ORM\ManyToMany(targetEntity: AccountEntity::class)]
-    #[ORM\JoinTable(name: 'admin_supervised_users')]            //Join table
+    #[ORM\JoinTable(name: 'admin_supervised_users')]            //--Join table
     private Collection $supervisedUsers;
 
     public function __construct(AccountEntity $account)
