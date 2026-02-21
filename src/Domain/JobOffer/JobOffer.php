@@ -109,19 +109,21 @@ final class JobOffer
             throw new DomainException("Published job offers cannot be renamed");
         }
         $jobImage->media->mustBe(sizeLimitation: 15728640  ); //15 mo
-        $this->images[count($this->images)]->isMain ?: throw new DomainException(" Two file be set as 'main' for a given jobOffer ");
-
+        foreach($this->images as $image){
+            if($image->isMain)
+                 throw new DomainException(" Two file be set as 'main' for a given jobOffer ");
+        }
         $this->images[] = $jobImage;
         $this->touch();
     }
 
 
-    public function removeImage(JobOfferImage $image): void
+    public function removeImage(JobOfferImage $JobImage): void
     {
         if ($this->status === JobStatus::PUBLISHED) {
             throw new DomainException("Published job offers cannot be renamed");
         }
-        $this->images[] = $image;
+        $this->images = array_filter($this->images, fn($image) => $image->media->name === $JobImage->media->name); //Not reindexed
         $this->touch();
     }
 

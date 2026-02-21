@@ -21,7 +21,7 @@ class JobOfferRepository implements JobOfferRepositioryInterface
     public function __construct(private EntityManagerInterface $manager){}
 
 
-    public function assertRelationWithUser(string $offerId, string $user): void
+    public function assertRelationWithUser(string $accountId, string $offerId): void
     {
         throw new \Exception('Not implemented');
     }

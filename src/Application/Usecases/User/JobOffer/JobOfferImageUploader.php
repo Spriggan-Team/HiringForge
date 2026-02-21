@@ -36,7 +36,7 @@ class JobOfferImageUploader
         int $mainImageIndex
     )
     {
-        $this->jobOfferRepository->assertRelationWithUser($offerId, $userId);
+        $this->jobOfferRepository->assertRelationWithUser(accountId: $userId, offerId: $offerId);
 
         $currentIndex = 0;
 
@@ -61,7 +61,7 @@ class JobOfferImageUploader
                     ownerType: MediaOwnerType::USER,
                     storedFileName: $image->media->name,
                     mediaPurpose: MediaPurpose::JOB_OFFER_IMAGE,
-                    successCallback: function () use (&$jobOffer, $image){
+                    successCallback: function () use (&$successfulJobImageUpload, $image){
                         $successfulJobImageUpload[] = $image;
                     },
                     errorCallback: function ($result) use (&$failedUploads){

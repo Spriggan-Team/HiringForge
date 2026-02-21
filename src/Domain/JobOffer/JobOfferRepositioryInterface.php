@@ -16,7 +16,7 @@ interface JobOfferRepositioryInterface
      * @param string $userId  the identifier of the linked user 
      * @throws \DomainException|\Exception If the offer does not exist or the relation is invalid.
      */
-    public function assertRelationWithUser(string $offerId, string $user): void;
+    public function assertRelationWithUser(string $accountId, string $offerId): void;
 
 
     /**
