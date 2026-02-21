@@ -1,0 +1,3 @@
+Folder description/info/purposes... : 
+    This folder contains shared and public actions/use cases
+    that apply to all types of users supported by the application.

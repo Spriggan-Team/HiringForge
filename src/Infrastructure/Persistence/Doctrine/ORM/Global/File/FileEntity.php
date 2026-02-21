@@ -3,13 +3,13 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\File;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferImageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserImageEntity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\DependencyInjection\Attribute\Target;
 
 #[ORM\Entity]
 #[ORM\Table(
@@ -57,6 +57,12 @@ class FileEntity
         targetEntity: UserEntity::class
     )]
     private ?UserEntity $userVideoPresentation = null;
+
+    #[ORM\OneToOne(
+        targetEntity: JobOfferImageEntity::class,
+        mappedBy: 'images'
+    )]
+    private Collection $files;
 
     #[ORM\OneToMany(
         mappedBy: "image",

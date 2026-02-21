@@ -2,11 +2,23 @@
 
 namespace App\Domain\JobOffer;
 
+use App\Domain\File\StaticMedia;
 use App\Domain\JobOffer\JobOffer;
 use App\Domain\Shared\Account\AccountId;
 
 interface JobOfferRepositioryInterface
 {  
+
+    /**
+     * Verifies that a job offer exists in the database and is linked to an existing user.
+     *
+     * @param string $offerId The identifier of the job offer to check.
+     * @param string $userId  the identifier of the linked user 
+     * @throws \DomainException|\Exception If the offer does not exist or the relation is invalid.
+     */
+    public function assertRelationWithUser(string $offerId, string $user): void;
+
+
     /**
      * @return JobOffer
      * @throws RessourceNotFound
@@ -51,4 +63,15 @@ interface JobOfferRepositioryInterface
      * @return void 
      */
     public function publish(string $offerId, string $userId):void;
+
+    /**
+     * Creates a relationship between a job offer and an image
+     * in the database.
+     * @param string                $offerId - The job offer to associate with the provided the image
+     * @param JobOfferImage[]       $images  - The images to be associated
+     * @throws \DomainException Thrown when a business logic error occurs
+     * @return void                     - when everything went smoothly
+     */
+    public function associateImagesWithJob(string $offerId, array $images): void;
+
 }

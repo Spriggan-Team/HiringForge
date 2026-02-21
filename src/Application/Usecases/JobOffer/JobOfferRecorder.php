@@ -20,7 +20,7 @@ class JobOfferRecorder
     public function execute(
         string $accountId,
         CreateJobOffer $command
-    ): void
+    ): string
     {
         $accountId =  UserId::create($accountId);    
 
@@ -32,6 +32,7 @@ class JobOfferRecorder
         );
 
         $this->repository->save($offre, $accountId);
+        return $offre->id();
     }
 }
 

@@ -4,7 +4,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories;
 
 
 use App\Domain\Exception\RessourceNotFound;
-
+use App\Domain\File\StaticMedia;
 use App\Domain\Shared\Account\AccountId;
 use App\Domain\JobOffer\JobOffer;
 use App\Domain\JobOffer\JobOfferRepositioryInterface;
@@ -21,6 +21,14 @@ class JobOfferRepository implements JobOfferRepositioryInterface
     public function __construct(private EntityManagerInterface $manager){}
 
 
+    public function assertRelationWithUser(string $offerId, string $user): void
+    {
+        throw new \Exception('Not implemented');
+    }
+
+    /**
+     * @return JobOffer[]
+     */
     public function findAll(string $accountId, string $offerId): array
     {
        $posts = $this->manager->getRepository(JobOfferEntity::class)->findBy([
@@ -32,7 +40,7 @@ class JobOfferRepository implements JobOfferRepositioryInterface
        return $posts;
     }
 
-
+    
 
     public function findById(string $accountId, string $jobOfferId): JobOffer
     {
@@ -74,6 +82,11 @@ class JobOfferRepository implements JobOfferRepositioryInterface
 
 
     public function publish(string $offerId, string $userId): void
+    {
+        throw new \Exception('Not implemented');
+    }
+
+    public function associateImagesWithJob(string $offerId, array $images): void
     {
         throw new \Exception('Not implemented');
     }

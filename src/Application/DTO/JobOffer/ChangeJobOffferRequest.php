@@ -12,6 +12,5 @@ class ChangeJobOffferRequest
         public ?string $title = null,
         public ?array $content = null,
 
-        public mixed $image,
     ){}
 }

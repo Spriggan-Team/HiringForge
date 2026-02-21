@@ -2,7 +2,6 @@
 
 namespace App\Domain\JobOffer;
 
-use App\Domain\File\StaticMedia;
 use DateTimeImmutable;
 use DomainException;
 
@@ -14,7 +13,8 @@ final class JobOffer
     private array  $content;
     private  array  $categories;
     private JobStatus $status;
-    private ?StaticMedia $image;
+    /** @var JobOfferImage[] */
+    private array $images = [];
     private DateTimeImmutable $createdAt;
     private DateTimeImmutable $updatedAt;
 
@@ -24,7 +24,7 @@ final class JobOffer
         array $content,
         array $categories,
         JobStatus $status,
-        ?StaticMedia $image,
+        array $images,
         DateTimeImmutable $createdAt,
         DateTimeImmutable $updatedAt
     ) {
@@ -32,7 +32,7 @@ final class JobOffer
         $this->title       = $title;
         $this->content     = $content;
         $this->status      = $status;
-        $this->image       = $image;
+        $this->images       = $images;
         $this->categories  = $categories;
         $this->createdAt   = $createdAt;
         $this->updatedAt   = $updatedAt;
@@ -45,7 +45,7 @@ final class JobOffer
         array  $content,
         array  $categories = [],
         ?JobStatus $status = null,
-        ?StaticMedia $image = null,
+        array $images =  [],
     ): self
     {
         if ($id === '') {
@@ -68,7 +68,7 @@ final class JobOffer
             content: $content,
             categories: $categories,
             status: $status ?? JobStatus::DRAFT,
-            image: $image,
+            images: $images,
             createdAt: $now,
             updatedAt: $now
         );
@@ -103,15 +103,27 @@ final class JobOffer
     }
 
 
-    public function changeImage(StaticMedia $image): void
+    public function addImage(JobOfferImage $jobImage): void
     {
         if ($this->status === JobStatus::PUBLISHED) {
             throw new DomainException("Published job offers cannot be renamed");
         }
-        $this->$image = $image;
+        $jobImage->media->mustBe(sizeLimitation: 15728640  ); //15 mo
+        $this->images[count($this->images)]->isMain ?: throw new DomainException(" Two file be set as 'main' for a given jobOffer ");
+
+        $this->images[] = $jobImage;
         $this->touch();
     }
 
+
+    public function removeImage(JobOfferImage $image): void
+    {
+        if ($this->status === JobStatus::PUBLISHED) {
+            throw new DomainException("Published job offers cannot be renamed");
+        }
+        $this->images[] = $image;
+        $this->touch();
+    }
 
     
     public function changeContent(array $newContent): void

@@ -69,7 +69,6 @@ class UserRegisterUseCase
             $user->addVideoPresentation($timedMedia);
             $this->storage->store(
                 $command->videoPresentation,
-                storedFileName: $timedMedia->name,
                 ownerId: $userId->value(),
                 ownerType: MediaOwnerType::USER,
                 mediaPurpose: MediaPurpose::PROFILE,

@@ -42,7 +42,7 @@ class JobOfferEntity
         cascade: ['persist'],
         orphanRemoval: true
     )]
-    private Collection $jobCategories;
+    private Collection $categories;
 
 
     #[ORM\ManyToOne( inversedBy: "jobOffers", targetEntity: UserEntity::class )]
@@ -60,11 +60,14 @@ class JobOfferEntity
     #[ORM\OneToMany(mappedBy: "jobOffer", targetEntity: InterviewEntity::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $interviews;
 
+    private Collection $images;
+
     public function __construct()
     {
         $this->interviews  = new ArrayCollection();
-        $this->jobCategories = new ArrayCollection();
+        $this->categories = new ArrayCollection();
         $this->applications =  new ArrayCollection();
+        $this->images = new ArrayCollection();
     }
 
     public static function reconstitue(
@@ -104,8 +107,9 @@ class JobOfferEntity
 
     public function getUser(): UserEntity { return $this->user; }
     public function getApplications(): Collection { return $this->applications; }
-    public function getJobCategories(): Collection { return $this->jobCategories; }
+    public function getJobCategories(): Collection { return $this->categories; }
     public function getInterviews() : Collection { return $this->interviews; }
+    public function getImages() : Collection { return $this->images; }
 
     /* =======================
      * SETTERS

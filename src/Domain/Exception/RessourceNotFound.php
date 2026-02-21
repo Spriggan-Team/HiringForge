@@ -2,7 +2,7 @@
 
 namespace App\Domain\Exception;
 
-use Exception;
+use DomainException;
 
 
-class RessourceNotFound extends Exception {}
+class RessourceNotFound extends DomainException {}

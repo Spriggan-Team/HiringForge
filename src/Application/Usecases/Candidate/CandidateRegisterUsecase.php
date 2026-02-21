@@ -14,10 +14,10 @@ use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
-use App\Domain\Shared\Address;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\PlainPassword;
+
 use App\Infrastructure\Storage\FileStorage\MediaFactory;
 
 class CandidateRegisterUsecase

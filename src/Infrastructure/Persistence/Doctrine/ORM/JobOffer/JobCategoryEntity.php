@@ -28,7 +28,7 @@ class JobCategoryEntity
     #[ORM\JoinColumn(nullable: false, name: "category_id")]
     private CategoryEntity $category;
 
-    #[ORM\ManyToOne(inversedBy: 'jobCategories')]
+    #[ORM\ManyToOne(inversedBy: 'categories')]
     #[ORM\JoinColumn(nullable: false, name: "job_offer_id")]
     private JobOfferEntity $jobOffer;
 

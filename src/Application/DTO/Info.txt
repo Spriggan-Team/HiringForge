@@ -1,0 +1,19 @@
+
+This folder is meant to define any necessary Data Transfer Object (DTO)
+That come from outside and are handle by the current usecase.
+
+That said It doesn't necessary means that all the usecase use or must use this DTO
+entry paramters - It all depends of each use case
+
+    Schema : DTO -> usecase -> Object
+
+The object returned by an usecase can be of the simple known type (int, array, bool, string);
+
+If it is a custom object, you may find that custom object in the same repository location as his usecase or in a common parent;
+In that particular sense we can say that in a way those made-in custom object are a means for usecases to describe in a clear manner
+the data they plan to return
+
+You can use them as HTTP controller input if needed or in any situation you judge it necessary!
+Note that in some of those DTO - we could see some external added features on property fileds  (here linked to symfony)
+
+However, They can be withdrawn depending on the scope, time or needs 

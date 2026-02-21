@@ -33,4 +33,10 @@ interface CandidateRepositoryInterface
      * @throws Exception
      */
     public function save(Candidate $candidate): void;
+
+    /**
+     * This a function that must be used for candidate'applications (postulations)
+     * @throws DomainException|Exception It is thrown when no actual job offer or candidate extists 
+    */
+    public function apply(string $candidateId, string $offerId): void;
 }
