@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Usecases\User\JobOffer;
+namespace App\Application\Usecases\JobOffer;
 
 use App\Application\Usecases\UploadedFileInfo;
 use App\Domain\File\MediaFactoryInterface;

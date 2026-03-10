@@ -101,6 +101,11 @@ class JobOfferRepository implements JobOfferRepositioryInterface
         $this->manager->remove($entity);
         $this->manager->flush();
     }
+
+    public function removeImageFromJob(string $offerId, string $fileName): void
+    {
+        throw new \Exception('Not implemented');
+    }
 }
 
 ?>

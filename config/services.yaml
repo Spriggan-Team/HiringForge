@@ -71,6 +71,10 @@ services:
     App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferQueryRepository
     
+    #----Category -------------------
+    App\Domain\Category\Repositories\CategoryRepositoryInterace:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Category\Repositories\CategoryRepository
+
     #------ Email -------
     App\Domain\Email\EmailRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Email\EmailRepository

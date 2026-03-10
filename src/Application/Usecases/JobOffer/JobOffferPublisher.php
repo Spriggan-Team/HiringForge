@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Application\Usecases\User\JobOffer;
+namespace App\Application\Usecases\JobOffer;
 
 use App\Domain\JobOffer\JobOfferRepositioryInterface;
 
-class UserJobOffferPublisher
+class JobOffferPublisher
 {
     public function __construct(
         private JobOfferRepositioryInterface $repository,

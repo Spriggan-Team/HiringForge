@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Query\Usecase\JobOffer;
+namespace App\Application\Usecases\Account\JobOffer;
 
 use App\Application\DTO\JobOffer\GetJobOfferCollectiontRequest;
 use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;

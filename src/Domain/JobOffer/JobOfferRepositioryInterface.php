@@ -19,6 +19,7 @@ interface JobOfferRepositioryInterface
     public function assertRelationWithUser(string $accountId, string $offerId): void;
 
 
+
     /**
      * @return JobOffer
      * @throws RessourceNotFound
@@ -36,11 +37,12 @@ interface JobOfferRepositioryInterface
     public function findAll(string $accountId, string $offerId): array;
 
     /**
-     * This is used to change/modify a job offer in the bdd
+     * This is used to change/modify a job offer entity in the bdd
      * @throws Exception
      */
     public function change(JobOffer $jobOffer, string $offerId, string $accountId): void;
     
+
     /**
      * @return void
      * save the JobOffer in bdd
@@ -51,6 +53,7 @@ interface JobOfferRepositioryInterface
 
     /**
      * @return void
+     * @throws RessourceNotFound
      * delete a JobOffer using accountId and uuid
      */
     public function delete(string $uuid, string $accountId): void;
@@ -64,14 +67,25 @@ interface JobOfferRepositioryInterface
      */
     public function publish(string $offerId, string $userId):void;
 
+
     /**
      * Creates a relationship between a job offer and an image
      * in the database.
      * @param string                $offerId - The job offer to associate with the provided the image
      * @param JobOfferImage[]       $images  - The images to be associated
-     * @throws \DomainException Thrown when a business logic error occurs
+     * @throws \DomainException     Thrown when a business logic error occurs
      * @return void                     - when everything went smoothly
      */
     public function associateImagesWithJob(string $offerId, array $images): void;
+
+
+    /**
+     * Removes associated images of a job offer from the database.
+     *
+     * @param string $offerId   The unique identifier of the job offer.
+     * @param string $fileNames   image - file names to remove.
+     * @throws \DomainException     Thrown when a business logic error occurs
+     */
+    public function removeImageFromJob(string $offerId, string $fileName): void;
 
 }

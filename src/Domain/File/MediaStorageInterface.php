@@ -10,13 +10,17 @@ interface MediaStorageInterface
      * This function stored an array of files into the followwing repertory: Infrastructure/Storage/vault
      * 
      * @param mixed                                 $files                  UploadedFile - Currently the UploadedFile object of symfony
-     * @param ?string                               $ownerId                Here, you  pass the user/owner Id
-     * @param string[]                              $skippedFiles           An array containing all the failed or skipped file
-     * @param ?MediaOwnerType                       $ownerType              Here you indicate what type of user this recording concern
+     * @param ?string                               $ownerId                Here, you  pass the user/owner Id - determines what main folder should be used for this actions 
+     * @param string[]                              $storedFileName         An array containing all the failed or skipped file 
+     * @param ?string                               $ownerType              Optionnal - Describe a name you want to give to the file to record, 
+     *                                                                                  if not provided an uniq name will be design the the file (using an algorithm...)
+     * 
      * @param ?MediaPurpose                         $mediaPurpose                Indicates the purpose of the saving (profile, images...)
      * @param callable(MediaUploadResult): void     $successCallback
      * @param callable(MediaUploadResult): void     $errorCallback
+     * 
      * @throws \Exception|App\Domain\Exception\FileExceedTime|\App\Domain\Exception\FileSizeExceeded 
+     * 
      * @return MediaUploadResult        An multidimensionsioonal array containing the succed and failed ones
      */
     public function store(
@@ -31,10 +35,27 @@ interface MediaStorageInterface
     ): void;
 
 
+    /**
+     * Used for reding puprose
+     */
     public function read(
         string $name, 
-        ?string $id = null,
+        ?string $ownerId = null,
         ?MediaOwnerType $ownerType = null,
         ?MediaPurpose $purpose = null,
     ): mixed;
+
+
+    /**
+     * Used for removing
+     */
+    public function remove(
+        string $uniqName, 
+        ?string $ownerId = null,
+        ?MediaOwnerType $ownerType = null,
+        ?MediaPurpose $purpose = null,
+        ?callable  $successCallback = null,
+        ?callable  $errorCallback = null
+    ): void;
+
 }

@@ -15,10 +15,15 @@ use App\Domain\Shared\Account\AccountRole;
 
 use App\Application\Command\Usecase\JobOffer\JobOfferModifier;
 use App\Application\Command\Usecase\JobOffer\JobOfferRecorder;
-use App\Application\Usecases\User\JobOffer\JobOfferImageUploader;
-use App\Application\Usecases\User\JobOffer\UserJobOfferEraser;
-use App\Application\Usecases\User\JobOffer\UserJobOffferPublisher;
-use ArrayObject;
+
+use App\Application\Usecases\JobOffer\JobOfferImageRemover;
+use App\Application\Usecases\JobOffer\JobOfferImageUploader;
+use App\Application\Usecases\JobOffer\JobOfferEraser;
+
+use App\Application\Usecases\JobOffer\JobOffferPublisher;
+use App\Application\Usecases\JobOffer\MarkJobOfferAsDraft;
+
+
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
@@ -81,8 +86,8 @@ class UserJobOfferManagementController extends AbstractController
      * Handles the upload of one or more images for a specific job offer,
      * validating and attaching them to the corresponding offer.
      */
-    #[Route('/{offerId}/images/image')]
-    public function uploadJobOffer(
+    #[Route('/{offerId}/assets/uploads', methods: ['POST'])]
+    public function uploadJobOfferAssets(
         Request $request,
         string $offerId,
         JobOfferImageUploader $jobOfferImageUploader
@@ -106,12 +111,15 @@ class UserJobOfferManagementController extends AbstractController
                 return ApiResponse::error("You must send an array of files object for this to function")->toJsonResponse();
             }
 
-            $failed = $jobOfferImageUploader->execute(
-                files: $files, offerId: $offerId, userId: $user->getId(), mainImageIndex: $mainImageIndex
+            $filesInfo = $jobOfferImageUploader->execute(
+                files: $files, 
+                offerId: $offerId, 
+                userId: $user->getId(),
+                mainImageIndex: $mainImageIndex
             );
 
             return ApiResponse::success(
-                        data: ["failed" => $failed]
+                        data: ["failed" => $filesInfo]
                    )->toJsonResponse();
         }
         catch(DomainException $domainException)
@@ -129,11 +137,76 @@ class UserJobOfferManagementController extends AbstractController
     }
 
 
+    #[Route('/offers/{offerId}/assets/remove', methods: ['POST'])]
+    public function removeJobOfferAssets(
+        Request $request,
+        string $offerId,
+        JobOfferImageRemover $assetsRemover
+    )
+    {
+        try
+        {
+            /** @var AuthenticatedPerson */
+            $user = $this->getUser();
 
-    #[Route("/publish/{offerId}", methods: ['PATCH'])]
+            $body = json_decode($request->getContent(), true);
+            $filesInfo = $assetsRemover->execute(
+                offerId: $offerId,
+                accountId: $user->getId(),
+                fileNames: $body["fileNames"] ?? []
+            );
+            return ApiResponse::success(
+                        data: $filesInfo,
+                        message: "Everything went smoothly"
+                    )->toJsonResponse();
+        }
+        catch(Exception $exception)
+        {
+            return ApiResponse::error("Something went wrong")->toJsonResponse();
+        }
+    }
+
+
+
+    #[Route('/offers/{offerId}/draft', methods: ['POST'])]
+    public function defineJobOfferAsDraft(
+        string $offerId,
+        MarkJobOfferAsDraft $usecase
+    ): JsonResponse
+    {
+        try
+        {
+            /** @var AuthenticatedPerson **/
+            $user = $this->getUser();
+            $usecase->execute(
+                accountId: $user->getId(),
+                offerId: $offerId
+            );
+            return ApiResponse::success("Everything went smothly")->toJsonResponse();
+        }
+        catch(Exception $exception)
+        {
+            return ApiResponse::error("Something went wrong")->toJsonResponse();
+        }
+    }
+
+
+    
+    #[Route('/offers/{offerId}/pipeline/{pipelineId}', methods: ['POST'])]
+    public function TogglePipeline(
+        Request $request,
+        string $offerId
+    )
+    {
+
+    }
+
+
+
+    #[Route("/publish/{offerId}", methods: ['POST'])]
     public function publish(
         string $offerId,
-        UserJobOffferPublisher $handler,
+        JobOffferPublisher $handler,
     ): JsonResponse
     {
         try{
@@ -150,6 +223,7 @@ class UserJobOfferManagementController extends AbstractController
             )->toJsonResponse();
         }
     }
+
 
 
 
@@ -186,10 +260,11 @@ class UserJobOfferManagementController extends AbstractController
 
 
 
+
     #[Route("/job_offer/{offerId}", methods: ['DELETE'] ,name: "job_offer_delete")]
     public function deleteJobOffer(
         string $offerId,
-        UserJobOfferEraser $handler,
+        JobOfferEraser $handler,
     ){
         try{
             /** @var AuthenticatedPerson */

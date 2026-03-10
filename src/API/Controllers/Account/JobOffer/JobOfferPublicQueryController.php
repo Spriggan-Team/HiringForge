@@ -4,8 +4,9 @@ namespace App\Api\Controllers\Account\JobOffer;
 
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\JobOffer\GetJobOfferCollectiontRequest;
-use App\Application\Query\Usecase\JobOffer\JobOfferCatalogReader;
+use App\Application\Usecases\Account\JobOffer\JobOfferCatalogReader;
 use App\Application\Usecases\Account\JobOffer\PublicJobOfferReader;
+
 use Exception;
 
 use Symfony\Component\HttpFoundation\Request;

@@ -22,7 +22,7 @@ final class CreateJobOffer
         public mixed $image = null,
         
         /**
-         * @param array<int>
+         * @param array
          */
         public array $categories,
     ){}

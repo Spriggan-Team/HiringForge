@@ -127,4 +127,11 @@ class MediaStorage implements MediaStorageInterface
 
         return $path;
     }
+
+
+
+    public function remove(string $uniqName, ?string $ownerId = null, ?MediaOwnerType $ownerType = null, ?MediaPurpose $purpose = null): void
+    {
+        throw new \Exception('Not implemented');
+    }
 }
