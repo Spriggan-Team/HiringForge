@@ -21,12 +21,8 @@ class ApplyToJobOffer
      */
     public function execute(string $candidateId, string $offerId)
     {
-        $identity = $this->accountRepository->exists($candidateId);
         $this->applicationRepository->assertExists($offerId);
 
-        if($identity)
-        {
             $this->candidateRepository->apply($candidateId, $offerId);
-        }
     }
 }

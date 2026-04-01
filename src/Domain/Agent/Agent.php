@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Domain\Agent;
-use App\Domain\Shared\Actor\Actor;
 
-class Agent implements Actor
+use App\Domain\Shared\Account\Account;
+
+class Agent implements Account
 {
     public function id(): string
     {

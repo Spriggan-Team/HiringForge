@@ -1,0 +1,20 @@
+@startuml Candidate Actions
+
+actor "Alice" as  Candidate
+
+participant JobOfferApplicator
+
+participant AccountRepository
+participant ApplicationRepository
+participant CandidateRepository
+
+participant JobOfferRepository
+
+database Database
+
+== Applications  ==
+
+
+
+
+@enduml

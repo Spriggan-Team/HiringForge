@@ -8,7 +8,7 @@ class PlainPassword
 
     /**
      * This function enforce domain validaty on the password
-     * It ensures your password must respect good partics (for instance, indexd by teh CNIL)
+     * It ensures your password must respect good practics (for instance, indexd by teh CNIL)
      * @throws DomainException    this is throws when expectations are not met
      * @return self
      */

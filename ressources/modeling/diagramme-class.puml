@@ -1,0 +1,204 @@
+@startuml UML - Classe
+
+left to right direction
+
+interface Account{
+    id: () => string
+    email: ()=>string;
+    passwordHash: ()=>string
+}
+
+
+class User{
+    id: string
+    name: string
+    siret: stirng
+    email: string
+    passwordHash: string
+    description: string
+}
+
+interface UserRepository{
+    + save: (user) => void
+    + change : (user, uuid,deleteImages = null) => void
+    + findByEmail: (email) => User
+    + findById: (uuid) => User
+    + delete: (id)=> void
+}
+
+Account .. User : > implement
+User -- UserRepository : > is related to
+
+class Candidate{
+    - id: string
+    - firstName: string
+    - lastName: string
+    - email: string
+    - passwordHash: string
+    - image: StaticMedia
+    - cv: StaticMedia
+    - searchRadius: int 
+    - description: string
+}
+
+interface CandidateReposity{
+    + findById: (uuid) => Candidate
+    + findByEmail: (email) => Candidate
+    + save : (candidate) =>  void
+    + apply: (candidateId, offerId) => void;
+}
+
+Account .. Candidate : > implement
+Candidate -- CandidateReposity : > is control with 
+
+class Address{
+    - street: string
+    - code: string 
+    - country: string
+}
+
+User "1..1" -- "1..n"  Address
+Candidate  -->  Address : > has 
+
+class EmailMessage {
+    - id: int
+    - title: string
+    - description: string
+    - code: string
+}
+
+interface EmailServicesInterface{
+    + sendTo: (receiver, document) => void
+    + prepareEmail(emailMessage): DOMDocument
+}
+
+EmailMessage -- EmailServicesInterface : > is related to
+Candidate "1" -- "1..*" EmailMessage : > possess
+
+
+class Category {
+    + name: string
+    + description: string
+}
+
+class JobOffer{
+    id: string
+    title: string
+    content: string
+    categories: string
+    status: JobStatus
+    createdAt: Datetime
+    updatedAt: Datetime
+}
+
+class JobOfferApplication{
+    id: string
+    correlation: Decimal
+
+}
+
+class JobOfferImage{
+
+}
+
+
+enum JobStatus{
+    DRAFT
+    CLOSED
+    PUBLISHED
+}
+
+
+
+JobOffer "1..n" --> "1..*" Category
+JobOffer "1" -- "0..1" JobOfferImage 
+
+User "1..1"  -- "1..n" JobOffer
+Candidate "1" -- "1..*" JobOfferApplication
+JobOfferApplication "1..*" -- "1" JobOffer
+
+
+
+enum AccountFlowPurpose {
+    EMAIL_CHANGE
+    SIGN_UP
+    LOGIN_WARNING
+}
+
+class Interview{
+    id: string
+    startDate: Datetime
+    minutes: int
+    status: InterviewStatus
+}
+
+
+enum InterviewStatus{
+    CANCEL
+    CLOSED
+    MISSED
+    SCHEDULED
+    IN_PROGRESS
+}
+
+
+JobOfferApplication "1" -- "1..n" Interview
+
+class OTP {
+    hashCode: string
+    attempts: int
+    expiresAt: Datetime
+    purpose: AccountFlowPurpose
+}
+
+Account "1..1" -- "1..*" OTP
+
+
+
+class Agent {
+    email: string
+    password: string
+}
+
+class Role {
+    name: string
+    Role: string
+}
+
+User "1..1" -- "1..n" Agent
+Agent "1..1" -- "1..n" Role
+
+class StaticMedia{
+    name: string
+    size: Decimal
+    mime: string
+    + mustBe: (sizeLimitation, mime) => void
+}
+
+class TimedMedia {
+    name: string
+    size: Decimal
+    mime: string
+    duration: Decimal
+    
+    + mustBe: (type, secondsLimitation, sizeLimitation) => void
+}
+
+
+User "1..1" -- "1..n" StaticMedia : >  is image located
+Candidate "1..1" -- "1..1" StaticMedia : > is image located
+Candidate "1..1" -- "1..1" TimedMedia : > is description located
+
+
+class KeepTrace{
+    id: string
+    message: status
+    status: string   
+    entity_type: string
+    createdAt: Datetime
+    readt_at: Datetime
+}
+
+KeepTrace "1..n" -- "1..1"  Account
+
+@enduml
