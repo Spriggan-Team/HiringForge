@@ -174,7 +174,7 @@ final class User implements Account
      */
     public function addImages(StaticMedia $image):static
     {
-        $image->mustBe(sizeLimitation: 10485760);
+        $image->mustBe(sizeLimitation: 18432);
         $this->images[] = $image;
         return $this;
     }

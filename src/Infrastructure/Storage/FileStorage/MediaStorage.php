@@ -130,7 +130,7 @@ class MediaStorage implements MediaStorageInterface
 
 
 
-    public function remove(string $uniqName, ?string $ownerId = null, ?MediaOwnerType $ownerType = null, ?MediaPurpose $purpose = null): void
+    public function remove(string $uniqName, ?string $ownerId = null, ?MediaOwnerType $ownerType = null, ?MediaPurpose $purpose = null, ?callable $successCallback = null, ?callable $errorCallback = null): void
     {
         throw new \Exception('Not implemented');
     }

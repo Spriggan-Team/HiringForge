@@ -11,7 +11,7 @@ interface MediaStorageInterface
      * 
      * @param mixed                                 $files                  UploadedFile - Currently the UploadedFile object of symfony
      * @param ?string                               $ownerId                Here, you  pass the user/owner Id - determines what main folder should be used for this actions 
-     * @param string[]                              $storedFileName         An array containing all the failed or skipped file 
+     * @param ?string                                $storedFileName         An array containing all the failed or skipped file 
      * @param ?string                               $ownerType              Optionnal - Describe a name you want to give to the file to record, 
      *                                                                                  if not provided an uniq name will be design the the file (using an algorithm...)
      * 

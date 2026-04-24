@@ -96,7 +96,6 @@ class UserRegisterUseCase
                         $failedUploads[] = $result->originalName;
                         $user->removeImage($staticMedia);
                     }
-
             );
         }
         
