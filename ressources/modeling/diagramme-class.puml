@@ -41,7 +41,7 @@ class Candidate{
     - description: string
 }
 
-interface CandidateReposity{
+interface CandidateRepository{
     + findById: (uuid) => Candidate
     + findByEmail: (email) => Candidate
     + save : (candidate) =>  void
