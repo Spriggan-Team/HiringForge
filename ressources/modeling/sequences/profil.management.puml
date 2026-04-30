@@ -1,0 +1,154 @@
+@startuml 
+
+title "Profil Management"
+
+actor User
+actor Candidate
+participant AuthChecker
+
+participant UserModifier
+participant CandidateModifier
+
+participant CVParser
+participant MediaFactoryInterface
+participant MediaStorageInterface
+
+participant AccountRepository
+participant UserRepository
+participant CandidateRepository
+database Database
+
+=== User profil management ==
+
+'Auth checking
+User -> AuthChecker : updateProfile(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> UserModifier: changeUser(user, files)
+activate UserModifier
+deactivate AuthChecker
+
+'Validation
+UserModifier -> AccountRepository : exist(u_id)
+activate AccountRepository
+AccountRepository -> Database : SELECT
+activate Database
+Database --> AccountRepository : returned response
+deactivate Database
+AccountRepository --> UserModifier : response
+deactivate AccountRepository
+
+'Saving media (User CAN upload images + videos)
+UserModifier -> MediaFactoryInterface : generateDomainObjet(files)
+note right
+    Files are converted as:
+    - StaticMedia (images)
+    - TimedMedia (videos)
+end note
+activate MediaFactoryInterface
+MediaFactoryInterface --> UserModifier : mediaObjects
+deactivate MediaFactoryInterface
+
+UserModifier -> MediaStorageInterface : save(mediaObjects)
+note right
+    Save files in local storage
+end note
+activate MediaStorageInterface
+MediaStorageInterface --> UserModifier : storedPaths
+deactivate MediaStorageInterface
+
+'Saving user data
+UserModifier -> Database : UPDATE user
+activate Database
+Database --> UserModifier : response
+deactivate Database
+
+'User response 
+UserModifier --> User : response
+
+
+=== Candidate profil management ==
+
+'Auth checking
+Candidate -> AuthChecker : updateProfile(dto, token, cv)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the candidate is authenticated
+end note
+
+'Usecase
+AuthChecker -> CandidateModifier: changeCandidate(candidate, cv, files)
+activate CandidateModifier
+deactivate AuthChecker
+
+'Validation
+CandidateModifier -> AccountRepository : exist(c_id)
+activate AccountRepository
+AccountRepository -> Database : SELECT
+activate Database
+Database --> AccountRepository : returned response
+deactivate Database
+AccountRepository --> CandidateModifier : response
+deactivate AccountRepository
+
+'CV Parsing (MANDATORY)
+CandidateModifier -> CVParser : parse(cv)
+activate CVParser
+note right
+    Extract structured data:
+    - experiences
+    - skills
+    - education
+end note
+CVParser --> CandidateModifier : parsedCV
+deactivate CVParser
+
+'Saving parsed data
+CandidateModifier -> CandidateRepository : save(parsedCV)
+activate CandidateRepository
+CandidateRepository -> Database : INSERT/UPDATE
+activate Database
+Database --> CandidateRepository : response
+deactivate Database
+CandidateRepository --> CandidateModifier : response
+deactivate CandidateRepository
+
+'Saving media (Candidate ONLY images, NO videos)
+CandidateModifier -> MediaFactoryInterface : generateDomainObjet(imagesOnly)
+note right
+    Only StaticMedia allowed
+    (no video support for Candidate)
+end note
+activate MediaFactoryInterface
+MediaFactoryInterface --> CandidateModifier : mediaObjects
+deactivate MediaFactoryInterface
+
+CandidateModifier -> MediaStorageInterface : save(mediaObjects)
+activate MediaStorageInterface
+MediaStorageInterface --> CandidateModifier : storedPaths
+deactivate MediaStorageInterface
+
+'Final update
+CandidateModifier -> Database : UPDATE candidate
+activate Database
+Database --> CandidateModifier : response
+deactivate Database
+
+'Candidate response
+CandidateModifier --> Candidate : response
+
+@enduml

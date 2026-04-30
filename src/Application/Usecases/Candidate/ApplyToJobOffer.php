@@ -22,7 +22,6 @@ class ApplyToJobOffer
     public function execute(string $candidateId, string $offerId)
     {
         $this->applicationRepository->assertExists($offerId);
-
-            $this->candidateRepository->apply($candidateId, $offerId);
+        $this->candidateRepository->apply($candidateId, $offerId);
     }
 }

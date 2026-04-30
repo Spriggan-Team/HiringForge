@@ -30,9 +30,5 @@ class CandidateQueryManagementController extends AbstractController
 
 
 
-    public function uploadCV()
-    {
-
-    }
 
 }

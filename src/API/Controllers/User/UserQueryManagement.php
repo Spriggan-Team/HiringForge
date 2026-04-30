@@ -32,6 +32,10 @@ class UserQueryManagement extends AbstractController
 
     }
 
+    public function getOffers(){
+
+    }
+
     /**
      * This one allow you to get a  users' information with the appropriate persmission
      */

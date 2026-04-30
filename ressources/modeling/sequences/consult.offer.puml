@@ -1,0 +1,42 @@
+@startuml
+
+title "Consult Offer (accessible to anyone)"
+
+== consult Offer ==
+
+'Describe all user in one
+actor Account 
+'Participants
+participant JobOfferCatalogReader
+participant JobOfferQueryRepositoryInterace
+'Bdd
+Database Database
+
+'Treatment...
+
+'Checck auth
+Account -> JobOfferCatalogReader : getOffer();
+activate JobOfferCatalogReader
+
+
+'Execute Query (Pagination)
+JobOfferCatalogReader -> JobOfferQueryRepositoryInterace : query(limit, skip)
+activate JobOfferQueryRepositoryInterace
+note right
+    query with pagination.
+    only published offer are retreive here
+end note
+
+JobOfferQueryRepositoryInterace -> Database : SELECT
+activate Database
+Database --> JobOfferQueryRepositoryInterace : response  
+deactivate Database
+
+'User response
+JobOfferQueryRepositoryInterace --> JobOfferCatalogReader : offer catalog
+deactivate JobOfferQueryRepositoryInterace
+JobOfferCatalogReader --> Account : offers
+deactivate JobOfferCatalogReader
+
+
+@enduml

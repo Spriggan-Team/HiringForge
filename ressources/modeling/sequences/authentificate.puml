@@ -1,10 +1,9 @@
-@startuml Auht Flow
+@startuml Auth Flow
 
 actor Mitsuri as Account
 
 participant LoginAuthentificator
 participant JwtAuthentificator
-participant AuthChecker
 
 participant AuthenticatorAccountUseCase
 participant RegisterUsecase
@@ -22,177 +21,187 @@ database Database
 
 == Login ==
 
-'Start Authentification
-Account -> LoginAuthentificator : requestAuthentification(email, password)
+'Start Authentication
+Account -> LoginAuthentificator : requestAuthentication(email, password)
 activate LoginAuthentificator
 
-'Start call for usecase after data validation
+'Call usecase after validation
 LoginAuthentificator -> AuthenticatorAccountUseCase : checkAccount(email, password)
 activate AuthenticatorAccountUseCase
 
 'Database validation
-AuthenticatorAccountUseCase -> Database :  SELECT email, password FROM account
+AuthenticatorAccountUseCase -> Database : SELECT email, password FROM account
 activate Database
-
-Database --> AuthenticatorAccountUseCase : Returned Account credentials
+Database --> AuthenticatorAccountUseCase : account credentials
 deactivate Database
 
-'Reply the response if the provided & recorded provider match
-alt
+alt Success
     AuthenticatorAccountUseCase --> LoginAuthentificator : success
     deactivate AuthenticatorAccountUseCase
 
-    'Prepare Token
-    LoginAuthentificator -> JwtAuthentificator : (personId)
+    'Generate Token
+    LoginAuthentificator -> JwtAuthentificator : generateToken(personId)
     activate JwtAuthentificator
     
-    JwtAuthentificator --> LoginAuthentificator : returned token
+    JwtAuthentificator --> LoginAuthentificator : token
     deactivate JwtAuthentificator
 
-
-    LoginAuthentificator --> Account : returned token
+    LoginAuthentificator --> Account : token
     deactivate LoginAuthentificator
-else
-    'Failure
+else Failure
     AuthenticatorAccountUseCase --> LoginAuthentificator : failure
-    LoginAuthentificator --> Account : Failed
-end
+    deactivate AuthenticatorAccountUseCase
 
+    LoginAuthentificator --> Account : error
+    deactivate LoginAuthentificator
+end
 
 
 == Register ==
 
-'UseCase for registering
-Account --> RegisterUsecase : register(dto)
+'Register usecase
+Account -> RegisterUsecase : register(dto)
 activate RegisterUsecase
 
-RegisterUsecase --> Database : INSERT INTO
-activate Database
+ref over Account
+    Identity Verification ...
+end ref
 
-Database --> RegisterUsecase: returned response
+RegisterUsecase -> Database : INSERT account
+activate Database
+Database --> RegisterUsecase: response
 deactivate Database
 
 RegisterUsecase --> Account : response
 deactivate RegisterUsecase
 
-== Ask for Verif Token ==
 
-'Ask for Token verif
-Account -> VerificationCodeSender : askFotToken(email)
+== Ask for Verification Token ==
+
+'Request token
+Account -> VerificationCodeSender : askForToken(email)
 activate VerificationCodeSender
 
-'VerifEmail
+'Verify email existence
 VerificationCodeSender -> AccountRepository : verifyEmail(email)
 activate AccountRepository
 
-'Account verification with bdd
-
-AccountRepository -> Database : selectAccount(email)
+AccountRepository -> Database : SELECT account
 activate Database
-Database --> AccountRepository: returned response
+Database --> AccountRepository: response
 deactivate Database
-AccountRepository --> VerificationCodeSender : returned account
+
+AccountRepository --> VerificationCodeSender : account
 deactivate AccountRepository
 
-'Send Message (with token) to Email
+'Send email with token
 VerificationCodeSender -> EmailServices : sendEmail(message)
 activate EmailServices
+
 EmailServices -> EmailServices : prepareEmail(message)
-EmailServices --> VerificationCodeSender : return true
+EmailServices --> VerificationCodeSender : success
 deactivate EmailServices
 
-VerificationCodeSender --> Account : return ok
+VerificationCodeSender --> Account : ok
 deactivate VerificationCodeSender
-
-== Auth Checking ==
-
-'Chack User 
-Account -> AuthChecker : apply(candidateId, offerId)
-activate AuthChecker
-AuthChecker -> AccountRepository : assertExist(candidateId)
-activate AccountRepository
-
-'Check user in bdd
-AccountRepository -> Database : SELECT
-activate Database
-Database --> AccountRepository: returned account
-deactivate
-
-AccountRepository --> AuthChecker: returned response
-deactivate AccountRepository
-deactivate AuthChecker
 
 
 == Reset Password ==
 
-
-
-'Ask for reset
-Account -> PasswordRenitializer : renitilialize(email, newPassword, verificationToken)
+'Request reset
+Account -> PasswordRenitializer : reinitialize(email, newPassword, verificationToken)
 activate PasswordRenitializer
 
-'Check user info
-PasswordRenitializer -> AccountRepository : verifyUser(email, passwod)
+'Check user
+PasswordRenitializer -> AccountRepository : verifyUser(email)
 activate AccountRepository
 
-'SQL request
 AccountRepository -> Database : SELECT
 activate Database
-
-Database --> AccountRepository : returned account identity
+Database --> AccountRepository : account
 deactivate Database
 
 AccountRepository --> PasswordRenitializer : response
 deactivate AccountRepository
 
-'Search for Token 
-PasswordRenitializer -> OTPRepository : retreiveExisting(verificationToken)
-activate OTPRepository
-OTPRepository -> Database : SELECT token 
-activate Database
-Database --> OTPRepository : response
-deactivate Database
-
-OTPRepository --> PasswordRenitializer : returned OTP object
-deactivate OTPRepository
-
-'Verificaton token
-PasswordRenitializer -> PasswordRenitializer : verifyToken(verificationToken)
-
-PasswordRenitializer --> Account: returned reponse
-deactivate PasswordRenitializer
-
-== Reset email ==
-
-'Ask for email renitialization
-Account -> EmailRenitializer : resetEmail(oldEmail, newEmail, password)
-activate EmailRenitializer
-
-'Check for existing email
-EmailRenitializer -> AccountRepository : checkIdentity(oldEmail, password)
-activate AccountRepository
-AccountRepository --> EmailRenitializer : response
-deactivate AccountRepository
-
-'Retrive Token
-EmailRenitializer -> OTPRepository : getLastTokenWIthPurpose(email)
+'Retrieve token
+PasswordRenitializer -> OTPRepository : retrieveExisting(verificationToken)
 activate OTPRepository
 
 OTPRepository -> Database : SELECT token
 activate Database
-Database --> OTPRepository : returned token
+Database --> OTPRepository : token
 deactivate Database
 
-OTPRepository --> EmailRenitializer
-deactivate
+OTPRepository --> PasswordRenitializer : OTP
+deactivate OTPRepository
 
-'Compare toaken
-EmailRenitializer -> EmailRenitializer : checkToken(providedToken, reteivedToken)
+'Verify token
+PasswordRenitializer -> PasswordRenitializer : verifyToken(verificationToken)
 
-'User Respone
-EmailRenitializer --> Account
- 
+'Update password
+PasswordRenitializer -> AccountRepository : updatePassword(email, newPassword)
+activate AccountRepository
+
+AccountRepository -> Database : UPDATE password
+activate Database
+Database --> AccountRepository : response
+deactivate Database
+
+AccountRepository --> PasswordRenitializer : success
+deactivate AccountRepository
+
+PasswordRenitializer --> Account: response
+deactivate PasswordRenitializer
 
 
+== Reset Email ==
+
+'Request email reset
+Account -> EmailRenitializer : resetEmail(oldEmail, newEmail, password, token)
+activate EmailRenitializer
+
+'Check identity
+EmailRenitializer -> AccountRepository : checkIdentity(oldEmail, password)
+activate AccountRepository
+
+AccountRepository -> Database : SELECT
+activate Database
+Database --> AccountRepository : response
+deactivate Database
+
+AccountRepository --> EmailRenitializer : success
+deactivate AccountRepository
+
+'Retrieve token
+EmailRenitializer -> OTPRepository : getLastTokenWithPurpose(email)
+activate OTPRepository
+
+OTPRepository -> Database : SELECT token
+activate Database
+Database --> OTPRepository : token
+deactivate Database
+
+OTPRepository --> EmailRenitializer : token
+deactivate OTPRepository
+
+'Compare token
+EmailRenitializer -> EmailRenitializer : checkToken(providedToken, retrievedToken)
+
+'Update email
+EmailRenitializer -> AccountRepository : updateEmail(oldEmail, newEmail)
+activate AccountRepository
+
+AccountRepository -> Database : UPDATE email
+activate Database
+Database --> AccountRepository : response
+deactivate Database
+
+AccountRepository --> EmailRenitializer : success
+deactivate AccountRepository
+
+'User response
+EmailRenitializer --> Account : response
+deactivate EmailRenitializer
 
 @enduml

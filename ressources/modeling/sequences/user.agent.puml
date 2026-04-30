@@ -1,0 +1,289 @@
+@startuml
+
+title Agent Management
+
+actor User
+participant AuthChecker
+
+participant AgentGenerator
+participant AgentEraser
+participant ScopeManager
+participant AgentAssignmentManager
+
+participant AgentRepository
+participant AccountRepository
+participant MediaFactoryInterface
+participant MediaStorageInterface
+database Database
+
+
+=== Create Agent ==
+
+'Auth checking
+User -> AuthChecker : createAgent(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> AgentGenerator : createAgent(u_email, agent_email, name, image, scope)
+deactivate AuthChecker
+activate AgentGenerator
+
+'Check user existence
+AgentGenerator -> AccountRepository : validate(u_email)
+activate AccountRepository
+
+AccountRepository -> Database : SELECT
+activate Database
+Database --> AccountRepository : response
+deactivate Database
+
+AccountRepository --> AgentGenerator : success
+deactivate AccountRepository
+
+'Media Process (only if image provided)
+AgentGenerator -> MediaFactoryInterface : convertIntoStaticMedia(image)
+activate MediaFactoryInterface
+
+note right
+    Transform image into 
+    domain object (if provided)
+end note
+
+MediaFactoryInterface --> AgentGenerator: mediaObject
+deactivate MediaFactoryInterface
+
+'Store media
+AgentGenerator  -> MediaStorageInterface : store(mediaObject)
+activate MediaStorageInterface
+note right
+    Store image 
+    into project's storage
+    after size verification
+end note
+
+MediaStorageInterface --> AgentGenerator : storedPath
+deactivate MediaStorageInterface
+
+'Save database
+AgentGenerator -> AgentRepository : save(dto)
+note right
+    DTO contains all necessary
+    data to create an agent
+end note
+
+activate AgentRepository
+AgentRepository -> Database : INSERT
+activate Database
+Database --> AgentRepository : response
+deactivate Database
+
+'User response
+AgentRepository --> AgentGenerator : response
+deactivate AgentRepository
+
+AgentGenerator --> User : agent
+deactivate AgentGenerator
+
+
+=== Suppression d'un agent ==
+
+'Auth checking
+User -> AuthChecker : deleteAgent(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> AgentEraser : eraseAgent(user_id, agentId)
+deactivate AuthChecker
+activate AgentEraser
+
+'Check existence and relation
+AgentEraser -> AgentRepository: validateAssociation(user_id, agentId)
+activate AgentRepository
+
+AgentRepository -> Database : SELECT
+activate Database
+Database --> AgentRepository : response
+deactivate Database
+
+AgentRepository --> AgentEraser : success
+deactivate AgentRepository
+
+'Deletion
+AgentEraser -> AgentRepository : deleteAgent(agentId)
+activate AgentRepository
+
+AgentRepository -> Database : DELETE
+activate Database
+Database --> AgentRepository : response
+deactivate Database
+
+'User response
+AgentRepository --> AgentEraser: response
+deactivate AgentRepository
+AgentEraser --> User : response
+deactivate AgentEraser
+
+
+=== Generation / Modification du scope ==
+
+'Auth checking
+User -> AuthChecker : updateScope(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> ScopeManager : modifyScope(dto) 
+deactivate AuthChecker
+activate ScopeManager
+
+note right
+    Input data transformed into DTO
+end note
+
+'Verify existence & relation
+ScopeManager -> AgentRepository : validateAssociation(user_id, agentId)
+activate AgentRepository
+
+AgentRepository -> Database : SELECT
+activate Database 
+Database --> AgentRepository : response
+deactivate Database
+
+AgentRepository --> ScopeManager : success
+deactivate AgentRepository
+
+'Save Scope
+ScopeManager -> AgentRepository : updateOrCreate(scope)
+activate AgentRepository
+
+AgentRepository -> Database : INSERT/UPDATE
+activate Database 
+Database --> AgentRepository : response
+deactivate Database
+
+AgentRepository --> ScopeManager : response
+deactivate AgentRepository
+
+ScopeManager --> User : response
+deactivate ScopeManager
+
+
+== CREATE / UPDATE Assignments ==
+
+'Auth checking
+User -> AuthChecker : updateAssignment(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> AgentAssignmentManager : createAssignment(u_id, agent_id, assignment)
+activate AgentAssignmentManager
+deactivate AuthChecker
+
+'Validate association & existence
+AgentAssignmentManager -> AccountRepository : validateAssociation(u_id, agent_id)
+activate AccountRepository
+
+AccountRepository -> Database : SELECT
+activate Database
+Database --> AccountRepository : response
+deactivate Database
+
+AccountRepository --> AgentAssignmentManager : success
+deactivate AccountRepository
+
+'Save assignment
+AgentAssignmentManager -> AgentRepository : saveAssignment(assignment)
+activate AgentRepository
+
+AgentRepository -> Database : INSERT/UPDATE
+activate Database
+Database --> AgentRepository : response
+deactivate Database
+
+'User response
+AgentRepository --> AgentAssignmentManager: response
+deactivate AgentRepository
+
+AgentAssignmentManager --> User : response
+deactivate AgentAssignmentManager
+
+
+=== Delete Assignment ==
+
+'Auth checking
+User -> AuthChecker : deleteAssignment(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> AgentAssignmentManager : deleteAssignment(u_id, agent_id, assignment_id)
+activate AgentAssignmentManager
+deactivate AuthChecker
+
+'Validate association & existence
+AgentAssignmentManager -> AccountRepository : validateAssociation(u_id, agent_id)
+activate AccountRepository
+
+AccountRepository -> Database : SELECT
+activate Database
+Database --> AccountRepository : response
+deactivate Database
+
+AccountRepository --> AgentAssignmentManager : success
+deactivate AccountRepository
+
+'Delete assignment
+AgentAssignmentManager -> AgentRepository : deleteAssignment(assignment_id)
+activate AgentRepository
+
+AgentRepository -> Database : DELETE
+activate Database
+Database --> AgentRepository : response
+deactivate Database
+
+'User response
+AgentRepository --> AgentAssignmentManager: response
+deactivate AgentRepository
+
+AgentAssignmentManager --> User : response
+deactivate AgentAssignmentManager
+
+@enduml

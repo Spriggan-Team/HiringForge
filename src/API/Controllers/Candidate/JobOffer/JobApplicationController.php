@@ -53,12 +53,15 @@ class JobApplicationController extends AbstractController
         }
     }
 
+    
+    public function uploadCV()
+    {
+
+    }
+    
     /**
      * Here we undone an application made by a candidate depending on bisuness conditions
      */
     #[Route('/undone')]
-    public function retire()
-    {
-
-    }
+    public function retire(){}
 }

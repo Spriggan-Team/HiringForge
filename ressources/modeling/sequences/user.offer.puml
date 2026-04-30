@@ -1,0 +1,329 @@
+@startuml
+
+title "User Offer/Job Management"
+
+actor User
+participant AuthChecker
+participant JobOfferImageUploader
+participant UserOfferFetcher
+participant JobOfferRecorder
+participant MediaFactoryInterface
+participant JobOfferModifier
+participant JobOffferPublisher
+participant MarkJobOfferAsDraft
+participant JobOfferEraser
+participant JobOfferRepositioryInterface
+participant MediaStorageInterface
+participant CategoryRepositoryInterace
+database Database
+
+=== Consult Offer  ==
+
+'Auth checking
+User -> AuthChecker : fetchOffer(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+AuthChecker -> UserOfferFetcher : retrieveOffer(userId, limit, skip)
+deactivate AuthChecker
+activate UserOfferFetcher
+
+'Retrieval
+UserOfferFetcher -> Database : SELECT 
+note right
+    Retrieve user's offers 
+    (all types)
+end note
+
+activate Database
+Database --> UserOfferFetcher: responses
+deactivate Database
+
+UserOfferFetcher --> User : response
+deactivate UserOfferFetcher
+
+
+=== Creating Offer ==
+
+'Auth checking
+User -> AuthChecker : createOffer(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Start usecase exec
+AuthChecker -> JobOfferRecorder : insertOffer(name, content, categories,...)
+deactivate AuthChecker
+activate JobOfferRecorder
+
+'Check categories existence
+JobOfferRecorder -> CategoryRepositoryInterace : assertCategoriesExistence(categories)
+activate CategoryRepositoryInterace
+
+CategoryRepositoryInterace -> Database : SELECT
+activate Database
+Database --> CategoryRepositoryInterace : response
+deactivate Database
+
+CategoryRepositoryInterace --> JobOfferRecorder : success
+deactivate CategoryRepositoryInterace
+
+'Create Offer
+JobOfferRecorder -> JobOfferRepositioryInterface : save(offerDto)
+activate JobOfferRepositioryInterface
+
+JobOfferRepositioryInterface -> Database : INSERT
+activate Database
+Database --> JobOfferRepositioryInterface: response
+deactivate Database
+
+'User response
+JobOfferRepositioryInterface --> JobOfferRecorder : response
+deactivate JobOfferRepositioryInterface
+
+JobOfferRecorder --> User : response
+deactivate JobOfferRecorder
+
+
+=== Upload Offer Image ==
+
+'Auth checking
+User -> AuthChecker : uploadImage(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase exec
+AuthChecker -> JobOfferImageUploader : uploadImage(files, offerId, userId, mainImageIndex)
+deactivate AuthChecker
+activate JobOfferImageUploader
+
+'Convert into StaticMedia
+JobOfferImageUploader -> MediaFactoryInterface : createStaticMedia(file)
+note right 
+    Ensure file is an image
+    (no video allowed)
+end note
+
+activate MediaFactoryInterface
+
+'Check file size
+MediaFactoryInterface -> MediaFactoryInterface : checkFileSize()
+
+'Store image
+MediaFactoryInterface -> MediaStorageInterface : store(media)
+note right 
+    Save image in storage
+end note
+activate MediaStorageInterface
+
+MediaStorageInterface --> MediaFactoryInterface : storedPath
+deactivate MediaStorageInterface
+
+MediaFactoryInterface --> JobOfferImageUploader : mediaObject
+deactivate MediaFactoryInterface
+
+'Associate to offer
+JobOfferImageUploader -> JobOfferRepositioryInterface : associateJobWithImages(offerId, images)
+activate JobOfferRepositioryInterface
+
+JobOfferRepositioryInterface -> Database : INSERT
+activate Database
+Database --> JobOfferRepositioryInterface : response
+deactivate Database
+
+'User response
+JobOfferRepositioryInterface --> JobOfferImageUploader : response
+deactivate JobOfferRepositioryInterface
+
+JobOfferImageUploader --> User : response
+deactivate JobOfferImageUploader
+
+
+=== Modify Job Offer ==
+
+'Auth checking
+User -> AuthChecker : updateOffer(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> JobOfferModifier: changeJob(offerId, title, content)
+deactivate AuthChecker
+activate JobOfferModifier
+
+'Assert existence
+JobOfferModifier -> JobOfferRepositioryInterface : findById(offerId)
+activate JobOfferRepositioryInterface
+
+JobOfferRepositioryInterface -> Database: SELECT
+activate Database
+Database  --> JobOfferRepositioryInterface : response
+deactivate Database
+
+JobOfferRepositioryInterface --> JobOfferModifier: jobOffer
+deactivate JobOfferRepositioryInterface
+
+note right
+    Apply modifications
+    on domain object
+end note
+
+'Save modification
+JobOfferModifier -> JobOfferRepositioryInterface : update(jobOffer)
+activate JobOfferRepositioryInterface
+
+JobOfferRepositioryInterface -> Database : UPDATE
+activate Database
+Database --> JobOfferRepositioryInterface: response
+deactivate Database
+
+'User Response
+JobOfferRepositioryInterface --> JobOfferModifier: response
+deactivate JobOfferRepositioryInterface
+
+JobOfferModifier --> User: response
+deactivate JobOfferModifier
+
+
+=== Publish Offer ==
+
+'Auth checking
+User -> AuthChecker : publishOffer(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> JobOffferPublisher : publish(offerId, actorId)
+deactivate AuthChecker
+activate JobOffferPublisher
+
+JobOffferPublisher -> JobOfferRepositioryInterface : publish(offerId, actorId)
+activate JobOfferRepositioryInterface
+
+'Database update
+JobOfferRepositioryInterface -> Database : UPDATE
+activate Database
+Database --> JobOfferRepositioryInterface : response
+deactivate Database
+
+'User response
+JobOfferRepositioryInterface --> JobOffferPublisher : response
+deactivate JobOfferRepositioryInterface
+
+JobOffferPublisher --> User : response
+deactivate JobOffferPublisher
+
+
+=== Turn Offer Into Draft ==
+
+'Auth checking
+User -> AuthChecker : draftOffer(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> MarkJobOfferAsDraft: changeOfferStatus(offerId)
+deactivate AuthChecker
+activate MarkJobOfferAsDraft
+
+MarkJobOfferAsDraft -> JobOfferRepositioryInterface : setAsDraft(offerId)
+activate JobOfferRepositioryInterface
+
+'Update database
+JobOfferRepositioryInterface -> Database : UPDATE
+note right
+   Only if no applications linked
+end note
+
+activate Database
+Database --> JobOfferRepositioryInterface : response
+deactivate Database
+
+'User response 
+JobOfferRepositioryInterface --> MarkJobOfferAsDraft : response
+deactivate JobOfferRepositioryInterface
+
+MarkJobOfferAsDraft --> User : response
+deactivate MarkJobOfferAsDraft
+
+
+=== Delete Offer == 
+
+'Auth checking
+User -> AuthChecker : deleteOffer(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> JobOfferEraser : erase(offerId)
+activate JobOfferEraser
+deactivate AuthChecker
+
+JobOfferEraser -> JobOfferRepositioryInterface : erase(offerId)
+note right
+    Ensure applications handled before deletion
+end note
+activate JobOfferRepositioryInterface
+
+'Delete from database
+JobOfferRepositioryInterface -> Database : DELETE
+activate Database
+
+Database --> JobOfferRepositioryInterface : response
+deactivate Database
+
+JobOfferRepositioryInterface --> JobOfferEraser : response
+deactivate JobOfferRepositioryInterface
+
+JobOfferEraser --> User : response
+deactivate JobOfferEraser
+
+@enduml

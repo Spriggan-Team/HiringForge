@@ -33,17 +33,20 @@ rectangle "Actions" {
     (Gérer les candidatures) as ManageCandidates
     (Selection des candidats) as CandidateSelection
     (Planification d'entretien) as PlanInterview
-    (Mise en place d'evaluation technique) as EvalCandidate 
+    ' (Mise en place d'evaluation technique) as EvalCandidate 
 
 
     (Gérer les offres d'emplois) as ManageJobOffer
     (Publication d'une offre) as PublishJobOffer
-
+    (Créer une offre d'emploi) as CreateOffer
+    (Redéfinir en tant que brouillon) as CreateOffer
     (Supprimer une offre d'emploi) as DeleteJobOffer
+    (Modifier d'emploi) as ModifyOffer
 
     (Gérer des agents techniques) as ManageAgent
     (Générer des des agents techniques) as CreateAgent
     (Definission du scope d'un agent) as AgentScopeAction
+    (Assigner une tâche) as AgentAssignement
     (Supprimer un agent) as DeleteAgent 
 }
 
@@ -73,6 +76,7 @@ ApplyJobOffer <.up. ImportedCV : include
 ManageAgent ..> CreateAgent : etends
 ManageAgent ..> AgentScopeAction : extends
 ManageAgent ..> DeleteAgent : extends
+ManageAgent ..> AgentAssignement
 
 User -> ManageAgent
 
@@ -82,7 +86,7 @@ ConsultCandidateList ..> FilterCandidate : extends
 
 ManageCandidates ..> CandidateSelection : extends
 ManageCandidates ..> PlanInterview : extends
-ManageCandidates ..> EvalCandidate : extends
+' ManageCandidates ..> EvalCandidate : extends
 
 User -> ManageCandidates
 User -> ConsultCandidateList
@@ -98,8 +102,9 @@ User -> ManageUserProfil
 ' Manage Offers
 ManageJobOffer ..> PublishJobOffer : extends
 ManageJobOffer ..> DeleteJobOffer  : extends
+ManageJobOffer ..> CreateOffer     : extends
+ManageJobOffer ..> ModifyOffer     : extends
 User -> ManageJobOffer
-
 
 
 

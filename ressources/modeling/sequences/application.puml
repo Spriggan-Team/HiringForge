@@ -1,0 +1,84 @@
+@startuml 
+
+title Candidate Application
+
+actor Candidate
+participant AuthChecker
+participant ApplicationUsecase
+participant ApplicationRepository
+participant CVManager
+participant CandidateRepository
+database Database
+
+'Auth checking
+Candidate -> AuthChecker: initApplication(candidateId, offerId)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the candidate is authenticated
+end note
+
+'Usecase
+AuthChecker -> ApplicationUsecase : initApplication(candidateId, offerId)
+deactivate AuthChecker
+activate ApplicationUsecase
+
+'Check for existing application / offer
+ApplicationUsecase -> ApplicationRepository : assertExist(offerId)
+activate ApplicationRepository
+
+ApplicationRepository -> Database : SELECT
+activate Database
+
+alt Success
+    Database --> ApplicationRepository : offer found
+    deactivate Database
+
+    ApplicationRepository --> ApplicationUsecase : offer
+    deactivate ApplicationRepository
+
+    'Optional CV handling (important)
+    ApplicationUsecase -> CVManager : retrieveOrGenerateCV(candidateId)
+    activate CVManager
+
+    note right
+        Ensure candidate has a valid CV
+        (parsed or already stored)
+    end note
+
+    CVManager --> ApplicationUsecase : cvData
+    deactivate CVManager
+
+    'Execute Application
+    ApplicationUsecase -> CandidateRepository : apply(candidateId, offerId, cvData)
+    activate CandidateRepository
+    
+    'Insert application
+    CandidateRepository -> Database : INSERT
+    activate Database
+    Database --> CandidateRepository: response
+    deactivate Database
+
+    'User response
+    CandidateRepository --> ApplicationUsecase : success
+    deactivate CandidateRepository
+
+    ApplicationUsecase --> Candidate : success
+    deactivate ApplicationUsecase
+
+else Failure
+    Database --> ApplicationRepository: not found
+    deactivate Database
+
+    ApplicationRepository --> ApplicationUsecase: failure
+    deactivate ApplicationRepository
+
+    ApplicationUsecase --> Candidate : bad request
+    deactivate ApplicationUsecase
+end
+
+@enduml

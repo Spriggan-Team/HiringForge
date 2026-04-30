@@ -61,9 +61,10 @@ class UserJobOfferManagementController extends AbstractController
             $account = $this->getUser();
 
             $body = json_decode($request->getContent(), true);
-            $command =new CreateJobOffer(
+            $command = new CreateJobOffer(
                 title:    $body['title'],
                 content:  $body['content'],
+                image: null,
                 categories: $body['categories'], //an array of categories' ids
             );
             $offerId = $handler->execute(
