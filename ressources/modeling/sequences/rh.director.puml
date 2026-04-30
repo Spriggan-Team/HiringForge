@@ -1,0 +1,88 @@
+@startuml
+
+title RH Director - Control Recruiters & Recruitment
+
+actor HRDirector as Thomas
+
+participant AuthChecker
+participant AccountRepository
+participant DashboardAggregator
+participant UserRepository
+participant ApplicationRepository
+participant JobOfferRepositioryInterface
+participant InterviewRepositoryInterface
+database Database
+
+=== Access & Permission Check ===
+
+Thomas -> AuthChecker : accessSystem(token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+AuthChecker -> AccountRepository : validateRole(userId)
+activate AccountRepository
+
+AccountRepository -> Database : SELECT role
+activate Database
+Database --> AccountRepository : role = HR_DIRECTOR
+deactivate Database
+
+AccountRepository --> AuthChecker : authorized
+deactivate AccountRepository
+
+AuthChecker --> DashboardAggregator : accessGranted
+deactivate AuthChecker
+activate DashboardAggregator
+
+
+=== Global Monitoring ===
+
+DashboardAggregator -> UserRepository : getRecruiters(filters)
+activate UserRepository
+
+UserRepository -> Database : SELECT users
+activate Database
+Database --> UserRepository : recruiters
+deactivate Database
+
+UserRepository --> DashboardAggregator : recruiters
+deactivate UserRepository
+
+
+DashboardAggregator -> JobOfferRepositioryInterface : getOffersByRecruiters()
+activate JobOfferRepositioryInterface
+JobOfferRepositioryInterface -> Database : SELECT
+activate Database
+Database --> JobOfferRepositioryInterface
+deactivate Database
+JobOfferRepositioryInterface --> DashboardAggregator
+deactivate JobOfferRepositioryInterface
+
+
+DashboardAggregator -> ApplicationRepository : getApplications()
+activate ApplicationRepository
+ApplicationRepository -> Database : SELECT
+activate Database
+Database --> ApplicationRepository
+deactivate Database
+ApplicationRepository --> DashboardAggregator
+deactivate ApplicationRepository
+
+
+DashboardAggregator -> DashboardAggregator : computeKPIs()
+
+DashboardAggregator --> Thomas : dashboard + recruiters performance
+deactivate DashboardAggregator
+
+
+
+=== Audit / Trace ===
+
+UserRepository -> Database : INSERT KeepTrace
+note right
+    Log recruiter modification
+end note
+
+@enduml

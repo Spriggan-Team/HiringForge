@@ -37,6 +37,15 @@ Account <|.. User
 Account <|.. Candidate
 
 '========================
+' HR DIRECTOR (ROLE BASED)
+'========================
+
+class HRDirector {
+}
+
+User <|-- HRDirector
+
+'========================
 ' REPOSITORIES
 '========================
 
@@ -45,6 +54,9 @@ interface UserRepository{
     + update(user)
     + findByEmail(email): User
     + findById(id): User
+    + findAll(filters)
+    + changeRole(userId, role)
+    + deactivate(userId)
     + delete(id)
 }
 
@@ -72,7 +84,7 @@ User "1" -- "1..*" Address
 Candidate "1" --> "1" Address
 
 '========================
-' MEDIA (Aligned with sequences)
+' MEDIA
 '========================
 
 class StaticMedia{
@@ -148,11 +160,13 @@ class JobOfferApplication{
     createdAt: Datetime
 }
 
-interface ApplicationRepository{
+interface ApplicationRepository {
     + assertExist(offerId)
     + save(application)
     + changeStatus(applicationId, status)
     + validate(userId, offerId, applicationId)
+    + findAll()
+    + findByOffers(offerIds)
 }
 
 Candidate "1" -- "1..*" JobOfferApplication
@@ -160,7 +174,7 @@ JobOfferApplication "*" --> "1" JobOffer
 ApplicationRepository --> JobOfferApplication
 
 '========================
-' CV MANAGEMENT (important)
+' CV MANAGEMENT
 '========================
 
 class CVParser{
@@ -189,6 +203,7 @@ interface InterviewRepositoryInterface{
     + verify(userId, applicationId)
     + save(interview)
     + delete(interviewId)
+    + findByApplications(applicationIds)
 }
 
 JobOfferApplication "1" -- "0..*" Interview
@@ -280,6 +295,7 @@ class KeepTrace{
 }
 
 Account "1" -- "0..*" KeepTrace
+UserRepository --> KeepTrace
 
 '========================
 ' ENUM
@@ -290,5 +306,26 @@ enum JobStatus{
     CLOSED
     PUBLISHED
 }
+
+'========================
+' DASHBOARD (EXISTING LOGIC ONLY)
+'========================
+
+class DashboardAggregator {
+    + getGlobalKPIs()
+    + computeKPIs()
+}
+
+DashboardAggregator --> UserRepository
+DashboardAggregator --> JobOfferRepositioryInterface
+DashboardAggregator --> ApplicationRepository
+DashboardAggregator --> InterviewRepositoryInterface
+
+'========================
+' RELATION RH CONTROL
+'========================
+
+HRDirector --> UserRepository
+HRDirector --> DashboardAggregator
 
 @enduml
