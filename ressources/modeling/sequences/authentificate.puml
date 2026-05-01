@@ -1,6 +1,6 @@
 @startuml Auth Flow
 
-actor Mitsuri as Account
+actor "Account" as Account
 
 participant LoginAuthentificator
 participant JwtAuthentificator
