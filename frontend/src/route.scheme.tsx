@@ -4,6 +4,7 @@ const RouteScheme = {
     home: "home",
     login: "/login",
     register: "resgister",
+    forgottenPassword: "forgotten/password",
 }
 
 export default RouteScheme;

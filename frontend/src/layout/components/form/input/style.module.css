@@ -1,0 +1,80 @@
+.container {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.label{
+    display: block;
+
+    font-size: 6px;
+    margin-left: 4px;
+
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .2px;
+
+    color:  #374151;
+    transition: 
+        color .2s ease,
+        transform .2s ease;
+}
+
+
+.container:focus-within .label{
+    color: #2563eb;
+    transform: translateX(2px);
+}
+
+.inputSection {
+    gap: 10px;
+    display: flex;
+    box-sizing: border-box;
+    width: var(--width);
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 8px;
+    align-items: center;
+}
+
+.inputSection{
+    transition:
+        border .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
+}
+
+.inputSection:focus-within{
+    background: white;
+    box-shadow: 0 0 0 3px rgba(15,82,255,.15);
+}
+
+.svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.input {
+    border: none;
+    width: 100%;
+    outline: none;
+    font-family: inherit;
+    background: transparent;
+}
+
+.input::placeholder{
+    font-size: 14px;
+}
+
+.btn
+{
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border: 10px;
+    font-family: 'Poppins' sans-serif;
+    background-color: #F2F1F5;
+}
+
+
