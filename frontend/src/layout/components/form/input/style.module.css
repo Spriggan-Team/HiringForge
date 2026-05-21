@@ -31,7 +31,7 @@
     display: flex;
     box-sizing: border-box;
     width: var(--width);
-    padding: 10px;
+    padding: var(--padding);
     margin-top: 5px;
     border-radius: 8px;
     align-items: center;

@@ -8,11 +8,11 @@ import BasicInput from '../../layout/components/form/input/basic.input';
 //SVG - Components
 import LogoSVG from '../../assets/custom-logo.svg';
 import EmailSVG from '../../assets/svg/email/email-1-svgrepo-com.svg';
-import PasswordDVG from '../../assets/svg/password-svgrepo-com.svg'
+import PasswordSVG from '../../assets/svg/password/password-svgrepo-com.svg'
 
 // CSS - Styles
 import styles from './style.module.css'
-import Separator from '../../layout/components/separator/separator';
+
 
 
 
@@ -20,7 +20,7 @@ import Separator from '../../layout/components/separator/separator';
 
 const Login = () => {
 
-    const [animate, setAnimate] = useState(false);
+    const [animateBtn, setAnimateBtn] = useState(false);
 
     return ( 
         <div className={styles.container}>
@@ -43,7 +43,7 @@ const Login = () => {
                     />
                     <BasicInput 
                         width="100%"
-                        svg={PasswordDVG} 
+                        svg={PasswordSVG} 
                         label='Password'
                         type='password'
                     />
@@ -51,14 +51,14 @@ const Login = () => {
 
                 <div style={{ width: "100%", display: "flex", justifyContent: "center"}}>
                     <button 
-                        className={`${styles.logInBtn} ${animate ? styles.animate : ""}`}
+                        className={`${styles.logInBtn} ${animateBtn ? styles.animate : ""}`}
                         onClick={()=>{
-                            setAnimate(false);
+                            setAnimateBtn(false);
                             requestAnimationFrame(()=>{
-                                setAnimate(true);
+                                setAnimateBtn(true);
 
                                 setTimeout(()=>{
-                                    setAnimate(true);
+                                    setAnimateBtn(true);
                                 }, 900)
                             })
                         }}
@@ -73,7 +73,6 @@ const Login = () => {
                 </div>
 
                 <div className={styles.footer}>
-                    <Separator  />
                     <h5>2026 DigitalCop - All right reserved</h5>
                 </div>
             </div>

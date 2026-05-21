@@ -1,10 +1,10 @@
 
 const RouteScheme = {
     main: "/",
-    home: "home",
+    home: "/home",
     login: "/login",
-    register: "resgister",
-    forgottenPassword: "forgotten/password",
+    register: "/resgister",
+    forgottenPassword: "/forgotten-password",
 }
 
 export default RouteScheme;

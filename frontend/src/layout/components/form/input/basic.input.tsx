@@ -8,12 +8,12 @@ interface BasicInputProps {
     label?: string;
     textColor?: string;
     width?: number | string;
-    padding?: number;
+    padding?: string | number;
     placeholder?: string;
     onChange?: ()=>void;
     backgroundColor?: string;
     type?: "text" | "password";
-    svg: React.FC<React.SVGProps<SVGSVGElement>>;
+    svg?: React.FC<React.SVGProps<SVGSVGElement>>;
 }
 
 
@@ -28,6 +28,7 @@ const BasicInput: React.FC<BasicInputProps> = ({
     type = "text",
     placeholder,
     inputName,
+    padding,
     onChange = ()=>{}
 }) => {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -39,11 +40,11 @@ const BasicInput: React.FC<BasicInputProps> = ({
                 className={styles.inputSection}
                 style={{ 
                     background: "#ECEAF1",  
-                    ["--width" as string]: (width && typeof width == 'number' ?  `${width}px` : width) ?? "252px"  
+                    ["--width" as string]: (width && typeof width == 'number' ?  `${width}px` : width) ?? "252px" ,
+                    ["--padding" as string]:  (padding && typeof padding == 'number' ?  `${padding}px` : padding) ?? "10px"
                 }}
             >
-                <Icon className={styles.svg} />
-
+                {Icon &&  <Icon className={styles.svg} /> }
                 <input
                     ref={inputRef}
                     name={inputName}
