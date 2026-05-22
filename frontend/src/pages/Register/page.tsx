@@ -18,6 +18,7 @@ import BrowserSVG from '../../assets/svg/net/internet-svgrepo-com.svg';
 
 //-- CSS Styles
 import styles from "./style.module.css"
+import StageTitle from "./components/stage/stage.title";
 
 
 const Register = () => {
@@ -50,7 +51,9 @@ const Register = () => {
                 
                 {/* PROCESS DESCRIPTION */}
                 <div className={styles.infoBox}>
-                    details
+                    <StageTitle step={1} txt="" />
+                    <StageTitle step={2} txt="" />
+                    <StageTitle step={3} txt="" />
                 </div>
                 
                 {/* MAIN FORM */}

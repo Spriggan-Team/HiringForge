@@ -1,0 +1,25 @@
+{
+    "global":{
+        "allRightsReserved":"2026 DigitalCop - All right reserved"
+    },
+
+    "login":{
+        "tagline": "Log in to your account",
+        "inputs":{
+            "email": {
+                "label": "Email",
+                "placeholder": "email@example.com"
+            },
+            "password": {
+                "label": "Mot de passe"
+            } 
+        },
+        "links": {
+            "forgottenPassword": "Forgotten password ? ",
+            "signIn": "Sign In"
+        },
+        "buttons":{
+            "logbtn": "Log In"
+        }
+    }
+}

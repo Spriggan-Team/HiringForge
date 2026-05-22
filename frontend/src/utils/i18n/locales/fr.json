@@ -1,0 +1,27 @@
+{
+    "global":{
+        "allRightsReserved":"2026 DigitalCop - Tous droits réservés"
+    },
+    "login":{
+        "tagline": "Connexion à votre espace",
+        "links": {
+            "forgottenPassword": "Mot de passe oublié ? ",
+            "signIn": "S'enregistrer"
+        },
+        "inputs":{
+            "email": {
+                "label": "Email",
+                "placeholder": "email@example.com"
+            },
+            "password": {
+                "label": "Mot de passe"
+            } 
+        },
+        "buttons":{
+            "logbtn": "Connexion"
+        }
+    },
+    "register":{
+        
+    }
+}

@@ -12,6 +12,7 @@ import PasswordSVG from '../../assets/svg/password/password-svgrepo-com.svg'
 
 // CSS - Styles
 import styles from './style.module.css'
+import { useTranslation } from 'react-i18next';
 
 
 
@@ -20,6 +21,7 @@ import styles from './style.module.css'
 
 const Login = () => {
 
+    const { t } = useTranslation();
     const [animateBtn, setAnimateBtn] = useState(false);
 
     return ( 
@@ -30,7 +32,7 @@ const Login = () => {
                     <LogoSVG className={styles.logo} width={113} height={113} />
                     <div className={styles.upperH}>
                         <h1 className={styles.title} >DigitalCop ATS</h1>
-                        <p className={styles.undertxt}>Connexion à votre espace</p>
+                        <p className={styles.undertxt}>{t("login.tagline")}</p>
                     </div>
                 </div>
 
@@ -38,13 +40,13 @@ const Login = () => {
                     <BasicInput 
                         width="100%"
                         svg={EmailSVG}
-                        label='Email'
-                        placeholder='email@example.com'
+                        label={t("login.inputs.email.label")}
+                        placeholder= {t("login.inputs.email.placeholder")}
                     />
                     <BasicInput 
                         width="100%"
                         svg={PasswordSVG} 
-                        label='Password'
+                        label={t("login.inputs.password.label")}
                         type='password'
                     />
                 </div>
@@ -63,17 +65,17 @@ const Login = () => {
                             })
                         }}
                     >
-                        Log in
+                        {t("login.buttons.logbtn")}
                     </button>
                 </div>
 
                 <div className={styles.options}>
-                    <Link to={RouteScheme.forgottenPassword}>Forgotten password ? </Link>
-                    <Link to={RouteScheme.register}>Sign In</Link>
+                    <Link to={RouteScheme.forgottenPassword}>{t("login.links.forgottenPassword")}</Link>
+                    <Link to={RouteScheme.register}>{t("login.links.signIn")}</Link>
                 </div>
 
                 <div className={styles.footer}>
-                    <h5>2026 DigitalCop - All right reserved</h5>
+                    <h5>{t("global.allRightsReserved")}</h5>
                 </div>
             </div>
         </div>
