@@ -82,6 +82,7 @@ class RegisterController extends AbstractController
                 password: $inputBag->get('password'),
                 images: $request->files->get('images', []),
                 videoPresentation: $request->files->get('videoPresentation',null),
+                logo: $request->files->get("logo"),
                 address:  Address::create(
                     street: $inputBag->get("address[street]"),
                     postalCode: $inputBag->get("address[postalCode]"),

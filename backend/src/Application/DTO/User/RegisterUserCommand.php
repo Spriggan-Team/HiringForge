@@ -23,15 +23,16 @@ class RegisterUserCommand
         #[Assert\NotBlank]
         public string $siret,
 
-        /** @var UploadedFile[] */
-        public array $images = [],
 
-        public ?UploadedFile $videoPresentation = null,
-        
         #[Assert\NotNull]
         public Address $address,
 
+        /** @var UploadedFile[] */
+        public array $images = [],
+        
         public ?string $desc = null,
+        public ?UploadedFile $logo = null,
+        public ?UploadedFile $videoPresentation = null,
     ){}
 
     public function withImages($uploads): static
