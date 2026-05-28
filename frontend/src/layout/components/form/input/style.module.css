@@ -1,58 +1,58 @@
 .container {
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 
-.label{
+.label {
     display: block;
-
-    font-size: 6px;
-    margin-left: 4px;
-
     font-size: 13px;
     font-weight: 600;
-    letter-spacing: .2px;
-
-    color:  #374151;
-    transition: 
-        color .2s ease,
-        transform .2s ease;
+    letter-spacing: .02em;
+    color: #4b5563;
+    margin-bottom: 6px;
+    transition: color .2s ease;
 }
 
-
-.container:focus-within .label{
+.container:focus-within .label {
     color: #2563eb;
     transform: translateX(2px);
 }
 
+
 .inputSection {
-    gap: 10px;
     display: flex;
+    align-items: center;
+    gap: 12px;
     box-sizing: border-box;
     width: var(--width);
     padding: var(--padding);
-    margin-top: 5px;
-    border-radius: 8px;
-    align-items: center;
+    border-radius: var(--border);
+    transition: border .2s ease, box-shadow .2s ease, background .2s ease;
 }
 
-.inputSection{
-    transition:
-        border .2s ease,
-        box-shadow .2s ease,
-        background .2s ease;
-}
 
-.inputSection:focus-within{
+.inputSection:focus-within {
     background: white;
     box-shadow: 0 0 0 3px rgba(15,82,255,.15);
+    outline: 1px solid #2563eb; 
+}
+
+.inputSection:user-invalid{
+    border: 1px solid #dc2626; /* Bordure rouge pro */
+    background-color: #fef2f2; /* Fond légèrement rouge */   
+}
+
+.container:has(input:user-invalid) .label {
+    color: #dc2626;
 }
 
 .svg {
     width: 20px;
     height: 20px;
     flex-shrink: 0;
+    color: #9ca3af;
 }
 
 .input {
@@ -61,20 +61,36 @@
     outline: none;
     font-family: inherit;
     background: transparent;
+    font-size: 15px;
+    color: #1f2937;
 }
 
-.input::placeholder{
+
+.input::placeholder {
     font-size: 14px;
+    color: #9ca3af;
 }
 
-.btn
-{
+
+/*  BOUTON  */
+.btn {
     border: none;
-    padding: 5px 10px;
+    background: transparent;
     cursor: pointer;
-    border: 10px;
-    font-family: 'Poppins' sans-serif;
-    background-color: #F2F1F5;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
+.btnSvg {
+    color: #6b7280;
+    width: 18px;
+    height: 18px;
+    transition: color .2s ease;
+}
 
+.btn:hover .btnSvg {
+    color: #111827; 
+}

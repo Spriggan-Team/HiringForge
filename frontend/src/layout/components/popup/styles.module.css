@@ -1,0 +1,84 @@
+.container {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    z-index: 9999;
+}
+
+.pop {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    
+    pointer-events: auto; 
+
+    display: flex;
+    align-items: flex-start;
+    padding: 16px 40px 16px 16px;
+    min-width: 300px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.pop.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/** state **/
+.success {
+    border-left-color: #10b981; 
+    background-color: #f6fdfa;
+}
+
+.error {
+    border-left-color: #dc2626; 
+    background-color: #fef2f2; 
+}
+
+/** content style **/
+.content {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: #374151;
+}
+
+
+/** btn **/
+
+.closeBtn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    color: #9ca3af;
+    border-radius: 6px;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.closeBtn:hover {
+    color: #111827;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 500px) {
+    .pop {
+        right: 16px;
+        left: 16px;
+        bottom: 16px;
+        max-width: 100%;
+        min-width: 0;
+    }
+}

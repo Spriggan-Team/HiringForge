@@ -3,7 +3,7 @@
 const SimpleButton = () => {
     return ( 
         <div>
-
+            <button></button>
         </div>
     );
 }

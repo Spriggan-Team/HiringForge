@@ -6,15 +6,12 @@ import RouteScheme from '../../route.scheme';
 import BasicInput from '../../layout/components/form/input/basic.input';
 
 //SVG - Components
-import LogoSVG from '../../assets/custom-logo.svg';
-import EmailSVG from '../../assets/svg/email/email-1-svgrepo-com.svg';
-import PasswordSVG from '../../assets/svg/password/password-svgrepo-com.svg'
+import LogoSVG from '/src/assets/custom-logo.svg';
+import EmailSVG from '/src/assets/svg/email/email-1-svgrepo-com.svg';
 
 // CSS - Styles
 import styles from './style.module.css'
 import { useTranslation } from 'react-i18next';
-
-
 
 
 
@@ -45,7 +42,6 @@ const Login = () => {
                     />
                     <BasicInput 
                         width="100%"
-                        svg={PasswordSVG} 
                         label={t("login.inputs.password.label")}
                         type='password'
                     />

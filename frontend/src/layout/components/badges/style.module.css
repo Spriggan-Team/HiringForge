@@ -1,4 +1,13 @@
 
 .container{
-    
+    gap: 15px;
+    display: flex;
+    padding: 5px 10px;
+    width: fit-content;
+    align-items: center;
+    background: #FBFCFE;
+    border-radius: 15px;
+}
+
+.container .txt{
 }

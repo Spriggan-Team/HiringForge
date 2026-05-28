@@ -1,75 +1,115 @@
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
+//--Config Object
+import RouteScheme from "../../route.scheme";
 
 
 //-- CORE COMPONENTS 
-import IdentityDetails from "./components/identity/Identity.details";
+import AccountAccess from "./components/access/account.access";
 
-//Custom - React Component
+
+//-- Custom - React Component
 import BasicInput from '../../layout/components/form/input/basic.input';
 import DownloadButton from "../../layout/components/buttons/download/download.button";
 import SecurityBadge from "../../layout/components/badges/security.badge";
 import SimpleButton from "../../layout/components/buttons/simple/simple.button";
+import StageTitle from "../../layout/components/indicators/stage/stage.title";
+import StatusItem from "../../layout/components/indicators/statusItem/status.item";
+import Gauge from "../../layout/components/progress/gauge/gauge";
 
 
-//SVG - Components
-import LogoSVG from '../../assets/custom-logo.svg';
-import BrowserSVG from '../../assets/svg/net/internet-svgrepo-com.svg';
+//-- SVG - Components
+import LogoSVG from '/src/assets/custom-logo.svg';
+import BrowserSVG from '/src/assets/svg/net/internet-svgrepo-com.svg';
+import DownArrowSVG from '/src/assets/svg/arrows/down-arrow-5-svgrepo-com.svg';
+import AddSVG from "/src/assets/svg/add/add-svgrepo-com.svg"
+
+//-- Images - Ressources
+import OfficeWorkerImage from "../../assets/images/office-worker.png"
 
 //-- CSS Styles
 import styles from "./style.module.css"
-import StageTitle from "./components/stage/stage.title";
 
+
+const REGISTERING_TOTAL_STEP = 3;
 
 const Register = () => {
-    const [step, setStep] = useState();
+    const { t } = useTranslation()
+
+    const [currentStep, setCurrentStep] = useState(1);
     const [language, setLanguage] = useState("Français");
+
+    
+    const formData = useRef<FormData>(new FormData());
+    const [images, setImages] = useState<File[]>([]);
+
+    const addImageInputRef = useRef<HTMLInputElement | null>(null);
 
     return (
         <div className={styles.container}>
-            <nav>
+            <nav className={styles.navbar}>
                 <div className={styles.leading}>
-                    <LogoSVG width={45} />
+                    <LogoSVG width={45} height={45} />
                     <h1>DigitalCop ATS</h1>
                 </div>
 
                 <div className={styles.actions}>
-                    <div className={styles.translateSection}>
-                        <BrowserSVG />
+                    <div className={`${styles.translateSection} faint-border`}>
+                        <BrowserSVG className={styles.browserSVG} width={25} height={25}  />
                         <span>{language}</span>
+                        <DownArrowSVG className={styles.arrowSVG} width={25} height={25} />
                     </div>
 
                     <div className={styles.logInBtn}>
-                        <span>Déja un compte ?</span><span>Se connecter</span>
+                        <span>{t("register.subtext.alreadyHaveAccount")}</span><Link to={RouteScheme.login}>{t("register.buttons.logbtn")}</Link>
                     </div>
                 </div>         
             </nav>
 
            {/* MAIN CONTENT */}
 
-            <div className={styles.mainContainer}>
+            <div className={`faint-border ${styles.mainContainer}`}>
                 
                 {/* PROCESS DESCRIPTION */}
                 <div className={styles.infoBox}>
-                    <StageTitle step={1} txt="" />
-                    <StageTitle step={2} txt="" />
-                    <StageTitle step={3} txt="" />
+                    <div className={styles.stagesSection}>
+                        <StageTitle step={1} txt={t("register.processDescription.one")} active = {currentStep === 1} />
+                        <StageTitle step={2} txt={t("register.processDescription.two")} active = {currentStep === 2} />
+                        <StageTitle step={3} txt={t("register.processDescription.three")} active = {currentStep === 3}  />
+                    </div>
+                    <div className={styles.statusItemSection}>
+                        <StatusItem text={t("register.processDescription.overall.0")}/>
+                        <StatusItem text={t("register.processDescription.overall.1")}/>
+                        <StatusItem text={t("register.processDescription.overall.2")}/>
+                    </div>
+                    <img src={OfficeWorkerImage} alt="" />
                 </div>
                 
                 {/* MAIN FORM */}
 
                 <div className={styles.mainForm}>
                     <div className={styles.header}>
-                        <h3>Créer votre compte entreprise</h3>
+                        <h3 className={styles.formTitle}>{t("register.form.title")}</h3>
                         <div className={styles.desc}>
-                            <p>Rejoindre digitalCop en quelques étapes</p>
+                            <p>{t("register.form.subtitle")}</p>
                             <div className={styles.progessContainer}>
-                                <span>Etape 1 sur {step}</span>
-                                <div></div>
+                                <span>{t("register.form.currentStep", {count: currentStep, totalCount: 3})}</span>
+                                <Gauge 
+                                    width={"50%"} height={2.5}
+                                    activeColor="#003DE7"
+                                    foregroundColor="#D9D9D9"
+                                    percent={currentStep / REGISTERING_TOTAL_STEP} 
+                                />
                             </div>
                         </div>
                     </div>
-                    <IdentityDetails />
+                    {currentStep == 1 ?
+                        <AccountAccess formData={formData.current}  onNext={()=>{setCurrentStep(2)}} />
+                        : <></>    
+                    }
                 </div>
 
 
@@ -78,31 +118,48 @@ const Register = () => {
                 <div className={styles.sideForm}>
                     {/* TOP */}
                     <div className={styles.top}>
-                        <h2>Branding de l'entreprise</h2>
+                        <h3>Branding de l'entreprise</h3>
                          {/* DOWNLOAD LOGO SECTION */}
                         <div className={styles.downloadLogoSection}>
-                            <span>Logo</span>
+                            <h4 className={styles.logoTitle}>{t("global.logo.text")} <span className="faint-txt">({t("global.validation.required")})</span></h4>
                             <div className={styles.downloadBox}>
-                                <LogoSVG />
-                                <DownloadButton />
-                                <span>PNG, JPG ... </span>
+                                <LogoSVG width={45} height={45} />
+                                <DownloadButton 
+                                    onNext={(file)=> {
+                                        if(file){
+                                            formData.current.append("logo", file);
+                                        }
+                                    }}
+                                />
+                                <span className={styles.subtxt}>PNG, JPG ... </span>
                             </div>
                         </div>
 
                          {/* IMAGES DOWNLOAD SECTION */}
                         <div className={styles.downloadImageSection}>
-                            <h2>Photo de présentation <span>(optionnel)</span></h2>
-                            <div>
-                                <img 
-                                    alt=""
-                                    src="https://images.unsplash.com/photo-1779243829348-85bf26cff23b?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                                />
-                                <img 
-                                    alt=""
-                                    src="https://images.unsplash.com/photo-1773332585788-9104ec6f38ef?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                                />
-                                <div className={styles.addBox}>
-                                    <span>Ajouter des photos</span>
+                            <h3>Photo de présentation <span className="faint-txt">({t("global.validation.optionnal")})</span></h3>
+                            <div className={styles.images}>
+                                { Array.isArray(images) && images.length > 0 && (
+                                    images.map((image)=> <img alt="uploadIme" src={URL.createObjectURL(image)} />)
+                                )}   
+                                <div 
+                                    className={styles.addBox}
+                                    onClick={()=>{ if(addImageInputRef.current) addImageInputRef.current.click() }}
+                                >
+                                    <AddSVG width={45} height={45}/>
+                                    <span>{t("register.form.downloadAssets.pictures.tagline")}</span>
+                                    <input 
+                                        ref={addImageInputRef}
+                                        accept="image/*"
+                                        style={{ display: "contents" }}
+                                        type="file"
+                                        multiple
+                                        onChange={(event)=> {
+                                            const files = event.target.files;
+                                            if(files)
+                                                setImages((previous)=> ([...previous, ...files]));
+                                        }} 
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -112,27 +169,27 @@ const Register = () => {
                     {/* BOTTOM */}
                     <div className={styles.bottom}>
                         {/* ADDRESS SECTION */}
-                        <h2>Addrèsse de l'entreprise</h2>
-                        <div>
-                            <BasicInput label="Pays" placeholder="France" />
-                            <div>
-                                <BasicInput label="Code postal" placeholder="75002" />
-                                <BasicInput label="Ville" placeholder="Paris" />
+                        <h3>{t("register.form.addressDetails.title")}</h3>
+                        <div className={styles.geoposSection}>
+                            <BasicInput backgroundColor="#FBFAFE" width="100%" label={t("register.form.addressDetails.inputs.country.label")} placeholder="France" />
+                            <div className={styles.inpts}>
+                                <BasicInput className="faint-border" backgroundColor="#FBFAFE" width="100%" label={t("register.form.addressDetails.inputs.postalCode.label")}  placeholder="75002" />
+                                <BasicInput className="faint-border" backgroundColor="#FBFAFE" width="100%"  label={t("register.form.addressDetails.inputs.city.label")} placeholder="Paris" />
                             </div>
-                            <BasicInput label="Address" placeholder="32 rue st michelle" />
+                            <BasicInput className="faint-border" backgroundColor="#FBFAFE" width="100%" label="Address" placeholder="32 rue st michelle" />
                         </div>
                     </div>
 
                     {/* OVER - ABSOLUTE ELEMENT */}
-                    <div>
-                        <SecurityBadge />
+                    <div className={styles.bage}>
+                        {/* <SecurityBadge /> */}
                     </div>
                 </div>
 
             </div>
 
             {/*  FOOTER */}
-            <div>
+            {/* <div className={styles.footer}>
                 <SimpleButton />
                 <div>
                     <span> Etape1 </span>
@@ -140,7 +197,7 @@ const Register = () => {
                     <span> Etape3 </span>
                 </div>
                 <SimpleButton />
-            </div>
+            </div> */}
         </div>
     );
 }

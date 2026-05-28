@@ -1,0 +1,14 @@
+
+.container *{
+    display: inline;
+    vertical-align: middle;
+}
+
+/*  GAP */
+.container * + * {
+    margin-left: 5px;
+}
+
+.container .text {
+    font-weight: 400;
+}

@@ -21,5 +21,15 @@
         "buttons":{
             "logbtn": "Log In"
         }
+    },
+
+    "register":{
+        "subtext":{
+            "alreadyHaveAccount": "Already registered ?"
+        },
+        "buttons":{
+            "logbtn": "Log In"
+        }
     }
+
 }

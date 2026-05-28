@@ -17,3 +17,30 @@ html, body{
   );
 }
 
+a{
+    color: #2563eb;
+
+    text-decoration: none;
+
+    transition:
+        opacity .2s ease,
+        transform .2s ease;
+}
+
+/** Global link styles **/
+a:hover{
+    opacity: .75;
+    transform: translateY(-1px);
+}
+
+.faint-border{
+  border: 1px solid #e2e8f0;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+.faint-txt{
+  color: gray;
+}

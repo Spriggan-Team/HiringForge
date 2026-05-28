@@ -1,4 +1,21 @@
 
 .container{
-    
+    text-align: center;
+}
+
+.container > div{
+    padding: 5px 10px;
+    width: fit-content;
+    border-radius: 5px;
+    display: inline-block;
+    border: 1px solid rgba(0, 0, 0, 0.13);
+}
+
+.container div > *{
+    display: inline;
+    vertical-align: middle;
+}
+
+.container div > span{
+    margin-left: 5px;
 }
