@@ -4,7 +4,7 @@ import styles from "./style.module.css"
 /**
  * perfomr auth validation 
  */
-const SecureAccunt = () => {
+const SecureAccount = () => {
     return ( 
         <div className={styles.container}>
             <h2>Secure your account</h2>
@@ -12,4 +12,4 @@ const SecureAccunt = () => {
     );
 }
  
-export default SecureAccunt;
+export default SecureAccount;

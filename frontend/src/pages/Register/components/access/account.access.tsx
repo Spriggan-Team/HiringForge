@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-
+import { useAppContext } from "../../../../hooks/context";
 
 //-- Custom - React Component
 import HardPassword from "../../../../layout/components/form/input/password/hard.password";
 import ConfirmPassword from "../../../../layout/components/form/input/password/confirm/confirm.password";
 import BrandButton from "../../../../layout/components/buttons/brand.button";
 import BasicInput from "../../../../layout/components/form/input/basic.input";
+import FormWrapper, { FormHint, FormInputs, FormTitle, SubmitSection } from "../../../../layout/components/form/form.wrapper";
 
 //-- SVG Components
 import EmailSVG from '/src/assets/svg/email/email-1-svgrepo-com.svg';
@@ -13,8 +15,6 @@ import LeftToRightArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-dow
 
 //-- Styles
 import styles from "./style.module.css"
-import { useState } from "react";
-import { useAppContext } from "../../../../hooks/context";
 
 
 
@@ -40,22 +40,6 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
 
 
     const handleNext = (event: React.SubmitEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const formElements = event.currentTarget.elements;
-
-        //-- collect data
-        for (let i = 0; i < formElements.length; i++) {
-            const element = formElements[i] as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-            
-            if (element.name && element.type !== "submit" && element.type !== "button") {
-                if ((element.type === "checkbox" || element.type === "radio") && !(element as HTMLInputElement).checked) {
-                    continue; 
-                }
-                
-                formData.append(element.name, element.value);
-            }
-        }
-
         //-- strong password
         if(!isPasswordStrong){
             setPopup({status: "error", message: t("register.form.step1.inputs.password.error")})
@@ -73,14 +57,14 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
         if(onNext){
             onNext(event, isPasswordConfirm);
         }
-
+        console.log(Object.fromEntries(formData.entries()))
     };
 
     return (
         <div className={styles.container}>
-            <form className={styles.form} action="" onSubmit={handleNext}>
-                <div className={styles.inputSection}>
-                    <span className={styles.title}>{t("register.form.step1.title")}</span>
+            <FormWrapper formData={formData} handleNext={handleNext}>
+                <FormTitle title={t("register.form.step1.title")} />
+                <FormInputs>
                     <BasicInput 
                         padding={5}  
                         width="100%" 
@@ -91,6 +75,7 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                         placeholder={t("register.form.step1.inputs.email.placeholder")}
                         backgroundColor={inputColor}
                         required
+                        extraInputProps={{ defaultValue: formData.get("email")?.toString() ?? undefined }}
                     />
 
                     <HardPassword 
@@ -103,6 +88,7 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                         label={t("register.form.step1.inputs.password.label")}
                         setter={setIsPasswordStrong}
                         required
+                        extraInputProps={{ defaultValue: formData.get("password")?.toString() ?? undefined }}
                     />
                     <ConfirmPassword
                         padding={5}
@@ -114,21 +100,18 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                         label={t("register.form.step1.inputs.confirmPassword.label")}
                         setConfirm={setIsPasswordConfirm}
                         required
+                        defaultValue={ formData.get("password")?.toString() ?? undefined}
                     />
-                </div>
-                
-                <div className={styles.nextSection}>
+                </FormInputs>
+                <SubmitSection>
                     <BrandButton 
                         type="submit"
                         svg={LeftToRightArrowSVG}
                         text={t("register.buttons.logbtn")}
                     />
-                    <div className={styles.undertext}>
-                        <p>{t("register.form.step1.policyText")}</p>
-                    </div>
-                </div>
-            </form>
-        
+                    <FormHint text={t("register.form.step1.policyText")} />
+                </SubmitSection>
+            </FormWrapper>
         </div>
     );
 }

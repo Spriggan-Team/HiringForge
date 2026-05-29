@@ -14,8 +14,6 @@ import AccountAccess from "./components/access/account.access";
 //-- Custom - React Component
 import BasicInput from '../../layout/components/form/input/basic.input';
 import DownloadButton from "../../layout/components/buttons/download/download.button";
-import SecurityBadge from "../../layout/components/badges/security.badge";
-import SimpleButton from "../../layout/components/buttons/simple/simple.button";
 import StageTitle from "../../layout/components/indicators/stage/stage.title";
 import StatusItem from "../../layout/components/indicators/statusItem/status.item";
 import Gauge from "../../layout/components/progress/gauge/gauge";
@@ -31,8 +29,9 @@ import AddSVG from "/src/assets/svg/add/add-svgrepo-com.svg"
 import OfficeWorkerImage from "../../assets/images/office-worker.png"
 
 //-- CSS Styles
-import styles from "./style.module.css"
+import  styles from "./style.module.css"
 import  IdentityDetail from "./components/identity/identity.details";
+import  SecureAccount from "./components/security/LockAccount";
 
 
 const REGISTERING_TOTAL_STEP = 3;
@@ -46,7 +45,7 @@ const Register = () => {
     const { t } = useTranslation()
 
     const formData = useRef<FormData>(new FormData());
-    const [currentStep, setCurrentStep] = useState({ max: 1, current: 1});
+    const [currentStep, setCurrentStep] = useState({ max: 2, current: 2 });
     const [language, setLanguage] = useState("Français");
 
     
@@ -98,9 +97,57 @@ const Register = () => {
                 {/* PROCESS DESCRIPTION */}
                 <div className={styles.infoBox}>
                     <div className={styles.stagesSection}>
-                        <StageTitle step={1} txt={t("register.processDescription.one")} active = {currentStep.current === 1} />
-                        <StageTitle step={2} txt={t("register.processDescription.two")} active = {currentStep.current === 2} />
-                        <StageTitle step={3} txt={t("register.processDescription.three")} active = {currentStep.current === 3}  />
+                        <StageTitle
+                            step={1}
+                            active={currentStep.current === 1}
+                            textColor={currentStep.current != 1 ?  "#94a3b8" : ""}
+                            backgroundColor={currentStep.current != 1 ? "#e0e7ff": ""}
+                            txt={t("register.processDescription.one")}
+                            onClick={()=>{
+                                if(currentStep.max >= 1){
+                                    setCurrentStep(prev => ({
+                                        ...prev,
+                                        current: 1
+                                    }))
+                                }
+                            }}
+                        />
+
+                        <StageTitle
+                            step={2}
+                            active={currentStep.current === 2}
+                            backgroundColor={currentStep.current != 2 ? "#EEF2FF": ""}
+                            txt={t("register.processDescription.two")}
+                            disableCursorPointer={
+                                currentStep.max < 2
+                            }
+                            onClick={()=>{
+                                if(currentStep.max >= 2){
+                                    setCurrentStep(prev => ({
+                                        ...prev,
+                                        current: 2
+                                    }))
+                                }
+                            }}
+                        />
+
+                        <StageTitle
+                            step={3}
+                            active={currentStep.current === 3}
+                            txt={t("register.processDescription.three")}
+                            backgroundColor={currentStep.current != 3 ? "#EEF2FF": ""}
+                            disableCursorPointer={
+                                currentStep.max < 3
+                            }
+                            onClick={()=>{
+                                if(currentStep.max >= 3){
+                                    setCurrentStep(prev => ({
+                                        ...prev,
+                                        current: 3
+                                    }))
+                                }
+                            }}
+                        />
                     </div>
                     <div className={styles.statusItemSection}>
                         <StatusItem text={t("register.processDescription.overall.0")}/>
@@ -118,7 +165,7 @@ const Register = () => {
                         <div className={styles.desc}>
                             <p>{t("register.form.subtitle")}</p>
                             <div className={styles.progessContainer}>
-                                <span>{t("register.form.currentStep", {count: currentStep, totalCount: 3})}</span>
+                                <span>{t("register.form.currentStep", {count: currentStep.current, totalCount: 3})}</span>
                                 <Gauge 
                                     width={"50%"} height={2.5}
                                     activeColor="#003DE7"
@@ -130,10 +177,12 @@ const Register = () => {
                     </div>
                     <div className={styles.form}>
                         {currentStep.current == 1 ?
-                            <AccountAccess formData={formData.current}  onNext={()=>{setCurrentStep(prev => ({...prev, current: 2}))}} />
+                            <AccountAccess formData={formData.current}  onNext={()=>{setCurrentStep(prev => ({ current: 2, max: 2 > prev.max ? 2 : prev.max }))}} />
                             : currentStep.current == 2 ?
-                                <IdentityDetail />
-                                : <></>    
+                                <IdentityDetail formData={formData.current}  onNext={()=>{setCurrentStep(prev => ({ current: 3, max: 3 > prev.max ? 3 : prev.max }))}} />
+                                : currentStep.current == 3 ?
+                                    <SecureAccount />
+                                    :<></>    
                         }
                     </div>
                 </div>

@@ -21,6 +21,7 @@ export interface BasicInputProps {
     textColor?: string;
     value?:string;
     required?: boolean;
+    extraInputProps?: React.HTMLAttributes<HTMLInputElement>
     
     className?: string;
     iconClassName?: string;
@@ -60,6 +61,8 @@ const BasicInput: React.FC<BasicInputProps> = ({
     backgroundColor = "#ECEAF1",
     iconClassName,
     icon2ClassName,
+
+    extraInputProps
 }) => {
     const inputRef = ref ?? useRef<HTMLInputElement>(null);
     
@@ -91,6 +94,7 @@ const BasicInput: React.FC<BasicInputProps> = ({
                     onFocus={onFocus}
                     onBlur={onBlur}
                     value={value}
+                    {...extraInputProps}
                     required={required}
                 />
                 

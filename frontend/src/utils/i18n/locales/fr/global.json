@@ -1,0 +1,23 @@
+{
+    "global":{
+        "allRightsReserved":"2026 DigitalCop - Tous droits réservés",
+        "rules":{
+            "password":{
+                "title": "Force du mot de passe",
+                "lenght": "Safe lenght",
+                "uppercase": "Contient une majuscule",
+                "number": "Contient un nombre"
+            }
+        },
+        "logo":{
+            "text": "Logo"
+        },
+        "validation":{
+            "required": "requis",
+            "optionnal": "optionnel"
+        },
+        "messages":{
+            "secureData": "Données sécurisées"
+        }
+    }
+}

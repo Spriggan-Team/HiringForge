@@ -8,6 +8,9 @@ interface StageTitleProps{
     txt: string;
     active?: boolean;
     subtitle?: string;
+    disableCursorPointer?: boolean;
+    backgroundColor?: string;
+    textColor?: string;
     onClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
@@ -16,7 +19,10 @@ const StageTitle: React.FC<StageTitleProps> = ({
     txt,
     active = false,
     subtitle = null,
-    onClick
+    onClick,
+    textColor,
+    disableCursorPointer = false,
+    backgroundColor = "rgba(255,255,255,.55)" ,
 }) => {
 
     const formattedStep =
@@ -29,6 +35,12 @@ const StageTitle: React.FC<StageTitleProps> = ({
                 ${active ? styles.active : ""}
             `}
             onClick={onClick}
+            style={{ 
+                ["--pointer" as string]: !disableCursorPointer &&  onClick ? "pointer" : "default",
+                ["--backgroundColor" as string]: backgroundColor,
+                ["--textColor" as string]: textColor,
+                ["--stepColor" as string]: textColor
+            }}
         >
             <div className={styles.stepWrapper}>
                 <span className={styles.step}>

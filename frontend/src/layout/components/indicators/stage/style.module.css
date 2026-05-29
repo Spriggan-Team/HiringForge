@@ -12,7 +12,7 @@
 
     position: relative;
 
-    cursor: default;
+    cursor: var(--pointer);
 
     transition:
         transform .2s ease,
@@ -23,8 +23,7 @@
     border:
         1px solid transparent;
 
-    background:
-        rgba(255,255,255,.55);
+    background: var(--backgroundColor);
 
     backdrop-filter:
         blur(8px);
@@ -75,9 +74,7 @@
     font-size: 13px;
     font-weight: 700;
 
-    color: black;
-
-
+    color: var(--stepColor);
     box-shadow:
         0 8px 16px rgba(1,93,252,.22);
 
@@ -108,13 +105,13 @@
 .content{
     display: flex;
     flex-direction: column;
+    color: var(--textColor);
 }
 
 .txt{
     font-size: 14px;
     font-weight: 700;
 
-    color: #111827;
 
     letter-spacing: -.01em;
 }

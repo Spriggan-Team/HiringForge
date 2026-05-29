@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 
 type ConfirmPasswordProps = BasicInputProps & {
                                 password: string;
+                                defaultValue?: string;
                                 setConfirm?: (b: boolean)=> void;
                             }
 
@@ -22,10 +23,11 @@ type ConfirmPasswordProps = BasicInputProps & {
 const ConfirmPassword: React.FC<ConfirmPasswordProps> = ({
     password,
     setConfirm,
+    defaultValue,
     ...props
 }) => {
     const { t } = useTranslation();
-    const [value, setValue] = useState<string>("");
+    const [value, setValue] = useState(defaultValue);
     const [isConfirm, setIsConfirm] = useState<boolean>(false);
 
     useLayoutEffect(() => {
@@ -37,6 +39,7 @@ const ConfirmPassword: React.FC<ConfirmPasswordProps> = ({
             setConfirm(isValid);
         }
     }, [value, password, setConfirm]);
+
 
     return ( 
         <div className={styles.container}>
