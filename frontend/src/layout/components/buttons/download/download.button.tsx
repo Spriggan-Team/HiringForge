@@ -1,5 +1,5 @@
 
-import { useRef } from "react";
+import { useRef,  type InputHTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 
 
@@ -9,10 +9,12 @@ import styles from "./style.module.css"
 
 interface DownloadButton{
     onNext: (file?: File) => void;
+    inputAttributes?: InputHTMLAttributes<HTMLInputElement>
 }
 
 const DownloadButton: React.FC<DownloadButton> = ({
-    onNext
+    onNext,
+    inputAttributes
 }) => {
     const {t} = useTranslation()
     const inputRef = useRef<HTMLInputElement | null>(null);
@@ -20,14 +22,16 @@ const DownloadButton: React.FC<DownloadButton> = ({
     return (
         <div className={styles.container}>
             <input
+                type="file"
+                {...inputAttributes}
                 ref={inputRef}
-                type="file" 
                 multiple={false}
                 style={{ display: "contents"}}
                 onChange={(event)=>{
                     const file = event.target.files?.[0];
                     if(onNext)
                         onNext(file);
+                    event.target.value = "";
                 }}
             />
             <div 
@@ -39,7 +43,7 @@ const DownloadButton: React.FC<DownloadButton> = ({
                 }}
             >
                 <UploadSVG width={25} height={25} />
-                <span>{t("register.form.downloadAssets.logo.tagline")}</span>
+                <span>{t("register.form.aside.downloadAssets.logo.tagline")}</span>
             </div>
         </div>
     );

@@ -17,7 +17,8 @@ const AppPopup: React.FC<AppPopupProps> = ({ children }) => {
             setShouldRender(true);
             const timer = setTimeout(() => setAnimateIn(true), 50);
             return () => clearTimeout(timer);
-        } else {
+        }
+        else {
             setAnimateIn(false);
             const timer = setTimeout(() => setShouldRender(false), 400);
             return () => clearTimeout(timer);

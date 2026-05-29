@@ -1,5 +1,5 @@
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -32,19 +32,41 @@ import OfficeWorkerImage from "../../assets/images/office-worker.png"
 
 //-- CSS Styles
 import styles from "./style.module.css"
+import  IdentityDetail from "./components/identity/identity.details";
 
 
 const REGISTERING_TOTAL_STEP = 3;
 
+interface ImageObject {
+    file: File;
+    previewUrl: string;
+}
+
 const Register = () => {
     const { t } = useTranslation()
 
-    const [currentStep, setCurrentStep] = useState(1);
+    const formData = useRef<FormData>(new FormData());
+    const [currentStep, setCurrentStep] = useState({ max: 1, current: 1});
     const [language, setLanguage] = useState("Français");
 
     
-    const formData = useRef<FormData>(new FormData());
-    const [images, setImages] = useState<File[]>([]);
+    
+    const imagesRef = useRef<ImageObject[]>([]); //-- contains all images
+    const [currentLogoImg, setCurrentLogoImg] = useState(""); 
+    const [images, setImages] = useState<ImageObject[]>([]); //-- contains a set of images
+
+    
+    useEffect(() => {
+        imagesRef.current = images;
+    }, [images]);
+
+    useEffect(() => {
+        return () => {
+            URL.revokeObjectURL(currentLogoImg);
+            imagesRef.current.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+        };
+    }, []); 
+
 
     const addImageInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -76,9 +98,9 @@ const Register = () => {
                 {/* PROCESS DESCRIPTION */}
                 <div className={styles.infoBox}>
                     <div className={styles.stagesSection}>
-                        <StageTitle step={1} txt={t("register.processDescription.one")} active = {currentStep === 1} />
-                        <StageTitle step={2} txt={t("register.processDescription.two")} active = {currentStep === 2} />
-                        <StageTitle step={3} txt={t("register.processDescription.three")} active = {currentStep === 3}  />
+                        <StageTitle step={1} txt={t("register.processDescription.one")} active = {currentStep.current === 1} />
+                        <StageTitle step={2} txt={t("register.processDescription.two")} active = {currentStep.current === 2} />
+                        <StageTitle step={3} txt={t("register.processDescription.three")} active = {currentStep.current === 3}  />
                     </div>
                     <div className={styles.statusItemSection}>
                         <StatusItem text={t("register.processDescription.overall.0")}/>
@@ -101,15 +123,19 @@ const Register = () => {
                                     width={"50%"} height={2.5}
                                     activeColor="#003DE7"
                                     foregroundColor="#D9D9D9"
-                                    percent={currentStep / REGISTERING_TOTAL_STEP} 
+                                    percent={currentStep.current / REGISTERING_TOTAL_STEP} 
                                 />
                             </div>
                         </div>
                     </div>
-                    {currentStep == 1 ?
-                        <AccountAccess formData={formData.current}  onNext={()=>{setCurrentStep(2)}} />
-                        : <></>    
-                    }
+                    <div className={styles.form}>
+                        {currentStep.current == 1 ?
+                            <AccountAccess formData={formData.current}  onNext={()=>{setCurrentStep(prev => ({...prev, current: 2}))}} />
+                            : currentStep.current == 2 ?
+                                <IdentityDetail />
+                                : <></>    
+                        }
+                    </div>
                 </div>
 
 
@@ -118,16 +144,32 @@ const Register = () => {
                 <div className={styles.sideForm}>
                     {/* TOP */}
                     <div className={styles.top}>
-                        <h3>Branding de l'entreprise</h3>
+                        <h3>{t("register.form.aside.title")}</h3>
                          {/* DOWNLOAD LOGO SECTION */}
                         <div className={styles.downloadLogoSection}>
                             <h4 className={styles.logoTitle}>{t("global.logo.text")} <span className="faint-txt">({t("global.validation.required")})</span></h4>
                             <div className={styles.downloadBox}>
-                                <LogoSVG width={45} height={45} />
-                                <DownloadButton 
+                                { currentLogoImg ? (
+                                    <div className={styles.logoPreview}>
+                                        <button 
+                                            className={styles.removeBtn} 
+                                            onClick={()=>{
+                                                setCurrentLogoImg("")
+                                                formData.current.delete("logo")
+                                            }}
+                                        >
+                                            x
+                                        </button>
+                                        <img src={currentLogoImg} />
+                                    </div>) 
+                                    :   <LogoSVG width={45} height={45} />
+                                }
+                                <DownloadButton
                                     onNext={(file)=> {
                                         if(file){
-                                            formData.current.append("logo", file);
+                                            const url = URL.createObjectURL(file);
+                                            setCurrentLogoImg(url);
+                                            formData.current.set("logo", file);
                                         }
                                     }}
                                 />
@@ -137,28 +179,46 @@ const Register = () => {
 
                          {/* IMAGES DOWNLOAD SECTION */}
                         <div className={styles.downloadImageSection}>
-                            <h3>Photo de présentation <span className="faint-txt">({t("global.validation.optionnal")})</span></h3>
+                            <h3>{t("register.form.aside.downloadAssets.companyPhoto.tagline")}<span className="faint-txt">&nbsp;({t("global.validation.optionnal")})</span></h3>
                             <div className={styles.images}>
                                 { Array.isArray(images) && images.length > 0 && (
-                                    images.map((image)=> <img alt="uploadIme" src={URL.createObjectURL(image)} />)
+                                    images.map((image, index)=> (
+                                        <div key={`${image.file.name}-${index}`} style={{position: "relative"}}>
+                                            <button 
+                                                className={styles.removeBtn}
+                                                onClick={()=>{ 
+                                                    setImages((prev)=> prev.filter((_, i)=> i !== index ))
+                                                }}
+                                            >
+                                                x
+                                            </button>
+                                            <img  alt="uploadIme" src={image.previewUrl} />
+                                        </div>
+                                    ))
                                 )}   
                                 <div 
                                     className={styles.addBox}
                                     onClick={()=>{ if(addImageInputRef.current) addImageInputRef.current.click() }}
                                 >
                                     <AddSVG width={45} height={45}/>
-                                    <span>{t("register.form.downloadAssets.pictures.tagline")}</span>
+                                    <span>{t("register.form.aside.downloadAssets.pictures.tagline")}</span>
                                     <input 
                                         ref={addImageInputRef}
                                         accept="image/*"
                                         style={{ display: "contents" }}
                                         type="file"
                                         multiple
-                                        onChange={(event)=> {
+                                        onChange={(event) => {
                                             const files = event.target.files;
-                                            if(files)
-                                                setImages((previous)=> ([...previous, ...files]));
-                                        }} 
+                                            if (files) {
+                                                const newImages = Array.from(files).map((file) => ({
+                                                    file: file,
+                                                    previewUrl: URL.createObjectURL(file) 
+                                                }));
+                                                setImages((previous)=>([...previous, ...newImages]))
+                                            }
+                                            event.target.value = ""
+                                        }}
                                     />
                                 </div>
                             </div>
@@ -169,14 +229,14 @@ const Register = () => {
                     {/* BOTTOM */}
                     <div className={styles.bottom}>
                         {/* ADDRESS SECTION */}
-                        <h3>{t("register.form.addressDetails.title")}</h3>
+                        <h3>{t("register.form.aside.addressDetails.title")}</h3>
                         <div className={styles.geoposSection}>
-                            <BasicInput backgroundColor="#FBFAFE" width="100%" label={t("register.form.addressDetails.inputs.country.label")} placeholder="France" />
+                            <BasicInput backgroundColor="#FBFAFE" width="100%" label={t("register.form.aside.addressDetails.inputs.country.label")} placeholder="France" />
                             <div className={styles.inpts}>
-                                <BasicInput className="faint-border" backgroundColor="#FBFAFE" width="100%" label={t("register.form.addressDetails.inputs.postalCode.label")}  placeholder="75002" />
-                                <BasicInput className="faint-border" backgroundColor="#FBFAFE" width="100%"  label={t("register.form.addressDetails.inputs.city.label")} placeholder="Paris" />
+                                <BasicInput className="faint-border" backgroundColor="#FBFAFE" width="100%" label={t("register.form.aside.addressDetails.inputs.postalCode.label")}  placeholder="75002" />
+                                <BasicInput className="faint-border" backgroundColor="#FBFAFE" width="100%"  label={t("register.form.aside.addressDetails.inputs.city.label")} placeholder="Paris" />
                             </div>
-                            <BasicInput className="faint-border" backgroundColor="#FBFAFE" width="100%" label="Address" placeholder="32 rue st michelle" />
+                            <BasicInput className="faint-border" backgroundColor="#FBFAFE" width="100%" label={t("register.form.aside.addressDetails.inputs.address.label")}placeholder="32 rue st michelle" />
                         </div>
                     </div>
 
@@ -188,18 +248,20 @@ const Register = () => {
 
             </div>
 
-            {/*  FOOTER */}
-            {/* <div className={styles.footer}>
-                <SimpleButton />
-                <div>
-                    <span> Etape1 </span>
-                    <span> Etape2 </span>
-                    <span> Etape3 </span>
-                </div>
-                <SimpleButton />
-            </div> */}
+
         </div>
     );
 }
  
 export default Register;
+
+{/*  FOOTER */}
+{/* <div className={styles.footer}>
+    <SimpleButton />
+    <div>
+        <span> Etape1 </span>
+        <span> Etape2 </span>
+        <span> Etape3 </span>
+    </div>
+    <SimpleButton />
+</div> */}

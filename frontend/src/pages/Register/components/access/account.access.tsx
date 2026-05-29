@@ -35,14 +35,15 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
     const {setPopup} = useAppContext();
 
     const [password, setPassword] = useState<string>("");
+    const [isPasswordStrong, setIsPasswordStrong] = useState(false);
     const [isPasswordConfirm, setIsPasswordConfirm] = useState<boolean>(false);
 
 
     const handleNext = (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
-    
         const formElements = event.currentTarget.elements;
 
+        //-- collect data
         for (let i = 0; i < formElements.length; i++) {
             const element = formElements[i] as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
             
@@ -54,15 +55,25 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                 formData.append(element.name, element.value);
             }
         }
-        if(!isPasswordConfirm){
-            setPopup({status: "error", message: t("register.form.step1.inputs.confirmPassword.error")})
-            setTimeout(()=> setPopup(null), 2000);
+
+        //-- strong password
+        if(!isPasswordStrong){
+            setPopup({status: "error", message: t("register.form.step1.inputs.password.error")})
+            setPopup(null);
             return;
         }
+
+        //-- is password confirm
+        if(!isPasswordConfirm){
+            setPopup({status: "error", message: t("register.form.step1.inputs.confirmPassword.error")})
+            setPopup(null);
+            return;
+        }
+
         if(onNext){
             onNext(event, isPasswordConfirm);
         }
-        console.log("Résultat :", Object.fromEntries(formData.entries()));
+
     };
 
     return (
@@ -90,6 +101,7 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                         backgroundColor={inputColor}
                         onChange={(event)=> setPassword(event.target.value)}
                         label={t("register.form.step1.inputs.password.label")}
+                        setter={setIsPasswordStrong}
                         required
                     />
                     <ConfirmPassword

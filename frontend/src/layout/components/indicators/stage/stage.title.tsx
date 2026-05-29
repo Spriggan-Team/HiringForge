@@ -8,13 +8,15 @@ interface StageTitleProps{
     txt: string;
     active?: boolean;
     subtitle?: string;
+    onClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
 const StageTitle: React.FC<StageTitleProps> = ({
     step,
     txt,
     active = false,
-    subtitle = null
+    subtitle = null,
+    onClick
 }) => {
 
     const formattedStep =
@@ -26,6 +28,7 @@ const StageTitle: React.FC<StageTitleProps> = ({
                 ${styles.container}
                 ${active ? styles.active : ""}
             `}
+            onClick={onClick}
         >
             <div className={styles.stepWrapper}>
                 <span className={styles.step}>
