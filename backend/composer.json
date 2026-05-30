@@ -19,6 +19,7 @@
         "lcobucci/jwt": "*",
         "lexik/jwt-authentication-bundle": "*",
         "nelmio/cors-bundle": "^2.6",
+        "phpmailer/phpmailer": "*",
         "ramsey/uuid": "^4.9",
         "symfony/asset": "^7.4",
         "symfony/console": "^7.4",

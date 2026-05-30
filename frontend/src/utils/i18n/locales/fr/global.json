@@ -17,7 +17,8 @@
             "optionnal": "optionnel"
         },
         "messages":{
-            "secureData": "Données sécurisées"
+            "secureData": "Données sécurisées",
+            "error": "Une erreur inattendue est survenue"
         }
     }
 }

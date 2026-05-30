@@ -1,7 +1,10 @@
 
-import { useEffect, useRef, useState } from "react";
+
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useRef, useState } from "react";
+import { useAppContext } from "../../hooks/context";
+
 
 //--Config Object
 import RouteScheme from "../../route.scheme";
@@ -12,62 +15,62 @@ import AccountAccess from "./components/access/account.access";
 
 
 //-- Custom - React Component
-import BasicInput from '../../layout/components/form/input/basic.input';
-import DownloadButton from "../../layout/components/buttons/download/download.button";
+import Gauge from "../../layout/components/progress/gauge/gauge";
+import SideForm from "./components/sideform/side.form";
 import StageTitle from "../../layout/components/indicators/stage/stage.title";
 import StatusItem from "../../layout/components/indicators/statusItem/status.item";
-import Gauge from "../../layout/components/progress/gauge/gauge";
 
 
 //-- SVG - Components
 import LogoSVG from '/src/assets/custom-logo.svg';
 import BrowserSVG from '/src/assets/svg/net/internet-svgrepo-com.svg';
 import DownArrowSVG from '/src/assets/svg/arrows/down-arrow-5-svgrepo-com.svg';
-import AddSVG from "/src/assets/svg/add/add-svgrepo-com.svg"
+
 
 //-- Images - Ressources
 import OfficeWorkerImage from "../../assets/images/office-worker.png"
+
 
 //-- CSS Styles
 import  styles from "./style.module.css"
 import  IdentityDetail from "./components/identity/identity.details";
 import  SecureAccount from "./components/security/LockAccount";
+import AuthServices from "../../api/services/auth";
+import { objectToFormData } from "../../utils/convertor";
+
 
 
 const REGISTERING_TOTAL_STEP = 3;
 
-interface ImageObject {
-    file: File;
-    previewUrl: string;
+
+export interface AsideFormState{
+        country: string,
+        postalCode: string,
+        city: string,
+        street: string,
+        logo: File | null,
+        images:  File[],
 }
 
+
 const Register = () => {
-    const { t } = useTranslation()
+    const { t } = useTranslation();
+    const {  setPopup  } = useAppContext();
 
     const formData = useRef<FormData>(new FormData());
-    const [currentStep, setCurrentStep] = useState({ max: 2, current: 2 });
+
     const [language, setLanguage] = useState("Français");
+    const [currentStep, setCurrentStep] = useState({ max: 1, current: 1 });
 
+    const [asideFormState, setAsideFormState] = useState<AsideFormState>({
+        country: "",
+        postalCode: "",
+        city: "",
+        street: "",
+        logo: null as File | null,
+        images: [] as File[],
+    });
     
-    
-    const imagesRef = useRef<ImageObject[]>([]); //-- contains all images
-    const [currentLogoImg, setCurrentLogoImg] = useState(""); 
-    const [images, setImages] = useState<ImageObject[]>([]); //-- contains a set of images
-
-    
-    useEffect(() => {
-        imagesRef.current = images;
-    }, [images]);
-
-    useEffect(() => {
-        return () => {
-            URL.revokeObjectURL(currentLogoImg);
-            imagesRef.current.forEach((img) => URL.revokeObjectURL(img.previewUrl));
-        };
-    }, []); 
-
-
-    const addImageInputRef = useRef<HTMLInputElement | null>(null);
 
     return (
         <div className={styles.container}>
@@ -100,8 +103,8 @@ const Register = () => {
                         <StageTitle
                             step={1}
                             active={currentStep.current === 1}
-                            textColor={currentStep.current != 1 ?  "#94a3b8" : ""}
-                            backgroundColor={currentStep.current != 1 ? "#e0e7ff": ""}
+                            textColor={currentStep.current > 1 ?  "#94a3b8" : undefined}
+                            backgroundColor={currentStep.current != 1 ? "#e0e7ff": undefined}
                             txt={t("register.processDescription.one")}
                             onClick={()=>{
                                 if(currentStep.max >= 1){
@@ -116,7 +119,8 @@ const Register = () => {
                         <StageTitle
                             step={2}
                             active={currentStep.current === 2}
-                            backgroundColor={currentStep.current != 2 ? "#EEF2FF": ""}
+                            textColor={currentStep.max > 2 && currentStep.current != 2 ?  "#94a3b8" : undefined}
+                            backgroundColor={currentStep.max > 2 && currentStep.current != 2 ? "#e0e7ff" : undefined}
                             txt={t("register.processDescription.two")}
                             disableCursorPointer={
                                 currentStep.max < 2
@@ -135,7 +139,8 @@ const Register = () => {
                             step={3}
                             active={currentStep.current === 3}
                             txt={t("register.processDescription.three")}
-                            backgroundColor={currentStep.current != 3 ? "#EEF2FF": ""}
+                            textColor={currentStep.max == 3 && currentStep.current < 3 ?  "#94a3b8" : undefined}
+                            backgroundColor={currentStep.max == 3 && currentStep.current < 3 ? "#e0e7ff": undefined}
                             disableCursorPointer={
                                 currentStep.max < 3
                             }
@@ -177,11 +182,41 @@ const Register = () => {
                     </div>
                     <div className={styles.form}>
                         {currentStep.current == 1 ?
-                            <AccountAccess formData={formData.current}  onNext={()=>{setCurrentStep(prev => ({ current: 2, max: 2 > prev.max ? 2 : prev.max }))}} />
+                            <AccountAccess 
+                                formData={formData.current}
+                                onNext={()=>{
+                                    setCurrentStep(prev => ({ current: 2, max: 2 > prev.max ? 2 : prev.max }))
+                                }}
+                            />
                             : currentStep.current == 2 ?
-                                <IdentityDetail formData={formData.current}  onNext={()=>{setCurrentStep(prev => ({ current: 3, max: 3 > prev.max ? 3 : prev.max }))}} />
+                                <IdentityDetail
+                                    formData={formData.current} 
+                                    onNext={async ()=>{
+                                        try{
+                                            await AuthServices.askVerificationCode(formData.current.get("email") as string, "SIGNUP");
+                                            setCurrentStep(prev => ({ current: 3, max: 3 > prev.max ? 3 : prev.max }))
+                                            setPopup({status: "error", message: t("register.apiResponse.verifyMailBox.success")})
+                                        }
+                                        catch(error){
+                                            setPopup({
+                                                status: "error",
+                                                message: t("global.messages.error")
+                                            })
+                                        }
+                                    }}
+                                />
                                 : currentStep.current == 3 ?
-                                    <SecureAccount />
+                                    <SecureAccount 
+                                        formData={formData.current}
+                                        onNext={async ()=>{
+                                            try{
+                                                const res = await AuthServices.register(objectToFormData(asideFormState, formData.current))
+                                                setPopup({status: "error", message: t("register.apiResponse.registering.success")})
+                                                localStorage.setItem("userId", JSON.stringify(res?.id))
+                                            }
+                                            catch(error){}
+                                        }}
+                                    />
                                     :<></>    
                         }
                     </div>
@@ -189,115 +224,8 @@ const Register = () => {
 
 
                 {/* SIDE FORM */}
-
-                <div className={styles.sideForm}>
-                    {/* TOP */}
-                    <div className={styles.top}>
-                        <h3>{t("register.form.aside.title")}</h3>
-                         {/* DOWNLOAD LOGO SECTION */}
-                        <div className={styles.downloadLogoSection}>
-                            <h4 className={styles.logoTitle}>{t("global.logo.text")} <span className="faint-txt">({t("global.validation.required")})</span></h4>
-                            <div className={styles.downloadBox}>
-                                { currentLogoImg ? (
-                                    <div className={styles.logoPreview}>
-                                        <button 
-                                            className={styles.removeBtn} 
-                                            onClick={()=>{
-                                                setCurrentLogoImg("")
-                                                formData.current.delete("logo")
-                                            }}
-                                        >
-                                            x
-                                        </button>
-                                        <img src={currentLogoImg} />
-                                    </div>) 
-                                    :   <LogoSVG width={45} height={45} />
-                                }
-                                <DownloadButton
-                                    onNext={(file)=> {
-                                        if(file){
-                                            const url = URL.createObjectURL(file);
-                                            setCurrentLogoImg(url);
-                                            formData.current.set("logo", file);
-                                        }
-                                    }}
-                                />
-                                <span className={styles.subtxt}>PNG, JPG ... </span>
-                            </div>
-                        </div>
-
-                         {/* IMAGES DOWNLOAD SECTION */}
-                        <div className={styles.downloadImageSection}>
-                            <h3>{t("register.form.aside.downloadAssets.companyPhoto.tagline")}<span className="faint-txt">&nbsp;({t("global.validation.optionnal")})</span></h3>
-                            <div className={styles.images}>
-                                { Array.isArray(images) && images.length > 0 && (
-                                    images.map((image, index)=> (
-                                        <div key={`${image.file.name}-${index}`} style={{position: "relative"}}>
-                                            <button 
-                                                className={styles.removeBtn}
-                                                onClick={()=>{ 
-                                                    setImages((prev)=> prev.filter((_, i)=> i !== index ))
-                                                }}
-                                            >
-                                                x
-                                            </button>
-                                            <img  alt="uploadIme" src={image.previewUrl} />
-                                        </div>
-                                    ))
-                                )}   
-                                <div 
-                                    className={styles.addBox}
-                                    onClick={()=>{ if(addImageInputRef.current) addImageInputRef.current.click() }}
-                                >
-                                    <AddSVG width={45} height={45}/>
-                                    <span>{t("register.form.aside.downloadAssets.pictures.tagline")}</span>
-                                    <input 
-                                        ref={addImageInputRef}
-                                        accept="image/*"
-                                        style={{ display: "contents" }}
-                                        type="file"
-                                        multiple
-                                        onChange={(event) => {
-                                            const files = event.target.files;
-                                            if (files) {
-                                                const newImages = Array.from(files).map((file) => ({
-                                                    file: file,
-                                                    previewUrl: URL.createObjectURL(file) 
-                                                }));
-                                                setImages((previous)=>([...previous, ...newImages]))
-                                            }
-                                            event.target.value = ""
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    {/* BOTTOM */}
-                    <div className={styles.bottom}>
-                        {/* ADDRESS SECTION */}
-                        <h3>{t("register.form.aside.addressDetails.title")}</h3>
-                        <div className={styles.geoposSection}>
-                            <BasicInput backgroundColor="#FBFAFE" width="100%" label={t("register.form.aside.addressDetails.inputs.country.label")} placeholder="France" />
-                            <div className={styles.inpts}>
-                                <BasicInput className="faint-border" backgroundColor="#FBFAFE" width="100%" label={t("register.form.aside.addressDetails.inputs.postalCode.label")}  placeholder="75002" />
-                                <BasicInput className="faint-border" backgroundColor="#FBFAFE" width="100%"  label={t("register.form.aside.addressDetails.inputs.city.label")} placeholder="Paris" />
-                            </div>
-                            <BasicInput className="faint-border" backgroundColor="#FBFAFE" width="100%" label={t("register.form.aside.addressDetails.inputs.address.label")}placeholder="32 rue st michelle" />
-                        </div>
-                    </div>
-
-                    {/* OVER - ABSOLUTE ELEMENT */}
-                    <div className={styles.bage}>
-                        {/* <SecurityBadge /> */}
-                    </div>
-                </div>
-
+                <SideForm form={asideFormState} setForm={setAsideFormState}   />
             </div>
-
-
         </div>
     );
 }

@@ -10,7 +10,8 @@ interface OTPRepositoryInterface
 {
 
     /**
-     * This function is able to return a specific type of verification token stored in the bdd
+     * This function is able to return a specific type of verification token stored in the bdd.
+     * Precisely it returns the last one of them registered
      * @param  string                $email the email associated
      * @throws RessourceNotFound     Indicate that a ressource has not been found or detected
      * @param  AccountFlowPurpose 

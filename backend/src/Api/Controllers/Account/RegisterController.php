@@ -10,8 +10,7 @@ use App\Api\Responder\ApiResponse;
 
 use App\Application\Usecases\Candidate\CandidateRegisterUsecase;
 use App\Application\Usecases\User\UserRegisterUseCase;
-
-
+use App\Domain\Exception\EmailAlreadyRegistered;
 use  Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
@@ -82,15 +81,20 @@ class RegisterController extends AbstractController
                 password: $inputBag->get('password'),
                 images: $request->files->get('images', []),
                 videoPresentation: $request->files->get('videoPresentation',null),
+                desc: $inputBag->get("description", null),
                 logo: $request->files->get("logo"),
+                verificationCode: $inputBag->get("verificationCode", null),
                 address:  Address::create(
-                    street: $inputBag->get("address[street]"),
-                    postalCode: $inputBag->get("address[postalCode]"),
-                    country: $inputBag->get("address[country]"),
+                    street: $inputBag->get("street"),
+                    postalCode: $inputBag->get("postalCode"),
+                    country: $inputBag->get("country"),
                 )
             );
             $result = $usecase->execute($command);
             return ApiResponse::success($result)->toJsonResponse();
+        }
+        catch(EmailAlreadyRegistered $emailEception){
+            return ApiResponse::error('This email is already registered', $emailEception)->toJsonResponse();
         }
         catch (\Exception $exception)
         {

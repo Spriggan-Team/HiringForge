@@ -4,8 +4,10 @@ namespace App\Domain\OTP;
 
 use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\Shared\PasswordHasherInterface;
+
 use DateTimeImmutable;
 use DateInterval;
+
 use DomainException;
 
 /**
@@ -14,9 +16,12 @@ use DomainException;
  */
 class OTP
 {
+
+    public ?DateInterval $remainingValidityDuration = null;
+
     private function __construct(
-        public string $hashCode,
         public int $attempts,
+        public string $hashCode,
         public DateTimeImmutable $expiresAt,
         public AccountFlowPurpose $purpose,
     ) {}
@@ -67,9 +72,9 @@ class OTP
      */
     public static function hydrate(
         string $plainCode,
-        int $attempts = 0,
         \DateTimeImmutable $expiresAt,
         AccountFlowPurpose $purpose,
+        int $attempts = 0,
     ): self
     {
         return new self(
@@ -114,14 +119,28 @@ class OTP
      */
     public function isExpired(): bool
     {
-        return (new DateTimeImmutable()) > $this->expiresAt;
+        $today = new DateTimeImmutable();
+
+        $this->remainingValidityDuration = $today->diff($this->expiresAt);
+        return $today > $this->expiresAt;
     }
 
+    public function getRemainingSeconds(): int
+    {
+        return max(
+            0,
+            $this->expiresAt->getTimestamp()
+            - time()
+        );
+    }
+
+    
     // --- Utilitaires internes ---
     private static function generateCode(int $length = 6): string
     {
         return (string) random_int(100000, 999999); // 6-digit OTP
     }
+
 
     private static function isValid(string $code): bool
     {

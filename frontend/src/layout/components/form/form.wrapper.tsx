@@ -4,7 +4,7 @@ import styles from "./style.module.css"
 
 interface FormWrapperProps{
     children: React.ReactNode,
-    formData: FormData;
+    formData?: FormData;
     handleNext?: React.SubmitEventHandler<HTMLFormElement>
 }
 
@@ -24,7 +24,7 @@ const FormWrapper: React.FC<FormWrapperProps> = ({children, handleNext, formData
                     continue; 
                 }
                 
-                formData.append(element.name, element.value);
+                formData?.append(element.name, element.value);
             }
         }
         if(handleNext)
@@ -60,7 +60,7 @@ export const FormInputs = ({children}: {children: React.ReactNode})=>{
 }
 
 //-- form footer section
-export const SubmitSection = ({children}: {children: React.ReactNode}) => {
+export const FormSubmitSection = ({children}: {children: React.ReactNode}) => {
     return (
         <div className={styles.nextSection}>
             {children}

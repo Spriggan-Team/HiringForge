@@ -62,8 +62,8 @@ final class User implements Account
         EmailAddress $email,
         Siret $siret,
         string $passwordHash,
-        array $images= [],
         Address  $address,
+        array $images= [],
         ?TimedMedia $videoPresentation=null,
     ){
         return new self(

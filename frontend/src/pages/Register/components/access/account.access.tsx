@@ -7,7 +7,7 @@ import HardPassword from "../../../../layout/components/form/input/password/hard
 import ConfirmPassword from "../../../../layout/components/form/input/password/confirm/confirm.password";
 import BrandButton from "../../../../layout/components/buttons/brand.button";
 import BasicInput from "../../../../layout/components/form/input/basic.input";
-import FormWrapper, { FormHint, FormInputs, FormTitle, SubmitSection } from "../../../../layout/components/form/form.wrapper";
+import FormWrapper, { FormHint, FormInputs, FormTitle, FormSubmitSection } from "../../../../layout/components/form/form.wrapper";
 
 //-- SVG Components
 import EmailSVG from '/src/assets/svg/email/email-1-svgrepo-com.svg';
@@ -103,14 +103,14 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                         defaultValue={ formData.get("password")?.toString() ?? undefined}
                     />
                 </FormInputs>
-                <SubmitSection>
+                <FormSubmitSection>
                     <BrandButton 
                         type="submit"
                         svg={LeftToRightArrowSVG}
                         text={t("register.buttons.logbtn")}
                     />
                     <FormHint text={t("register.form.step1.policyText")} />
-                </SubmitSection>
+                </FormSubmitSection>
             </FormWrapper>
         </div>
     );

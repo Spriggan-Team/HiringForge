@@ -2,6 +2,7 @@
 
 namespace App\Application\DTO\User;
 
+use App\Application\Command\Usecase\Account\VerificationCodeSender;
 use App\Domain\Shared\Address;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -23,6 +24,7 @@ class RegisterUserCommand
         #[Assert\NotBlank]
         public string $siret,
 
+        public ?string $verificationCode,
 
         #[Assert\NotNull]
         public Address $address,

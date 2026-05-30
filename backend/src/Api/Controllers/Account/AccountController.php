@@ -75,7 +75,7 @@ class AccountController extends AbstractController
         }
         catch (Exception $exception)
         {
-            return ApiResponse::error('Nothing Found', $exception, 400)->toJsonResponse();
+            return ApiResponse::error('Nothing Found', throwable: $exception, statusCode: 400)->toJsonResponse();
         }
     }
 
@@ -105,7 +105,7 @@ class AccountController extends AbstractController
         }
         catch(\Throwable $th)
         {
-            return ApiResponse::error('User not found', $th, 404)->toJsonResponse();
+            return ApiResponse::error('User not found', throwable: $th, statusCode: 404)->toJsonResponse();
         }
     }
 

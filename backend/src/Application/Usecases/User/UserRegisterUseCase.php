@@ -16,11 +16,13 @@ use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
 use App\Domain\File\MediaFactoryInterface;
 
-use App\Domain\Shared\Address;
 use App\Domain\Shared\EmailAddress;
 
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\PlainPassword;
+
+use App\Domain\OTP\OTPRepositoryInterface;
+use App\Domain\Shared\Account\AccountFlowPurpose;
 
 use App\Application\Usecases\Account\AccountRegister;
 
@@ -32,7 +34,8 @@ class UserRegisterUseCase
         private MediaFactoryInterface $mediaFactory,
         private MediaStorageInterface $storage,
         private UserRepositoryInterface $repository,
-        private PasswordHasherInterface $hasher
+        private PasswordHasherInterface $hasher,
+        private OTPRepositoryInterface $OTPRepository
     ){}
     /**
      * This is an usecase that enforce buisness requirement and then proceed with saving
@@ -55,7 +58,18 @@ class UserRegisterUseCase
         /** @var string[]  the storedName of the sucessful uploading filename */
         $failedUploads = []; 
 
-        $user =  User::create(       
+        //-- check verification code
+        $otp = $this->OTPRepository->getLastVerificationTokenWithPurpose($email->value(), AccountFlowPurpose::SIGN_UP);
+        $isOtpVerified = $otp->verify($command->verificationCode, $this->hasher);
+
+            //--Throws logic exception when hash verification not succeed
+        if(!$isOtpVerified)
+        {
+            throw new \DomainException("OTP code not correct!!");
+        }
+
+        //-- Create user
+        $user =  User::create(
             userId: $userId,
             name:   $command->name,
             email:  $email,
@@ -64,6 +78,7 @@ class UserRegisterUseCase
             address: $command->address,
         );
 
+        //-- Upload video
         if($command->videoPresentation){
             $timedMedia = $this->mediaFactory->createTimedMedia($command->videoPresentation);
             $user->addVideoPresentation($timedMedia);
@@ -80,6 +95,7 @@ class UserRegisterUseCase
             );
         }
 
+        //-- Upload images
         foreach($command->images as $uploadedImage)
         {
            $staticMedia = $this->mediaFactory->createStaticMedia($uploadedImage);
@@ -99,6 +115,7 @@ class UserRegisterUseCase
             );
         }
         
+        //-- save user
         $this->repository->save($user);
         
         return new AccountRegister(
