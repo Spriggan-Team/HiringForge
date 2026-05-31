@@ -1,4 +1,10 @@
 <?php
 
-class ImmediateResponseException extends Exception
+namespace App\Api\Responder;
+
+class ImmediateResponseException extends \Exception
 {}
+
+
+
+?>

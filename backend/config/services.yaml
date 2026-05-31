@@ -12,6 +12,13 @@
 #   Parameters
 #------------------------------
 parameters:
+    #--- env variables
+    app.jwt_key: '%env(JWT_SECRET_KEY)%'
+
+    smtp_host: '%env(SMTP_HOST)%'
+    mail_user_name: '%env(MAIL_USER_NAME)%'
+    mail_user_password: '%env(MAIL_USER_PASSWORD)%'
+
     #-------Root Dir
     uploads_base_directory: '%kernel.project_dir%/public/uploads'
 
@@ -101,9 +108,15 @@ services:
     #--------------
     # Email Services
     #-------------------------------
-    
+    App\Infrastructure\Email\EmailServices:
+        arguments:
+            $SMTP_HOST: '%smtp_host%'
+            $MAIL_USER_NAME: '%mail_user_name%'
+            $MAIL_USER_PASSWORD: '%mail_user_password%'
+
     App\Domain\Email\EmailServicesInterface:
         alias: App\Infrastructure\Email\EmailServices
+
 
     #-------------------------------
     #   Security

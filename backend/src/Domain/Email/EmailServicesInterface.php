@@ -17,5 +17,5 @@ interface EmailServicesInterface
      * @param string                    $receiver This is email of the receiver
      * @throws EmailTransferException   This exception is raised when an error occur during the sending
      */
-    public function sendTo(string $receiver, \DOMDocument $document): void;
+    public function sendTo(string $receiver, EmailMessage $emailMessage): void;
 }

@@ -3,9 +3,9 @@
 namespace App\Application\Usecases\Candidate;
 
 use App\Api\DTO\Candidate\RegisterCandidateCommand;
-use App\Application\Usecases\Account\AccountRegister;
 use App\Domain\Candidate\Candidate;
 use App\Domain\Candidate\CandidateId;
+use App\Application\Usecases\Account\AccountRegister;
 
 use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Candidate\CandidateRepositoryInterface;
@@ -20,6 +20,8 @@ use App\Domain\Shared\PlainPassword;
 
 use App\Infrastructure\Storage\FileStorage\MediaFactory;
 
+
+
 class CandidateRegisterUsecase
 {
     public function __construct(
@@ -32,7 +34,7 @@ class CandidateRegisterUsecase
 
     /**
      * @throws EmailAlreadyRegistered|RessourceNotFound
-     * @return ActorRegister
+     * @return AccountRegister
      */
     public function execute(
         RegisterCandidateCommand $command

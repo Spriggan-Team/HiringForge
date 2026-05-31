@@ -1,7 +1,6 @@
 <?php
 
-
-namespace App\Application\Command\Usecase\Account;
+namespace App\Application\Usecases\Account;
 
 use App\Domain\Email\EmailCategory;
 use App\Domain\OTP\OTP;
@@ -38,16 +37,17 @@ class VerificationCodeSender
         $clearEmail = EmailAddress::create($email);
 
         if($purpose !== AccountFlowPurpose::SIGN_UP){
-            $this->repository->exists(uuid: null, email: $clearEmail ); //-- trigger excption if user does not exist
+            $this->repository->exists(uuid: null, email: $clearEmail); //-- trigger excption if user does not exist
         }
         
         $emailMessage =  EmailMessage::create(
-            title: "",
             purpose: $purpose,
+            title: "Code verrification",
+            id: \Ramsey\Uuid\Uuid::uuid4()->toString(),
             description: "This is a verification for your to confirm your identity",
         );
         
-        //---Verify if an existing token validation code is not stored in the bdd
+        //--- Verify if an existing token validation code is not stored in the bdd
         $lastOtp = $this->OTPRepository->getLastVerificationTokenWithPurpose(
             email: $email,
             purpose: $purpose
@@ -75,23 +75,24 @@ class VerificationCodeSender
 
             $this->emailServices->sendTo(
                 receiver: $clearEmail->value(),
-                document: $this->emailServices->prepareEmail($emailMessage)
+                emailMessage: $emailMessage 
             );
 
             return;
         }
 
-        //---Create a new otp code and send it to the user
+        //--- Create a new otp code and send it to the user
         $otp =  OTP::create(
             hasher: $this->hasher,
             purpose: $purpose
         );
         $this->OTPRepository->save($clearEmail->value() ,$otp);
 
+        
         $emailMessage->code = $otp->hashCode;
         $this->emailServices->sendTo(
             receiver: $clearEmail->value(),
-            document: $this->emailServices->prepareEmail($emailMessage)
+            emailMessage: $emailMessage
         );
     }
 }

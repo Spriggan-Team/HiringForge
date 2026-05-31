@@ -9,7 +9,7 @@ const askVerificationCode = async (email: string, purpose: "SIGNUP" | "PASSWORD_
         console.log("Please provide an email for beeing able to ask for code verification");
         return;
     }
-    const response = await post<NoticeResponse>("verificationcode", { email, purpose});
+    const response = await post<NoticeResponse>("/account/verificationcode", { email, purpose });
     return response;
 }
 

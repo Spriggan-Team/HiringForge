@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ApiResponse
 {
-    private static ?LoggerInterface $logger = null;
+    public static ?LoggerInterface $logger = null;
 
     public function __construct(
         private array $data,

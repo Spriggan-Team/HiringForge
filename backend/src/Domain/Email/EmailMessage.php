@@ -25,12 +25,12 @@ class EmailMessage
     ): self
     {
         return new self(
-            $description,
-            $purpose,
-            $id,
-            $title,
-            $code,
-            $type
+            description: $description,
+            purpose: $purpose,
+            id: $id,
+            title: $title,
+            code: $code,
+            type: $type
         );
     }
 

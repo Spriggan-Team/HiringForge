@@ -17,7 +17,7 @@ security:
         api:
             pattern: ^/(candidate|agent|user)
             stateless: true
-            use_checker: App\Api\Controllers\Auth\AccountChecker
+            user_checker: App\Api\Controllers\Auth\AccountChecker
             custom_authenticators:
                 - App\Api\Controllers\Auth\JwtAuthenticatorController
 

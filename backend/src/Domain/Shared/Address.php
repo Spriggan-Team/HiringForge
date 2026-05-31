@@ -14,9 +14,9 @@ final class Address
      *
      */
     private function __construct(
-        public readonly ?string $street = null,
         public readonly string $postalCode,
         public readonly string $country,
+        public readonly ?string $street = null,
     ) {}
 
     /** 
@@ -24,9 +24,9 @@ final class Address
      *  !IMPORTANT: Exception will be thrown when condition/requirement are not met
      */
     public static function create(
-        ?string $street = null,
         string $postalCode,
         string $country,
+        ?string $street = null,
     ):self
     {
         if (!$postalCode || trim($postalCode) === '') {

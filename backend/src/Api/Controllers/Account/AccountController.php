@@ -8,12 +8,14 @@ use App\Application\DTO\ChangeEmail;
 use App\Application\DTO\ChangePassword;
 
 
-use App\Application\Command\Usecase\Account\VerificationCodeSender;
+use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Application\Usecases\Account\AccountEmailRenitializer;
 use App\Application\Usecases\Account\AccountPasswordRenitializer;
-use App\Domain\Shared\Account\AccountFlowPurpose;
+use App\Application\Usecases\Account\VerificationCodeSender;
+
 
 use Exception;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,10 +26,19 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[Route('/account')]
 class AccountController extends AbstractController
 {
+    public function __construct(
+        private LoggerInterface $logger,
+    ) {
+        //This is mandatory that permit ApiResponseBuilder to log exception in a special format
+        //It purpose is to reduce the resposability of the http controller.
+        ApiResponse::init($logger);
+    }
+
+
     /**
      * Sends a password reset verification code to the user.
      */
-    #[Route("/verificationcode", methods:["GET"], name: "update_account")]
+    #[Route("/verificationcode", methods:["POST"], name: "update_account")]
     public function sendPasswordOTP(
         Request $request,
         VerificationCodeSender $usecase
@@ -35,22 +46,38 @@ class AccountController extends AbstractController
     {
         try {
             $data = json_decode($request->getContent(), true);
-            $purpose = AccountFlowPurpose::from($data['purpose']);
-            if($purpose)
-            {
-                $usecase->execute(
-                    email: $data['email'],
-                    purpose: $purpose,
-                );
-                return ApiResponse::notice("Everything went smoothly")->toJsonResponse();
+
+            if (!is_array($data)) {
+                return ApiResponse::error(
+                    'Invalid JSON payload',
+                    400
+                )->toJsonResponse();
             }
-            return ApiResponse::error("Missing or invalid purpose field")->toJsonResponse();
+
+            if (!isset($data['email'], $data['purpose'])) {
+                return ApiResponse::error(
+                    'Missing email or purpose field',
+                    400
+                )->toJsonResponse();
+            }
+
+            $purpose = AccountFlowPurpose::from($data['purpose']);
+
+            $usecase->execute(
+                email: $data['email'],
+                purpose: $purpose,
+            );
+
+            return ApiResponse::notice(
+                'Everything went smoothly'
+            )->toJsonResponse();
         }
         catch (Exception $exception) {
-            return ApiResponse::error(
+            $res = ApiResponse::error(
                 message:'Nothing Found',
                 statusCode: 400, throwable: $exception
-            )->toJsonResponse();
+            );
+            return $res->toJsonResponse();
         }
     }
 

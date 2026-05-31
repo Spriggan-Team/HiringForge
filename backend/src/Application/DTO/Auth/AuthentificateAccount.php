@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\DTO;
+namespace App\Application\DTO\Auth;
 
 use App\Domain\Shared\Account\AccountRole;
 use Symfony\Component\Security\Core\User\UserInterface;

@@ -6,7 +6,7 @@ use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
 
 use Doctrine\ORM\Mapping as ORM;
-
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity]
 #[ORM\Table('verification_token')]
@@ -14,8 +14,11 @@ use Doctrine\ORM\Mapping as ORM;
 class VerificationTokenEntity
 {
     #[ORM\Id]
-    #[ORM\Column(type: "guid", unique: true)]
-    private ?string $id = null;
+    #[ORM\Column(type: 'uuid')]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
+    protected ?Uuid $id = null;
+
 
     #[ORM\Column(length: 255, nullable: false)]
     private ?string $code_hash = null;
@@ -35,18 +38,32 @@ class VerificationTokenEntity
     //----Object Creating ..
     //-----------
 
-    public function __construct(AccountEntity $account)
+    public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+    }
+
+    public static function create(
+        ?string $id = null, 
+        ?string $code_hash = null,
+        ?AccountFlowPurpose $purpose = null,
+        ?\DateTimeImmutable $expiresAt = null,
+    ): self {
+        $verificationToken = new self();
+        $verificationToken->setId(new Uuid($id))
+                           ->setCodeHash($code_hash)
+                           ->setPurpose($purpose)
+                           ->setExpiresAt($expiresAt);
+        return $verificationToken;
     }
 
     //-----------------------
     //-------GETTERS
     //------------------------
-
+    
     public function getId(): string
     {
-        return $this->id;
+        return $this->id?->toRfc4122();
     }
 
     public function getCodeHash()
@@ -75,7 +92,7 @@ class VerificationTokenEntity
     //-------SETTERS--
     //------------------
 
-    public function setId(string $id):static
+    public function setId(Uuid $id):static
     {
         $this->id = $id;
         return $this;

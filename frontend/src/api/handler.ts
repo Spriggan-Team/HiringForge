@@ -1,7 +1,9 @@
 
 
 const port = import.meta.env.VITE_API_PORT;
-const baseURL  = `http://localhost:${port}`
+const host = import.meta.env.VITE_API_HOST;
+
+const baseURL  = `http://${host}:${port}/api`;
 
 
 type RequestData = Record<string, any> | FormData | null;

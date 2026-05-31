@@ -202,6 +202,14 @@ const Register = () => {
                                                 status: "error",
                                                 message: t("global.messages.error")
                                             })
+
+                                            //-- message error
+                                            if (error instanceof Error) {
+                                                console.log("Something went wrong:", error.message);
+                                                console.log("Stack:", error.stack);
+                                            } else {
+                                                console.log("Unknown error:", error);
+                                            }
                                         }
                                     }}
                                 />
@@ -210,11 +218,21 @@ const Register = () => {
                                         formData={formData.current}
                                         onNext={async ()=>{
                                             try{
-                                                const res = await AuthServices.register(objectToFormData(asideFormState, formData.current))
+                                                const data: FormData = objectToFormData(asideFormState, formData.current);
+                                                console.log("All retreived data", Object.fromEntries(data.entries()));
+
+                                                const res = await AuthServices.register(data);
                                                 setPopup({status: "error", message: t("register.apiResponse.registering.success")})
                                                 localStorage.setItem("userId", JSON.stringify(res?.id))
                                             }
-                                            catch(error){}
+                                            catch(error){
+                                                if (error instanceof Error) {
+                                                        console.log("Something went wrong:", error.message);
+                                                        console.log("Stack:", error.stack);
+                                                    } else {
+                                                        console.log("Unknown error:", error);
+                                                    }
+                                            }
                                         }}
                                     />
                                     :<></>    

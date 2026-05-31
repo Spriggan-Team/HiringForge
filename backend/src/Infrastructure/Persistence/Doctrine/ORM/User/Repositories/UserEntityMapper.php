@@ -61,7 +61,7 @@ class UserEntityMapper
         return DomainEntity::create(
             userId: UserId::hydrate($doctrine->getId()),
             name: $doctrine->getName(),
-            email: new EmailAddress($doctrine->getEmail()),
+            email: EmailAddress::hydrate($doctrine->getEmail()),
             images: $userImages,
             passwordHash: $doctrine->getPassword(),
             siret:  Siret::hydrate($doctrine->getSiret()),

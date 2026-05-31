@@ -10,7 +10,7 @@ use App\Domain\Shared\EmailAddress;
 use App\Domain\Sharedp\KnownIdentity;
 
 use Doctrine\ORM\EntityManagerInterface;
-
+use Override;
 
 class CandidateRepository implements CandidateRepositoryInterface
 {
@@ -48,6 +48,12 @@ class CandidateRepository implements CandidateRepositoryInterface
 
 
     public function delete(string $uuid): void
+    {
+        throw new \Exception('Not implemented');
+    }
+
+    #[Override]
+    public function apply(string $candidateId, string $offerId): void
     {
         throw new \Exception('Not implemented');
     }

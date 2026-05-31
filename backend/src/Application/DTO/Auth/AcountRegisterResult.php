@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Shared\Account;
+namespace App\Application\DTO\Auth;
 
 /**
  * A DTO(Data transfer object) that represents what is provided after an user registering

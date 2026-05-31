@@ -24,6 +24,9 @@ class OTP
         public string $hashCode,
         public DateTimeImmutable $expiresAt,
         public AccountFlowPurpose $purpose,
+        private ?string $email = null,
+        public ?string $plainCode = null,
+        public ?string $id = null,
     ) {}
 
     /**
@@ -37,8 +40,10 @@ class OTP
     public static function create(
         PasswordHasherInterface $hasher,
         AccountFlowPurpose $purpose = AccountFlowPurpose::PASSWORD_RESET,
+        ?string $hashCode = null,
         int $attempts = 0,
-        ?string $plainCode = null
+        ?string $plainCode = null,
+        ?string $id = null,
     ): self {
         // Generate code if not provided
         $plainCode = $plainCode ?? self::generateCode();
@@ -49,7 +54,7 @@ class OTP
         }
 
         // Hash du code
-        $hashCode = $hasher->hash($plainCode);
+        $hashCode = $hashCode ?? $hasher->hash($plainCode);
 
         // TTL based on purpose
         $expiresAt = new DateTimeImmutable();
@@ -61,7 +66,14 @@ class OTP
                 $expiresAt = $expiresAt->add(new DateInterval("PT15M")); // 15 minutes
         }
 
-        return new self($hashCode, $attempts, $expiresAt, $purpose);
+        return new self(
+            id: $id,
+            plainCode: $plainCode,
+            hashCode: $hashCode, 
+            attempts: $attempts, 
+            expiresAt: $expiresAt, 
+            purpose: $purpose
+        );
     }
 
 
@@ -71,17 +83,21 @@ class OTP
      *          cause this function does not enforce domain validation and then is not safe 
      */
     public static function hydrate(
-        string $plainCode,
+        string $hashCode,
         \DateTimeImmutable $expiresAt,
         AccountFlowPurpose $purpose,
         int $attempts = 0,
+        ?string $email = null,
+        ?string $id = null
     ): self
     {
         return new self(
-            $plainCode,
-            $attempts,
-            $expiresAt,
-            $purpose
+            id: $id,
+            hashCode: $hashCode,
+            email: $email,
+            attempts: $attempts,
+            expiresAt: $expiresAt,
+            purpose: $purpose
         );
     }
 
@@ -134,6 +150,11 @@ class OTP
         );
     }
 
+    //-- The associated email account with the token (otp)
+    public function getEmail(): ?string{
+        return $this->email;
+    }
+
     
     // --- Utilitaires internes ---
     private static function generateCode(int $length = 6): string
@@ -147,4 +168,28 @@ class OTP
         return preg_match('/^\d{6}$/', $code) === 1;
     }
 
+
+    //-----
+    // GETTERS
+    //--------
+
+    public function getId(): ?string{
+        return $this->id;
+    }
+
+    public function getHashCode() : ?string {
+        return $this->hashCode;
+    }
+
+    public function getPurpose(): AccountFlowPurpose {
+        return $this->purpose;
+    }
+
+    public function getExpiresAt(): DateTimeImmutable{
+        return $this->expiresAt;
+    }
+
+    public function getAttempts(): int{
+        return $this->attempts;
+    }
 }
