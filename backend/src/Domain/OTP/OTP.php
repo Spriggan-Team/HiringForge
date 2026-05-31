@@ -4,10 +4,8 @@ namespace App\Domain\OTP;
 
 use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\Shared\PasswordHasherInterface;
-
 use DateTimeImmutable;
 use DateInterval;
-
 use DomainException;
 
 /**
@@ -16,7 +14,6 @@ use DomainException;
  */
 class OTP
 {
-
     public ?DateInterval $remainingValidityDuration = null;
 
     private function __construct(
@@ -45,69 +42,62 @@ class OTP
         ?string $plainCode = null,
         ?string $id = null,
     ): self {
-        // Generate code if not provided
         $plainCode = $plainCode ?? self::generateCode();
 
-        // Validation format
         if (!self::isValid($plainCode)) {
             throw new DomainException("Generated OTP code is invalid");
         }
 
-        // Hash du code
         $hashCode = $hashCode ?? $hasher->hash($plainCode);
 
-        // TTL based on purpose
         $expiresAt = new DateTimeImmutable();
         switch ($purpose) {
             case AccountFlowPurpose::PASSWORD_RESET:
-                $expiresAt = $expiresAt->add(new DateInterval("PT5M")); // 5 minutes
+                $expiresAt = $expiresAt->add(new DateInterval("PT5M"));
                 break;
             default:
-                $expiresAt = $expiresAt->add(new DateInterval("PT15M")); // 15 minutes
+                $expiresAt = $expiresAt->add(new DateInterval("PT15M"));
         }
 
         return new self(
-            id: $id,
+            attempts: $attempts,
+            hashCode: $hashCode,
+            expiresAt: $expiresAt,
+            purpose: $purpose,
+            email: null,
             plainCode: $plainCode,
-            hashCode: $hashCode, 
-            attempts: $attempts, 
-            expiresAt: $expiresAt, 
-            purpose: $purpose
+            id: $id
         );
     }
 
-
     /**
-     * This function is not safe!!
-     * WARNING: This should only be used when input data data are sure to be safe
-     *          cause this function does not enforce domain validation and then is not safe 
+     * WARNING: This should only be used when input data are guaranteed to be safe
+     * because this function bypasses domain validation constraints.
      */
     public static function hydrate(
         string $hashCode,
-        \DateTimeImmutable $expiresAt,
+        DateTimeImmutable $expiresAt,
         AccountFlowPurpose $purpose,
         int $attempts = 0,
         ?string $email = null,
         ?string $id = null
-    ): self
-    {
+    ): self {
         return new self(
-            id: $id,
-            hashCode: $hashCode,
-            email: $email,
             attempts: $attempts,
+            hashCode: $hashCode,
             expiresAt: $expiresAt,
-            purpose: $purpose
+            purpose: $purpose,
+            email: $email,
+            plainCode: null,
+            id: $id
         );
     }
-
 
     /**
      * Verify a plain code against the stored hashed OTP.
      *
      * @param string $plainCode Code provided by the user
      * @param PasswordHasherInterface $hasher Hasher used to verify the code
-     *
      * @return bool True if valid
      * @throws DomainException If expired or attempts exceeded
      */
@@ -126,70 +116,73 @@ class OTP
         return $hasher->verify($plainCode, $this->hashCode);
     }
 
-    // --- Getters ---
-
     /**
-     * Check  if an otp code is expired or not
-     * return true if it is, not otherwise
-     * @return bool
+     * Check if an OTP code is expired.
      */
     public function isExpired(): bool
     {
         $today = new DateTimeImmutable();
-
         $this->remainingValidityDuration = $today->diff($this->expiresAt);
+        
         return $today > $this->expiresAt;
     }
 
+    /**
+     * Get remaining validation window in seconds.
+     */
     public function getRemainingSeconds(): int
     {
-        return max(
-            0,
-            $this->expiresAt->getTimestamp()
-            - time()
-        );
+        return max(0, $this->expiresAt->getTimestamp() - time());
     }
 
-    //-- The associated email account with the token (otp)
-    public function getEmail(): ?string{
+    /**
+     * Get associated account email.
+     */
+    public function getEmail(): ?string 
+    {
         return $this->email;
     }
 
-    
-    // --- Utilitaires internes ---
+    /**
+     * Generate secure numeric token string.
+     */
     private static function generateCode(int $length = 6): string
     {
-        return (string) random_int(100000, 999999); // 6-digit OTP
+        return (string) random_int(100000, 999999);
     }
 
-
+    /**
+     * Assert if code structure respects numeric constraints.
+     */
     private static function isValid(string $code): bool
     {
         return preg_match('/^\d{6}$/', $code) === 1;
     }
 
+    // --- Getters ---
 
-    //-----
-    // GETTERS
-    //--------
-
-    public function getId(): ?string{
+    public function getId(): ?string 
+    {
         return $this->id;
     }
 
-    public function getHashCode() : ?string {
+    public function getHashCode(): ?string 
+    {
         return $this->hashCode;
     }
 
-    public function getPurpose(): AccountFlowPurpose {
+    public function getPurpose(): AccountFlowPurpose 
+    {
         return $this->purpose;
     }
 
-    public function getExpiresAt(): DateTimeImmutable{
+    public function getExpiresAt(): DateTimeImmutable 
+    {
         return $this->expiresAt;
     }
 
-    public function getAttempts(): int{
+    public function getAttempts(): int 
+    {
         return $this->attempts;
     }
 }
