@@ -47,11 +47,14 @@ class UserRegisterUseCase
     ): AccountRegister
     {    
         $email =  EmailAddress::create($command->email);
-        $existingUser = $this->repository->findByEmail($email->value());    //check for any existing user
-
-        if($existingUser){
-            throw new EmailAlreadyRegistered("This user already exist"); 
+        try{
+            $existingUser = $this->repository->findByEmail($email->value());    //check for any existing user
+            if($existingUser){
+                throw new EmailAlreadyRegistered("This user already exist"); 
+            }
         }
+        catch(\Exception $excption){}
+
 
         $userId = UserId::create();
 

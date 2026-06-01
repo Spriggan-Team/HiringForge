@@ -5,6 +5,7 @@ namespace App\Infrastructure\Storage\FileStorage;
 use App\Domain\File\StaticMedia;
 use App\Domain\File\TimedMedia;
 use App\Domain\File\MediaFactoryInterface;
+
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -14,10 +15,13 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 */
 class MediaFactory implements MediaFactoryInterface
 {
-    public function __construct(
-        private \getID3 $analyser,
-    )
-    {}
+    private \getID3 $analyser;
+    
+    public function __construct()
+    {
+        $this->analyser = new \getID3();
+    }
+    
     /**
      * This function tell if a file is a timed media (video, audio ...) or not
      * @param mixed     $file        The file you want to evaluate, The file class/type you used for managing your backend

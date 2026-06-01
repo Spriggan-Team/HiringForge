@@ -1,3 +1,4 @@
+import { isHtml } from "../utils/html";
 
 
 const port = import.meta.env.VITE_API_PORT;
@@ -39,17 +40,30 @@ const request = async <T>(
         : undefined,
   });
 
-  if (!response.ok) {
-    const error = await response.text();
+  const contentType = response.headers.get("content-type");
 
-    throw new Error(
-      `HTTP ${response.status} - ${
-        error || response.statusText
-      }`
-    );
+  if (!response.ok) {
+      //-- read stream (json, text or html crash)
+      const errorBody = await response.text(); 
+      let message: string = errorBody;
+
+      if (contentType && contentType.includes("text/html")) {
+          message = "An HTML page has been opened for error description";
+
+          //--- open the page
+          const newWindow = window.open("", "_blank");
+          if (newWindow) {
+              newWindow.document.open();
+              newWindow.document.body.innerHTML = errorBody;
+              newWindow.document.close();
+          }
+      }
+      
+      throw new Error(
+        `HTTP ${response.status} - ${message}`
+      );
   }
 
-  const contentType = response.headers.get("content-type");
 
   if (contentType?.includes("application/json")) {
     return response.json();
