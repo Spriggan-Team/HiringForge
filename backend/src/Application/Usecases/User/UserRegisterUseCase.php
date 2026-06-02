@@ -20,11 +20,13 @@ use App\Domain\Shared\EmailAddress;
 
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\PlainPassword;
-
-use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Shared\Account\AccountFlowPurpose;
 
+use App\Domain\OTP\OTPRepositoryInterface;
 use App\Application\Usecases\Account\AccountRegister;
+
+use App\Domain\Exception\RessourceNotFound;
+use App\Domain\OTP\Exception\OTPException;
 
 
 class UserRegisterUseCase
@@ -39,7 +41,7 @@ class UserRegisterUseCase
     ){}
     /**
      * This is an usecase that enforce buisness requirement and then proceed with saving
-     * @throws \DomainException|EmailAlreadyRegistered|RessourceNotFound|FileExceedTime|FileSizeExceeded What is thrown when requirements are not respected;
+     * @throws \DomainException|EmailAlreadyRegistered|OTPException|FileExceedTime|FileSizeExceeded What is thrown when requirements are not respected;
      *                                                                      (most of them are exception from /Domain)
      */
     public function execute(
@@ -62,8 +64,13 @@ class UserRegisterUseCase
         $failedUploads = []; 
 
         //-- check verification code
-        $otp = $this->OTPRepository->getLastVerificationTokenWithPurpose($email->value(), AccountFlowPurpose::SIGN_UP);
-        $isOtpVerified = $otp->verify($command->verificationCode, $this->hasher);
+        try{
+            $otp = $this->OTPRepository->getLastVerificationTokenWithPurpose($email->value(), AccountFlowPurpose::SIGN_UP);
+            $isOtpVerified = $otp->verify($command->verificationCode, $this->hasher);
+        }
+        catch(RessourceNotFound){
+            throw new OTPException(isInvalid: true);
+        }
 
             //--Throws logic exception when hash verification not succeed
         if(!$isOtpVerified)

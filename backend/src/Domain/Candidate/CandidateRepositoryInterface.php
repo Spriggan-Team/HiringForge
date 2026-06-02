@@ -2,6 +2,7 @@
 
 namespace App\Domain\Candidate;
 
+use App\Domain\File\StaticMedia;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 
 /**
@@ -34,9 +35,20 @@ interface CandidateRepositoryInterface
      */
     public function save(Candidate $candidate): void;
 
+
     /**
      * This a function that must be used for candidate'applications (postulations)
      * @throws DomainException|Exception It is thrown when no actual job offer or candidate extists 
     */
     public function apply(string $candidateId, string $offerId): void;
+
+    
+    /**
+     * Retreive meta data about an user's cv
+     * @throws \Exception this is thrown wheenever something get wrong while exeuting the operation 
+     * @return StaticMedia | null - returns a stactic media corresponding to the related cv but if something went wrong
+     *                              for some reason without throwing an exception (no critical) 
+     *                              then what is retruned will be null
+     */
+    public function getCVFile(string $candidate): StaticMedia | null;
 }

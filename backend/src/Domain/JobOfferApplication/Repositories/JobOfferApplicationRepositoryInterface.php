@@ -2,6 +2,7 @@
 
 namespace App\Domain\JobOfferApplication\Repositories;
 
+
 interface JobOfferApplicationRepositoryInterface
 {
     /**
@@ -11,4 +12,6 @@ interface JobOfferApplicationRepositoryInterface
      * @throws Exception|DomainException is thrown when nothing is found
      */
     public function assertExists(string $id): void;
+
+
 }

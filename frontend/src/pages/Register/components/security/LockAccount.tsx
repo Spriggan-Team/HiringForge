@@ -43,6 +43,7 @@ const SecureAccount: React.FC<SecureAccountProps> = ({
                     type="password"
                     className="faint-border"
                     inputName="verificationCode"
+                    extraInputProps={{ defaultValue: formData.get("verificationCode")?.toString() }}
                     label={t("register.form.step3.inputs.verificationCode.label")} 
                     padding={5}  width="100%" backgroundColor={inputColor}
                 /> 

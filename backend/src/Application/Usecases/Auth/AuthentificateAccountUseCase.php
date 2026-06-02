@@ -2,7 +2,7 @@
 
 namespace App\Application\Usecases\Auth;
 
-use App\Application\DTO\AuthentificateAccount;
+use App\Application\DTO\Auth\AuthentificateAccount;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;

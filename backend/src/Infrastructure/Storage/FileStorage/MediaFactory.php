@@ -41,8 +41,8 @@ class MediaFactory implements MediaFactoryInterface
      * that can enforces specific/buisness rules
      * @param mixed $file                        The file class/type  used for managing file on your app
      * 
-     * @throws \DomainException|\Exception       This can be thrown if the file you attempt to parse can't be 
-     *                                           or the specific class of file you are using are not supported yet!!
+     * @throws \DomainException|FileSizeExceeded|\Exception       This can be thrown if the file you attempt to parse can't be parsed
+     *                                           or the specific class of file you are using are still not supported yet!!
      * 
      * @return StaticMedia                       The corresponding domain object, it should be used to enforce domain rules
      */
@@ -60,6 +60,7 @@ class MediaFactory implements MediaFactoryInterface
         throw new \DomainException("You mustn't try to pasrse a timed media as a static one");
     }
 
+    
     /**
      * This function convert a timed file (such as video and audio...) into a domain file object
      * that can enforces specific rules

@@ -34,7 +34,7 @@ class JwtAuthenticatorController extends AbstractAuthenticator
         if(!$authHeader){
             return false;
         }
-        return str_starts_with($authHeader,"Bearer ");
+        return str_starts_with($authHeader, "Bearer ");
     }
 
 
@@ -44,6 +44,7 @@ class JwtAuthenticatorController extends AbstractAuthenticator
         if(!$authHeader){
             throw new CustomUserMessageAuthenticationException("You dont have the permission");
         }
+
         $jwt = substr($authHeader, 7);
 
         try{
@@ -54,7 +55,7 @@ class JwtAuthenticatorController extends AbstractAuthenticator
             throw new CustomUserMessageAuthenticationException("Invalid token");
         }
 
-        if (!isset($payload['id'], $payload['sub'], $payload['roles'])) {
+        if (!isset($playoad['id'], $playoad['sub'], $playoad['roles'])) {
             throw new CustomUserMessageAuthenticationException("Token not well formed");
         }
 

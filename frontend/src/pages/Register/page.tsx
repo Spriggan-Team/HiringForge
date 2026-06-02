@@ -2,7 +2,7 @@
 
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useAppContext } from "../../hooks/context";
 
 
@@ -35,8 +35,9 @@ import OfficeWorkerImage from "../../assets/images/office-worker.png"
 import  styles from "./style.module.css"
 import  IdentityDetail from "./components/identity/identity.details";
 import  SecureAccount from "./components/security/LockAccount";
-import AuthServices from "../../api/services/auth";
+import AuthServices from "../../api/services/auth/auth";
 import { objectToFormData } from "../../utils/convertor";
+import { ExpiredOTP } from "../../api/services/auth/exceptions";
 
 
 
@@ -55,13 +56,14 @@ export interface AsideFormState{
 
 const Register = () => {
     const { t } = useTranslation();
-    const {  setPopup  } = useAppContext();
+    const { setLoading, setPopup  } = useAppContext();
 
     const formData = useRef<FormData>(new FormData());
 
     const [language, setLanguage] = useState("Français");
     const [currentStep, setCurrentStep] = useState({ max: 1, current: 1 });
 
+    const asideFormRef = useRef<HTMLFormElement | null>(null);
     const [asideFormState, setAsideFormState] = useState<AsideFormState>({
         country: "",
         postalCode: "",
@@ -71,6 +73,61 @@ const Register = () => {
         images: [] as File[],
     });
     
+    const handleCompletion = useCallback(async ()=>{
+        //-- Ensure aside form data validation
+        const asideForm = asideFormRef.current;
+        if (!asideForm) {
+            console.warn("The aside form has still not completely been mounted");
+            return;
+        }
+
+        setLoading({ state: true, subtitle: "Completion de l'enregistrement au service" });
+
+        try{
+            asideForm.requestSubmit();
+            // Fixed: Check if form IS invalid, then exit early
+            if (asideForm.invalid) {
+                console.warn("Invalid state: Please check the aside form and make sure all required fields are provided");
+                setLoading({ state: false });
+                return;
+            }
+
+            //-- Data consolidation
+            const data: FormData = objectToFormData(asideFormState, formData.current);
+            console.log("All retrieved data", Object.fromEntries(data.entries()));
+
+            const res = await AuthServices.register(data);
+
+            setLoading({state: false});
+            
+            //-- client notification & notice
+            setPopup({
+                status: "success",
+                message: t("register.apiResponse.registering.success")
+            })
+            localStorage.setItem("userId", JSON.stringify(res?.id))
+        }
+        catch(error){
+            setLoading({ state: false });
+            if (error instanceof Error) {
+                //-- console log
+                console.log("Something went wrong:", error.message);
+                console.log("Stack:", error.stack);
+
+                //-- Domain fallback (messages)
+                if(error instanceof ExpiredOTP)
+                    setPopup({ status: "error", message: t("register.apiResponse.codeVerification.expired") });
+            }
+            else {
+                setPopup({
+                    status: "success",
+                    message: t("global.messages.error")
+                });
+                console.log("Unknown error:", error);
+            }
+        }
+    }, [setLoading, setPopup])
+
 
     return (
         <div className={styles.container}>
@@ -192,12 +249,18 @@ const Register = () => {
                                 <IdentityDetail
                                     formData={formData.current} 
                                     onNext={async ()=>{
+                                        //--Set loading & execute api request
+                                        setLoading({state: true, subtitle: t("register.form.step2.next.loadingMessage")});
                                         try{
                                             await AuthServices.askVerificationCode(formData.current.get("email") as string, "SIGNUP");
+                                            setLoading({state: false, subtitle: undefined});
+
+                                            //--Switch to next step & update popup+
                                             setCurrentStep(prev => ({ current: 3, max: 3 > prev.max ? 3 : prev.max }))
-                                            setPopup({status: "error", message: t("register.apiResponse.verifyMailBox.success")})
+                                            setPopup({status: "success", message: t("register.apiResponse.verifyMailBox.success")})
                                         }
                                         catch(error){
+                                            setLoading({state: false, subtitle: undefined});
                                             setPopup({
                                                 status: "error",
                                                 message: t("global.messages.error")
@@ -216,24 +279,7 @@ const Register = () => {
                                 : currentStep.current == 3 ?
                                     <SecureAccount 
                                         formData={formData.current}
-                                        onNext={async ()=>{
-                                            try{
-                                                const data: FormData = objectToFormData(asideFormState, formData.current);
-                                                console.log("All retreived data", Object.fromEntries(data.entries()));
-
-                                                const res = await AuthServices.register(data);
-                                                setPopup({status: "error", message: t("register.apiResponse.registering.success")})
-                                                localStorage.setItem("userId", JSON.stringify(res?.id))
-                                            }
-                                            catch(error){
-                                                if (error instanceof Error) {
-                                                        console.log("Something went wrong:", error.message);
-                                                        console.log("Stack:", error.stack);
-                                                    } else {
-                                                        console.log("Unknown error:", error);
-                                                    }
-                                            }
-                                        }}
+                                        onNext={handleCompletion}
                                     />
                                     :<></>    
                         }
@@ -242,7 +288,7 @@ const Register = () => {
 
 
                 {/* SIDE FORM */}
-                <SideForm form={asideFormState} setForm={setAsideFormState}   />
+                <SideForm asideFormRef={asideFormRef} form={asideFormState} setForm={setAsideFormState}   />
             </div>
         </div>
     );
@@ -250,13 +296,3 @@ const Register = () => {
  
 export default Register;
 
-{/*  FOOTER */}
-{/* <div className={styles.footer}>
-    <SimpleButton />
-    <div>
-        <span> Etape1 </span>
-        <span> Etape2 </span>
-        <span> Etape3 </span>
-    </div>
-    <SimpleButton />
-</div> */}

@@ -6,9 +6,9 @@ namespace App\Domain\Shared\Account;
 
 use DomainException;
 
-class AccountId
+abstract class AccountId
 {
-    private function __construct(
+    public function __construct(
         private string $id
     ){}
 
@@ -21,14 +21,14 @@ class AccountId
     {
         //Generate Id if nothing pass down to the constructor
         if(!$id){
-            return new self(self::generateId());
+            return new static(self::generateId());
         }
         //Validate the id if $id parameter is passed to the constructor
         if(!self::isValid($id)){
             throw new DomainException("Invalid User Id");
         }
         //Generate UserId based on a given $id
-        return new self($id);
+        return new static($id);
     }
 
     /**
@@ -36,7 +36,7 @@ class AccountId
      */
     public static function hydrate(string $id): static
     {
-        return new self($id);
+        return new static($id);
     }
 
     /**

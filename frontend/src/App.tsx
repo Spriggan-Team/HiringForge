@@ -8,6 +8,7 @@ import RouteScheme from './route.scheme'
 import Home from './pages/home/page'
 import AppPopup from './layout/components/popup/app.popup'
 import AppContextProvider from './context/app.context'
+import { AppSpinner } from './layout/components/indicators/spinner/spinner'
 
 
 function App() {
@@ -15,14 +16,16 @@ function App() {
   return (
     <AppContextProvider>
       <AppPopup>
-        <BrowserRouter>
-          <Routes>
-            <Route path={RouteScheme.main} element={<EntryPage />} />
-            <Route path={RouteScheme.login} element={<Login />} />
-            <Route path={RouteScheme.register} element={<Register />} />
-            <Route path={RouteScheme.home} element={<Home />} />
-          </Routes>
-        </BrowserRouter>
+        <AppSpinner>
+            <BrowserRouter>
+              <Routes>
+                <Route path={RouteScheme.main} element={<EntryPage />} />
+                <Route path={RouteScheme.login} element={<Login />} />
+                <Route path={RouteScheme.register} element={<Register />} />
+                <Route path={RouteScheme.home} element={<Home />} />
+              </Routes>
+          </BrowserRouter>
+        </AppSpinner>
       </AppPopup>
     </AppContextProvider>
   )

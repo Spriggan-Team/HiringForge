@@ -3,7 +3,7 @@
 namespace App\Api\Controllers\Auth;
 
 use App\Api\Responder\ApiResponse;
-use App\Application\DTO\AuthentificateAccount;
+use App\Application\DTO\Auth\AuthentificateAccount;
 
 
 

@@ -7,17 +7,20 @@ use App\Application\DTO\User\RegisterUserCommand;
 
 use App\Domain\Shared\Address;
 use App\Api\Responder\ApiResponse;
-
+use App\Api\Responder\ApiResponseCode;
 use App\Application\Usecases\Candidate\CandidateRegisterUsecase;
 use App\Application\Usecases\User\UserRegisterUseCase;
-use App\Domain\Exception\EmailAlreadyRegistered;
 use  Psr\Log\LoggerInterface;
+
+use Exception;
+use App\Domain\Exception\EmailAlreadyRegistered;
+use App\Domain\OTP\Exception\OTPException;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-use Exception;
 
 
 
@@ -58,7 +61,7 @@ class RegisterController extends AbstractController
         }
         catch(Exception $exception)
         {
-            return ApiResponse::error("Something wen wrong", $exception)->toJsonResponse();
+            return ApiResponse::error(message: "Something wen wrong", throwable: $exception)->toJsonResponse();
         }
     }
 
@@ -94,11 +97,25 @@ class RegisterController extends AbstractController
             return ApiResponse::success($result)->toJsonResponse();
         }
         catch(EmailAlreadyRegistered $emailEception){
-            return ApiResponse::error('This email is already registered', $emailEception)->toJsonResponse();
+            return ApiResponse::error(
+                message: 'This email is already registered', 
+                throwable: $emailEception,
+                code: ApiResponseCode::ACCOUNT_ALREADY_EXISTS
+            )->toJsonResponse();
+        }
+        catch(OTPException $optError){
+            return ApiResponse::error(
+                message: "OTP code expired",
+                throwable: $optError,
+                statusCode: 410,
+                code: $optError->expired ? 
+                    ApiResponseCode::EXPIRED_OTP 
+                        : $optError,
+            )->toJsonResponse();
         }
         catch (\Exception $exception)
         {
-            return ApiResponse::error('Please check your data fields and formats', $exception)->toJsonResponse();
+            return ApiResponse::error(message: 'Please check your data fields and formats', throwable: $exception)->toJsonResponse();
         }
     }
 

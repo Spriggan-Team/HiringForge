@@ -1,5 +1,24 @@
 {
-    "global":{
-        "allRightsReserved":"2026 DigitalCop - All right reserved"
+  "global": {
+    "allRightsReserved": "2026 DigitalCop - All rights reserved",
+    "rules": {
+      "password": {
+        "title": "Password Strength",
+        "lenght": "Safe length",
+        "uppercase": "Contains an uppercase letter",
+        "number": "Contains a number"
+      }
+    },
+    "logo": {
+      "text": "Logo"
+    },
+    "validation": {
+      "required": "required",
+      "optionnal": "optional"
+    },
+    "messages": {
+      "secureData": "Secure data",
+      "error": "An unexpected error occurred"
     }
+  }
 }

@@ -5,7 +5,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate;
 use App\Domain\Candidate\Candidate;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Candidate\CandidateRepositoryInterface;
-
+use App\Domain\File\StaticMedia;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Sharedp\KnownIdentity;
 
@@ -54,6 +54,12 @@ class CandidateRepository implements CandidateRepositoryInterface
 
     #[Override]
     public function apply(string $candidateId, string $offerId): void
+    {
+        throw new \Exception('Not implemented');
+    }
+
+    #[Override]
+    public function getCVFile(string $candidate): ?StaticMedia
     {
         throw new \Exception('Not implemented');
     }

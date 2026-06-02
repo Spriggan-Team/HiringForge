@@ -3,71 +3,87 @@
 namespace App\Infrastructure\Security;
 
 use DomainException;
+use RuntimeException;
+use DateTimeImmutable;
+
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
 
 use Lcobucci\Clock\SystemClock;
-use Lcobucci\JWT\Validation\ValidAt; 
 use Lcobucci\JWT\UnencryptedToken;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
+use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
+
 use Ramsey\Uuid\Uuid;
+
+
 
 class JwtAuthentificator
 {
-    const JWT_SECRET = "usdyoisdfhqMGHSkkd6@EZFè1+^8Z0.%dk673730ssshvV/5@";
+    private const JWT_SECRET = "usdyoisdfhqMGHSkkd6@EZFè1+^8Z0.%dk673730ssshvV/5@";
 
     private Configuration $config;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->config = Configuration::forSymmetricSigner(
-                                        new Sha256(),
-                                        InMemory::plainText(self::JWT_SECRET),
-                                    );
+            new Sha256(),
+            InMemory::plainText(self::JWT_SECRET)
+        );
     }
 
     /**
-     * Take in a serializable object and turn
+     * @param array<string, mixed> $payload
      */
-    public function generate(array $playload)
+    public function generate(array $payload): string
     {
-
-        $now = new \DateTimeImmutable();
+        $now = new DateTimeImmutable();
+        
         $token = $this->config->builder()
-                        ->issuedBy('Hiring_forge')  //iss
-                        ->permittedFor('hiring_forge_front') //aud
-                        ->issuedAt($now)    //iat
-                        ->identifiedBy(Uuid::uuid4())
-                        ->expiresAt($now->modify("+1 hour")) //exp
-                        ->withClaim("playload", $playload)
-                        ->getToken(
-                            $this->config->signer(),
-                            $this->config->signingKey()
-                        );
+            ->issuedBy('Hiring_forge')
+            ->permittedFor('hiring_forge_front')
+            ->issuedAt($now)
+            ->identifiedBy(Uuid::uuid4()->toString())
+            ->expiresAt($now->modify("+1 hour"))
+            ->withClaim("payload", $payload)
+            ->getToken(
+                $this->config->signer(),
+                $this->config->signingKey()
+            );
+
         return $token->toString();
     }
 
     public function decode(string $jwtTokenString): mixed
     {
+        //-- Parse the string into a Token object first
+        try {
+            $token = $this->config->parser()->parse($jwtTokenString);
+        } catch (\Exception $e) {
+            throw new DomainException("Invalid token format structure", 0, $e);
+        }
+
+        if (!$token instanceof UnencryptedToken) {
+            throw new RuntimeException('Invalid token type instance');
+        }
+
+        //--. Define constraints
         $constraints = [
             new SignedWith(
                 $this->config->signer(),
                 $this->config->signingKey()
             ),
-            new ValidAt(SystemClock::fromUTC())
+            new LooseValidAt(
+                SystemClock::fromUTC()
+            )
         ];
 
-        if($this->config->validator()->validate($jwtTokenString, ...$constraints)){
-            $token  = $this->config->parser()->parse($jwtTokenString);
-            if(!$token  instanceof UnencryptedToken){
-                throw new \RuntimeException("Invalid token");
-            };
-
-            return $token->claims()->get('playload');
+        //-- Validate the Token object
+        if (!$this->config->validator()->validate($token, ...$constraints)) {
+            throw new DomainException("Invalid Token claims or signature mismatch");
         }
 
-        throw new DomainException("Invalid Token");
+        return $token->claims()->get('payload');
     }
 }
-
-?>

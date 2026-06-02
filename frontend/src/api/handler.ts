@@ -1,4 +1,5 @@
-import { isHtml } from "../utils/html";
+import Utils from "../utils/html";
+import { HttpBadResponse, type ApiResponseCodeType } from "./exceptions";
 
 
 const port = import.meta.env.VITE_API_PORT;
@@ -42,27 +43,43 @@ const request = async <T>(
 
   const contentType = response.headers.get("content-type");
 
-  if (!response.ok) {
-      //-- read stream (json, text or html crash)
-      const errorBody = await response.text(); 
-      let message: string = errorBody;
+if (!response.ok) {
+    const errorBody = await response.text();
 
-      if (contentType && contentType.includes("text/html")) {
-          message = "An HTML page has been opened for error description";
+    let message: string = errorBody;
+    let apiCode: ApiResponseCodeType | undefined;
+    let httpCode = response.status;
 
-          //--- open the page
-          const newWindow = window.open("", "_blank");
-          if (newWindow) {
-              newWindow.document.open();
-              newWindow.document.body.innerHTML = errorBody;
-              newWindow.document.close();
-          }
-      }
-      
-      throw new Error(
-        `HTTP ${response.status} - ${message}`
-      );
-  }
+    //-- HTML fallback (error page serveur)
+    if (contentType && contentType.includes("text/html")) {
+        message = "An HTML error page was returned";
+        Utils.openHtml(errorBody);
+    }
+    //-- JSON API error
+    else {
+        try {
+            const errorJson = JSON.parse(errorBody);
+
+            message = errorJson.message ?? message;
+
+            if (errorJson.code) {
+              if(HttpBadResponse.isValidApiCode(errorJson.code)){
+                  apiCode = errorJson.code ;
+              }
+            }
+            console.error("API Response (JSON) : ", errorJson);
+        }
+        catch (err) {
+            //-- keep raw message
+        }
+    }
+
+    throw new HttpBadResponse({
+        httpCode,
+        message,
+        apiCode,
+    });
+}
 
 
   if (contentType?.includes("application/json")) {

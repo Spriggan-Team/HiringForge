@@ -2,8 +2,10 @@
 
 namespace App\Domain\OTP;
 
+use App\Domain\OTP\Exception\OTPException;
 use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\Shared\PasswordHasherInterface;
+
 use DateTimeImmutable;
 use DateInterval;
 use DomainException;
@@ -99,16 +101,16 @@ class OTP
      * @param string $plainCode Code provided by the user
      * @param PasswordHasherInterface $hasher Hasher used to verify the code
      * @return bool True if valid
-     * @throws DomainException If expired or attempts exceeded
+     * @throws OTPException  If expired or attempts exceeded
      */
     public function verify(string $plainCode, PasswordHasherInterface $hasher): bool
     {
         if ($this->isExpired()) {
-            throw new DomainException("OTP has expired");
+            throw new OTPException(message: "OTP has expired", expired: true);
         }
 
         if ($this->attempts >= 5) {
-            throw new DomainException("Maximum OTP attempts exceeded");
+            throw new OTPException(message: "Maximum OTP attempts exceeded", expired: true);
         }
 
         $this->attempts++;

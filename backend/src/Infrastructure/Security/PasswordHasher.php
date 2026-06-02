@@ -13,6 +13,6 @@ class PasswordHasher implements PasswordHasherInterface
 
     public function verify(string $password, string $hash, ?string $algorithm = null): bool
     {
-        throw new \Exception('Not implemented');
+        return password_verify($password, $hash);
     }
 }

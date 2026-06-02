@@ -66,7 +66,7 @@ class Siret
      * @param string $siret The string to verify
      * @return bool
      */
-    private function isValid(string $siret): bool
+    private static function isValid(string $siret): bool
     {
         if (!preg_match('/^\d{14}$/', $siret)) {
             return false;
