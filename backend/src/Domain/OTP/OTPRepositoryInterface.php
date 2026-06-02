@@ -17,7 +17,7 @@ interface OTPRepositoryInterface
      * @param  AccountFlowPurpose 
      * @return OTP
      */
-    public function getLastVerificationTokenWithPurpose(string $email, AccountFlowPurpose $purpose): ?OTP;
+    public function getLastVerificationTokenWithPurpose(string $email, AccountFlowPurpose $purpose): OTP;
 
     /**
      * This function send an otp key to an user

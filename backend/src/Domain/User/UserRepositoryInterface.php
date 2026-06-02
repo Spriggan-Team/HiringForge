@@ -2,6 +2,7 @@
 
 namespace App\Domain\User;
 
+use App\Domain\Sharedp\KnownIdentity;
 
 interface UserRepositoryInterface 
 {
@@ -17,6 +18,12 @@ interface UserRepositoryInterface
     public function save(User $user): void;
 
 
+    /**
+     * This function verify if a specific user exist & is registered in the 
+     * database.
+     * @throws RessourceNotFound tell if an user has been found or not
+     */
+    public function exists(?string $uuid = null, ?string $email = null): KnownIdentity;
 
     /**
      *      This function take in a user and change all of its property except those sensitive

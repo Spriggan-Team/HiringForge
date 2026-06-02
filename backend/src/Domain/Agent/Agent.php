@@ -9,15 +9,15 @@ class Agent implements Account
 {
     public function __construct(
         private EmailAddress $email,
+        private string $authorId,
         private string $passwordHash,
         private ?string $id = null,
-    ){
+    ){}
 
-    }
 
     public function id(): string
     {
-        throw new \Exception('Not implemented');
+        return $this->id;
     }
     
     public function email(): string
@@ -28,5 +28,9 @@ class Agent implements Account
     public function passwordHash(): string
     {
         return $this->passwordHash;
+    }
+
+    public function authorId() : string {
+        return $this->authorId;
     }
 }

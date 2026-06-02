@@ -9,6 +9,7 @@ class OTPException extends \Exception {
     public function __construct(
         bool $expired = false,
         bool $isInvalid = false,
+        
         //-- extended
         ?string $code = null,
         ?string $message = null,

@@ -7,5 +7,6 @@ class CreateAgentCommand{
         public string $email,
         public string $password,
         public string $verificationCode,
+        public string $authorId,
     ){}
 }

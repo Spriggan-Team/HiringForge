@@ -7,7 +7,8 @@ use App\Domain\Sharedp\KnownIdentity;
 
 
 /**
- * Pool for transversal repository action
+ * Pool for transversal repository action.
+ * The particuluarity here is that only the account table is indexed for requests
  */
 interface AccountRepositoryInterface
 {

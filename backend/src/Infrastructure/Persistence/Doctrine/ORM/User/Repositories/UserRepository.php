@@ -4,18 +4,22 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories;
 
 use App\Domain\User\User as DomainEntity;
 use App\Domain\Exception\RessourceNotFound;
-
+use App\Domain\Sharedp\KnownIdentity;
 use App\Domain\User\UserRepositoryInterface;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 use Doctrine\ORM\EntityManagerInterface;
-
+use Override;
 
 class UserRepository implements UserRepositoryInterface
 {
 
     public function __construct(private EntityManagerInterface $em){}
 
-
+    #[Override]
+    public function exists(?string $uuid = null, ?string $email = null): KnownIdentity
+    {
+        throw new \Exception('Not implemented');
+    }
 
     public function findById(string $uuid): DomainEntity
     {

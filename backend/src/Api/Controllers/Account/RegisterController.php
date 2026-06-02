@@ -7,14 +7,16 @@ use App\Application\DTO\User\RegisterUserCommand;
 
 use App\Domain\Shared\Address;
 use App\Api\Responder\ApiResponse;
-use App\Api\Responder\ApiResponseCode;
 use App\Application\Usecases\Candidate\CandidateRegisterUsecase;
 use App\Application\Usecases\User\UserRegisterUseCase;
-use  Psr\Log\LoggerInterface;
+
 
 use Exception;
+use  Psr\Log\LoggerInterface;
 use App\Domain\Exception\EmailAlreadyRegistered;
+use App\Domain\ApplicationErrorCode;
 use App\Domain\OTP\Exception\OTPException;
+
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
@@ -100,17 +102,21 @@ class RegisterController extends AbstractController
             return ApiResponse::error(
                 message: 'This email is already registered', 
                 throwable: $emailEception,
-                code: ApiResponseCode::ACCOUNT_ALREADY_EXISTS
+                code: ApplicationErrorCode::ACCOUNT_ALREADY_EXISTS
             )->toJsonResponse();
         }
         catch(OTPException $optError){
+            $code = $optError->expired ? 
+                    ApplicationErrorCode::EXPIRED_OTP 
+                        : ( $optError->isInvalid 
+                                ? ApplicationErrorCode::INVALID_OTP
+                                : null
+                            );
             return ApiResponse::error(
                 message: "OTP code expired",
                 throwable: $optError,
                 statusCode: 410,
-                code: $optError->expired ? 
-                    ApiResponseCode::EXPIRED_OTP 
-                        : $optError,
+                code: $code
             )->toJsonResponse();
         }
         catch (\Exception $exception)
@@ -118,6 +124,5 @@ class RegisterController extends AbstractController
             return ApiResponse::error(message: 'Please check your data fields and formats', throwable: $exception)->toJsonResponse();
         }
     }
-
 
 }

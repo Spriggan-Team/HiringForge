@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens;
 
-
+use App\Domain\Exception\RessourceNotFound;
 use App\Domain\OTP\OTP;
 use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Shared\Account\AccountFlowPurpose;
@@ -25,7 +25,7 @@ class OTPRepository implements OTPRepositoryInterface
     public function getLastVerificationTokenWithPurpose(
         string $email,
         AccountFlowPurpose $purpose
-    ): ?OTP
+    ): OTP
     {
         $entity = $this->em
             ->getRepository(OTPVerificationTokenEntity::class)
@@ -40,7 +40,7 @@ class OTPRepository implements OTPRepositoryInterface
             ->getOneOrNullResult();
 
         if (!$entity) {
-            return null;
+            throw new RessourceNotFound();
         }
 
         return $this->mapper->toDomainEntity($entity);

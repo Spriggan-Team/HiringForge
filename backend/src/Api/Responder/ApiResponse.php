@@ -3,6 +3,8 @@
 
 namespace App\Api\Responder;
 
+use App\Domain\ApplicationErrorCode;
+
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -37,7 +39,7 @@ class ApiResponse
     /**
      * The trowable is only used to  display message in the terminal 
      */
-    public static function error(string $message = '', ?ApiResponseCode $code = null, ?\Throwable $throwable = null, int $statusCode = 400): self
+    public static function error(string $message = '', ?ApplicationErrorCode $code = null, ?\Throwable $throwable = null, int $statusCode = 400): self
     {
         if ($throwable && self::$logger) {
             self::$logger->error("Caught Exception: ". $throwable->getMessage(), ['exception' => $throwable]);
