@@ -126,9 +126,8 @@ class UserJobOfferManagementController extends AbstractController
         catch(DomainException $domainException)
         {
             return ApiResponse::error(
-                        $domainException->getMessage() ??
-                        "Something went wrong",
-                        $domainException
+                        message: $domainException->getMessage() ?? "Something went wrong",
+                        throwable: $domainException
                     )->toJsonResponse();
         }
         catch(Exception $exception)

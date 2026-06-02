@@ -80,7 +80,7 @@ class UserManagementController extends AbstractController
             )->toJsonResponse();
 
         } catch (\Exception $exception) {
-            return ApiResponse::error('Something went wrong', $exception)->toJsonResponse();
+            return ApiResponse::error('Something went wrong', throwable: $exception)->toJsonResponse();
         }
     }
 
@@ -109,7 +109,7 @@ class UserManagementController extends AbstractController
             return ApiResponse::success("Everything went smoothly")->toJsonResponse();
         }
         catch (Exception $exception) {
-            return ApiResponse::error('Nothing Found',$exception)->toJsonResponse();
+            return ApiResponse::error('Nothing Found',throwable: $exception)->toJsonResponse();
         }
     }
 

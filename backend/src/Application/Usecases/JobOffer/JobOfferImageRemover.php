@@ -28,7 +28,7 @@ class JobOfferImageRemover
         string $accountId,
         string $offerId,
         array $fileNames,
-    ): void
+    ): array
     {
         $this->jobRepository->assertRelationWithUser(
             accountId: $accountId,
@@ -61,6 +61,10 @@ class JobOfferImageRemover
             {
                 // Optional: log or archive error, or throw exception
             }
+
         }
+
+        //-- returned value
+        return [];
     }
 }
