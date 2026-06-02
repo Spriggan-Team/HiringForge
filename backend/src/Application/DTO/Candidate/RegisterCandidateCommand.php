@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\DTO\Candidate;
+namespace App\Application\DTO\Candidate;
 
 use App\Domain\File\StaticMedia;
 use App\Domain\Shared\Address;

@@ -2,7 +2,7 @@
 
 namespace App\Api\Controllers\Account;
 
-use App\Api\DTO\Candidate\RegisterCandidateCommand;
+use App\Application\DTO\Candidate\RegisterCandidateCommand;
 use App\Application\DTO\User\RegisterUserCommand;
 
 use App\Domain\Shared\Address;

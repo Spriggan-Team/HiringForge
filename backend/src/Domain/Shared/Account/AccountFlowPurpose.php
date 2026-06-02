@@ -19,6 +19,8 @@ enum AccountFlowPurpose: string
     case SIGN_UP = "SIGNUP";
     case LOGIN_WARNING = "LOGIN_WARNING";
 
+    case CONFIRM_AGENT_IDENTITY = "CONFIRM_AGENT"; //use to confirm the identity of an agent
+
     public static function fromString(string $str): ?self
     {
         return self::tryFrom(strtoupper($str));

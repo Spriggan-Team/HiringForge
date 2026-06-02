@@ -50,14 +50,14 @@ class AccountController extends AbstractController
             if (!is_array($data)) {
                 return ApiResponse::error(
                     'Invalid JSON payload',
-                    400
+                    statusCode: 400
                 )->toJsonResponse();
             }
 
             if (!isset($data['email'], $data['purpose'])) {
                 return ApiResponse::error(
                     'Missing email or purpose field',
-                    400
+                    statusCode: 400
                 )->toJsonResponse();
             }
 

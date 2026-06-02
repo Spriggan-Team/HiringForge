@@ -2,21 +2,24 @@
 
 namespace App\Application\Usecases\Candidate;
 
-use App\Api\DTO\Candidate\RegisterCandidateCommand;
 use App\Domain\Candidate\Candidate;
 use App\Domain\Candidate\CandidateId;
-use App\Application\Usecases\Account\AccountRegister;
-
-use App\Domain\Exception\EmailAlreadyRegistered;
-use App\Domain\Candidate\CandidateRepositoryInterface;
 
 use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
+
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\PlainPassword;
+
+use App\Application\Usecases\Account\AccountRegister;
+use App\Application\DTO\Candidate\RegisterCandidateCommand;
+
+use App\Domain\Exception\EmailAlreadyRegistered;
+use App\Domain\Candidate\CandidateRepositoryInterface;
+
 
 use App\Infrastructure\Storage\FileStorage\MediaFactory;
 

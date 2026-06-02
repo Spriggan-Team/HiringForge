@@ -3,9 +3,18 @@
 namespace App\Domain\Agent;
 
 use App\Domain\Shared\Account\Account;
+use App\Domain\Shared\EmailAddress;
 
 class Agent implements Account
 {
+    public function __construct(
+        private EmailAddress $email,
+        private string $passwordHash,
+        private ?string $id = null,
+    ){
+
+    }
+
     public function id(): string
     {
         throw new \Exception('Not implemented');
@@ -13,11 +22,11 @@ class Agent implements Account
     
     public function email(): string
     {
-        throw new \Exception('Not implemented');
+        return $this->email->value();
     }
 
     public function passwordHash(): string
     {
-        throw new \Exception('Not implemented');
+        return $this->passwordHash;
     }
 }
