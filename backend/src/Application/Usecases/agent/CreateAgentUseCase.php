@@ -36,14 +36,14 @@ class CreateAgentUseCase
         
         //-- check ressource in bdd
         try{
-            $identity = $this->repository->exists(email: $email);
+            $identity = $this->repository->exists(email: $email->value());
             if($identity)
                 throw new RessourceAlreadyRegistered();
         }
         catch(\Exception){}
 
         //-- check author existence (user)
-        $this->userRepository->exists(uuid: $command->authorId);
+        $this->repository->exists(uuid: $command->authorId);
 
         $otp = null;
         //-- Verify otp code verification

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\Controllers\Agent;
+namespace App\Api\Controllers\Agent\JobOffer;
 
 use App\Domain\Shared\Account\AccountRole;
 

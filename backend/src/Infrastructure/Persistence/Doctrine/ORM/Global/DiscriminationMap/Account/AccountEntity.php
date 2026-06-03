@@ -9,9 +9,10 @@ use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens\OTPVerificationTokenEntity;
 
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\Common\Collections\Collection;
+
 
 /**
  * This is a class used to simplify Actor definiton (ex: User, Candidate, Agent)
@@ -89,6 +90,15 @@ class AccountEntity
         return $this->otpTokens;
     }
 
+    
+    public function getRole(): AccountRole{
+        return match (true) {
+            $this instanceof UserEntity => AccountRole::USER,
+            $this instanceof AgentEntity => AccountRole::AGENT,
+            $this instanceof CandidateEntity => AccountRole::CANDIDATE,
+        };
+    }
+
     //---------------------------
     //  SETTERS
     //--------------------------
@@ -128,4 +138,6 @@ class AccountEntity
         }
         $this->adminSupervision = new AdminSupervisionEntity($this);
     }
+
+
 }

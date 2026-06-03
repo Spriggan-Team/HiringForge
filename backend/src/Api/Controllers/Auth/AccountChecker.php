@@ -24,8 +24,8 @@ class AccountChecker implements UserCheckerInterface
         }
 
         try {
-            $this->accountRepository->exists($user->getId());
-        } catch (\App\Domain\Exception\RessourceNotFound $exception) {
+            $this->accountRepository->assertExist($user->getId());
+        }catch (\App\Domain\Exception\RessourceNotFound $exception) {
             throw new CustomUserMessageAccountStatusException('Account not found');
         } catch (\Exception $exception) {
             throw new CustomUserMessageAccountStatusException(

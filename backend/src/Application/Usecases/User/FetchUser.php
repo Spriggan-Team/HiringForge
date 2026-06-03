@@ -3,9 +3,9 @@
 namespace App\Application\Usecases\User;
 
 use App\Domain\User\UserId;
-use App\Application\Query\Handlers\User\UserListItem;
-use App\Application\Query\Handlers\User\UserProfileItem;
-use App\Application\Query\Handlers\User\UserQueryRepositoryInterface;
+use App\Application\Query\User\UserListItem;
+use App\Application\Query\User\UserProfileItem;
+use App\Application\Query\User\UserQueryRepositoryInterface;
 
 
 class FetchUser {

@@ -135,8 +135,8 @@ class LoginAuthentictorController extends AbstractAuthenticator
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         return ApiResponse::error(
-                $exception->getMessage() ?? "Something went wrong, please check your information and try log in again!!",
-                $exception
+                message: $exception->getMessage() ?? "Something went wrong, please check your information and try log in again!!",
+                throwable: $exception
             )->toJsonResponse();
     }
 

@@ -3,12 +3,19 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories;
 
 use App\Domain\User\User as DomainEntity;
-use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Sharedp\KnownIdentity;
+use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Shared\Account\AccountRole;
 use App\Domain\User\UserRepositoryInterface;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
+
+
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
+
+
 
 class UserRepository implements UserRepositoryInterface
 {
@@ -16,10 +23,33 @@ class UserRepository implements UserRepositoryInterface
     public function __construct(private EntityManagerInterface $em){}
 
     #[Override]
-    public function exists(?string $uuid = null, ?string $email = null): KnownIdentity
+    public function assertExist(?string $uuid = null, ?string $email = null): KnownIdentity
     {
-        throw new \Exception('Not implemented');
+        $criteria = [];
+        if($uuid)
+            $criteria["id"] = $uuid;
+        else if($email)
+            $criteria["email"] = $email;
+
+        $accountRepository = $this->em->getRepository(AccountEntity::class);
+        $userRepository = $this->em->getRepository(UserEntity::class);
+
+        $account = $accountRepository->findOneBy($criteria);
+        if(!$account)
+            throw new RessourceNotFound();
+
+        $user = $userRepository->findById($account->getId());
+        if(!$user)
+            throw new RessourceNotFound();
+
+        return new KnownIdentity(
+            uuid: $user->getId(),
+            email: $user->getEmail(),
+            password: $user->getPassword(),
+            role: AccountRole::USER
+        );
     }
+
 
     public function findById(string $uuid): DomainEntity
     {

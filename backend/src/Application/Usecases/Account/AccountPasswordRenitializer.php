@@ -35,7 +35,7 @@ class AccountPasswordRenitializer
         $clearEmail =  EmailAddress::create($command->email);
         $plainPassword = new PlainPassword($command->password);
 
-        $identity = $this->repository->exists(null, $clearEmail);
+        $identity = $this->repository->assertExist(null, $clearEmail->value());
 
         //---OTP recuperation & verification
         $otp  =  $this->OTPRepository->getLastVerificationTokenWithPurpose(

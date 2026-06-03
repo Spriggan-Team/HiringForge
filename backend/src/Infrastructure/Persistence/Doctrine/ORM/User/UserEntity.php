@@ -71,6 +71,7 @@ class UserEntity extends AccountEntity
     
     public function __construct()
     {
+        parent::__construct();
         $this->jobOffers = new ArrayCollection();
         $this->userImages = new ArrayCollection();
     }

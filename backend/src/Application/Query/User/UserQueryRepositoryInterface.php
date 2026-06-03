@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Query\Handlers\User;
+namespace App\Application\Query\User;
 
 interface UserQueryRepositoryInterface
 {

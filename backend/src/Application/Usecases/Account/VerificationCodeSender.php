@@ -2,16 +2,21 @@
 
 namespace App\Application\Usecases\Account;
 
-use App\Domain\Email\EmailCategory;
 use App\Domain\OTP\OTP;
 use App\Domain\Shared\EmailAddress;
+
+use App\Domain\Email\EmailCategory;
 use App\Domain\Email\EmailMessage;
+use App\Domain\Shared\Account\AccountFlowPurpose;
+
 use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Email\EmailServicesInterface;
-
-use App\Domain\Shared\Account\AccountFlowPurpose;
+use App\Domain\Exception\EmailAlreadyRegistered;
+use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
+
+
 
 
 
@@ -31,9 +36,17 @@ class VerificationCodeSender
     public function execute(string $email, AccountFlowPurpose $purpose): void
     {
         $clearEmail = EmailAddress::create($email);
+        $emailString = $clearEmail->value();
 
-        if ($purpose !== AccountFlowPurpose::SIGN_UP) {
-            $this->repository->exists(uuid: null, email: $clearEmail); // Triggers exception if user does not exist
+        //-- user elligibility
+        if ($purpose === AccountFlowPurpose::SIGN_UP) {
+            $userExists = $this->repository->exists(email: $emailString); 
+            if ($userExists) {
+                throw new EmailAlreadyRegistered();
+            }
+        } 
+        else {
+            $this->repository->assertExist(email: $emailString);    
         }
         
         $emailMessage = EmailMessage::create(
@@ -67,7 +80,7 @@ class VerificationCodeSender
             $emailMessage->type = EmailCategory::WARNING;
 
             $this->emailServices->sendTo(
-                receiver: $clearEmail->value(),
+                receiver: $emailString,
                 emailMessage: $emailMessage 
             );
 
@@ -79,13 +92,13 @@ class VerificationCodeSender
             hasher: $this->hasher,
             purpose: $purpose
         );
-        $this->OTPRepository->save($clearEmail->value(), $otp);
+        $this->OTPRepository->save($emailString, $otp);
 
         // --- Send the plain text code via email, NOT the hash
         $emailMessage->code = $otp->plainCode;
         
         $this->emailServices->sendTo(
-            receiver: $clearEmail->value(),
+            receiver: $emailString,
             emailMessage: $emailMessage
         );
     }

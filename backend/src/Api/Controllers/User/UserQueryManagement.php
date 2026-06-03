@@ -7,16 +7,16 @@ use App\Api\Responder\ApiResponse;
 
 
 use App\Application\Usecases\User\FetchUser;
-
+use App\Domain\Shared\Account\AccountRole;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-
-
+#[IsGranted(AccountRole::USER)]
 class UserQueryManagement extends AbstractController
 {
     public function __construct(
@@ -28,13 +28,8 @@ class UserQueryManagement extends AbstractController
     }
 
     #[Route('/basic-info', methods: ['GET'])]
-    public function getBasicInfo(){
+    public function getBasicInfo(){}
 
-    }
-
-    public function getOffers(){
-
-    }
 
     /**
      * This one allow you to get a  users' information with the appropriate persmission
@@ -54,7 +49,7 @@ class UserQueryManagement extends AbstractController
         }
         catch (\Exception $exception)
         {
-            return ApiResponse::error('User not found', $exception)->toJsonResponse();
+            return ApiResponse::error('User not found', throwable: $exception)->toJsonResponse();
         }
     }
 }

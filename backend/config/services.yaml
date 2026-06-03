@@ -69,7 +69,7 @@ services:
 
     #------ Candidate ----
     App\Domain\Candidate\CandidateRepositoryInterface:
-        alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateRepository
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\CandidateRepository
 
     #----- JobOffer ------
     App\Domain\JobOffer\JobOfferRepositioryInterface:

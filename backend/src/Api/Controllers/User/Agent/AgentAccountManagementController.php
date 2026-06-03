@@ -24,7 +24,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
 
-
 #[Route("/users/agents")]
 #[IsGranted(AccountRole::USER)]
 class AgentAccountManagementController extends AbstractController{
@@ -33,22 +32,6 @@ class AgentAccountManagementController extends AbstractController{
     )
     { ApiResponse::init($logger); }
 
-
-    #[Route("/assign", methods: "POST")]
-    public function assignTask(){
-
-    }
-
-    #[Route("/scope", methods: "POST")]
-    public function defineAssignementScope(){
-
-    }
-
-    #[Route("/scope/update")]
-    public function updateAssignementScope(){
-
-    }
-    
     #[Route("/create", methods: "POST")]
     public function create(
         Request $request,

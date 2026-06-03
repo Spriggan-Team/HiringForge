@@ -7,7 +7,6 @@ use App\Domain\Sharedp\KnownIdentity;
 interface UserRepositoryInterface 
 {
     
-
     /**
      * A method to save a new ressource in storage/bdd
      * @param  User $user represents the user to persist
@@ -23,7 +22,9 @@ interface UserRepositoryInterface
      * database.
      * @throws RessourceNotFound tell if an user has been found or not
      */
-    public function exists(?string $uuid = null, ?string $email = null): KnownIdentity;
+    public function assertExist(?string $uuid = null, ?string $email = null): KnownIdentity;
+
+
 
     /**
      *      This function take in a user and change all of its property except those sensitive
@@ -44,6 +45,7 @@ interface UserRepositoryInterface
      */
     public function findByEmail(string $email): User;
 
+    
     /**
      * 
      * This function must only be use when your want to apply a consequent/very important rules

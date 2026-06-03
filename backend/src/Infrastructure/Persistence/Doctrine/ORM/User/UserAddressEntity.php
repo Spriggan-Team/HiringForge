@@ -38,7 +38,7 @@ class UserAddressEntity
 
     #[ORM\OneToOne(
         targetEntity: AddressEntity::class,
-        inversedBy: 'address',
+        inversedBy: 'userAddress',
         cascade: ['persist', 'remove']
     )]
     #[ORM\JoinColumn(nullable: false)]

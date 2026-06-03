@@ -11,7 +11,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-
+use Doctrine\ORM\Mapping\OneToMany;
 
 #[ORM\Entity]
 #[ORM\Table(name: "job_offer")]
@@ -57,9 +57,20 @@ class JobOfferEntity
     )]
     private Collection $applications;
 
-    #[ORM\OneToMany(mappedBy: "jobOffer", targetEntity: InterviewEntity::class, cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        mappedBy: "jobOffer",
+        targetEntity: InterviewEntity::class,
+        cascade: ['persist'],
+        orphanRemoval: true
+    )]
     private Collection $interviews;
 
+    #[OneToMany(
+        mappedBy: "jobOffer",
+        targetEntity: JobOfferImageEntity::class,
+        cascade: ['persist'],
+        orphanRemoval: true
+    )]
     private Collection $images;
 
     public function __construct()

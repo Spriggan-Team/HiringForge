@@ -39,6 +39,7 @@ class UserRegisterUseCase
         private PasswordHasherInterface $hasher,
         private OTPRepositoryInterface $OTPRepository
     ){}
+    
     /**
      * This is an usecase that enforce buisness requirement and then proceed with saving
      * @throws \DomainException|EmailAlreadyRegistered|OTPException|FileExceedTime|FileSizeExceeded What is thrown when requirements are not respected;
@@ -50,7 +51,7 @@ class UserRegisterUseCase
     {    
         $email =  EmailAddress::create($command->email);
         try{
-            $existingUser = $this->repository->findByEmail($email->value());    //check for any existing user
+            $existingUser = $this->repository->assertExist(email: $email->value());    //check for any existing user
             if($existingUser){
                 throw new EmailAlreadyRegistered("This user already exist"); 
             }

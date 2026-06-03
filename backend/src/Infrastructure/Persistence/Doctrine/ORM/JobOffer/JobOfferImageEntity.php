@@ -25,10 +25,13 @@ class JobOfferImageEntity
 
     #[ORM\OneToOne(
         targetEntity: FileEntity::class,
-        cascade: ['persist']
+        cascade: ['persist'],
+        mappedBy: "jobOfferImage",
+        orphanRemoval: true
     )]
     #[ORM\JoinColumn(nullable: false)]
     private FileEntity $file;
+
 
     #[ORM\Column(type: 'boolean')]
     private bool $isMain = false;

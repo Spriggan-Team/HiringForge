@@ -12,8 +12,8 @@ use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Application\Usecases\Account\AccountEmailRenitializer;
 use App\Application\Usecases\Account\AccountPasswordRenitializer;
 use App\Application\Usecases\Account\VerificationCodeSender;
-
-
+use App\Domain\ApplicationErrorCode;
+use App\Domain\Exception\EmailAlreadyRegistered;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -71,6 +71,14 @@ class AccountController extends AbstractController
             return ApiResponse::notice(
                 'Everything went smoothly'
             )->toJsonResponse();
+        }
+        catch(EmailAlreadyRegistered $emailAlreadyExist){
+            $res = ApiResponse::error(
+                message: "This email is already used. Please try with another one",
+                code: ApplicationErrorCode::ACCOUNT_ALREADY_EXISTS,
+                throwable: $emailAlreadyExist
+            );
+            return $res->toJsonResponse();
         }
         catch (Exception $exception) {
             $res = ApiResponse::error(

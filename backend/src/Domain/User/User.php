@@ -5,9 +5,12 @@ namespace App\Domain\User;
 
 use App\Domain\File\StaticMedia;
 use App\Domain\File\TimedMedia;
-use App\Domain\Shared\Account\Account;
+
 use App\Domain\Shared\Address;
 use App\Domain\Shared\EmailAddress;
+use App\Domain\Shared\Account\Account;
+
+
 
 final class User implements Account
 {
@@ -67,7 +70,7 @@ final class User implements Account
         ?TimedMedia $videoPresentation=null,
     ){
         return new self(
-            $userId ?? new UserId(),
+            $userId ?? UserId::create(),
             $name,
             $email,
             $siret,

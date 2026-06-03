@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories;
 
-use App\Application\Query\Handlers\User\UserProfileItem;
-use App\Application\Query\Handlers\User\UserQueryRepositoryInterface;
+use App\Application\Query\User\UserProfileItem;
+use App\Application\Query\User\UserQueryRepositoryInterface;
 
 
 /**

@@ -36,7 +36,7 @@ class AccountEmailRenitializer
         $clearNewEmail =  EmailAddress::create($command->newEmail);
         $plainPassword = new PlainPassword($command->password);
 
-        $user = $this->repository->exists(null, $clearOldEmail);
+        $user = $this->repository->exists(null, $clearOldEmail->value());
 
         if($user && $this->hasher->verify($plainPassword->value(), $user->password))
         {
@@ -49,7 +49,7 @@ class AccountEmailRenitializer
                 hasher: $this->hasher
             );
 
-            $this->repository->changeEmail($clearNewEmail->value());
+            $this->repository->changeEmail(old: $clearOldEmail->value(), new: $clearNewEmail->value());
             return;
         }
 

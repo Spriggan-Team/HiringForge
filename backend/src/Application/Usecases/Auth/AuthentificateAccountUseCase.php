@@ -24,7 +24,7 @@ class AuthentificateAccountUseCase
         AuthentificateAccount $authentificateAccount
     ):string
     {
-        $identity = $this->accountRepository->exists(null,  EmailAddress::create($authentificateAccount->email));
+        $identity = $this->accountRepository->assertExist(null,  EmailAddress::create($authentificateAccount->email)->value());
         $isPasswordCorrect = $identity && $this->hasher->verify($identity->password, $authentificateAccount->password);
 
         if(!$isPasswordCorrect){

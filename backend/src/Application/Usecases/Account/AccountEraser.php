@@ -17,7 +17,5 @@ class AccountEraser
     public function execute(
         string $id,
     ):void
-    {
-        $this->accountRepository->delete($id);
-    }
+    {}
 }

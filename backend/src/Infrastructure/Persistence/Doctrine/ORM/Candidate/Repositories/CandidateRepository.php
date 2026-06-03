@@ -1,16 +1,19 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories;
 
+use App\Domain\File\StaticMedia;
 use App\Domain\Candidate\Candidate;
+
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Candidate\CandidateRepositoryInterface;
-use App\Domain\File\StaticMedia;
-use App\Domain\Shared\EmailAddress;
-use App\Domain\Sharedp\KnownIdentity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
+
 
 use Doctrine\ORM\EntityManagerInterface;
+
 use Override;
+
 
 class CandidateRepository implements CandidateRepositoryInterface
 {

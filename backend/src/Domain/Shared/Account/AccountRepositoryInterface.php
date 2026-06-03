@@ -12,6 +12,10 @@ use App\Domain\Sharedp\KnownIdentity;
  */
 interface AccountRepositoryInterface
 {
+    /**
+     * This function allow you to perform a simple retrival of all
+     * public data about accounts.
+     */
     public function findAll(?int $skip=null, ?int $limit = null): array;
 
     /**
@@ -22,7 +26,10 @@ interface AccountRepositoryInterface
      * @throws RessourceNotFound        This exception should be sent when a ressource is not found in bdd
      * @return KnownUserIdentity        contains basics information about user
      */
-    public function exists(?string $uuid = null, ?EmailAddress $email = null): KnownIdentity;
+    public function assertExist(?string $uuid = null, ?string $email = null): KnownIdentity;
+
+
+    public function exists(?string $uuid=null,  ?string  $email = null): bool;
 
     /**
      * As its name indicate, this function is used to change the password of an existing user
@@ -33,10 +40,8 @@ interface AccountRepositoryInterface
     
     /**
      * This function hepl us changing the email in the bdd
-     * @throws Exception
+     * @throws \Exception|RessourceNotFound
      */
-    public function changeEmail(string $email): void;
+    public function changeEmail(string $old, string $new): void;
 
-    
-    public function delete():void;
 }

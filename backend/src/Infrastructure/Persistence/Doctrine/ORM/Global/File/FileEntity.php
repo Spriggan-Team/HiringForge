@@ -30,7 +30,7 @@ class FileEntity
     #[ORM\Column(length:15)]
     private ?string $mime = null;
 
-    #[ORM\Column(type: "decimal", precision: 10, scale: 2)]
+    #[ORM\Column(type: "float", precision: 10, scale: 2)]
     private ?float $size = null;
 
     #[ORM\Column]
@@ -60,9 +60,9 @@ class FileEntity
 
     #[ORM\OneToOne(
         targetEntity: JobOfferImageEntity::class,
-        mappedBy: 'images'
+        inversedBy: 'file'
     )]
-    private Collection $files;
+    private JobOfferImageEntity $jobOfferImage;
 
     #[ORM\OneToMany(
         mappedBy: "image",

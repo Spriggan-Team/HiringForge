@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories;
 
 use App\Domain\Candidate\Candidate as Domain;
 use App\Domain\Candidate\CandidateId;

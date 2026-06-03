@@ -40,7 +40,7 @@ class JobOfferImageUploader
 
         $currentIndex = 0;
 
-        /** @var UploadedFileInfo */
+        /** @var UploadedFileInfo[] */
         $failedUploads = [];
 
         /** @var JobOfferImage[] */

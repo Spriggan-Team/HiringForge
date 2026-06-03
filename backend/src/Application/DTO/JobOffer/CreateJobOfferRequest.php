@@ -14,16 +14,17 @@ final class CreateJobOffer
         #[Assert\NotBlank]
         #[Assert\NotNull]
         public array $content,
-
-        /**
-         * This one must represent one image
-         * @var mixed
-         */
-        public mixed $image = null,
         
         /**
          * @param array
          */
         public array $categories,
+
+        
+        /**
+         * This one must represent one image
+         * @var mixed
+         */
+        public mixed $image = null,
     ){}
 }
