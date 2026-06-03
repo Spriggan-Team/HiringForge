@@ -91,16 +91,18 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                         extraInputProps={{ defaultValue: formData.get("password")?.toString() ?? undefined }}
                     />
                     <ConfirmPassword
+                        required
                         padding={5}
                         width={"100%"}
                         type="password"
                         password={password}
                         className="faint-border" 
                         backgroundColor={inputColor}
-                        label={t("register.form.step1.inputs.confirmPassword.label")}
                         setConfirm={setIsPasswordConfirm}
-                        required
+                        label={t("register.form.step1.inputs.confirmPassword.label")}
                         defaultValue={ formData.get("password")?.toString() ?? undefined}
+                        validTxt={t("register.form.step1.inputs.confirmPassword.valid")}
+                        invalidTxt={t("register.form.step1.inputs.confirmPassword.invalid")}
                     />
                 </FormInputs>
                 <FormSubmitSection>

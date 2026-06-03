@@ -15,6 +15,8 @@ import { useTranslation } from 'react-i18next';
 type ConfirmPasswordProps = BasicInputProps & {
                                 password: string;
                                 defaultValue?: string;
+                                invalidTxt?: string;
+                                validTxt?: string;
                                 setConfirm?: (b: boolean)=> void;
                             }
 
@@ -24,6 +26,8 @@ const ConfirmPassword: React.FC<ConfirmPasswordProps> = ({
     password,
     setConfirm,
     defaultValue,
+    invalidTxt,
+    validTxt,
     ...props
 }) => {
     const { t } = useTranslation();
@@ -50,9 +54,11 @@ const ConfirmPassword: React.FC<ConfirmPasswordProps> = ({
                 leadingSVG={isConfirm ? OKCircleSVG : () => null}
                 enableViewToggle={!isConfirm}
             />
-            <div className={`${styles.txtSection} ${isConfirm ? styles.visible : styles.hidden}`}>
+            <div className={`${styles.txtSection} ${value ? styles.visible : styles.hidden}`}>
                 <div className={styles.circle}/>
-                <span className={styles.subtxt}>{t("register.form.step1.inputs.confirmPassword.subtext")}</span>
+                <span className={`${styles.subtxt} ${isConfirm && value ? styles.validTxt : styles.invalidTxt}`}>
+                    { isConfirm && value ?  validTxt ?? "Les mots de passe correspondent" : invalidTxt ?? "les mots de passe sont invalident" }
+                </span>
             </div>
         </div>
     );

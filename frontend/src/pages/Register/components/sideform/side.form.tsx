@@ -213,8 +213,10 @@ const SideForm: React.FC<SideFormProps> = ({
                                     backgroundColor="#FBFAFE" width="100%"
                                     className="faint-border"
                                     value={form.postalCode || ""}
-                                    onChange={(e) =>
-                                        setForm(prev => ({ ...prev, postalCode: e.target.value }))
+                                    onChange={(e) =>{
+                                            console.log("Postal code ", e.target.value)
+                                            setForm(prev => ({ ...prev, postalCode: e.target.value }))
+                                        }
                                     }
                                 />
                                 <BasicInput 

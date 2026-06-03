@@ -1,7 +1,7 @@
 import { post } from "../../handler";
 
 //import types
-import { ExpiredOTP } from "./exceptions";
+import { AccountAlreadyRegistered, ExpiredOTP } from "./exceptions";
 import { ApiResponseCode, HttpBadResponse } from "../../exceptions";
 import type { AccountRegisterResponse, NoticeResponse } from "../types";
 
@@ -18,6 +18,10 @@ const askVerificationCode = async (email: string, purpose: "SIGNUP" | "PASSWORD_
         return response;
     }
     catch(error){
+        if(error instanceof HttpBadResponse){
+            if(error.apiCode == ApiResponseCode.ACCOUNT_ALREADY_EXISTS) //-- purpose: sign up
+                throw new AccountAlreadyRegistered();
+        }
         throw error
     }
 }
@@ -38,11 +42,14 @@ const register = async (formData: FormData)=>{
     catch(error){
         if(error instanceof HttpBadResponse){
             if(error.apiCode == ApiResponseCode.EXPIRED_OTP)
-                throw ExpiredOTP;
+                throw new ExpiredOTP();
+            if(error.apiCode == ApiResponseCode.ACCOUNT_ALREADY_EXISTS)
+                throw new AccountAlreadyRegistered();
         }
         throw error;
     }
 }
+
 
 
 const AuthServices = {

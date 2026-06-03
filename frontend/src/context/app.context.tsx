@@ -1,6 +1,5 @@
 import { 
     useState,
-    useContext,
     createContext,
 } from "react";
 import type { AppLoadingState, AppPopUpSettings } from "./app.context.type";

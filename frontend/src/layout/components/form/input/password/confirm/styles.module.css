@@ -17,18 +17,24 @@
     transition: opacity 0.4s ease, max-height 0.4s ease, margin-top 0.4s ease;
 }
 
+
 .circle{
     width: 5px;
     height: 5px;
     border: 2px solid;
     border-radius: 50%;
-    color: #218F18;
 }
 
-.subtxt{
-    color: #2DB722 ;
-}
 
+.subtxt{}
+
+.validTxt{ color: #2DB722 ; }
+
+.validTxt .circle{ border-color: #218F18; }
+
+.invalidTxt{ color: red; }
+
+.invalidTxt .circle { border-color: red ; }
 
 .hidden {
     opacity: 0;

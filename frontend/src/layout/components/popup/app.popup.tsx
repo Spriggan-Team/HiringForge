@@ -56,6 +56,7 @@ const AppPopup: React.FC<AppPopupProps> = ({ children, timeout = 3 }) => {
             return () => clearTimeout(autoDismissTimer);
         }
     }, [shouldRender, animateIn, timeout]);
+    
 
     return (
         <>
@@ -63,7 +64,11 @@ const AppPopup: React.FC<AppPopupProps> = ({ children, timeout = 3 }) => {
 
             <div className={styles.container}>
                 {shouldRender && (
-                    <div className={`${styles.pop} ${popup?.status === "error" ? styles.error : styles.success} ${animateIn ? styles.show : ""}`}>
+                    <div className={`
+                        ${styles.pop} 
+                        ${styles[popup?.status ?? ""] || styles.success} 
+                        ${animateIn ? styles.show : ""}
+                    `}>
                         <div className={styles.content}>
                             {popup?.message}
                         </div>

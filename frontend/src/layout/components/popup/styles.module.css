@@ -56,6 +56,16 @@
 .error .closeBtn { color: #b91c1c; opacity: 0.7; }
 .error .closeBtn:hover { background-color: rgba(153, 27, 27, 0.08); opacity: 1; }
 
+
+.warning {
+    border-left: 4px solid #f59e0b; 
+    background-color: #fffbeb; 
+}
+.warning .content { color: #92400e; }
+.warning .closeBtn { color: #b45309; opacity: 0.7; }
+.warning .closeBtn:hover { background-color: rgba(146, 64, 14, 0.08); opacity: 1; }
+
+
 /**  Texte content  **/
 .content {
     flex: 1; 

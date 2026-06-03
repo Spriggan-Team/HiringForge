@@ -45,4 +45,18 @@ a:hover{
   color: gray;
 }
 
+/** Toogle visibility **/
 
+.hidden {
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.visible {
+    opacity: 1;
+    max-height: 40px; 
+    margin-top: 5px;
+}

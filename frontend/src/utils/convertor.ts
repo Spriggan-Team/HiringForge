@@ -40,7 +40,7 @@ export  function objectToFormData(obj: Record<string, any>, form?: FormData){
                     formData.append(key, JSON.stringify(item));
                 }
                 else{
-                    formData.append(key, String(item));
+                    formData.append(key, String(item).trim());
                 }
             })
         }
@@ -51,7 +51,7 @@ export  function objectToFormData(obj: Record<string, any>, form?: FormData){
             formData.append(key, JSON.stringify(value))
         }
         else {
-            formData.append(key, String(value))
+            formData.append(key, String(value).trim())
         }
     })
 

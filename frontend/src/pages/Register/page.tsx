@@ -1,6 +1,6 @@
 
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCallback, useRef, useState } from "react";
 import { useAppContext } from "../../hooks/context";
@@ -20,6 +20,9 @@ import SideForm from "./components/sideform/side.form";
 import StageTitle from "../../layout/components/indicators/stage/stage.title";
 import StatusItem from "../../layout/components/indicators/statusItem/status.item";
 
+//-- services
+import { objectToFormData } from "../../utils/convertor";
+import { AccountAlreadyRegistered, ExpiredOTP } from "../../api/services/auth/exceptions";
 
 //-- SVG - Components
 import LogoSVG from '/src/assets/custom-logo.svg';
@@ -36,8 +39,7 @@ import  styles from "./style.module.css"
 import  IdentityDetail from "./components/identity/identity.details";
 import  SecureAccount from "./components/security/LockAccount";
 import AuthServices from "../../api/services/auth/auth";
-import { objectToFormData } from "../../utils/convertor";
-import { ExpiredOTP } from "../../api/services/auth/exceptions";
+
 
 
 
@@ -58,6 +60,7 @@ const Register = () => {
     const { t } = useTranslation();
     const { setLoading, setPopup  } = useAppContext();
 
+    const navigation = useNavigate();
     const formData = useRef<FormData>(new FormData());
 
     const [language, setLanguage] = useState("Français");
@@ -72,7 +75,46 @@ const Register = () => {
         logo: null as File | null,
         images: [] as File[],
     });
+
+
+
+    /** Generate otp compte */
+    const sendOTPCode = useCallback(async ()=>{
+        //--Set loading & execute api request
+        setLoading({state: true, subtitle: t("register.form.step2.next.loadingMessage")});
+        try{
+            await AuthServices.askVerificationCode(formData.current.get("email") as string, "SIGNUP");
+            setLoading({state: false, subtitle: undefined});
+
+            //--Switch to next step & update popup+
+            setCurrentStep(prev => ({ current: 3, max: 3 > prev.max ? 3 : prev.max }))
+            setPopup({status: "success", message: t("register.apiResponse.verifyMailBox.success")})
+
+            navigation(RouteScheme.login);
+        }
+        catch(error){
+            setLoading({state: false, subtitle: undefined});
+            setPopup({
+                status: "error",
+                message: t("global.messages.error")
+            })
+
+            //-- message error
+            if (error instanceof Error) {
+                if(error instanceof AccountAlreadyRegistered)
+                    setPopup({ status: "warning", message: t("register.apiResponse.codeVerification.error.accountAlreadyResgistered") })
+                
+                console.log("Something went wrong:", error.message);
+                console.log("Stack:", error.stack);
+            }
+            else {
+                console.log("Unknown error:", error);
+            }
+        }
+    },[setLoading, setCurrentStep, setPopup])
+
     
+    /** Complete registeration */
     const handleCompletion = useCallback(async ()=>{
         //-- Ensure aside form data validation
         const asideForm = asideFormRef.current;
@@ -106,6 +148,7 @@ const Register = () => {
                 message: t("register.apiResponse.registering.success")
             })
             localStorage.setItem("userId", JSON.stringify(res?.id))
+
         }
         catch(error){
             setLoading({ state: false });
@@ -117,6 +160,9 @@ const Register = () => {
                 //-- Domain fallback (messages)
                 if(error instanceof ExpiredOTP)
                     setPopup({ status: "error", message: t("register.apiResponse.codeVerification.expired") });
+                if(error instanceof AccountAlreadyRegistered){
+                    setPopup({ status: "warning", message: t("register.apiResponse.registering.warning") })
+                }
             }
             else {
                 setPopup({
@@ -126,7 +172,7 @@ const Register = () => {
                 console.log("Unknown error:", error);
             }
         }
-    }, [setLoading, setPopup])
+    }, [asideFormState, setLoading, setPopup, setAsideFormState])
 
 
     return (
@@ -248,33 +294,7 @@ const Register = () => {
                             : currentStep.current == 2 ?
                                 <IdentityDetail
                                     formData={formData.current} 
-                                    onNext={async ()=>{
-                                        //--Set loading & execute api request
-                                        setLoading({state: true, subtitle: t("register.form.step2.next.loadingMessage")});
-                                        try{
-                                            await AuthServices.askVerificationCode(formData.current.get("email") as string, "SIGNUP");
-                                            setLoading({state: false, subtitle: undefined});
-
-                                            //--Switch to next step & update popup+
-                                            setCurrentStep(prev => ({ current: 3, max: 3 > prev.max ? 3 : prev.max }))
-                                            setPopup({status: "success", message: t("register.apiResponse.verifyMailBox.success")})
-                                        }
-                                        catch(error){
-                                            setLoading({state: false, subtitle: undefined});
-                                            setPopup({
-                                                status: "error",
-                                                message: t("global.messages.error")
-                                            })
-
-                                            //-- message error
-                                            if (error instanceof Error) {
-                                                console.log("Something went wrong:", error.message);
-                                                console.log("Stack:", error.stack);
-                                            } else {
-                                                console.log("Unknown error:", error);
-                                            }
-                                        }
-                                    }}
+                                    onNext={sendOTPCode}
                                 />
                                 : currentStep.current == 3 ?
                                     <SecureAccount 
