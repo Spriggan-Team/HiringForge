@@ -11,7 +11,7 @@ const baseURL  = `http://${host}:${port}/api`;
 type RequestData = Record<string, any> | FormData | null;
 
 
-const request = async <T>(
+const request = async <T, O = unknown>(
   endpoint: string,
   method: string,
   data?: RequestData,
@@ -43,43 +43,50 @@ const request = async <T>(
 
   const contentType = response.headers.get("content-type");
 
-if (!response.ok) {
-    const errorBody = await response.text();
+  if (!response.ok) {
+      const errorBody = await response.text();
 
-    let message: string = errorBody;
-    let apiCode: ApiResponseCodeType | undefined;
-    let httpCode = response.status;
+      let data: O | null = null;
+      let message: string = errorBody;
+      let apiCode: ApiResponseCodeType | undefined;
+      let httpCode = response.status;
 
-    //-- HTML fallback (error page serveur)
-    if (contentType && contentType.includes("text/html")) {
-        message = "An HTML error page was returned";
-        Utils.openHtml(errorBody);
-    }
-    //-- JSON API error
-    else {
-        try {
-            const errorJson = JSON.parse(errorBody);
+      //-- HTML fallback (error page serveur)
+      if (contentType && contentType.includes("text/html")) {
+          message = "An HTML error page was returned";
+          Utils.openHtml(errorBody);
+      }
+      //-- JSON API error
+      else {
+          try {
+              const errorJson = JSON.parse(errorBody);
 
-            message = errorJson.message ?? message;
+              message = errorJson.message ?? message;
 
-            if (errorJson.code) {
-              if(HttpBadResponse.isValidApiCode(errorJson.code)){
-                  apiCode = errorJson.code ;
+              if (errorJson.code) {
+                if(HttpBadResponse.isValidApiCode(errorJson.code)){
+                    apiCode = errorJson.code ;
+                }
               }
-            }
-            console.error("API Response (JSON) : ", errorJson);
-        }
-        catch (err) {
-            //-- keep raw message
-        }
-    }
 
-    throw new HttpBadResponse({
-        httpCode,
-        message,
-        apiCode,
-    });
-}
+              if(errorJson.data){
+                data = errorJson.data as O
+              }
+
+              console.error("API Response (JSON) : ", errorJson);
+          }
+          catch (err) {
+              //-- keep raw message
+          }
+      }
+
+      throw new HttpBadResponse<O | null>({
+          httpCode,
+          message,
+          apiCode,
+          payload: data
+      });
+  }
 
 
   if (contentType?.includes("application/json")) {

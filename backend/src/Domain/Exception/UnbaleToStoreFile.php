@@ -4,5 +4,5 @@ namespace App\Domain\Exception;
 
 use Exception;
 
-class UnbaleToStoreFile extends Exception
+class UnbaleToStoreFile extends ExceptionWithPayload
 {}

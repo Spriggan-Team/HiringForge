@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Storage\FileStorage;
 
+use App\Domain\ApplicationErrorCode;
 use App\Domain\File\StaticMedia;
 use App\Domain\File\TimedMedia;
 use App\Domain\File\MediaFactoryInterface;
@@ -25,7 +26,7 @@ class MediaFactory implements MediaFactoryInterface
     /**
      * This function tell if a file is a timed media (video, audio ...) or not
      * @param mixed     $file        The file you want to evaluate, The file class/type you used for managing your backend
-     * @throws \Exception
+     * @throws \TypeError
      */
     public function isTimedMedia(mixed $file): bool
     {
@@ -33,7 +34,9 @@ class MediaFactory implements MediaFactoryInterface
             $mime = mime_content_type($file->getPathname());
             return str_starts_with($mime, 'video/') || str_starts_with($mime, 'audio/');
         }
-        throw new \Exception("Such a class of file is not supported yet!!");
+        throw new \TypeError(
+            message: "Such a class of file is not supported yet!!",
+        );
     }
 
     /**
@@ -41,7 +44,7 @@ class MediaFactory implements MediaFactoryInterface
      * that can enforces specific/buisness rules
      * @param mixed $file                        The file class/type  used for managing file on your app
      * 
-     * @throws \DomainException|FileSizeExceeded|\Exception       This can be thrown if the file you attempt to parse can't be parsed
+     * @throws \DomainException|\TypeError|\Exception       This can be thrown if the file you attempt to parse can't be parsed
      *                                           or the specific class of file you are using are still not supported yet!!
      * 
      * @return StaticMedia                       The corresponding domain object, it should be used to enforce domain rules
@@ -53,11 +56,12 @@ class MediaFactory implements MediaFactoryInterface
             $static = new StaticMedia(
                 name:  Uuid::uuid4()->toString() . '.' . $file->guessExtension(),
                 size: $file->getSize() , //store in bytes
-                mime: $file->getMimeType()
+                mime: $file->getMimeType()->getClientOriginalName,
+                originalName: $file->getCl
             );
             return $static;
         }
-        throw new \DomainException("You mustn't try to pasrse a timed media as a static one");
+        throw new \TypeError("You mustn't try to pasrse a timed media as a static one");
     }
 
     
@@ -71,17 +75,21 @@ class MediaFactory implements MediaFactoryInterface
         if($this->isTimedMedia($file))
         {
             $info = $this->analyser->analyze($file->getPathname());
+            $originalName = $file->getClientOriginalName();
+
             if(!isset($info['playtime_seconds']) || $info['playtime_seconds'] <= 0)
             {
                 throw new \DomainException(
-                    sprintf('[File] %s is not a valid timed media', $file->getClientOriginalName() ?? 'unknown')
+                    sprintf('[File] %s is not a valid timed media', $originalName ?? 'unknown')
                 );
             }
+            
             $timed = new TimedMedia(
                 name: Uuid::uuid4()->toString() . '.' . $file->guessExtension(),
                 size: $file->getSize(),
                 mime: $file->getMimeType(), //store in bytes
-                duration: $info['playtime_seconds']
+                duration: $info['playtime_seconds'],
+                originalName: $originalName
             );
             return $timed;
         }

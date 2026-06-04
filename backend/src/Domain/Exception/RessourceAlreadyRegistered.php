@@ -2,4 +2,4 @@
 
 namespace App\Domain\Exception;
 
-class RessourceAlreadyRegistered extends \Exception{}
+class RessourceAlreadyRegistered extends ExceptionWithPayload{}

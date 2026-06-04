@@ -16,6 +16,8 @@ class StaticMedia
         public float  $size,
         /** @var string $mime here is the mime type */
         public string $mime,
+
+        public ?string $originalName = null,
     ){}
 
     /**

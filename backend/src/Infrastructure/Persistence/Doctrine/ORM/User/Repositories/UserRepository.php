@@ -38,7 +38,7 @@ class UserRepository implements UserRepositoryInterface
         if(!$account)
             throw new RessourceNotFound();
 
-        $user = $userRepository->findById($account->getId());
+        $user = $userRepository->find($account->getId());
         if(!$user)
             throw new RessourceNotFound();
 

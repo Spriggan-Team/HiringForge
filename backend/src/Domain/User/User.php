@@ -177,7 +177,7 @@ final class User implements Account
      */
     public function addImages(StaticMedia $image):static
     {
-        $image->mustBe(sizeLimitation: 18432);
+        $image->mustBe(sizeLimitation: 12500000);
         $this->images[] = $image;
         return $this;
     }
@@ -188,7 +188,7 @@ final class User implements Account
 
     public function addVideoPresentation(?TimedMedia $videoPresentation): static
     {
-        $videoPresentation->mustBe(type: "video", secondsLimitation: 15);
+        $videoPresentation->mustBe(type: "video", secondsLimitation: 720);
         $this->videoPresentation = $videoPresentation;
         return $this;
     }

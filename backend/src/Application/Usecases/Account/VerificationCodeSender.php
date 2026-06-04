@@ -42,7 +42,7 @@ class VerificationCodeSender
         if ($purpose === AccountFlowPurpose::SIGN_UP) {
             $userExists = $this->repository->exists(email: $emailString); 
             if ($userExists) {
-                throw new EmailAlreadyRegistered();
+                throw new EmailAlreadyRegistered("This account already exist");
             }
         } 
         else {
@@ -56,10 +56,14 @@ class VerificationCodeSender
         );
         
         // --- Verify if an existing active token is stored in the BDD
-        $lastOtp = $this->OTPRepository->getLastVerificationTokenWithPurpose(
-            email: $email,
-            purpose: $purpose
-        );
+        $lastOtp = null;
+        try{
+            $lastOtp = $this->OTPRepository->getLastVerificationTokenWithPurpose(
+                email: $email,
+                purpose: $purpose
+            );
+        }
+        catch(RessourceNotFound){}
 
         // -- Generate warning if OTP is still active
         if ($lastOtp && !$lastOtp->isExpired()) {

@@ -29,6 +29,9 @@ interface AccountRepositoryInterface
     public function assertExist(?string $uuid = null, ?string $email = null): KnownIdentity;
 
 
+    /**
+     * Throws no exception
+     */
     public function exists(?string $uuid=null,  ?string  $email = null): bool;
 
     /**

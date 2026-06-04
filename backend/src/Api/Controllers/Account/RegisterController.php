@@ -15,6 +15,8 @@ use Exception;
 use  Psr\Log\LoggerInterface;
 use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\ApplicationErrorCode;
+use App\Domain\Exception\FileSizeExceeded;
+use App\Domain\Exception\FileTimeExceeded;
 use App\Domain\OTP\Exception\OTPException;
 
 
@@ -61,6 +63,14 @@ class RegisterController extends AbstractController
             $result = $usecase->execute($command);
             return ApiResponse::success($result)->toJsonResponse();
         }
+        catch(EmailAlreadyRegistered $thr){
+            $err = ApiResponse::error(
+                message: "Account already registered",
+                throwable: $thr,
+                code: ApplicationErrorCode::ACCOUNT_ALREADY_EXISTS,
+            );
+            return $err->toJsonResponse();
+        }
         catch(Exception $exception)
         {
             return ApiResponse::error(message: "Something wen wrong", throwable: $exception)->toJsonResponse();
@@ -98,6 +108,7 @@ class RegisterController extends AbstractController
             $result = $usecase->execute($command);
             return ApiResponse::success($result)->toJsonResponse();
         }
+        //-- account error fallback
         catch(EmailAlreadyRegistered $emailEception){
             return ApiResponse::error(
                 message: 'This email is already registered', 
@@ -105,6 +116,7 @@ class RegisterController extends AbstractController
                 code: ApplicationErrorCode::ACCOUNT_ALREADY_EXISTS
             )->toJsonResponse();
         }
+        //-- Otp error fallback
         catch(OTPException $optError){
             $code = $optError->expired ? 
                     ApplicationErrorCode::EXPIRED_OTP 
@@ -116,9 +128,27 @@ class RegisterController extends AbstractController
                 message: "OTP code expired",
                 throwable: $optError,
                 statusCode: 410,
-                code: $code
+                code: $code,
             )->toJsonResponse();
         }
+        //-- File error fallback
+        catch(FileSizeExceeded $filesizeError){
+            return ApiResponse::error(
+                message: 'This email is already registered', 
+                throwable: $filesizeError,
+                code: ApplicationErrorCode::FILE_SIZE_EXCEEDED,
+                data: $filesizeError->getPayload() ?? []
+            )->toJsonResponse();
+        }
+        catch(FileTimeExceeded $filetimeError){
+            return ApiResponse::error(
+                message: 'This email is already registered', 
+                throwable: $filetimeError,
+                code: ApplicationErrorCode::FILE_TIME_EXCEEDED,
+                data: $filetimeError->getPayload() ?? [],
+            )->toJsonResponse();
+        }
+        //-- catch remaining all exception
         catch (\Exception $exception)
         {
             return ApiResponse::error(message: 'Please check your data fields and formats', throwable: $exception)->toJsonResponse();

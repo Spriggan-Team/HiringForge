@@ -1,37 +1,36 @@
 <?php
 
-
 namespace App\Application\Usecases\User;
 
 use App\Application\DTO\User\RegisterUserCommand;
+use App\Application\Usecases\Account\AccountRegister; 
+
 use App\Domain\Exception\EmailAlreadyRegistered;
+use App\Domain\Exception\FileSizeExceeded;
+use App\Domain\Exception\FileTimeExceeded;
+use App\Domain\Exception\RessourceNotFound;
 
-use App\Domain\User\User;
-use App\Domain\User\Siret;
-use App\Domain\User\UserId;
-use App\Domain\User\UserRepositoryInterface;
-
+use App\Domain\File\MediaFactoryInterface;
 use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
-use App\Domain\File\MediaFactoryInterface;
 
+use App\Domain\OTP\Exception\OTPException;
+use App\Domain\OTP\OTPRepositoryInterface;
+
+use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\Shared\EmailAddress;
-
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\PlainPassword;
-use App\Domain\Shared\Account\AccountFlowPurpose;
+use App\Domain\User\Siret;
+use App\Domain\User\User;
+use App\Domain\User\UserId;
+use App\Domain\User\UserRepositoryInterface;
 
-use App\Domain\OTP\OTPRepositoryInterface;
-use App\Application\Usecases\Account\AccountRegister;
-
-use App\Domain\Exception\RessourceNotFound;
-use App\Domain\OTP\Exception\OTPException;
 
 
 class UserRegisterUseCase
 {
-
     public function __construct(
         private MediaFactoryInterface $mediaFactory,
         private MediaStorageInterface $storage,
@@ -41,76 +40,79 @@ class UserRegisterUseCase
     ){}
     
     /**
-     * This is an usecase that enforce buisness requirement and then proceed with saving
-     * @throws \DomainException|EmailAlreadyRegistered|OTPException|FileExceedTime|FileSizeExceeded What is thrown when requirements are not respected;
-     *                                                                      (most of them are exception from /Domain)
+     * @throws \DomainException|\Exception|EmailAlreadyRegistered|OTPException
      */
-    public function execute(
-        RegisterUserCommand $command
-    ): AccountRegister
+    public function execute(RegisterUserCommand $command): AccountRegister
     {    
-        $email =  EmailAddress::create($command->email);
-        try{
-            $existingUser = $this->repository->assertExist(email: $email->value());    //check for any existing user
-            if($existingUser){
-                throw new EmailAlreadyRegistered("This user already exist"); 
+        $email = EmailAddress::create($command->email);
+        
+        try {
+            $existingUser = $this->repository->assertExist(email: $email->value());
+            if ($existingUser) {
+                throw new EmailAlreadyRegistered("This user already exists"); 
             }
+        } catch (\Exception $exception) {
+            //silence error
         }
-        catch(\Exception $excption){}
-
 
         $userId = UserId::create();
 
-        /** @var string[]  the storedName of the sucessful uploading filename */
-        $failedUploads = []; 
+        /** @var string[] filenames array that have failed échoué */
+        $filesFailedSize = [];
+        $filesFailedTimeout = [];
+        $filesFailedGeneric = []; 
 
-        //-- check verification code
-        try{
+        // -- Check verification code
+        try {
             $otp = $this->OTPRepository->getLastVerificationTokenWithPurpose($email->value(), AccountFlowPurpose::SIGN_UP);
             $isOtpVerified = $otp->verify($command->verificationCode, $this->hasher);
-        }
-        catch(RessourceNotFound){
+        } catch (RessourceNotFound) {
             throw new OTPException(isInvalid: true);
         }
 
-            //--Throws logic exception when hash verification not succeed
-        if(!$isOtpVerified)
-        {
+        if (!$isOtpVerified) {
             throw new \DomainException("OTP code not correct!!");
         }
 
-        //-- Create user
-        $user =  User::create(
+        // -- Create user
+        $user = User::create(
             userId: $userId,
-            name:   $command->name,
-            email:  $email,
+            name: $command->name,
+            email: $email,
             passwordHash: $this->hasher->hash((new PlainPassword($command->password))->value()),
-            siret:  Siret::create($command->siret),
+            siret: Siret::create($command->siret),
             address: $command->address,
         );
 
-        //-- Upload video
-        if($command->videoPresentation){
-            $timedMedia = $this->mediaFactory->createTimedMedia($command->videoPresentation);
-            $user->addVideoPresentation($timedMedia);
-            $this->storage->store(
-                $command->videoPresentation,
-                ownerId: $userId->value(),
-                ownerType: MediaOwnerType::USER,
-                mediaPurpose: MediaPurpose::PROFILE,
-                errorCallback:  function($result) use(&$user, &$failedUploads)
-                {
-                    $failedUploads[] = $result->originalName;
-                    $user->removeVideoPresentation();
-                },
-            );
+        // -- Upload video
+        if ($command->videoPresentation) {
+            try {
+                $timedMedia = $this->mediaFactory->createTimedMedia($command->videoPresentation);
+                $user->addVideoPresentation($timedMedia);
+                
+                $this->storage->store(
+                    $command->videoPresentation,
+                    ownerId: $userId->value(),
+                    ownerType: MediaOwnerType::USER,
+                    mediaPurpose: MediaPurpose::PROFILE,
+                    errorCallback: function($result) use (&$user, &$filesFailedGeneric) {
+                        $filesFailedGeneric[] = $result->originalName;
+                        $user->removeVideoPresentation();
+                    },
+                );
+            } catch (FileSizeExceeded $e) {
+                $filesFailedSize[] = $e->getPayload()["originalName"];
+            } catch (FileTimeExceeded $e) {
+                $filesFailedTimeout[] = $e->getPayload()["originalName"];
+            }
         }
 
-        //-- Upload images
-        foreach($command->images as $uploadedImage)
-        {
-           $staticMedia = $this->mediaFactory->createStaticMedia($uploadedImage);
-           $this->storage->store(
+        // -- Upload images
+        foreach ($command->images as $uploadedImage) {
+            try {
+                $staticMedia = $this->mediaFactory->createStaticMedia($uploadedImage);
+                
+                $this->storage->store(
                     $uploadedImage,
                     $userId->value(),
                     storedFileName: $staticMedia->name,
@@ -119,19 +121,27 @@ class UserRegisterUseCase
                     successCallback: function() use (&$user, &$staticMedia) {
                         $user->addImages($staticMedia);
                     },
-                    errorCallback: function($result) use (&$user, &$failedUploads, $staticMedia) {
-                        $failedUploads[] = $result->originalName;
+                    errorCallback: function($result) use (&$user, &$filesFailedGeneric, $staticMedia) {
+                        $filesFailedGeneric[] = $result->originalName;
                         $user->removeImage($staticMedia);
                     }
-            );
+                );
+            } catch (FileSizeExceeded $e) {
+               $filesFailedSize[] = $e->getPayload()["originalName"];
+            } catch (FileTimeExceeded $e) {
+                $filesFailedTimeout[] = $e->getPayload()["originalName"];
+            }
         }
         
-        //-- save user
+        // -- Save user
         $this->repository->save($user);
         
+        //-- dto
         return new AccountRegister(
-            $userId->value(), 
-            $failedUploads
+            userId: $userId->value(), 
+            filesFailedGeneric: $filesFailedGeneric,
+            filesFailedTimeout: $filesFailedTimeout,
+            filesFailedSize: $filesFailedSize
         );
     }
 }

@@ -45,8 +45,8 @@ class CandidateRegisterUsecase
     {
         $email =  EmailAddress::create($command->email);
         
-        $identity = $this->accountRepository->exists(null, $email->value());
-        if($identity){
+        $exist = $this->accountRepository->exists(null, $email->value());
+        if($exist){
           throw new EmailAlreadyRegistered();
         }
         

@@ -11,7 +11,7 @@ interface MediaFactoryInterface
     /**
      * This function tell if a file is a static media (image, document) or not
      * @param mixed     $file        The file you want to evaluate
-     * @throws \Exception
+     * @throws \TypeError
      */
     public function isTimedMedia(mixed $file): bool;
 

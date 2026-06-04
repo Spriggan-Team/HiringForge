@@ -5,8 +5,16 @@ namespace App\Application\Usecases\Account;
 class AccountRegister
 {
     public function __construct(
-        public string $id,
-        public array $failedUploading = []
+        public string $userId,
+
+        /** @var string[] */
+        public array $filesFailedGeneric = [],
+
+        /** @var string[] */
+        public array $filesFailedTimeout = [],
+
+        /** @var string[] */
+        public array $filesFailedSize = []
     )
     {}
 }

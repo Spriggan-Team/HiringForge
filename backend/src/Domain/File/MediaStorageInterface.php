@@ -19,9 +19,9 @@ interface MediaStorageInterface
      * @param callable(MediaUploadResult): void     $successCallback
      * @param callable(MediaUploadResult): void     $errorCallback
      * 
-     * @throws \Exception|App\Domain\Exception\FileExceedTime|\App\Domain\Exception\FileSizeExceeded 
+     * @throws \Exception
      * 
-     * @return MediaUploadResult        An multidimensionsioonal array containing the succed and failed ones
+     * @return void        An multidimensionsioonal array containing the succed and failed ones
      */
     public function store(
         mixed $file,

@@ -4,4 +4,4 @@ namespace App\Domain\Exception;
 
 use DomainException;
 
-class RessourceNotFound extends DomainException {}
+class RessourceNotFound extends ExceptionWithPayload {}

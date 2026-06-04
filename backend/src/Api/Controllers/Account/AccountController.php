@@ -13,9 +13,11 @@ use App\Application\Usecases\Account\AccountEmailRenitializer;
 use App\Application\Usecases\Account\AccountPasswordRenitializer;
 use App\Application\Usecases\Account\VerificationCodeSender;
 use App\Domain\ApplicationErrorCode;
-use App\Domain\Exception\EmailAlreadyRegistered;
+use App\Domain\Exception\EmailAlreadyRegistered
+;
 use Exception;
 use Psr\Log\LoggerInterface;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;

@@ -39,7 +39,10 @@ class ApiResponse
     /**
      * The trowable is only used to  display message in the terminal 
      */
-    public static function error(string $message = '', ?ApplicationErrorCode $code = null, ?\Throwable $throwable = null, int $statusCode = 400): self
+    public static function error(
+        string $message = '', array $data = [], 
+        ?ApplicationErrorCode $code = null, ?\Throwable $throwable = null, int $statusCode = 400
+    ): self
     {
         if ($throwable && self::$logger) {
             self::$logger->error("Caught Exception: ". $throwable->getMessage(), ['exception' => $throwable]);
@@ -49,7 +52,7 @@ class ApiResponse
             "code" => $code,
             'status'  => 'error',
             'message' => $message,
-            'data'    => []
+            'data'    => $data
         ], $statusCode);
     }
 

@@ -22,7 +22,7 @@ import StatusItem from "../../layout/components/indicators/statusItem/status.ite
 
 //-- services
 import { objectToFormData } from "../../utils/convertor";
-import { AccountAlreadyRegistered, ExpiredOTP } from "../../api/services/auth/exceptions";
+import { AccountAlreadyRegistered, ExpiredOTP, FileSizeExceeded } from "../../api/services/auth/exceptions";
 
 //-- SVG - Components
 import LogoSVG from '/src/assets/custom-logo.svg';
@@ -89,21 +89,22 @@ const Register = () => {
             //--Switch to next step & update popup+
             setCurrentStep(prev => ({ current: 3, max: 3 > prev.max ? 3 : prev.max }))
             setPopup({status: "success", message: t("register.apiResponse.verifyMailBox.success")})
-
-            navigation(RouteScheme.login);
         }
         catch(error){
             setLoading({state: false, subtitle: undefined});
-            setPopup({
-                status: "error",
-                message: t("global.messages.error")
-            })
-
+            
             //-- message error
             if (error instanceof Error) {
-                if(error instanceof AccountAlreadyRegistered)
-                    setPopup({ status: "warning", message: t("register.apiResponse.codeVerification.error.accountAlreadyResgistered") })
-                
+                if(error instanceof AccountAlreadyRegistered){   
+                    setPopup({ status: "warning", message: t("register.apiResponse.codeVerification.error.accountAlreadyResgistered") });
+                    navigation(RouteScheme.login);
+
+                    return;
+                }                
+                setPopup({
+                    status: "error",
+                    message: t("global.messages.error")
+                })
                 console.log("Something went wrong:", error.message);
                 console.log("Stack:", error.stack);
             }
@@ -146,9 +147,10 @@ const Register = () => {
             setPopup({
                 status: "success",
                 message: t("register.apiResponse.registering.success")
-            })
-            localStorage.setItem("userId", JSON.stringify(res?.id))
+            });
 
+            localStorage.setItem("userId", JSON.stringify(res?.id))
+            navigation(RouteScheme.login);
         }
         catch(error){
             setLoading({ state: false });
@@ -160,8 +162,10 @@ const Register = () => {
                 //-- Domain fallback (messages)
                 if(error instanceof ExpiredOTP)
                     setPopup({ status: "error", message: t("register.apiResponse.codeVerification.expired") });
-                if(error instanceof AccountAlreadyRegistered){
+                else if(error instanceof AccountAlreadyRegistered)
                     setPopup({ status: "warning", message: t("register.apiResponse.registering.warning") })
+                else if(error instanceof FileSizeExceeded){
+                    
                 }
             }
             else {

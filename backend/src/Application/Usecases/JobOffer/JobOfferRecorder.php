@@ -2,7 +2,8 @@
 
 namespace App\Application\Command\Usecase\JobOffer;
 
-use App\Application\DTO\JobOffer\CreateJobOffer;
+
+use App\Application\DTO\JobOffer\CreateJobOfferRequest;
 use App\Domain\Category\Repositories\CategoryRepositoryInterace;
 use Ramsey\Uuid\Uuid; 
  
@@ -21,7 +22,7 @@ class JobOfferRecorder
 
     public function execute(
         string $accountId,
-        CreateJobOffer $command
+        CreateJobOfferRequest $command
     ): string
     {
         $accountId =  UserId::create($accountId);    

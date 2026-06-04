@@ -2,5 +2,5 @@
 
 namespace App\Domain\Exception;
 
-class FileSizeExceeded extends \DomainException
+class FileSizeExceeded extends ExceptionWithPayload
 {}

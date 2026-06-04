@@ -137,7 +137,7 @@ const HardPassword: React.FC<HardPasswordProps> = ({
                             foregroundColor="#E5E7EB"
                         />
                         <div className={styles.indicators}>
-                            { toggleHiddenBoxVisibility && <CloseSVG className={styles.closeSvg} height={14} width={14}/> }
+                            { toggleHiddenBoxVisibility && <CloseSVG className={styles.closeSvg} height={24} width={24}/> }
 
                             <span className={styles.ruleTitle}>
                                 {
