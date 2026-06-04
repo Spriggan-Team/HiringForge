@@ -63,8 +63,8 @@ class VerificationCodeSender
         }
         catch(RessourceNotFound){}
 
-        // -- Generate warning if OTP is still active
-        if ($lastOtp && $lastOtp->isExpired()) {
+        // -- Generate warning if OTP is still active (Il n'est PAS expiré)
+        if ($lastOtp && !$lastOtp->isExpired()) { 
             $remainingSeconds = $lastOtp->getRemainingSeconds();
 
             if ($remainingSeconds >= 60) {
@@ -86,9 +86,9 @@ class VerificationCodeSender
                 emailMessage: $emailMessage 
             );
 
-            return;
+            return; 
         }
-
+        
         // --- Create a new OTP code and save it
         $otp = OTP::create(
             hasher: $this->hasher,
