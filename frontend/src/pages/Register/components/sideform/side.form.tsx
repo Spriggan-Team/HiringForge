@@ -135,16 +135,17 @@ const SideForm: React.FC<SideFormProps> = ({
                                                 type="button"
                                                 className={styles.removeBtn}
                                                 onClick={() => { 
-                                                    //-- free space
                                                     URL.revokeObjectURL(image.previewUrl);
                                                     
-                                                    //-- display images
-                                                    setImages((prev) => prev.filter((_, i) => i !== index));
+                                                    //-- file to delete
+                                                    const fileToRemove = image.file;
+
+                                                    setImages((prev) => prev.filter((img) => img.file !== fileToRemove));
                                                     
-                                                    //--update parent state
                                                     setForm((prev) => ({
                                                         ...prev,
-                                                        images: prev.images.filter((_, i) => i !== index)
+                                                        //-- secure filter (with reference)
+                                                        images: prev.images.filter((file) => file !== fileToRemove)
                                                     }));
                                                 }}
                                             >
@@ -214,7 +215,6 @@ const SideForm: React.FC<SideFormProps> = ({
                                     className="faint-border"
                                     value={form.postalCode || ""}
                                     onChange={(e) =>{
-                                            console.log("Postal code ", e.target.value)
                                             setForm(prev => ({ ...prev, postalCode: e.target.value }))
                                         }
                                     }

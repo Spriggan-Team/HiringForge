@@ -71,7 +71,7 @@ class UserRegisterUseCase
         }
 
         if (!$isOtpVerified) {
-            throw new \DomainException("OTP code not correct!!");
+            throw new OTPException(message: "OTP code not correct!!");
         }
 
         // -- Create user

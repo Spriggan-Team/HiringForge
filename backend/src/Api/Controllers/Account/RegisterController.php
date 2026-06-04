@@ -88,7 +88,7 @@ class RegisterController extends AbstractController
         try {
             /** @var InputBag FormData stored in request by Symfony  */
             $inputBag = $request->request;
-
+            $this->logger->info("Image", $request->files->get('images', []));
             $command = new RegisterUserCommand(
                 name:  $inputBag->get('name'),
                 email: $inputBag->get('email'),

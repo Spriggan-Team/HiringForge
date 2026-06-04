@@ -1,7 +1,7 @@
 import { post } from "../../handler";
 
 //import types
-import { AccountAlreadyRegistered, ExpiredOTP, FileTimeExceeded, FileSizeExceeded } from "./exceptions";
+import { AccountAlreadyRegistered, ExpiredOTP } from "./exceptions";
 import { ApiResponseCode, HttpBadResponse } from "../../exceptions";
 import type { AccountRegisterResponse, NoticeResponse } from "../response.types";
 

@@ -22,38 +22,46 @@ export async function svgToPng(svgString: string) {
     return canvas.toDataURL("image/png");
 }
 
-
-//-- Convert or object ointo a Formdata
-export  function objectToFormData(obj: Record<string, any>, form?: FormData){
+export function objectToFormData(
+    obj: Record<string, any>, 
+    form?: FormData, 
+    transformMap?: Record<string, string>
+) {
     const formData = form ?? new FormData();
 
-    Object.entries(obj).forEach(([key, value])=>{
-        if(value === null || value === undefined) return;
+    Object.entries(obj).forEach(([key, value]) => {
+        if (value === null || value === undefined) return;
+        
+        const mkey = mapKey(key, transformMap); //-- transform key
 
-        if(Array.isArray(value))
-        {
+        if (Array.isArray(value)) {
             value.forEach((item) => {
-                if(item instanceof File || item  instanceof Blob){
-                    formData.append(key, item);
+
+                if (item instanceof File || item instanceof Blob) {
+                    formData.append(mkey, item);
+                } 
+                else if (typeof item === "object") {
+                    formData.append(mkey, JSON.stringify(item));
+                } 
+                else {
+                    formData.append(mkey, String(item).trim());
                 }
-                else if(typeof item === "object"){
-                    formData.append(key, JSON.stringify(item));
-                }
-                else{
-                    formData.append(key, String(item).trim());
-                }
-            })
-        }
-        else if(value instanceof File || value instanceof Blob){
-            formData.append(key, value)
-        }
-        else if(typeof value === "object"){
-            formData.append(key, JSON.stringify(value))
-        }
+            });
+        } 
+        else if (value instanceof File || value instanceof Blob) {
+            formData.append(mkey, value);
+        } 
+        else if (typeof value === "object") {
+            formData.append(mkey, JSON.stringify(value));
+        } 
         else {
-            formData.append(key, String(value).trim())
+            formData.append(mkey, String(value).trim());
         }
-    })
+    });
 
     return formData;
 }
+
+const mapKey = (key: string, transformMap?: Record<string, string>): string => {
+    return transformMap?.[key] ?? key;
+};

@@ -98,7 +98,6 @@ const Register = () => {
                 if(error instanceof AccountAlreadyRegistered){   
                     setPopup({ status: "warning", message: t("register.apiResponse.codeVerification.error.accountAlreadyResgistered") });
                     navigation(RouteScheme.login);
-
                     return;
                 }                
                 setPopup({
@@ -135,12 +134,17 @@ const Register = () => {
                 return;
             }
 
+            //-- clear html gost
+            const nativeFormData = formData.current;
+            nativeFormData.delete('images'); // html ghost
+            nativeFormData.delete('images[]');
+
             //-- Data consolidation
-            const data: FormData = objectToFormData(asideFormState, formData.current);
-            console.log("All retrieved data", Object.fromEntries(data.entries()));
+            const data: FormData = objectToFormData(asideFormState, nativeFormData, { images: "images[]" });
+            console.log("Mes images réelles dans FormData :", formData.current.getAll('images[]'));
+            
 
             const res = await AuthServices.register(data);
-
             setLoading({state: false});
             
             //-- client notification & notice
@@ -156,17 +160,16 @@ const Register = () => {
             setLoading({ state: false });
             if (error instanceof Error) {
                 //-- console log
+                console.log("Error name", error.name);
                 console.log("Something went wrong:", error.message);
                 console.log("Stack:", error.stack);
 
                 //-- Domain fallback (messages)
-                if(error instanceof ExpiredOTP)
+                if(error instanceof ExpiredOTP){
                     setPopup({ status: "error", message: t("register.apiResponse.codeVerification.expired") });
+                }
                 else if(error instanceof AccountAlreadyRegistered)
                     setPopup({ status: "warning", message: t("register.apiResponse.registering.warning") })
-                else if(error instanceof FileSizeExceeded){
-                    
-                }
             }
             else {
                 setPopup({

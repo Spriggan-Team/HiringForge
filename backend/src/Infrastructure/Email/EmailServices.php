@@ -48,7 +48,9 @@ class EmailServices implements EmailServicesInterface
         $htmlTemplate = null;
         if ($emailMessage->type === EmailCategory::WARNING) {
             $htmlTemplate = file_get_contents(__DIR__ . "/Templates/warning.html");
-        } else {
+        }
+        //-- default
+        else {
             $htmlTemplate = file_get_contents(__DIR__ . "/Templates/default.html");
         }
 

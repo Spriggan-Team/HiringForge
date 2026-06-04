@@ -16,9 +16,7 @@ use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 
-
-
-
+use function PHPSTORM_META\type;
 
 class VerificationCodeSender
 {
@@ -66,7 +64,7 @@ class VerificationCodeSender
         catch(RessourceNotFound){}
 
         // -- Generate warning if OTP is still active
-        if ($lastOtp && !$lastOtp->isExpired()) {
+        if ($lastOtp && $lastOtp->isExpired()) {
             $remainingSeconds = $lastOtp->getRemainingSeconds();
 
             if ($remainingSeconds >= 60) {
@@ -100,10 +98,11 @@ class VerificationCodeSender
 
         // --- Send the plain text code via email, NOT the hash
         $emailMessage->code = $otp->plainCode;
+        $emailMessage->type = EmailCategory::DEFAULT;
         
         $this->emailServices->sendTo(
             receiver: $emailString,
-            emailMessage: $emailMessage
+            emailMessage: $emailMessage,
         );
     }
 }
