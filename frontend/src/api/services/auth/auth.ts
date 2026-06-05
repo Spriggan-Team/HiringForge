@@ -41,9 +41,9 @@ const register = async (formData: FormData)=>{
     }
     catch(error){
         if(error instanceof HttpBadResponse){
-            if(error.apiCode == ApiResponseCode.EXPIRED_OTP)
+            if(error.apiCode === ApiResponseCode.EXPIRED_OTP || error.apiCode === ApiResponseCode.INVALID_OTP)
                 throw new ExpiredOTP();
-            if(error.apiCode == ApiResponseCode.ACCOUNT_ALREADY_EXISTS)
+            if(error.apiCode === ApiResponseCode.ACCOUNT_ALREADY_EXISTS)
                 throw new AccountAlreadyRegistered();
         }
         throw error;

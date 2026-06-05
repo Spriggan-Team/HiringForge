@@ -29,9 +29,12 @@ class StaticMedia
      */
     public function mustBe(float $sizeLimitation, ?string $mime = null): void
     {
-        if($sizeLimitation > $this->size)
+        if($sizeLimitation < $this->size)
         {
-            throw new FileSizeExceeded('File too large');
+            throw new FileSizeExceeded(
+                message: "Media's size too large",
+                payload: new FileOriginalInfo($this->originalName)->toArray()
+            );
         }
 
         if($mime && $this->mime != $mime)

@@ -7,15 +7,14 @@ use DomainException;
 
 use App\Api\Responder\ApiResponse;
 
-use App\Application\DTO\JobOffer\CreateJobOffer;
-use App\Application\DTO\JobOffer\ChangeJobOffferRequest;
 use App\Application\DTO\Auth\AuthenticatedPerson;
+use App\Application\DTO\JobOffer\ChangeJobOffferRequest;
+use App\Application\DTO\JobOffer\CreateJobOfferRequest;
 
 use App\Domain\Shared\Account\AccountRole;
 
 use App\Application\Command\Usecase\JobOffer\JobOfferModifier;
 use App\Application\Command\Usecase\JobOffer\JobOfferRecorder;
-
 use App\Application\Usecases\JobOffer\JobOfferImageRemover;
 use App\Application\Usecases\JobOffer\JobOfferImageUploader;
 use App\Application\Usecases\JobOffer\JobOfferEraser;
@@ -61,7 +60,7 @@ class UserJobOfferManagementController extends AbstractController
             $account = $this->getUser();
 
             $body = json_decode($request->getContent(), true);
-            $command = new CreateJobOffer(
+            $command = new CreateJobOfferRequest(
                 title:    $body['title'],
                 content:  $body['content'],
                 image: null,

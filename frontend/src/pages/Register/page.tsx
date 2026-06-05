@@ -146,6 +146,7 @@ const Register = () => {
 
             const res = await AuthServices.register(data);
             setLoading({state: false});
+            console.log("Ressource ", res);
             
             //-- client notification & notice
             setPopup({

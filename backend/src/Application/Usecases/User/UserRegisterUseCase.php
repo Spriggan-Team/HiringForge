@@ -40,7 +40,7 @@ class UserRegisterUseCase
     ){}
     
     /**
-     * @throws \DomainException|\Exception|EmailAlreadyRegistered|OTPException
+     * @throws \DomainException|\Exception|OTPException|EmailAlreadyRegistered|OTPException
      */
     public function execute(RegisterUserCommand $command): AccountRegister
     {    
@@ -64,15 +64,34 @@ class UserRegisterUseCase
 
         // -- Check verification code
         try {
-            $otp = $this->OTPRepository->getLastVerificationTokenWithPurpose($email->value(), AccountFlowPurpose::SIGN_UP);
-            $isOtpVerified = $otp->verify($command->verificationCode, $this->hasher);
-        } catch (RessourceNotFound) {
-            throw new OTPException(isInvalid: true);
+            $otp = $this->OTPRepository->getLastVerificationTokenWithPurpose(
+                $email->value(), 
+                AccountFlowPurpose::SIGN_UP
+            );
+            
+            $otp->verify($command->verificationCode, $this->hasher);
+        }
+        catch (RessourceNotFound) {
+            throw new OTPException(message: "No verification code found for this account.", isInvalid: true);
+        }
+        catch (OTPException $e) {
+            if (isset($otp)) {
+                try {
+                    $this->OTPRepository->update($email->value(), $otp);
+                } catch (RessourceNotFound $exception) {
+                    throw new OTPException(
+                        message: "The verification session has expired or does not exist.", 
+                        isInvalid: true,
+                        previous: $exception
+                    );
+                }
+            }
+            
+            //-- rethrow the exception to halt registration execution!
+            throw $e;
         }
 
-        if (!$isOtpVerified) {
-            throw new OTPException(message: "OTP code not correct!!");
-        }
+
 
         // -- Create user
         $user = User::create(
@@ -91,7 +110,7 @@ class UserRegisterUseCase
                 $user->addVideoPresentation($timedMedia);
                 
                 $this->storage->store(
-                    $command->videoPresentation,
+                    file: $command->videoPresentation,
                     ownerId: $userId->value(),
                     ownerType: MediaOwnerType::USER,
                     mediaPurpose: MediaPurpose::PROFILE,
@@ -111,16 +130,14 @@ class UserRegisterUseCase
         foreach ($command->images as $uploadedImage) {
             try {
                 $staticMedia = $this->mediaFactory->createStaticMedia($uploadedImage);
+                $user->addImages($staticMedia);
                 
                 $this->storage->store(
-                    $uploadedImage,
-                    $userId->value(),
+                    file: $uploadedImage,
+                    ownerId: $userId->value(),
                     storedFileName: $staticMedia->name,
                     ownerType: MediaOwnerType::USER,
                     mediaPurpose: MediaPurpose::PROFILE,
-                    successCallback: function() use (&$user, &$staticMedia) {
-                        $user->addImages($staticMedia);
-                    },
                     errorCallback: function($result) use (&$user, &$filesFailedGeneric, $staticMedia) {
                         $filesFailedGeneric[] = $result->originalName;
                         $user->removeImage($staticMedia);

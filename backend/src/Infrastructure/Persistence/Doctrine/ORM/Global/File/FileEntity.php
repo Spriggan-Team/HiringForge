@@ -24,8 +24,8 @@ class FileEntity
     private ?int $id = null;
 
     #[ORM\Column(length: 250)]
-    /** @var string  $originalName a uniq name - genrated while uploading file on server */
-    private ?string $originalName = null;
+    /** @var string  $name a uniq name - genrated while uploading file on server */
+    private ?string $name = null;
 
     #[ORM\Column(length:15)]
     private ?string $mime = null;
@@ -94,9 +94,9 @@ class FileEntity
     /** This function return a string that represent the original  and uniq name genrated By the server
      *  when the file was uploaded
      */
-    public function getOriginalName():string
+    public function getName():string
     {
-        return $this->originalName;
+        return $this->name;
     }
     
     /**
@@ -133,9 +133,9 @@ class FileEntity
     /**
      * Here you must insert an originame and uniq name (genreated by your server or your system)
      */
-    public function setOriginalName(string $originalName):static
+    public function setName(string $name):static
     {
-        $this->originalName = $originalName;
+        $this->name = $name;
         return $this;
     }
     

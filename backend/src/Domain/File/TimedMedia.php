@@ -2,7 +2,6 @@
 
 namespace App\Domain\File;
 
-use App\Domain\Exception\FileExceedTime;
 use App\Domain\Exception\FileSizeExceeded;
 use App\Domain\Exception\FileTimeExceeded;
 
@@ -31,14 +30,14 @@ class TimedMedia
             throw new \DomainException("Media Mime type mistmatch");
         }
         
-        if($secondsLimitation && $secondsLimitation > $this->duration){
+        if($secondsLimitation &&  $this->duration > $secondsLimitation){
             throw new FileTimeExceeded(
                 message: "Media's time too long",
                 payload: new FileOriginalInfo($this->originalName)->toArray()
             );
         }
 
-        if($sizeLimitation && $sizeLimitation > $this->size)
+        if($sizeLimitation &&  $this->size > $sizeLimitation)
         {
             throw new FileSizeExceeded(
                 message: "Media's size too large",

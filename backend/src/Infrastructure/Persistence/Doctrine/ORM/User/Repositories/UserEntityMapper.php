@@ -8,9 +8,12 @@ use App\Domain\Shared\EmailAddress;
 use App\Domain\User\Siret;
 use App\Domain\User\User as DomainEntity;
 use App\Domain\User\UserId;
+
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
+
 
 class UserEntityMapper 
 {
@@ -38,6 +41,7 @@ class UserEntityMapper
         //Insert user image collection
         foreach($user->images() as $uploadedImage){
             $image   = new FileEntity()
+                            ->setName($uploadedImage->name)
                             ->setMime($uploadedImage->mime)
                             ->setSize($uploadedImage->size);
             $entity->attachToImage($image);
@@ -56,7 +60,7 @@ class UserEntityMapper
     {
         $userImages = [];
         foreach($doctrine->getUserImages() as $userImageEntity){
-            $userImages[] = $userImageEntity->image->originalName;
+            $userImages[] = $userImageEntity->image->name;
         }
         return DomainEntity::create(
             userId: UserId::hydrate($doctrine->getId()),

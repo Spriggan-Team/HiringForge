@@ -10,9 +10,7 @@ use App\Domain\Shared\Account\AccountFlowPurpose;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens\Mapper\OTPVerificationEntityMapper;
-
-
-
+use Override;
 
 class OTPRepository implements OTPRepositoryInterface
 {
@@ -52,6 +50,10 @@ class OTPRepository implements OTPRepositoryInterface
         $account = $this->em
             ->getRepository(AccountEntity::class)
             ->findOneBy(['email' => $email]);
+        if($account)
+            throw new RessourceNotFound(
+                "No associated account detected for ths otp code"
+            );
 
         $entity = new OTPVerificationTokenEntity();
 
@@ -70,4 +72,31 @@ class OTPRepository implements OTPRepositoryInterface
         $this->em->flush();
     }
 
+#[Override]
+    public function update(string $email, OTP $otp): void
+    {
+        $account = $this->em
+            ->getRepository(AccountEntity::class)
+            ->findOneBy(['email' => $email]);
+
+        if (!$account) {
+            throw new RessourceNotFound(
+                "No associated account detected for this OTP code"
+            );
+        }
+
+        $entity = $this->em
+            ->getRepository(OTPVerificationTokenEntity::class)
+            ->findOneBy([
+                'account' => $account,
+                'purpose' => $otp->purpose->value
+            ]);
+
+        if (!$entity) {
+            throw new RessourceNotFound("The OTP verification token to update does not exist");
+        }
+
+        $entity->setAttempts($otp->attempts);
+        $this->em->flush();
+    }
 }

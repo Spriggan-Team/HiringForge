@@ -26,5 +26,21 @@ interface OTPRepositoryInterface
      * @return void 
      */
     public function save(string $email, OTP $otp): void;
-
+    
+    
+    /**
+     * Updates the mutable properties of an existing OTP token (primarily the attempts counter).
+     *
+     * This method locates the active OTP token associated with the given email and purpose.
+     * It synchronizes the domain state changes with the infrastructure storage. Crucially, 
+     * optional or nullable domain properties (like email or account links) will NOT overwrite 
+     * existing database values if they are null in the provided Domain Object, preventing 
+     * accidental data loss.
+     *
+     * @param string $email The email address used to locate the associated account.
+     * @param OTP $otp The Domain Object containing the updated state (e.g., incremented attempts).
+     * * @throws RessourceNotFound If no matching account or existing OTP token is found in the database.
+     * @return void
+     */
+    public function update(string $email, OTP $otp): void;
 }
