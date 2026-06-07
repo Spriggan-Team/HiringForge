@@ -254,9 +254,9 @@ const UserRegister = () => {
                             />
                         </div>
                         <div className={styles.statusItemSection}>
-                            <StatusItem text={t("userRegister.processDescription.overall.0")}/>
                             <StatusItem text={t("userRegister.processDescription.overall.1")}/>
                             <StatusItem text={t("userRegister.processDescription.overall.2")}/>
+                            <StatusItem text={t("userRegister.processDescription.overall.3")}/>
                         </div>
                         <img src={OfficeWorkerImage} alt="" />
                     </div>

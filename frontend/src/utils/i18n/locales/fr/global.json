@@ -5,9 +5,9 @@
         "rules":{
             "password":{
                 "title": "Force du mot de passe",
-                "lenght": "Safe lenght",
+                "lenght": "Longueur sécurisée",
                 "uppercase": "Contient une majuscule",
-                "number": "Contient un nombre"
+                "number": "Contient un chiffre"
             }
         },
         "logo":{

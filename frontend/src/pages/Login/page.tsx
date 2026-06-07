@@ -34,6 +34,8 @@ const Login = () => {
 
     const [email, setEmail] = useState("");
     const [password, setPassword]  = useState("");
+
+    const [mode, setMode] = useState<"Login" | "ResetPassword">("Login");
     
     const navigation = useNavigate();
     const { setPopup, setLoading } = useAppContext();
@@ -79,6 +81,10 @@ const Login = () => {
                 console.log("Unknown error:", error);
             }
         }
+    }
+
+    const handleResetPassword = ()=>{
+        
     }
 
     return ( 

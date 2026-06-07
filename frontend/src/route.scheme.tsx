@@ -11,6 +11,7 @@ const RouteScheme = {
     register: "/resgister",
     userRegister: "/user/resgister",
     candidateRegister: "/candidate/register",
+    directorRegister: "/candidate/register",
 
     //-- CANDIDATE
     candidateDashboard: "/candidate/dashboard",

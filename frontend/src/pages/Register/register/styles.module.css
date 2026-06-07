@@ -1,0 +1,197 @@
+/**-- CONTAINER -- **/
+.container{
+    gap: 4rem;
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/**-- NAVBAR -- **/
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 7;
+
+    display: flex;
+    justify-content: space-between; 
+    width: 100%;        
+    align-items: center;
+    padding: 16px 70px;
+    box-sizing: border-box;
+    gap: 16px;
+    background: #FDFDFD;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.068);
+}
+
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+}
+
+/**-- MAIN ---**/
+.main{
+    gap: 60px;
+    display: flex;
+    margin-top: 7rem;
+    padding: 0 70px;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.main .headSection{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 4rem;
+}
+
+.main .headSection > * {
+    flex: 1;
+}
+
+/**-- TEXT CONTENT ---**/
+
+
+.welcomeTxt{
+    font-size: 36px;
+    line-height: 1.3;
+    font-weight: bold;
+}
+
+.appName{
+    color: #1743ED;
+}
+
+.selectProfileTxt, .description{
+    margin-top: 5px;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.description{
+    max-width: 480px;
+    width: 100%;
+    margin-top: 15px;
+    color: var(--textSecondaryColor);
+    line-height: 1.5;
+    font-size: 1rem;
+}
+
+/** Separatoor **/
+.separators{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 16px;
+}
+
+.separators span {
+    display: inline-block;
+    white-space: nowrap;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+
+/** Card Section **/
+
+.cardSection{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(300px, 410px));
+    justify-content: center;
+    gap: 28px;
+    width: 100%;
+    align-items: stretch;
+}
+
+.cardSection > *{
+    height: 100%;
+}
+
+/** badge **/
+
+.featureSection{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(250px, 1fr));
+    justify-content: center;
+    gap: 25px;
+    width: 100%;
+    margin-bottom: 40px;
+    margin-top: 45px;
+}
+
+/* ==========================================================================
+   RESPONSIVE LAYOUT (Breakpoints)
+   ========================================================================== */
+
+@media (max-width: 1200px){
+    .navbar{
+        padding: 16px 40px;
+    }
+
+    .main{
+        padding: 0 40px;
+    }
+
+    .cardSection{
+        grid-template-columns: repeat(auto-fit, minmax(300px, 410px));
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .featureSection{
+        grid-template-columns: repeat(auto-fit, minmax(250px, 320px));
+        justify-content: center;
+    }
+}
+
+@media (max-width: 992px) {
+    .main .headSection {
+        flex-direction: column-reverse;
+        gap: 3rem;
+        text-align: center;
+    }
+    .main .headSection > * {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .description {
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar {
+        padding: 16px 20px;
+    }
+    .main {
+        padding: 0 20px;
+        margin-top: 6rem;
+        gap: 40px;
+    }
+    .welcomeTxt {
+        font-size: 28px;
+    }
+    .selectProfileTxt {
+        font-size: 16px;
+    }
+    .separators {
+        gap: 8px;
+    }
+    .separators span {
+        font-size: 0.9rem;
+    }
+}

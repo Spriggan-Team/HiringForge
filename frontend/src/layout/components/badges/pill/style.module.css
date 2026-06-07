@@ -1,0 +1,10 @@
+.container{
+    padding: 5px 8px;
+    width: fit-content;
+    border-radius: 15px;
+    background: var(--backgroundColor);
+}
+
+.container span{
+    color: var(--txtColor);
+}

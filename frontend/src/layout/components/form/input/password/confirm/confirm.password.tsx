@@ -1,3 +1,5 @@
+import { useEffect, useLayoutEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 //-- Custom Components
 import BasicInput, { type BasicInputProps } from '../../basic.input';
@@ -7,8 +9,6 @@ import OKCircleSVG from '../../../../../../assets/svg/check/ok-circle-svgrepo-co
 
 //-- CSS Styles
 import styles from './styles.module.css'
-import { useEffect, useLayoutEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 
 
 

@@ -20,12 +20,12 @@ const InfoPill: React.FC<InfoPillProps> = ({
         <div 
             className={styles.container}
             style={{
-                ["--txtColor" as string]: txtColor,
-                ["--backgroundColor" as string]: backgroundColor
+                ["--txtColor" as string]: txtColor ?? "#264FEB",
+                ["--backgroundColor" as string]: backgroundColor ?? "#E3EDFE"
             }}
         >
-            { indicator && <div /> }
-            { text }
+            { indicator && <div className={styles.indicator} /> }
+            <span>{ text }</span>
         </div>
     );
 }
