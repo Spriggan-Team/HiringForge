@@ -7,6 +7,7 @@ const EntryPage = () => {
     const navigate = useNavigate();
 
     useEffect(()=>{
+        //--check previous connexion
         const token = localStorage.getItem("token") ?? undefined;
         if(token)
             navigate(RouteScheme.home)

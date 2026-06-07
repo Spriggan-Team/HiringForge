@@ -21,6 +21,7 @@ class RegisterUserCommand
         #[Assert\NotBlank]
         public string $password,
 
+
         #[Assert\NotBlank]
         public string $siret,
 
@@ -32,7 +33,7 @@ class RegisterUserCommand
         /** @var UploadedFile[] */
         public array $images = [],
         
-        public ?string $desc = null,
+        public ?string $description = null,
         public ?UploadedFile $logo = null,
         public ?UploadedFile $videoPresentation = null,
     ){}

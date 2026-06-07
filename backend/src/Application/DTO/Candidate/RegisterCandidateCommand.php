@@ -27,5 +27,7 @@ final class RegisterCandidateCommand
         public ?Address $address,
 
         public ?int $searchRadius,
+
+        public ?string $description = null
     ){}
 }

@@ -59,6 +59,12 @@ class FileEntity
     private ?UserEntity $userVideoPresentation = null;
 
     #[ORM\OneToOne(
+        mappedBy: 'logo',
+        targetEntity: UserEntity::class
+    )]
+    private ?UserEntity $userLogo = null;
+
+    #[ORM\OneToOne(
         targetEntity: JobOfferImageEntity::class,
         inversedBy: 'file'
     )]

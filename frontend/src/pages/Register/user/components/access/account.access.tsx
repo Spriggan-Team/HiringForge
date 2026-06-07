@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAppContext } from "../../../../hooks/context";
+import { useAppContext } from "../../../../../hooks/context";
 
 //-- Custom - React Component
-import HardPassword from "../../../../layout/components/form/input/password/hard.password";
-import ConfirmPassword from "../../../../layout/components/form/input/password/confirm/confirm.password";
-import BrandButton from "../../../../layout/components/buttons/brand.button";
-import BasicInput from "../../../../layout/components/form/input/basic.input";
-import FormWrapper, { FormHint, FormInputs, FormTitle, FormSubmitSection } from "../../../../layout/components/form/form.wrapper";
+import HardPassword from "../../../../../layout/components/form/input/password/hard.password";
+import ConfirmPassword from "../../../../../layout/components/form/input/password/confirm/confirm.password";
+import BrandButton from "../../../../../layout/components/buttons/brand.button";
+import BasicInput from "../../../../../layout/components/form/input/basic.input";
+import FormWrapper, { FormHint, FormInputs, FormTitle, FormSubmitSection } from "../../../../../layout/components/form/form.wrapper";
 
 //-- SVG Components
 import EmailSVG from '/src/assets/svg/email/email-1-svgrepo-com.svg';
@@ -42,14 +42,14 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
     const handleNext = (event: React.SubmitEvent<HTMLFormElement>) => {
         //-- strong password
         if(!isPasswordStrong){
-            setPopup({status: "error", message: t("register.form.step1.inputs.password.error")})
+            setPopup({status: "error", message: t("userRegister.form.step1.inputs.password.error")})
             setPopup(null);
             return;
         }
 
         //-- is password confirm
         if(!isPasswordConfirm){
-            setPopup({status: "error", message: t("register.form.step1.inputs.confirmPassword.error")})
+            setPopup({status: "error", message: t("userRegister.form.step1.inputs.confirmPassword.error")})
             setPopup(null);
             return;
         }
@@ -63,7 +63,7 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
     return (
         <div className={styles.container}>
             <FormWrapper formData={formData} handleNext={handleNext}>
-                <FormTitle title={t("register.form.step1.title")} />
+                <FormTitle title={t("userRegister.form.step1.title")} />
                 <FormInputs>
                     <BasicInput 
                         padding={5}  
@@ -71,8 +71,8 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                         svg={EmailSVG}
                         inputName="email"
                         className="faint-border" 
-                        label={t("register.form.step1.inputs.email.label")} 
-                        placeholder={t("register.form.step1.inputs.email.placeholder")}
+                        label={t("userRegister.form.step1.inputs.email.label")} 
+                        placeholder={t("userRegister.form.step1.inputs.email.placeholder")}
                         backgroundColor={inputColor}
                         required
                         extraInputProps={{ defaultValue: formData.get("email")?.toString() ?? undefined }}
@@ -85,7 +85,7 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                         inputName="password"
                         backgroundColor={inputColor}
                         onChange={(event)=> setPassword(event.target.value)}
-                        label={t("register.form.step1.inputs.password.label")}
+                        label={t("userRegister.form.step1.inputs.password.label")}
                         setter={setIsPasswordStrong}
                         required
                         extraInputProps={{ defaultValue: formData.get("password")?.toString() ?? undefined }}
@@ -99,19 +99,19 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                         className="faint-border" 
                         backgroundColor={inputColor}
                         setConfirm={setIsPasswordConfirm}
-                        label={t("register.form.step1.inputs.confirmPassword.label")}
+                        label={t("userRegister.form.step1.inputs.confirmPassword.label")}
                         defaultValue={ formData.get("password")?.toString() ?? undefined}
-                        validTxt={t("register.form.step1.inputs.confirmPassword.valid")}
-                        invalidTxt={t("register.form.step1.inputs.confirmPassword.invalid")}
+                        validTxt={t("userRegister.form.step1.inputs.confirmPassword.valid")}
+                        invalidTxt={t("userRegister.form.step1.inputs.confirmPassword.invalid")}
                     />
                 </FormInputs>
                 <FormSubmitSection>
                     <BrandButton 
                         type="submit"
                         svg={LeftToRightArrowSVG}
-                        text={t("register.buttons.logbtn")}
+                        text={t("userRegister.buttons.logbtn")}
                     />
-                    <FormHint text={t("register.form.step1.policyText")} />
+                    <FormHint text={t("userRegister.form.step1.policyText")} />
                 </FormSubmitSection>
             </FormWrapper>
         </div>

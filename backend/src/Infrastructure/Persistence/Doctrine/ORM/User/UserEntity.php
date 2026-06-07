@@ -19,6 +19,7 @@ use Doctrine\ORM\Mapping\JoinColumn;
 #[ORM\Entity]
 class UserEntity extends AccountEntity
 {
+
     //------------------------
     // Extra  Columns
     //-----------------------
@@ -42,6 +43,13 @@ class UserEntity extends AccountEntity
     #[JoinColumn(nullable: true)]
     private ?FileEntity $videoPresentation = null;
 
+    #[ORM\OneToOne(
+        inversedBy: 'userLogo',
+        targetEntity: FileEntity::class,
+        cascade: ['persist', 'remove']
+    )]
+    #[JoinColumn(nullable: true)]
+    private ?FileEntity $logo = null;
 
     #[ORM\OneToOne(
         targetEntity: UserAddressEntity::class,
@@ -83,11 +91,15 @@ class UserEntity extends AccountEntity
         string $password,
         string $siret,
         AddressEntity $address,
+        ?string $description = null,
+        ?FileEntity $logo = null,
     ): self {
         $entity = new self();
         $entity->setId($id)
+               ->setLogo($logo)
                ->setName($name)
                ->setEmail($email)
+               ->setDescription($description)
                ->setPassword($password)
                ->setSiret($siret)
                ->attachToAddress($address);
@@ -97,6 +109,8 @@ class UserEntity extends AccountEntity
     /* =======================
      * GETTERS
      * ======================= */
+
+    public function getLogo(): ?FileEntity { return $this->logo; } 
 
     public function getName(): string { return $this->name; }
 
@@ -114,6 +128,10 @@ class UserEntity extends AccountEntity
     /* =======================
      * SETTERS
      * ======================= */
+    public function setLogo(FileEntity $logo): static{
+        $this->logo = $logo;
+        return $this;
+    }
 
     public function setName(string $name): static { 
         $this->name = $name;
@@ -138,8 +156,8 @@ class UserEntity extends AccountEntity
     public function attachToImage(FileEntity $image): static
     {
         //Forbide duplicates
-        foreach($this->userImages as $image){
-            if($image->getImage() === $image){
+        foreach($this->userImages as $img){
+            if($img->getImage() === $image){
                 return $this;
             }
         }

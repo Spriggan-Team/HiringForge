@@ -48,6 +48,7 @@ interface MediaStorageInterface
 
     /**
      * Used for removing
+     * @throws \Exception
      */
     public function remove(
         string $uniqName, 

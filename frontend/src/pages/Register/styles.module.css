@@ -1,0 +1,23 @@
+/**-- CONTAINER -- **/
+.container{
+
+}
+
+/**-- NAVBAR -- **/
+.navbar {
+    display: flex;
+    justify-content: space-between; 
+    width: 100%;        
+    align-items: center;
+    padding: 16px 70px;
+    box-sizing: border-box;
+    gap: 16px;
+}
+
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+}

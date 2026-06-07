@@ -1,0 +1,38 @@
+
+
+
+/* Traduction section */
+.translateSection {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 6px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    gap: 8px;
+
+    width: fit-content;
+
+    svg {
+        width: 18px;
+        height: 18px;
+        stroke: #64748b;
+        transition: stroke 0.2s ease;
+    }
+
+    span {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #334155;
+        text-transform: uppercase;
+    }
+
+    &:hover {
+        background-color: #f8fafc;
+        
+        svg {
+            stroke: #334155;
+        }
+    }
+}

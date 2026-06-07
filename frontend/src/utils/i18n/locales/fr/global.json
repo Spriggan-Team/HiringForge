@@ -1,5 +1,6 @@
 {
     "global":{
+        "appName" : "DigitalCop ATS",
         "allRightsReserved":"2026 DigitalCop - Tous droits réservés",
         "rules":{
             "password":{

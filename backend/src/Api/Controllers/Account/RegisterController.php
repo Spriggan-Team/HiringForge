@@ -13,11 +13,13 @@ use App\Application\Usecases\User\UserRegisterUseCase;
 
 use Exception;
 use  Psr\Log\LoggerInterface;
-use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\ApplicationErrorCode;
+
+use App\Domain\OTP\Exception\OTPException;
 use App\Domain\Exception\FileSizeExceeded;
 use App\Domain\Exception\FileTimeExceeded;
-use App\Domain\OTP\Exception\OTPException;
+use App\Domain\Exception\EmailAlreadyRegistered;
+use App\Domain\Exception\ResourceCreationRejected;
 
 
 use Symfony\Component\HttpFoundation\Request;
@@ -53,6 +55,7 @@ class RegisterController extends AbstractController
                 password: $inputBag->get('password'),
                 image: $request->files->get('image', null),
                 cv: $request->files->get('cv', null),
+                description: $inputBag->get("description", null),
                 address:  Address::tryCreate([
                     'street' => $inputBag->get("address[street]"),
                     'country' => $inputBag->get("address[country]"),
@@ -79,7 +82,7 @@ class RegisterController extends AbstractController
 
 
 
-    #[Route("/users/register", methods: ["POST"], name: "user_register")]
+    #[Route("/user/register", methods: ["POST"], name: "user_register")]
     public function userRegister(
         Request $request,
         UserRegisterUseCase $usecase,
@@ -96,7 +99,7 @@ class RegisterController extends AbstractController
                 password: $inputBag->get('password'),
                 images: $request->files->get('images', []),
                 videoPresentation: $request->files->get('videoPresentation',null),
-                desc: $inputBag->get("description", null),
+                description: $inputBag->get("description", null),
                 logo: $request->files->get("logo"),
                 verificationCode: $inputBag->get("verificationCode", null),
                 address:  Address::create(
@@ -107,7 +110,7 @@ class RegisterController extends AbstractController
             );
 
             $result = $usecase->execute($command);
-            
+
             return ApiResponse::success($result)->toJsonResponse();
         }
         //-- account error fallback
@@ -148,6 +151,13 @@ class RegisterController extends AbstractController
                 throwable: $filetimeError,
                 code: ApplicationErrorCode::FILE_TIME_EXCEEDED,
                 data: $filetimeError->getPayload() ?? [],
+            )->toJsonResponse();
+        }
+        catch(ResourceCreationRejected $ressourceCreation){
+            return ApiResponse::error(
+                message: "Failed to create user",
+                throwable: $ressourceCreation,
+                code: ApplicationErrorCode::RESSOURCE_CREATION_FAILED
             )->toJsonResponse();
         }
         //-- catch remaining all exception

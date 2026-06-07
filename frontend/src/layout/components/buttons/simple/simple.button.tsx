@@ -1,9 +1,9 @@
 
+import styles from "./style.module.css"
 
 const SimpleButton = () => {
     return ( 
-        <div>
-            <button></button>
+        <div className={styles.container}>
         </div>
     );
 }

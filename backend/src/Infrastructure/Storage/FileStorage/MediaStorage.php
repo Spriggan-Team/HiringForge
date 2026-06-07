@@ -63,8 +63,8 @@ class MediaStorage implements MediaStorageInterface
         $fileName = $storedFileName ?? (Uuid::v4()->toRfc4122() . '.' . $extension);
 
         $uploadResult = new MediaUploadResult(
-                originalName: $file->getClientOriginalName() ?? "unknow",
-                storedName: $fileName,
+            originalName: $file->getClientOriginalName() ?? "unknow",
+            storedName: $fileName,
         );
         
         try{
@@ -78,7 +78,9 @@ class MediaStorage implements MediaStorageInterface
         {
             if($errorCallback){
                 $errorCallback($uploadResult);
+                return;    
             }
+            throw $exception;
         }
     }
 
@@ -130,9 +132,48 @@ class MediaStorage implements MediaStorageInterface
     }
 
 
+    public function remove(
+        string $uniqName, 
+        ?string $ownerId = null, 
+        ?MediaOwnerType $ownerType = null, 
+        ?MediaPurpose $purpose = null, 
+        ?callable $successCallback = null, 
+        ?callable $errorCallback = null
+    ): void {
+        try {
+            $mimeType = null;
+            
+            $directoryPath = $this->resolveTargetDirectory(
+                $mimeType, 
+                $ownerId, 
+                $ownerType, 
+                $purpose
+            );
 
-    public function remove(string $uniqName, ?string $ownerId = null, ?MediaOwnerType $ownerType = null, ?MediaPurpose $purpose = null, ?callable $successCallback = null, ?callable $errorCallback = null): void
-    {
-        throw new \Exception('Not implemented');
+            $fullFilePath = $directoryPath . '/' . $uniqName;
+
+            if (!$this->filesystem->exists($fullFilePath)) {
+                throw new \Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException(
+                    sprintf('File "%s" not found in path "%s"', $uniqName, $directoryPath)
+                );
+            }
+
+            //-- local deletion
+            $this->filesystem->remove($fullFilePath);
+
+            //-- sucess callback
+            if ($successCallback) {
+                $successCallback($uniqName);
+            }
+
+        } catch (\Exception $exception) {
+            //-- callback
+            if ($errorCallback) {
+                $errorCallback($exception);
+                return;
+            }
+
+            throw $exception;
+        }
     }
 }

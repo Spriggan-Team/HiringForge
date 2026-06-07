@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Usecase\User;
+namespace App\Application\Usecases\User;
 
 use App\Application\DTO\User\ChangeUserProfileCommand;
 use App\Domain\File\MediaFactoryInterface;

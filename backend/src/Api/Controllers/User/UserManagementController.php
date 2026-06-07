@@ -13,9 +13,8 @@ use App\Domain\Shared\Account\AccountRole;
 use App\Application\DTO\User\ChangeUserProfileCommand;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 
-use App\Application\Usecase\User\UserModifier;
 use App\Application\Usecases\User\UserEraser;
-
+use App\Application\Usecases\User\UserModifier;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;

@@ -1,45 +1,44 @@
 security:
-    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         users_in_memory: { memory: null }
 
     firewalls:
-        login:
-            pattern: ^/(candidate|agent|user)/login
-            stateless: true
-            custom_authenticators:
-                - App\Api\Controllers\Auth\LoginAuthentictorController
-        
-        api:
-            pattern: ^/(candidate|agent|user)
-            stateless: true
-            user_checker: App\Api\Controllers\Auth\AccountChecker
-            custom_authenticators:
-                - App\Api\Controllers\Auth\JwtAuthenticatorController
-
         dev:
-            # Ensure dev tools and static assets are always allowed
-            pattern: ^/(_profiler|_wdt|assets|build)/
+            pattern: ^/api/(_profiler|_wdt|assets|build)/
             security: false
+
+        # LOGIN 
+        login:
+            pattern: ^/api/(candidate|agent|user)/login$
+            stateless: true
+            custom_authenticators:
+                - App\Api\Security\LoginAuthenticatorController
+
+        # API SECURISE 
+        api:
+            pattern: ^/api/(candidates|agents|users)
+            stateless: true
+            user_checker: App\Api\Security\AccountChecker
+            custom_authenticators:
+                - App\Api\Security\JwtAuthenticatorController
+
         main:
             lazy: true
             provider: users_in_memory
 
-            # Activate different ways to authenticate:
-            # https://symfony.com/doc/current/security.html#the-firewall
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
-
-    # Note: Only the *first* matching rule is applied
+    # contrôle d'accès
     access_control:
-        # - { path: ^/user, roles: ROLE_USER }
-        # - { path: ^/candidate, roles: ROLE_CANDIDATE }
-        # - { path: ^/agent,      roles: ROLE_AGENT }
+        # -- ROUTES PUBLIQUES
+        - { path: ^/api/(candidate|agent|user)/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/(candidate|agent|user)/otp,      roles: PUBLIC_ACCESS }
+
+        # -- ROUTES PRIVEES 
+        - { path: ^/api/candidates, roles: ROLE_CANDIDATE }
+        - { path: ^/api/agents,     roles: ROLE_AGENT }
+        - { path: ^/api/users,      roles: ROLE_USER }
 
 when@test:
     security:

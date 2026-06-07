@@ -8,11 +8,13 @@ import UploadSVG from "/src/assets/svg/load/export-svgrepo-com.svg"
 import styles from "./style.module.css"
 
 interface DownloadButton{
+    txt: string;
     onNext: (file?: File) => void;
     inputAttributes?: InputHTMLAttributes<HTMLInputElement>
 }
 
 const DownloadButton: React.FC<DownloadButton> = ({
+    txt,
     onNext,
     inputAttributes
 }) => {
@@ -43,7 +45,7 @@ const DownloadButton: React.FC<DownloadButton> = ({
                 }}
             >
                 <UploadSVG width={25} height={25} />
-                <span>{t("register.form.aside.downloadAssets.logo.tagline")}</span>
+                <span>{txt}</span>
             </div>
         </div>
     );

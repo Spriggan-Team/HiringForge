@@ -11,7 +11,7 @@ interface UserRepositoryInterface
      * A method to save a new ressource in storage/bdd
      * @param  User $user represents the user to persist
      * @return void 
-     * @throws Exception
+     * @throws \Exception|ResourceCreationRejected
      * use to create/update a new ressource in the bdd
     */
     public function save(User $user): void;

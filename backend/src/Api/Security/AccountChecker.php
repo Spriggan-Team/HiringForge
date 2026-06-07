@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\Controllers\Auth;
+namespace App\Api\Security;
 
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Domain\Shared\Account\AccountRepositoryInterface;

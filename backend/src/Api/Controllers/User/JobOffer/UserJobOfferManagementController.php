@@ -13,12 +13,11 @@ use App\Application\DTO\JobOffer\CreateJobOfferRequest;
 
 use App\Domain\Shared\Account\AccountRole;
 
-use App\Application\Command\Usecase\JobOffer\JobOfferModifier;
-use App\Application\Command\Usecase\JobOffer\JobOfferRecorder;
 use App\Application\Usecases\JobOffer\JobOfferImageRemover;
 use App\Application\Usecases\JobOffer\JobOfferImageUploader;
 use App\Application\Usecases\JobOffer\JobOfferEraser;
-
+use App\Application\Usecases\JobOffer\JobOfferModifier;
+use App\Application\Usecases\JobOffer\JobOfferRecorder;
 use App\Application\Usecases\JobOffer\JobOffferPublisher;
 use App\Application\Usecases\JobOffer\MarkJobOfferAsDraft;
 

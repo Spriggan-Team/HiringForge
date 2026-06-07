@@ -8,6 +8,7 @@ use App\Application\Usecases\Account\AccountRegister;
 use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Exception\FileSizeExceeded;
 use App\Domain\Exception\FileTimeExceeded;
+use App\Domain\Exception\ResourceCreationRejected;
 use App\Domain\Exception\RessourceNotFound;
 
 use App\Domain\File\MediaFactoryInterface;
@@ -22,10 +23,12 @@ use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\PlainPassword;
+
 use App\Domain\User\Siret;
 use App\Domain\User\User;
 use App\Domain\User\UserId;
 use App\Domain\User\UserRepositoryInterface;
+
 
 
 
@@ -40,7 +43,7 @@ class UserRegisterUseCase
     ){}
     
     /**
-     * @throws \DomainException|\Exception|OTPException|EmailAlreadyRegistered|OTPException
+     * @throws \DomainException|\Exception|OTPException|EmailAlreadyRegistered|OTPException|ResourceCreationRejected
      */
     public function execute(RegisterUserCommand $command): AccountRegister
     {    
@@ -60,7 +63,8 @@ class UserRegisterUseCase
         /** @var string[] filenames array that have failed échoué */
         $filesFailedSize = [];
         $filesFailedTimeout = [];
-        $filesFailedGeneric = []; 
+        $filesFailedGeneric = [];
+        $successfulUploads = [];
 
         // -- Check verification code
         try {
@@ -98,6 +102,7 @@ class UserRegisterUseCase
             userId: $userId,
             name: $command->name,
             email: $email,
+            description: $command->description,
             passwordHash: $this->hasher->hash((new PlainPassword($command->password))->value()),
             siret: Siret::create($command->siret),
             address: $command->address,
@@ -126,39 +131,82 @@ class UserRegisterUseCase
             }
         }
 
-        // -- Upload images
-        foreach ($command->images as $uploadedImage) {
+        //-- method for handling signle upload (static media)
+        $uploadMedia = function($file, MediaPurpose $purpose, callable $onAttach, callable $onDetach) 
+        use (&$filesFailedGeneric, &$filesFailedSize, &$successfulUploads, $userId, $user) {
             try {
-                $staticMedia = $this->mediaFactory->createStaticMedia($uploadedImage);
-                $user->addImages($staticMedia);
+                $staticMedia = $this->mediaFactory->createStaticMedia($file);
                 
+                $onAttach($staticMedia);
+
                 $this->storage->store(
-                    file: $uploadedImage,
+                    file: $file,
                     ownerId: $userId->value(),
                     storedFileName: $staticMedia->name,
                     ownerType: MediaOwnerType::USER,
-                    mediaPurpose: MediaPurpose::PROFILE,
-                    errorCallback: function($result) use (&$user, &$filesFailedGeneric, $staticMedia) {
+                    mediaPurpose: $purpose,
+                    errorCallback: function($result) use (&$filesFailedGeneric, $onDetach, $staticMedia) {
                         $filesFailedGeneric[] = $result->originalName;
-                        $user->removeImage($staticMedia);
+                        $onDetach($staticMedia);
+                    },
+                    successCallback: function($result) use (&$successfulUploads) {
+                        $successfulUploads[] = $result->storedName;
                     }
                 );
             } catch (FileSizeExceeded $e) {
-               $filesFailedSize[] = $e->getPayload()["originalName"];
-            } catch (FileTimeExceeded $e) {
-                $filesFailedTimeout[] = $e->getPayload()["originalName"];
+                $filesFailedSize[] = $e->getPayload()["originalName"];
             }
+        };
+
+
+        // --- Treatment of logo
+        if ($command->logo) {
+            $uploadMedia(
+                file: $command->logo,
+                purpose: MediaPurpose::PROFILE,
+                onAttach: fn($media) => $user->setLogo($media),
+                onDetach: fn($media) => $user->removeImage($media)
+            );
         }
-        
+
+
+        // --- Treatment of Images
+        foreach ($command->images as $uploadedImage) {
+            $uploadMedia(
+                file: $uploadedImage,
+                purpose: MediaPurpose::PROFILE,
+                onAttach: fn($media) => $user->addImages($media),
+                onDetach: fn($media) => $user->removeImage($media)
+            );
+        }
+
+
+
         // -- Save user
-        $this->repository->save($user);
+        try {
+            $this->repository->save($user);
+        } catch (ResourceCreationRejected $e) {
+            // Rollback 
+            foreach ($successfulUploads as $storedFileName) {
+                try {
+                    $this->storage->remove(
+                        uniqName: $storedFileName,
+                        ownerId: $userId->value(),
+                        ownerType: MediaOwnerType::USER,
+                        purpose: MediaPurpose::PROFILE
+                    );
+                } catch (\Exception $storageException) {}
+            }
+
+            throw $e;
+        }
         
         //-- dto
         return new AccountRegister(
-            userId: $userId->value(), 
             filesFailedGeneric: $filesFailedGeneric,
             filesFailedTimeout: $filesFailedTimeout,
-            filesFailedSize: $filesFailedSize
+            filesFailedSize: $filesFailedSize,
+            successfulUploads: $successfulUploads
         );
     }
 }

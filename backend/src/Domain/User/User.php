@@ -15,7 +15,10 @@ use App\Domain\Shared\Account\Account;
 final class User implements Account
 {
     private UserId $id;
+    
     public  string  $name;
+    private ?StaticMedia $logo = null;
+
     private Siret $siret;
     private Address $address;
 
@@ -28,6 +31,7 @@ final class User implements Account
      * @var array<StaticMedia>  $images
      */
     private array  $images;
+
 
     /**
      * @var ?UploadedFile
@@ -43,16 +47,20 @@ final class User implements Account
         Siret $siret,
         string $passwordHash,
         array $images,
-        Address $address, 
+        Address $address,
+        ?string $description = null,
+        ?StaticMedia $logo = null,
         ?TimedMedia $videoPresentation = null,
     ) {
         $this->id    = $id;
+        $this->logo  = $logo;
         $this->name  = $name;
         $this->email = $email;
         $this->siret = $siret;
         $this->passwordHash = $passwordHash;
         $this->images = $images;
         $this->address = $address;
+        $this->description = $description;
         $this->videoPresentation = $videoPresentation;
     }
 
@@ -67,17 +75,21 @@ final class User implements Account
         string $passwordHash,
         Address  $address,
         array $images= [],
+        ?string $description = null,
+        ?string $logo = null,
         ?TimedMedia $videoPresentation=null,
     ){
         return new self(
-            $userId ?? UserId::create(),
-            $name,
-            $email,
-            $siret,
-            $passwordHash,
-            $images,
-            $address,
-            $videoPresentation,
+            id: $userId ?? UserId::create(),
+            name: $name,
+            email: $email,
+            siret: $siret,
+            passwordHash: $passwordHash,
+            images: $images,
+            address: $address,
+            description: $description,
+            logo: $logo,
+            videoPresentation:$videoPresentation,
         );
     }
     
@@ -89,6 +101,10 @@ final class User implements Account
     public function id(): string 
     {
         return $this->id->value();
+    }
+
+    public function logo(): ?StaticMedia{
+        return $this->logo;
     }
 
     public function name(): string {
@@ -129,6 +145,11 @@ final class User implements Account
     //------------------------------------------
     // - Business change --
     //-----------------------------------------
+
+    public function setLogo(StaticMedia $logo): static{
+        $this->logo = $logo;
+        return $this;
+    }
 
     public function rename(string $name): static
     {

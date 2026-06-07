@@ -1,10 +1,11 @@
 <?php
 
+namespace App\Application\Usecases\JobOffer;
 
-namespace App\Application\Command\Usecase\JobOffer;
 
 use App\Application\DTO\JobOffer\ChangeJobOffferRequest;
 use App\Domain\JobOffer\JobOfferRepositioryInterface;
+
 
 class JobOfferModifier
 {
@@ -12,7 +13,7 @@ class JobOfferModifier
 
     /**
      * This function is a usecase that allow any user to change information about a job stored in the bdd
-     * @throws RessourceNotFound|DomainException
+     * @throws RessourceNotFound|\DomainException
      * @return void;
      */
     public function execute(

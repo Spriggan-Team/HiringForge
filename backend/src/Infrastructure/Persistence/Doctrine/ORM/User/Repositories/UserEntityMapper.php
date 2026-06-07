@@ -3,6 +3,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories;
 
+use App\Domain\File\StaticMedia;
 use App\Domain\Shared\Address;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\User\Siret;
@@ -21,36 +22,41 @@ class UserEntityMapper
      * This function trun an existing a user domain entity into a doctrine entity
      * @return DoctrineEntity
      */
-    public static function toDoctrineEntity(DomainEntity $user): UserEntity
+public static function toDoctrineEntity(DomainEntity $user): UserEntity
     {
-        $entity = UserEntity::create(
-            id: $user->id(),
-            name: $user->name(),
-            email: $user->email(),
-            password: $user->passwordHash(),
-            siret: $user->siret(),
-            address: new AddressEntity()
-        );
-
         $address = AddressEntity::create(
             street: $user->address()->street,
             postalCode: $user->address()->postalCode,
             country: $user->address()->country
         );
 
-        //Insert user image collection
-        foreach($user->images() as $uploadedImage){
-            $image   = new FileEntity()
-                            ->setName($uploadedImage->name)
-                            ->setMime($uploadedImage->mime)
-                            ->setSize($uploadedImage->size);
+        $entity = UserEntity::create(
+            id: $user->id(),
+            name: $user->name(),
+            email: $user->email(),
+            password: $user->passwordHash(),
+            siret: $user->siret(),
+            address: $address,
+            description: $user->description(),
+            logo: new FileEntity()
+                        ->setName($user->logo()->name)
+                        ->setMime($user->logo()->mime)
+                        ->setSize($user->logo()->size)
+        );
+
+        $entity->attachToAddress($address);
+
+        foreach ($user->images() as $uploadedImage) {
+            $image = new FileEntity();
+            $image->setName($uploadedImage->name)
+                  ->setMime($uploadedImage->mime)
+                  ->setSize($uploadedImage->size);
+                  
             $entity->attachToImage($image);
         }
 
-        $entity->attachToAddress($address);
         return $entity;
     }
-
 
     /**
      * This function is responsable to transform an existing doctrine entity into a user domain entity
@@ -62,13 +68,24 @@ class UserEntityMapper
         foreach($doctrine->getUserImages() as $userImageEntity){
             $userImages[] = $userImageEntity->image->name;
         }
+        $logo = $doctrine->getLogo();
+
         return DomainEntity::create(
-            userId: UserId::hydrate($doctrine->getId()),
             name: $doctrine->getName(),
-            email: EmailAddress::hydrate($doctrine->getEmail()),
+            userId: UserId::hydrate($doctrine->getId()),
+            
             images: $userImages,
+            email: EmailAddress::hydrate($doctrine->getEmail()),
             passwordHash: $doctrine->getPassword(),
+            description: $doctrine->getDescription(),
+
+            logo: $logo ? StaticMedia::hydrate(
+                name: $logo->getName(),
+                size: $logo->getSize(),
+                mime: $logo->getMime(),
+            ) : null,
             siret:  Siret::hydrate($doctrine->getSiret()),
+
             address:  Address::hydrate(
                 street: $doctrine->getAddress()->getStreet(),
                 postalCode: $doctrine->getAddress()->getPostalCode(),
@@ -86,6 +103,7 @@ class UserEntityMapper
         $entity->setName($user->name())
                ->setEmail($user->email())
                ->setPassword($user->passwordHash())
-               ->setSiret($user->siret());
+               ->setSiret($user->siret())
+               ->setDescription($user->description());
     }
 }

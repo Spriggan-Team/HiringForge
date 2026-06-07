@@ -1,13 +1,23 @@
 
 
 //-- Api Success response (Data)
-export interface NoticeResponse { message: string }
 
-export interface AccountRegisterResponse {
+export type ApiResponse<T> = { data: T; message?: string; status?: "success" }
+
+export type NoticeResponse = ApiResponse<{ message: string }>
+
+    //-- Auth Register
+export type AccountRegisterResponse = ApiResponse<{
     id: string;
     failedUploading: string[];
-}
+}>
+
+    //-- Auth Login
+export type AccountLoginResponse = ApiResponse<{
+    token: string,
+    role: string
+}>
 
 
 //--- Api Bad Reponse (Data)
-export interface FileUploadErrorPayload { originalName?: string | undefined }
+export type FileUploadErrorPayload  = ApiResponse<{ originalName?: string | undefined }>

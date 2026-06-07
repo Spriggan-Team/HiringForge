@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Command\Usecase\JobOffer;
+namespace App\Application\Usecases\JobOffer;
 
 
 use App\Application\DTO\JobOffer\CreateJobOfferRequest;

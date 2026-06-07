@@ -20,6 +20,13 @@ class StaticMedia
         public ?string $originalName = null,
     ){}
 
+    public static function hydrate(
+        string $name, float $size,
+        string $mime, ?string $originalName = null    
+    ){
+        return new self(name: $name, size: $size, mime: $mime, originalName: $originalName);
+    }
+
     /**
      * This function ensure size & type validation for a given StaticMedia object
      * @param  float  $sizeLimitation  (bytes)    The file size limitation to enforce that size of the given object must not be greater than the limitation (should be <=)

@@ -2,9 +2,25 @@
 const RouteScheme = {
     main: "/",
     home: "/home",
+    
+    //-- lOGIN
     login: "/login",
-    register: "/resgister",
     forgottenPassword: "/forgotten-password",
+    
+    //-- REGISTER
+    register: "/resgister",
+    userRegister: "/user/resgister",
+    candidateRegister: "/candidate/register",
+
+    //-- CANDIDATE
+    candidateDashboard: "/candidate/dashboard",
+    candidateProfile: "/candidate/profil",
+
+
+    //-- JOBS
+    jobs: "/jobs",
+    jobDetails: "/jobs/:id",
+
 }
 
 export default RouteScheme;

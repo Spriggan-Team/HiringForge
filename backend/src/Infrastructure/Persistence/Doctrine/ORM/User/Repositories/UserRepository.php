@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories;
 
+use App\Domain\Exception\ResourceCreationRejected;
 use App\Domain\User\User as DomainEntity;
 use App\Domain\Sharedp\KnownIdentity;
 use App\Domain\Exception\RessourceNotFound;
@@ -74,12 +75,20 @@ class UserRepository implements UserRepositoryInterface
     }
 
 
-
+    /**
+     * @throws ResourceCreationRejected
+     * @return void
+     */
     public function save(DomainEntity $user): void
     {
-        $entity = UserEntityMapper::toDoctrineEntity($user);
-        $this->em->persist($entity);
-        $this->em->flush();
+        try{
+            $entity = UserEntityMapper::toDoctrineEntity($user);
+            $this->em->persist($entity);
+            $this->em->flush();
+        }
+        catch(\Exception){
+            throw new ResourceCreationRejected();
+        }
     }
 
     

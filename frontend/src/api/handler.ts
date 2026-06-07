@@ -18,7 +18,6 @@ const request = async <T, O = unknown>(
   headers: HeadersInit = {}
 ): Promise<T> => {
   const isFormData = data instanceof FormData;
-
   const clearEndpoint = endpoint.replace(/^\//, "");
 
   const response = await fetch(`${baseURL}/${clearEndpoint}`, {

@@ -1,10 +1,10 @@
 
 import { useTranslation } from "react-i18next";
-import FormWrapper, { FormHint, FormInputs, FormSubmitSection, FormTitle } from "../../../../layout/components/form/form.wrapper";
+import FormWrapper, { FormHint, FormInputs, FormSubmitSection, FormTitle } from "../../../../../layout/components/form/form.wrapper";
 
 //-- Custom Components
-import BasicInput from "../../../../layout/components/form/input/basic.input";
-import BrandButton from "../../../../layout/components/buttons/brand.button";
+import BasicInput from "../../../../../layout/components/form/input/basic.input";
+import BrandButton from "../../../../../layout/components/buttons/brand.button";
 
 //-- SVG Components
 import PasswordSVG from "/src/assets/svg/security/password-protection-privacy-access-verification-code-svgrepo-com.svg"
@@ -35,7 +35,7 @@ const SecureAccount: React.FC<SecureAccountProps> = ({
 
     return (
         <FormWrapper formData={formData} handleNext={onNext}>
-            <FormTitle title={t("register.form.step3.title")}/>
+            <FormTitle title={t("userRegister.form.step3.title")}/>
             <FormInputs>
                 <BasicInput
                     required
@@ -44,7 +44,7 @@ const SecureAccount: React.FC<SecureAccountProps> = ({
                     className="faint-border"
                     inputName="verificationCode"
                     extraInputProps={{ defaultValue: formData.get("verificationCode")?.toString() }}
-                    label={t("register.form.step3.inputs.verificationCode.label")} 
+                    label={t("userRegister.form.step3.inputs.verificationCode.label")} 
                     padding={5}  width="100%" backgroundColor={inputColor}
                 /> 
             </FormInputs>
@@ -52,9 +52,9 @@ const SecureAccount: React.FC<SecureAccountProps> = ({
                 <BrandButton
                     type="submit"
                     svg={LeftToRightArrowSVG}
-                    text={t("register.buttons.logbtn")}
+                    text={t("userRegister.buttons.logbtn")}
                 />
-                <FormHint text={t("register.form.step1.policyText")} />
+                <FormHint text={t("userRegister.form.step1.policyText")} />
             </FormSubmitSection>
         </FormWrapper>
     );

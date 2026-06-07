@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Application\Query\Usecase\User;
+namespace App\Application\Usecases\User;
 
-use App\Domain\File\StaticMedia;
+
 /**
  * This class represents a user's profile
  */

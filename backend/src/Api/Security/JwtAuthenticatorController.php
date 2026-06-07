@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\Controllers\Auth;
+namespace App\Api\Security;
 
 
 use App\Api\Responder\ApiResponse;
@@ -20,49 +20,48 @@ use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationExc
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 
 
-
 class JwtAuthenticatorController extends AbstractAuthenticator
 {
     public function __construct(
         private JwtAuthentificator $jwtService
-    ){}
-
+    ) {}
 
     public function supports(Request $request): ?bool
     {
         $authHeader = $request->headers->get('Authorization');
-        if(!$authHeader){
+        if (!$authHeader) {
             return false;
         }
-        return str_starts_with($authHeader, "Bearer ");
+        
+        //-- Allow "Bearer " ou "bearer "
+        return str_starts_with(strtolower($authHeader), "bearer ");
     }
-
 
     public function authenticate(Request $request): Passport
     {
         $authHeader = $request->headers->get("Authorization");
-        if(!$authHeader){
-            throw new CustomUserMessageAuthenticationException("You dont have the permission");
+        if (!$authHeader) {
+            throw new CustomUserMessageAuthenticationException("Missing authentication token.");
         }
 
-        $jwt = substr($authHeader, 7);
+        //-- jwt extraction
+        $jwt = trim(substr($authHeader, 7));
 
-        try{
-            $playoad = $this->jwtService->decode($jwt);
-        }
-        catch(\Exception)
-        {
-            throw new CustomUserMessageAuthenticationException("Invalid token");
+        try {
+            $payload = $this->jwtService->decode($jwt);
+        } catch (\Exception) {
+            throw new CustomUserMessageAuthenticationException("Expired or invalid token.");
         }
 
-        if (!isset($playoad['id'], $playoad['sub'], $playoad['roles'])) {
-            throw new CustomUserMessageAuthenticationException("Token not well formed");
+        // Payload Validation
+        if (!isset($payload['id'], $payload['sub'], $payload['roles'])) {
+            throw new CustomUserMessageAuthenticationException("Token identity payload is malformed.");
         }
 
         $user = new AuthenticatedPerson(
-            $playoad['id'],
-            $playoad['sub'],
-            $playoad['roles']
+            $payload['id'],
+            $payload['sub'],
+            $payload['roles']
         );
 
         return new SelfValidatingPassport(new UserBadge(
@@ -71,7 +70,6 @@ class JwtAuthenticatorController extends AbstractAuthenticator
         ));
     }
 
-
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         return null;
@@ -79,6 +77,9 @@ class JwtAuthenticatorController extends AbstractAuthenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        return  ApiResponse::error($exception->getMessage())->toJsonResponse();
+        return ApiResponse::error(
+            message: $exception->getMessage(),
+            statusCode: 401 
+        )->toJsonResponse();
     }
 }

@@ -1,6 +1,9 @@
 
 //-- Application Error Code
 export const ApiResponseCode = {
+    //-- global
+    RESSOURCE_CREATION_FAILED: "ressources_creation_failed",
+    
     //-- otp
     EXPIRED_OTP: "expired_otp",
     INVALID_OTP: "invalid_otp",
@@ -8,6 +11,7 @@ export const ApiResponseCode = {
     //-- account
     ACCOUNT_ALREADY_EXISTS: "account_already_exists",
     ACCOUNT_NOT_FOUND: "account_not_found",
+    PASSWORD_MISMATCH: "password_mismatch",
 
     //-- file
     FILE_MISMATCH_TYPE: "file_mismatch_type",

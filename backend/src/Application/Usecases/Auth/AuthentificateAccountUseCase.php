@@ -22,13 +22,16 @@ class AuthentificateAccountUseCase
      */
     public function execute(
         AuthentificateAccount $authentificateAccount
-    ):string
+    ): string
     {
         $identity = $this->accountRepository->assertExist(null,  EmailAddress::create($authentificateAccount->email)->value());
-        $isPasswordCorrect = $identity && $this->hasher->verify($identity->password, $authentificateAccount->password);
+        $isPasswordCorrect = $identity && $this->hasher->verify(
+            $authentificateAccount->password,
+            $identity->password
+        );
 
         if(!$isPasswordCorrect){
-            throw new \DomainException("The password is not correct");
+            throw new \DomainException("Invalid");
         }
 
         return $identity->uuid;
