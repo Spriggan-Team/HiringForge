@@ -3,6 +3,7 @@
 namespace App\Application\Usecases\Account;
 
 use App\Application\DTO\ChangePassword;
+use App\Domain\OTP\Exception\OTPException;
 use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
@@ -37,24 +38,30 @@ class AccountPasswordRenitializer
 
         $identity = $this->repository->assertExist(null, $clearEmail->value());
 
-        //---OTP recuperation & verification
-        $otp  =  $this->OTPRepository->getLastVerificationTokenWithPurpose(
-            $clearEmail->value(),
-            AccountFlowPurpose::PASSWORD_RESET
-        );
+        //-- OTP
+        try{
+            //---OTP recuperation & verification
+            $otp  =  $this->OTPRepository->getLastVerificationTokenWithPurpose(
+                $clearEmail->value(),
+                AccountFlowPurpose::PASSWORD_RESET
+            );
 
-        $isOtpVerified = $otp->verify(
-            plainCode: $command->verificationToken,
-            hasher: $this->hasher
-        );
+            $isOtpVerified = $otp->verify(
+                plainCode: $command->verificationToken,
+                hasher: $this->hasher
+            );
 
-        //Throws logic exception when hash verification not succeed
-        if(!$isOtpVerified)
-        {
-            throw new \DomainException("OTP code not correct!!");
+            //Throws logic exception when hash verification not succeed
+            if(!$isOtpVerified) throw new OTPException("OTP code not correct!!");
+
+            //-- Save otp code (token) state (attemps)
+            $this->OTPRepository->update(email: $identity->email, otp: $otp);
+        }
+        catch(\Exception){
+            throw new OTPException("OTP code not correct!!");
         }
 
-        //succedd
+        //-- succedd
         $this->repository->changePassword(
             $identity->email,
             $this->hasher->hash($plainPassword->value())

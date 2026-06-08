@@ -13,15 +13,18 @@ use App\Application\Usecases\Account\AccountEmailRenitializer;
 use App\Application\Usecases\Account\AccountPasswordRenitializer;
 use App\Application\Usecases\Account\VerificationCodeSender;
 use App\Domain\ApplicationErrorCode;
-use App\Domain\Exception\EmailAlreadyRegistered
-;
+use App\Domain\Exception\EmailAlreadyRegistered;
+use App\Domain\Exception\RessourceNotFound;
 use Exception;
 use Psr\Log\LoggerInterface;
+use App\Domain\OTP\Exception\OTPException;
+
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
 
 
 
@@ -106,15 +109,37 @@ class AccountController extends AbstractController
             $command = new ChangePassword(
                     $body['email'],
                     $body['password'],
-                    $body['verificationToken']);
+                    $body['verificationCode']);
+
             $usecase->execute($command);
             return ApiResponse::notice('Everything is ok')->toJsonResponse();
         }
+        catch(OTPException $otpError){
+            return ApiResponse::error(
+                message: 'Nothing Found',
+                throwable: $otpError,
+                statusCode: 400,
+                code: ApplicationErrorCode::INVALID_OTP
+            )->toJsonResponse();
+        }
+        catch(RessourceNotFound $notFound){
+            return ApiResponse::error(
+                message: 'Nothing Found',
+                throwable: $notFound,
+                statusCode: 400,
+                code: ApplicationErrorCode::ACCOUNT_NOT_FOUND
+            )->toJsonResponse();
+        }
         catch (Exception $exception)
         {
-            return ApiResponse::error('Nothing Found', throwable: $exception, statusCode: 400)->toJsonResponse();
+            return ApiResponse::error(
+                    'Nothing Found',
+                    throwable: $exception,
+                    statusCode: 400
+            )->toJsonResponse();
         }
     }
+
 
     /**
      * This one allow a user to change its email;

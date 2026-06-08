@@ -27,6 +27,7 @@ class VerificationCodeSender
         private AccountRepositoryInterface $repository,
     ){}
 
+
     /**
      * @param string $email - the email where to send the verification code
      * @param AccountFlowPurpose $purpose - why the current code is generated

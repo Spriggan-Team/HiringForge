@@ -11,7 +11,7 @@ export const ApiResponseCode = {
     //-- account
     ACCOUNT_ALREADY_EXISTS: "account_already_exists",
     ACCOUNT_NOT_FOUND: "account_not_found",
-    PASSWORD_MISMATCH: "password_mismatch",
+    INVALID_CREDENTIALS: "invalid_credential",
 
     //-- file
     FILE_MISMATCH_TYPE: "file_mismatch_type",

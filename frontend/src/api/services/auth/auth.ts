@@ -1,7 +1,7 @@
-import { post } from "../../handler";
+import { patch, post } from "../../handler";
 
 //import types
-import { AccountAlreadyRegistered, AccountNotFound, ExpiredOTP, InvalidCredentials, RessourceCreationFailed } from "./exceptions";
+import { AccountAlreadyRegistered, AccountNotFound, InvalidOTP, InvalidCredentials, RessourceCreationFailed } from "./exceptions";
 import { ApiResponseCode, HttpBadResponse } from "../../exceptions";
 import type { AccountLoginResponse, AccountRegisterResponse, NoticeResponse } from "../response.types";
 
@@ -41,7 +41,7 @@ const performUserRegister = async (formData: FormData)=>{
     catch(error){
         if(error instanceof HttpBadResponse){
             if(error.apiCode === ApiResponseCode.EXPIRED_OTP || error.apiCode === ApiResponseCode.INVALID_OTP)
-                throw new ExpiredOTP();
+                throw new InvalidOTP();
             if(error.apiCode === ApiResponseCode.ACCOUNT_ALREADY_EXISTS)
                 throw new AccountAlreadyRegistered();
             if(error.apiCode === ApiResponseCode.RESSOURCE_CREATION_FAILED)
@@ -52,6 +52,34 @@ const performUserRegister = async (formData: FormData)=>{
 }
 
 
+//-- reset password
+const resetPassword = async ({
+    email,
+    password,
+    verificationCode
+}:{
+    email: string;
+    password: string;
+    verificationCode: string;
+})=>{
+    try{
+        await patch("/account/resetpassword", {
+            verificationCode, password, email
+        })
+    }
+    catch(error){
+        if(error instanceof  HttpBadResponse){
+            if(error.apiCode === ApiResponseCode.ACCOUNT_NOT_FOUND)
+                throw new AccountNotFound();
+            if(error.apiCode == ApiResponseCode.EXPIRED_OTP)
+                throw new InvalidOTP();
+        }
+        throw error; 
+    }
+}
+
+
+//-- login
 const login = async (email: string, password: string)=>{
     try {
         const response = await post<AccountLoginResponse>("/user/login", { email, password });
@@ -61,7 +89,7 @@ const login = async (email: string, password: string)=>{
         if(error instanceof  HttpBadResponse){
             if(error.apiCode === ApiResponseCode.ACCOUNT_NOT_FOUND)
                 throw new AccountNotFound();
-            if(error.apiCode == ApiResponseCode.PASSWORD_MISMATCH)
+            if(error.apiCode == ApiResponseCode.INVALID_CREDENTIALS)
                 throw new InvalidCredentials();
         }
         throw error;
@@ -70,7 +98,7 @@ const login = async (email: string, password: string)=>{
 
 const AuthServices = {
     askVerificationCode,
-    performUserRegister, login
+    performUserRegister, login, resetPassword
 }
 
 

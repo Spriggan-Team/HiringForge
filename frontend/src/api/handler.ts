@@ -6,7 +6,7 @@ const port = import.meta.env.VITE_API_PORT;
 const host = import.meta.env.VITE_API_HOST;
 
 const baseURL  = `http://${host}:${port}/api`;
-
+const DEV = import.meta.env.DEV;
 
 type RequestData = Record<string, any> | FormData | null;
 
@@ -51,28 +51,26 @@ const request = async <T, O = unknown>(
       let httpCode = response.status;
 
       //-- HTML fallback (error page serveur)
-      if (contentType && contentType.includes("text/html")) {
+      if (contentType && contentType.includes("text/html") && DEV) {
           message = "An HTML error page was returned";
           Utils.openHtml(errorBody);
       }
       //-- JSON API error
       else {
           try {
-              const errorJson = JSON.parse(errorBody);
+            const errorJson = JSON.parse(errorBody);
+            message = errorJson.message ?? message;
 
-              message = errorJson.message ?? message;
-
-              if (errorJson.code) {
-                if(HttpBadResponse.isValidApiCode(errorJson.code)){
-                    apiCode = errorJson.code ;
-                }
+            if (errorJson.code) {
+              if(HttpBadResponse.isValidApiCode(errorJson.code)){
+                  apiCode = errorJson.code ;
               }
+            }
 
-              if(errorJson.data){
-                data = errorJson.data as O
-              }
-
-              console.error("API Response (JSON) : ", errorJson);
+            if(errorJson.data){
+              data = errorJson.data as O
+            }
+            console.error("API Response (JSON) : ", errorJson);
           }
           catch (err) {
               //-- keep raw message

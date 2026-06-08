@@ -4,7 +4,7 @@ import { ExceptionWithPayload } from "../../exceptions";
 export class RessourceCreationFailed extends ExceptionWithPayload{};
 
 //--OTP
-export class ExpiredOTP extends ExceptionWithPayload {}
+export class InvalidOTP extends ExceptionWithPayload {}
 
 //-- Account
 export class AccountAlreadyRegistered extends ExceptionWithPayload{};

@@ -25,7 +25,7 @@ import  IdentityDetail from "./components/identity/identity.details";
 //-- services
 import AuthServices from "../../../api/services/auth/auth";
 import { objectToFormData } from "../../../utils/convertor";
-import { AccountAlreadyRegistered, ExpiredOTP, RessourceCreationFailed } from "../../../api/services/auth/exceptions";
+import { AccountAlreadyRegistered, InvalidOTP, RessourceCreationFailed } from "../../../api/services/auth/exceptions";
 
 //-- SVG - Components
 
@@ -163,7 +163,7 @@ const UserRegister = () => {
                 console.log("Stack:", error.stack);
 
                 //-- Domain fallback (messages)
-                if(error instanceof ExpiredOTP){
+                if(error instanceof InvalidOTP){
                     setPopup({ status: "error", message: t("userRegister.apiResponse.codeVerification.expired") });
                 }
                 else if(error instanceof AccountAlreadyRegistered)

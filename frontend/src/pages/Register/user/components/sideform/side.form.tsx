@@ -80,7 +80,7 @@ const SideForm: React.FC<SideFormProps> = ({
                         {/* DOWNLOAD LOGO SECTION */}
                         <div className={styles.downloadLogoSection}>
                             <h4 className={styles.logoTitle}>
-                                {t("global.logo.text")} <span className="faint-txt">({t("global.validation.optionnal")})</span>
+                                {t("global.logo.text")} <span className={styles.faintTxt}>({t("global.validation.optionnal")})</span>
                             </h4>
                             <div className={styles.downloadBox}>
                                 {currentLogoImg ? (
@@ -126,12 +126,12 @@ const SideForm: React.FC<SideFormProps> = ({
                         <div className={styles.downloadImageSection}>
                             <h3>
                                 {t("userRegister.form.aside.downloadAssets.companyPhoto.tagline")}
-                                <span className="faint-txt">&nbsp;({t("global.validation.optionnal")})</span>
+                                <span className={styles.faintTxt}>&nbsp;({t("global.validation.optionnal")})</span>
                             </h3>
                             <div className={styles.images}>
                                 {Array.isArray(images) && images.length > 0 && (
                                     images.map((image, index) => (
-                                        <div key={`${image.file.name}-${index}`} style={{ position: "relative" }}>
+                                        <div key={`${image.file.name}-${index}`} className={styles.imageWrapper}>
                                             <button 
                                                 type="button"
                                                 className={styles.removeBtn}
@@ -200,6 +200,7 @@ const SideForm: React.FC<SideFormProps> = ({
                             <BasicInput
                                 required
                                 placeholder="France"
+                                className={styles.faintBorder} 
                                 value={form.country || ""}
                                 onChange={(e) =>
                                     setForm(prev => ({ ...prev, country: e.target.value }))
@@ -213,9 +214,9 @@ const SideForm: React.FC<SideFormProps> = ({
                                     placeholder="75002"
                                     label={t("userRegister.form.aside.addressDetails.inputs.postalCode.label")}
                                     backgroundColor="#FBFAFE" width="100%"
-                                    className="faint-border"
+                                    className={styles.faintBorder}
                                     value={form.postalCode || ""}
-                                    onChange={(e) =>{
+                                    onChange={(e) => {
                                             setForm(prev => ({ ...prev, postalCode: e.target.value }))
                                         }
                                     }
@@ -224,7 +225,7 @@ const SideForm: React.FC<SideFormProps> = ({
                                     required
                                     width="100%" 
                                     placeholder="Paris"
-                                    className="faint-border"
+                                    className={styles.faintBorder}
                                     backgroundColor="#FBFAFE"
                                     value={form.city || ""}
                                     onChange={(e) =>
@@ -236,7 +237,7 @@ const SideForm: React.FC<SideFormProps> = ({
                             <BasicInput 
                                 required
                                 width="100%" 
-                                className="faint-border" 
+                                className={styles.faintBorder} 
                                 backgroundColor="#FBFAFE" 
                                 value={form.street || ""}
                                 onChange={(e) =>

@@ -2,7 +2,7 @@
 
 //-- Api Success response (Data)
 
-export type ApiResponse<T> = { data: T; message?: string; status?: "success" }
+export type ApiResponse<T = undefined | null> = { data: T; message?: string; status?: "success" }
 
 export type NoticeResponse = ApiResponse<{ message: string }>
 

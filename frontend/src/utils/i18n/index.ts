@@ -41,7 +41,7 @@ i18n
 
     fallbackLng: "fr",
 
-    lng: "en",
+    lng: "fr",
 
     interpolation: {
 

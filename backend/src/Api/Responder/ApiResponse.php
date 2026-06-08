@@ -33,7 +33,9 @@ class ApiResponse
 
     public static function notice(string $message, int $statusCode = 200): self
     {
-        return new self(['message' => $message], $statusCode);
+        return new self([
+            'message' => $message
+        ], $statusCode);
     }
 
     /**

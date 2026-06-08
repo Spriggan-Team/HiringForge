@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens;
 
+use App\Api\Responder\ApiResponse;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\OTP\OTP;
 use App\Domain\OTP\OTPRepositoryInterface;
@@ -50,9 +51,11 @@ class OTPRepository implements OTPRepositoryInterface
         $account = $this->em
             ->getRepository(AccountEntity::class)
             ->findOneBy(['email' => $email]);
-        if($account)
+        
+        //-- Control purpose validation
+        if($otp->getPurpose() !== AccountFlowPurpose::SIGN_UP  && !$account)
             throw new RessourceNotFound(
-                "No associated account detected for ths otp code"
+                "No associated account detected for this otp code"
             );
 
         $entity = new OTPVerificationTokenEntity();
@@ -72,7 +75,8 @@ class OTPRepository implements OTPRepositoryInterface
         $this->em->flush();
     }
 
-#[Override]
+    
+    #[Override]
     public function update(string $email, OTP $otp): void
     {
         $account = $this->em
