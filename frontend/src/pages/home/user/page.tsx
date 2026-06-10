@@ -3,11 +3,15 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+import RouteScheme from "../../../route.scheme";
+
+
+
 import styles from "./styles.module.css"
-import RouteScheme from "../../route.scheme";
 
 
-const Home = () => {
+
+const UserHome = () => {
     const navigate = useNavigate()
 
     useEffect(()=>{
@@ -18,13 +22,14 @@ const Home = () => {
     
     return ( 
         <div className={styles.container}>
-            <div className={styles.statsSection}></div>
-            <div className={styles.jobsSection}>
-                <div className={styles.searchSection} ></div>
-                <div className={styles.notificationSection}></div>
-            </div>
+            {/** Main */}
+            <main>
+                <div>
+                    {/* AnalyticsCard */}
+                </div>
+            </main>
         </div>
     );
 }
  
-export default Home;
+export default UserHome;

@@ -1,0 +1,194 @@
+.aside {
+    gap: 2rem;
+    display: flex;
+    padding: 24px 16px;
+    flex-direction: column;
+    align-items: center;
+    background: #0f172a;
+    min-height: 100vh;
+    color: #94a3b8;
+    width: 260px;
+    box-sizing: border-box;
+    position: relative;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/** Collapse state (container) **/
+.aside.collapsed {
+    width: 80px;
+    padding: 24px 8px;
+}
+
+.aside.collapsed .text {
+    display: none;
+}
+
+.aside.collapsed .item {
+    justify-content: center;
+    padding: 12px;
+}
+
+.aside.collapsed .toggleBtn {
+    transform: rotate(180deg);
+}
+
+/** Logo **/
+.head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    width: 100%;
+    position: relative;
+}
+
+.aside.collapsed .head {
+    width: 100%;
+    /* background: #000; */
+    justify-content: center;
+   
+}
+
+.aside.collapsed .head .toggleBtn{
+    position: absolute;
+    right: -15px;
+}
+
+
+/** collapse (button) **/
+
+
+.toggleBtn {
+    
+    color: #f8fafc;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    transition: transform 0.3s ease, background 0.2s ease;
+}
+
+.toggleBtn:hover {
+    background: #334155;
+}
+
+/** menu - items **/
+
+.navLinks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.item {
+    gap: 12px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    cursor: pointer;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.item:hover {
+    color: #f8fafc;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/** Active menu -item **/
+
+.active {
+    color: #ffffff;
+    background: #1e40af;
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+}
+
+.active:hover {
+    background: #1e40af;
+}
+
+.text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* RESPONSIVE LAYOUT CONTEXT */
+
+@media (max-width: 1024px) {
+    .toggleBtn {
+        display: none; /* Hide toggle trigger since tablet viewports force icon-only layout naturally */
+    }
+    
+    .aside {
+        width: 80px;
+        padding: 24px 8px;
+    }
+
+    .text {
+        display: none;
+    }
+
+    .item {
+        justify-content: center;
+        padding: 12px;
+    }
+}
+
+
+@media (max-width: 640px) {
+    .aside, .aside.collapsed {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        min-height: auto;
+        height: 64px;
+        flex-direction: row;
+        padding: 0 12px;
+        z-index: 100;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .head, .toggleBtn {
+        display: none;
+    }
+
+    .navLinks {
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        gap: 0;
+        height: 100%;
+    }
+
+    .item {
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
+        padding: 8px;
+        border-radius: 8px;
+        height: 100%;
+        width: auto;
+    }
+    
+    .active {
+        background: transparent;
+        color: #3b82f6;
+        box-shadow: none;
+    }
+}

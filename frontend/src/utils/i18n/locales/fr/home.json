@@ -1,0 +1,13 @@
+{
+    "userHome":{
+        "menu":{
+            "home": "Acceuil",
+            "poste": "Postes",
+            "calendar": "Calendrier",
+            "agents": "Agents",
+            "candidates": "Candidates",
+            "interview": "Entretien",
+            "settings": "Paramèters"
+        }
+    }
+}

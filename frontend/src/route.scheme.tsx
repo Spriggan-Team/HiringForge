@@ -1,7 +1,7 @@
 
 const RouteScheme = {
     main: "/",
-    userHome: "/home",
+    userHome: "/user/home",
     
     //-- lOGIN
     login: "/login",
@@ -16,7 +16,6 @@ const RouteScheme = {
     //-- CANDIDATE
     candidateDashboard: "/candidate/dashboard",
     candidateProfile: "/candidate/profil",
-
 
     //-- JOBS
     jobs: "/jobs",
