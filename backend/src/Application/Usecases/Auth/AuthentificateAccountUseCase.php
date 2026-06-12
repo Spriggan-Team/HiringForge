@@ -2,6 +2,7 @@
 
 namespace App\Application\Usecases\Auth;
 
+use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthentificateAccount;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\EmailAddress;
@@ -25,9 +26,10 @@ class AuthentificateAccountUseCase
     ): string
     {
         $identity = $this->accountRepository->assertExist(null,  EmailAddress::create($authentificateAccount->email)->value());
+
         $isPasswordCorrect = $identity && $this->hasher->verify(
             $authentificateAccount->password,
-            $identity->password
+            $identity->password 
         );
 
         if(!$isPasswordCorrect){

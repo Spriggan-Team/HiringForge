@@ -14,7 +14,7 @@ use App\Domain\ApplicationErrorCode;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountRole;
 use App\Infrastructure\Security\JwtAuthentificator;
-
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,7 +36,10 @@ class LoginAuthenticatorController extends AbstractAuthenticator
     public function __construct(
         private AuthentificateAccountUseCase $usecase,
         private JwtAuthentificator $jwtService,
-    ) {}
+        private LoggerInterface $logger
+    ) {
+        ApiResponse::init($logger);
+    }
 
     /**
      * This one is called on every request to decide if this authentificator should be used
@@ -60,8 +63,8 @@ class LoginAuthenticatorController extends AbstractAuthenticator
         }
 
         $account = new AuthentificateAccount(
-            email: $body['email'],
-            password: $body['password']
+            email: trim($body['email']),
+            password: trim($body['password'])
         );
 
         $role = match ($request->getPathInfo()) {
@@ -69,15 +72,25 @@ class LoginAuthenticatorController extends AbstractAuthenticator
             '/agent/login'     => AccountRole::AGENT->value,
             default             => AccountRole::USER->value,
         };
+        
 
         try {
             $personId = $this->usecase->execute($account);
         }
-        catch (RessourceNotFound) {
+        catch (RessourceNotFound $e) {
+            if(ApiResponse::$logger)
+                ApiResponse::$logger->error("Caught Exception: ". $e->getMessage(), ['exception' => $e]);
             throw new CustomUserMessageAuthenticationException('Identifiants invalides.', [], 404);
         }
         catch (\DomainException $e) {
+            if(ApiResponse::$logger)
+                ApiResponse::$logger->error("Caught Exception: ". $e->getMessage(), ['exception' => $e]);
             throw new CustomUserMessageAuthenticationException($e->getMessage(), [], 403);
+        }
+        catch(\Exception $e){
+            if(ApiResponse::$logger)
+                ApiResponse::$logger->error("Caught Exception: ". $e->getMessage(), ['exception' => $e]);
+            throw new CustomUserMessageAuthenticationException($e->getMessage(), [], 400); 
         }
 
         $actor = new AuthenticatedPerson(
@@ -91,7 +104,7 @@ class LoginAuthenticatorController extends AbstractAuthenticator
         );
     }
 
-    
+
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         /** @var AuthenticatedPerson $user */

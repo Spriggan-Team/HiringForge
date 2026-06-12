@@ -21,7 +21,7 @@ use App\Domain\Exception\FileSizeExceeded;
 use App\Domain\Exception\FileTimeExceeded;
 use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Exception\ResourceCreationRejected;
-use App\Domain\Exception\RessourceAlreadyRegistered;
+
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;

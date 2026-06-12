@@ -9,6 +9,8 @@ enum AccountRole : string
     case CANDIDATE = 'CANDIDATE'; //represent a candidate
     case SUPER_ADMIN = 'SUPER';     //Just an user with super authority avec others "user" account
 
+    case UNKNOWN = "UNKNOWN"; //-- for handling error
+
     public static function fromString(string  $str):?self
     {
         return self::tryFrom(strtoupper($str));

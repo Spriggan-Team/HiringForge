@@ -77,7 +77,6 @@ class AccountEntity
     }
 
 
-
     //---------------
     //  GETTER
     //--------------

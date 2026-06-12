@@ -47,7 +47,7 @@ class UserRepository implements UserRepositoryInterface
             uuid: $user->getId(),
             email: $user->getEmail(),
             password: $user->getPassword(),
-            role: AccountRole::USER
+            accountType: AccountRole::USER
         );
     }
 

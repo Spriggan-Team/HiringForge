@@ -9,7 +9,7 @@ class KnownIdentity {
         public string $uuid,
         public string $email,
         public string $password,
-        public AccountRole $role,
+        public AccountRole $accountType, //accountType
     )
     {}
 }

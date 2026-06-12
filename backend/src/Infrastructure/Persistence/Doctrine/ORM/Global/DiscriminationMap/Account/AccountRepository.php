@@ -2,11 +2,12 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account;
 
+use App\Api\Responder\ApiResponse;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\KnownIdentity;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
-
+use App\Domain\Shared\Account\AccountRole;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 
@@ -35,31 +36,37 @@ class AccountRepository implements AccountRepositoryInterface
         return $account !== null;
     }
 
+
     public function assertExist(?string $uuid = null, ?string $email = null): KnownIdentity
     {
         if (!$uuid && !$email) {
             throw new RessourceNotFound();
         }
 
-        $criteria = [];
-        if ($uuid)  $criteria["id"] = $uuid;
-        if ($email) $criteria["email"] = $email;
+        $qb = $this->em->createQueryBuilder()
+            ->select('partial a.{id, email, password}') //-- ignore legacy
+            ->from(AccountEntity::class, 'a');
 
-        $account = $this->em
-            ->getRepository(AccountEntity::class)
-            ->findOneBy($criteria);
+        if ($uuid) {
+            $qb->andWhere('a.id = :id')->setParameter('id', $uuid);
+        }
+        if ($email) {
+            $qb->andWhere('a.email = :email')->setParameter('email', $email);
+        }
 
-        if (!$account) {
+        $accountData = $qb->getQuery()->getOneOrNullResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+        if (!$accountData) {
             throw new RessourceNotFound();
         }
 
         return new KnownIdentity(
-            uuid: $account->getId(),
-            email: $account->getEmail(),
-            password: $account->getPassword(),
-            role: $account->getRole()    
+            uuid: $accountData['id'],
+            email: $accountData['email'],
+            password: $accountData['password'],
+            accountType: AccountRole::tryFrom($accountData['account_role']) ?? AccountRole::UNKNOWN
         );
     }
+
 
     
     public function findAll(?int $skip = null, ?int $limit = null): array

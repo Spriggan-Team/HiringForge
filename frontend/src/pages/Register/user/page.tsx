@@ -140,7 +140,7 @@ const UserRegister = () => {
 
             //-- Data consolidation
             const data: FormData = objectToFormData(asideFormState, nativeFormData, { images: "images[]" });
-            console.log("Mes images réelles dans FormData : ",formData.current.getAll('images[]') );
+            // console.log("Mes images réelles dans FormData : ",formData.current.getAll('images[]') );
             
             const res = await AuthServices.performUserRegister(data);
             setLoading({state: false});
@@ -247,7 +247,6 @@ const UserRegister = () => {
                                        <UserProfileIdentity
                                             formData={formData.current}
                                             onNext={()=>{
-                                                console.log("Form Data", Object.fromEntries(formData.current.entries()));
                                                 setCurrentStep(prev => ({ current: 4, max: 4 > prev.max ? 4 : prev.max }));
                                             }}
                                        />
