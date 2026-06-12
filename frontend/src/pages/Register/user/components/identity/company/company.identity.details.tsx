@@ -11,7 +11,6 @@ import BrandButton from "../../../../../../layout/components/buttons/brand.butto
 
 //-- SVG Components
 import PersonSVG from '/src/assets/svg/person/person-2-svgrepo-com.svg';
-import LeftToRightArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg';
 
 
 //-- custom styles
@@ -44,9 +43,9 @@ const CompanyIdentityDetail: React.FC<IdentityDetailProps> = ({
                         svg={PersonSVG} 
                         inputName="companyName"
                         className="faint-border"
-                        placeholder={t("userRegister.form.step2.inputs.name.placeholder")}
-                        label={t("userRegister.form.step2.inputs.name.label")} 
-                        extraInputProps={{ defaultValue: formData.get("name")?.toString() ?? undefined }}
+                        placeholder={t("userRegister.form.step4.inputs.name.placeholder")}
+                        label={t("userRegister.form.step4.inputs.name.label")} 
+                        extraInputProps={{ defaultValue: formData.get("companyName")?.toString() ?? undefined }}
                         padding={5}  width="100%" backgroundColor={inputColor}
                         required
                     />
@@ -54,26 +53,27 @@ const CompanyIdentityDetail: React.FC<IdentityDetailProps> = ({
                         svg={PersonSVG}
                         inputName="siret"
                         className="faint-border"
-                        placeholder={t("userRegister.form.step2.inputs.siret.label")}
-                        label={t("userRegister.form.step2.inputs.siret.label")} 
+                        placeholder={t("userRegister.form.step4.inputs.siret.label")}
+                        label={t("userRegister.form.step4.inputs.siret.label")} 
                         padding={5}  width="100%" backgroundColor={inputColor}
                         extraInputProps={{ defaultValue: formData.get("siret")?.toString() ?? undefined }}
                         required
                     />
                     <VideoInput
-                        title={t("userRegister.form.step2.inputs.video.label")}
+                        title={t("userRegister.form.step4.inputs.video.label")}
                         onChange={(file)=>{ formData.set("videoPresentation", file)}}
-                        subtitle={t("userRegister.form.step2.inputs.video.placeholder")}
+                        subtitle={t("userRegister.form.step4.inputs.video.placeholder")}
+                        defaultFile={formData.get("videoPresentation") ? formData.get("videoPresentation") as File : null }
+                        
                     />
                     <CustomTextarea
                         inputName="description"
-                        placeholder={t("userRegister.form.step2.inputs.desc.placeholder")}
+                        placeholder={t("userRegister.form.step4.inputs.desc.placeholder")}
                     />
                 </FormInputs>
                 <FormSubmitSection>
                     <BrandButton
                         type="submit"
-                        svg={LeftToRightArrowSVG}
                         text={t("userRegister.buttons.logbtn")}
                     />
                     <FormHint text={t("userRegister.form.step1.policyText")} />

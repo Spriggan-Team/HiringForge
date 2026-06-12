@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {  useEffect, useMemo, useRef, useState } from "react";
 
 //-- Import custom component & props 
 import BasicInput, {
@@ -33,111 +33,104 @@ type Conditions = {
 const HardPassword: React.FC<HardPasswordProps> = ({
     onChange,
     setter,
-    onBlur, onFocus,
+    value,
+    onBlur,
+    onFocus,
     activateBubble = true,
     ...props
 }) => {
-
     const { t } = useTranslation();
-    const inputRef = useRef(null);
-
-    const [started, setStarted] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
     const [isInputFocus, setIsInputFocus] = useState(false);
-
     const [condition, setCondition] = useState<Conditions>({
-                                        safeLength: false,
-                                        uppercase: false,
-                                        number: false
-                                    });
+        safeLength: false,
+        uppercase: false,
+        number: false
+    });
 
-    //-- percent data
+    const started = (value?.length ?? 0) > 0;
+    const isBubbleVisible = activateBubble && started && isInputFocus;
+
+
     const percent = useMemo(() => {
-
-        const values =
-            Object.values(condition);
-
-        const valid =
-            values.filter(Boolean).length;
+        const values = Object.values(condition);
+        const valid = values.filter(Boolean).length;
 
         return valid / values.length;
 
     }, [condition]);
 
 
-    //-- eval
-    const evalStrongPassword = (password: string)=>{
-        const newConditions = {
+    useEffect(() => {
+        const password = value ?? "";
+        const newConditions: Conditions = {
             safeLength:
                 password.length >= 8 &&
                 password.length <= 128,
-
             uppercase:
                 /[A-Z]/.test(password),
-
             number:
                 /\d/.test(password)
         };
 
         setCondition(newConditions);
 
-        if(setter){
-            setter(
-                Object
-                    .values(newConditions)
-                    .every(Boolean)
-            );
-        }
-    }
+        setter?.(
+            Object
+                .values(newConditions)
+                .every(Boolean)
+        );
 
-    const toggleHiddenBoxVisibility = (started && isInputFocus);
+    }, [value, setter]);
 
+    
 
     return (
         <div className={styles.container}>
             <BasicInput
+                {...props}
                 type="password"
                 inputRef={inputRef}
-                onChange={(event)=>{
-
-                    const value =
-                        event.target.value;
-
-                    setStarted(
-                        value.length > 0
-                    );
-
-                    evalStrongPassword(value);
-
+                value={value}
+                onChange={(event) => {
                     onChange?.(event);
                 }}
-                onFocus={()=>{ setIsInputFocus(true) }}
-                onBlur={()=>{ setIsInputFocus(false); }}
-                {...props}
+                onFocus={(event) => {
+                    setIsInputFocus(true);
+                    onFocus?.(event);
+                }}
+                onBlur={(event) => {
+                    setIsInputFocus(false);
+                    onBlur?.(event);
+                }}
             />
 
             {
-                activateBubble &&   (
+                isBubbleVisible && (
                     <div
-                        style={{ ["--visibility" as string]: toggleHiddenBoxVisibility  ? "visible" : "hidden" }} 
                         className={styles.invisibleSection}
-                    >   
-                        
+                    >
                         <Gauge
-                            height={toggleHiddenBoxVisibility ? 5 : 0}
+                            height={5}
                             width={"47%"}
                             percent={percent}
                             activeColor={
                                 percent < .4
-                                ? "#EF4444"
-                                : percent < .8
-                                ? "#F59E0B"
-                                : "linear-gradient(to right, #009039 33%, #B4D83D 57%,  #41A802 100%)"
+                                    ? "#EF4444"
+                                    : percent < .8
+                                        ? "#F59E0B"
+                                        : "linear-gradient(to right, #009039 33%, #B4D83D 57%, #41A802 100%)"
                             }
                             className={styles.gauge}
                             foregroundColor="#E5E7EB"
                         />
+
                         <div className={styles.indicators}>
-                            { toggleHiddenBoxVisibility && <CloseSVG className={styles.closeSvg} height={24} width={24}/> }
+                            <CloseSVG
+                                className={styles.closeSvg}
+                                height={24}
+                                width={24}
+                            />
 
                             <span className={styles.ruleTitle}>
                                 {
@@ -152,7 +145,6 @@ const HardPassword: React.FC<HardPasswordProps> = ({
                                     styles.detailsSection
                                 }
                             >
-
                                 <RuleItem
                                     active={
                                         condition.safeLength
@@ -185,7 +177,6 @@ const HardPassword: React.FC<HardPasswordProps> = ({
                                         )
                                     }
                                 />
-
                             </div>
                         </div>
                     </div>
@@ -193,7 +184,8 @@ const HardPassword: React.FC<HardPasswordProps> = ({
             }
         </div>
     );
-}
+};
+
 
 
 

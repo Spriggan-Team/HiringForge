@@ -15,9 +15,11 @@ use App\Application\Usecases\Account\VerificationCodeSender;
 use App\Domain\ApplicationErrorCode;
 use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Exception\RessourceNotFound;
+
+
 use Exception;
 use Psr\Log\LoggerInterface;
-use App\Domain\OTP\Exception\OTPException;
+use App\Domain\OTP\Exceptions\OTPException;
 
 
 use Symfony\Component\HttpFoundation\Request;

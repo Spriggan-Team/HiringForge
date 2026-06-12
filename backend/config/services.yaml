@@ -60,6 +60,10 @@ services:
     #   Repositories
     #-----------------------
 
+    #--- TransactionManager 
+    App\Domain\Shared\TransactionManagerInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\DoctrineTransactionManager
+
     #--- Company
     App\Domain\Company\CompanyRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Company\Repositories\CompanyRepository

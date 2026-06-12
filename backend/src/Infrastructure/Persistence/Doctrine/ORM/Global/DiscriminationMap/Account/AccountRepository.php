@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account;
 
 use App\Domain\Shared\EmailAddress;
-use App\Domain\Sharedp\KnownIdentity;
+use App\Domain\Shared\KnownIdentity;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 

@@ -22,24 +22,21 @@ class UserEntityMapper
      * This function trun an existing a user domain entity into a doctrine entity
      * @return DoctrineEntity
      */
-    public static function toDoctrineEntity(DomainEntity $user, EntityManagerInterface $em): UserEntity
-    {
-        $company = $em->getReference(CompanyEntity::class, $user->companyId());
-        $userRole =  UserRoleEntity::create(name: $user->role());
-
-        $entity = UserEntity::create(
+    public static function toDoctrineEntity(
+        DomainEntity $user, 
+        CompanyEntity $companyProxy, 
+        ?UserRoleEntity $userRole
+    ): UserEntity {
+        return UserEntity::create(
             id: $user->id(),
             email: $user->email(),
             firstName: $user->firstName(),
             lastName: $user->lastName(),
             password: $user->passwordHash(),
             description: $user->description(),
-            company: $company,
-            userRole: $userRole,
+            company: $companyProxy,     // Reçu depuis le repository
+            userRole: $userRole,        // Reçu depuis le repository
         );
-
-
-        return $entity;
     }
 
     /**

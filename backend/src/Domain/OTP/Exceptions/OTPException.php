@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\OTP\Exception;
+namespace App\Domain\OTP\Exceptions;
 
 class OTPException extends \Exception {
     public bool $expired = false;

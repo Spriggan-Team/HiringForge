@@ -13,7 +13,7 @@ use App\Domain\User\UserId;
 
 
 class Company{
-    private string $id;
+    private string $id; //-- uuid
     private string $name;
 
     private Siret $siret;
@@ -45,6 +45,7 @@ class Company{
 
 
     public function __construct(
+        string $id,
         string $name,
         Siret $siret,
 
@@ -53,7 +54,6 @@ class Company{
         /** @var @var array<StaticMedia> */
         array $images= [],
 
-        ?string $id = null,
         array $recruiters = [],
         ?StaticMedia $logo = null,   
     ){

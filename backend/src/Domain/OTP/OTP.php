@@ -2,7 +2,7 @@
 
 namespace App\Domain\OTP;
 
-use App\Domain\OTP\Exception\OTPException;
+use App\Domain\OTP\Exceptions\OTPException;
 use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\Shared\PasswordHasherInterface;
 

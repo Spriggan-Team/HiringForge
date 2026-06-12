@@ -3,7 +3,7 @@
 namespace App\Application\Usecases\Account;
 
 use App\Application\DTO\ChangePassword;
-use App\Domain\OTP\Exception\OTPException;
+use App\Domain\OTP\Exceptions\OTPException;
 use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\Shared\Account\AccountRepositoryInterface;

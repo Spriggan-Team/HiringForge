@@ -36,6 +36,7 @@ class CompanyEntityMapper
         }
 
         $entity = CompanyEntity::create(
+            id: $company->id(),
             name: $company->name(),
             siret: $company->siret(),
             logo: $logoEntity,

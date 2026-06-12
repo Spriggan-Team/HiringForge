@@ -6,8 +6,9 @@ export class RessourceCreationFailed extends ExceptionWithPayload{};
 //--OTP
 export class InvalidOTP extends ExceptionWithPayload {}
 
-//-- Account
+//-- Account & Company
 export class AccountAlreadyRegistered extends ExceptionWithPayload{};
+export class CompanyAlreadyRegistered extends ExceptionWithPayload{};
 export class AccountNotFound extends ExceptionWithPayload{};
 
 //--Auth

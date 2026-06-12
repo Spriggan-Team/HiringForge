@@ -2,7 +2,7 @@
 
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAppContext } from "../../../hooks/context";
 
 
@@ -26,7 +26,7 @@ import  CompanyIdentityDetail from "./components/identity/company/company.identi
 //-- services
 import AuthServices from "../../../api/services/auth/auth";
 import { objectToFormData } from "../../../utils/convertor";
-import { AccountAlreadyRegistered, InvalidOTP, RessourceCreationFailed } from "../../../api/services/auth/exceptions";
+import { AccountAlreadyRegistered, CompanyAlreadyRegistered, InvalidOTP, RessourceCreationFailed } from "../../../api/services/auth/exceptions";
 
 //-- SVG - Components
 import SecureAccount from "./components/security/LockAccount";
@@ -39,11 +39,12 @@ import OfficeWorkerImage from "/src/assets/images/office-worker.png"
 import  styles from "./style.module.css"
 import AuthSwitcher from "../../../layout/components/navigation/auth/auth.switcher";
 import AppIdentity from "../../../layout/components/identity/app.identity";
+import UserProfileIdentity from "./components/identity/user/user.profile";
 
 
 
 
-const REGISTERING_TOTAL_STEP = 3;
+const REGISTERING_TOTAL_STEP = 4;
 
 
 export interface AsideFormState{
@@ -75,6 +76,7 @@ const UserRegister = () => {
         images: [] as File[],
     });
 
+
     /** Generate otp compte */
     const sendOTPCode = useCallback(async ()=>{
         //--Set loading & execute api request
@@ -84,7 +86,7 @@ const UserRegister = () => {
             setLoading({state: false, subtitle: undefined});
 
             //--Switch to next step & update popup+
-            setCurrentStep(prev => ({ current: 3, max: 3 > prev.max ? 3 : prev.max }))
+            setCurrentStep(prev => ({ current: 2, max: 2 > prev.max ? 2 : prev.max }));
             setPopup({status: "success", message: t("userRegister.apiResponse.verifyMailBox.success")})
         }
         catch(error){
@@ -138,9 +140,8 @@ const UserRegister = () => {
 
             //-- Data consolidation
             const data: FormData = objectToFormData(asideFormState, nativeFormData, { images: "images[]" });
-            console.log("Mes images réelles dans FormData :", formData.current.getAll('images[]'));
+            console.log("Mes images réelles dans FormData : ",formData.current.getAll('images[]') );
             
-
             const res = await AuthServices.performUserRegister(data);
             setLoading({state: false});
             console.log("Ressource ", res);
@@ -158,18 +159,20 @@ const UserRegister = () => {
             setLoading({ state: false });
             if (error instanceof Error) {
                 //-- console log
-                console.log("Error name", error.name);
-                console.log("Something went wrong:", error.message);
-                console.log("Stack:", error.stack);
+                console.log("Error name", error.name, "\n");
+                console.log("Something went wrong:", error.message, "\n");
+                console.log("Stack:", error.stack, "\n");
 
                 //-- Domain fallback (messages)
                 if(error instanceof InvalidOTP){
                     setPopup({ status: "error", message: t("userRegister.apiResponse.codeVerification.expired") });
                 }
                 else if(error instanceof AccountAlreadyRegistered)
-                    setPopup({ status: "warning", message: t("userRegister.apiResponse.registering.warning") })
+                    setPopup({ status: "warning", message: t("userRegister.apiResponse.registering.warning.accountAlreadyRegistered") })
                 else if(error instanceof RessourceCreationFailed)
                     setPopup({ status: "error", message: t("userRegister.apiResponse.registering.error.failedRegisteration") });
+                else if(error instanceof CompanyAlreadyRegistered)
+                    setPopup({ status: "error", message: t("userRegister.apiResponse.registering.warning.companyAlreadyRegistered") });
             }
             else {
                 setPopup({
@@ -198,61 +201,7 @@ const UserRegister = () => {
                 
                     {/* PROCESS DESCRIPTION */}
                     <div className={styles.infoBox}>
-                        <div className={styles.stagesSection}>
-                            <StageTitle
-                                step={1}
-                                active={currentStep.current === 1}
-                                textColor={currentStep.current > 1 ?  "#94a3b8" : undefined}
-                                backgroundColor={currentStep.current != 1 ? "#e0e7ff": undefined}
-                                txt={t("userRegister.processDescription.one")}
-                                onClick={()=>{
-                                    if(currentStep.max >= 1){
-                                        setCurrentStep(prev => ({
-                                            ...prev,
-                                            current: 1
-                                        }))
-                                    }
-                                }}
-                            />
-
-                            <StageTitle
-                                step={2}
-                                active={currentStep.current === 2}
-                                textColor={currentStep.max > 2 && currentStep.current != 2 ?  "#94a3b8" : undefined}
-                                backgroundColor={currentStep.max > 2 && currentStep.current != 2 ? "#e0e7ff" : undefined}
-                                txt={t("userRegister.processDescription.two")}
-                                disableCursorPointer={
-                                    currentStep.max < 2
-                                }
-                                onClick={()=>{
-                                    if(currentStep.max >= 2){
-                                        setCurrentStep(prev => ({
-                                            ...prev,
-                                            current: 2
-                                        }))
-                                    }
-                                }}
-                            />
-
-                            <StageTitle
-                                step={3}
-                                active={currentStep.current === 3}
-                                txt={t("userRegister.processDescription.three")}
-                                textColor={currentStep.max == 3 && currentStep.current < 3 ?  "#94a3b8" : undefined}
-                                backgroundColor={currentStep.max == 3 && currentStep.current < 3 ? "#e0e7ff": undefined}
-                                disableCursorPointer={
-                                    currentStep.max < 3
-                                }
-                                onClick={()=>{
-                                    if(currentStep.max >= 3){
-                                        setCurrentStep(prev => ({
-                                            ...prev,
-                                            current: 3
-                                        }))
-                                    }
-                                }}
-                            />
-                        </div>
+                        <StageSection currentStep={currentStep} setCurrentStep={setCurrentStep} />
                         <div className={styles.statusItemSection}>
                             <StatusItem text={t("userRegister.processDescription.overall.1")}/>
                             <StatusItem text={t("userRegister.processDescription.overall.2")}/>
@@ -269,7 +218,7 @@ const UserRegister = () => {
                             <div className={styles.desc}>
                                 <p>{t("userRegister.form.subtitle")}</p>
                                 <div className={styles.progessContainer}>
-                                    <span>{t("userRegister.form.currentStep", {count: currentStep.current, totalCount: 3})}</span>
+                                    <span>{t("userRegister.form.currentStep", {count: currentStep.current, totalCount: REGISTERING_TOTAL_STEP})}</span>
                                     <Gauge 
                                         width={"50%"} height={2.5}
                                         activeColor="#003DE7"
@@ -283,23 +232,29 @@ const UserRegister = () => {
                             {currentStep.current == 1 ?
                                 <AccountAccess 
                                     formData={formData.current}
-                                    onNext={()=>{
-                                        setCurrentStep(prev => ({ current: 2, max: 2 > prev.max ? 2 : prev.max }))
+                                    onNext={async ()=>{
+                                        await sendOTPCode();
                                     }}
                                 />
                                 :  currentStep.current == 2 ?
                                     <SecureAccount 
                                         formData={formData.current}
-                                        onNext={handleCompletion}
+                                        onNext={()=>{
+                                            setCurrentStep(prev => ({ current: 3, max: 3 > prev.max ? 3 : prev.max }));
+                                        }}
                                     />
-
                                     : currentStep.current == 3 ?
-                                       <></>
-
+                                       <UserProfileIdentity
+                                            formData={formData.current}
+                                            onNext={()=>{
+                                                console.log("Form Data", Object.fromEntries(formData.current.entries()));
+                                                setCurrentStep(prev => ({ current: 4, max: 4 > prev.max ? 4 : prev.max }));
+                                            }}
+                                       />
                                     : currentStep.current === 4 ?
                                          <CompanyIdentityDetail
                                             formData={formData.current} 
-                                            onNext={sendOTPCode}
+                                            onNext={handleCompletion}
                                         /> 
                                         : <></>
                             }
@@ -318,3 +273,95 @@ const UserRegister = () => {
  
 export default UserRegister;
 
+
+
+
+/** Step Section */
+
+interface StageSectionProps{
+    currentStep: { current: number, max: number };
+    setCurrentStep: React.Dispatch<React.SetStateAction<StageSectionProps['currentStep']>>;
+}
+
+const StageSection: React.FC<StageSectionProps> = ({
+    currentStep, setCurrentStep
+}) => {
+    const { t } = useTranslation();
+
+    return (
+    <div className={styles.stagesSection}>
+            <StageTitle
+                step={1}
+                active={currentStep.current === 1}
+                textColor={currentStep.current > 1 ?  "#94a3b8" : undefined}
+                backgroundColor={currentStep.current != 1 ? "#e0e7ff": undefined}
+                txt={t("userRegister.processDescription.one")}
+                onClick={()=>{
+                    if(currentStep.max >= 1){
+                        setCurrentStep(prev => ({
+                            ...prev,
+                            current: 1
+                        }))
+                    }
+                }}
+            />
+
+            <StageTitle
+                step={2}
+                active={currentStep.current === 2}
+                textColor={currentStep.max > 2 && currentStep.current != 2 ?  "#94a3b8" : undefined}
+                backgroundColor={currentStep.max > 2 && currentStep.current != 2 ? "#e0e7ff" : undefined}
+                txt={t("userRegister.processDescription.two")}
+                disableCursorPointer={
+                    currentStep.max < 2
+                }
+                onClick={()=>{
+                    if(currentStep.max >= 2){
+                        setCurrentStep(prev => ({
+                            ...prev,
+                            current: 2
+                        }))
+                    }
+                }}
+            />
+
+            <StageTitle
+                step={3}
+                active={currentStep.current === 3}
+                txt={t("userRegister.processDescription.three")}
+                textColor={currentStep.max > 3 && currentStep.current != 3 ?  "#94a3b8" : undefined}
+                backgroundColor={currentStep.max > 3 && currentStep.current != 3 ? "#e0e7ff": undefined}
+                disableCursorPointer={
+                    currentStep.max < 3
+                }
+                onClick={()=>{
+                    if(currentStep.max >= 3){
+                        setCurrentStep(prev => ({
+                            ...prev,
+                            current: 3
+                        }))
+                    }
+                }}
+            />
+            <StageTitle
+                step={4}
+                active={currentStep.current === 4}
+                txt={t("userRegister.processDescription.four")}
+                textColor={currentStep.max == 4 && currentStep.current < 4 ?  "#94a3b8" : undefined}
+                backgroundColor={currentStep.max === 4 && currentStep.current < 4 ? "#e0e7ff": undefined}
+                disableCursorPointer={
+                    currentStep.max < 4
+                }
+                onClick={()=>{
+                    if(currentStep.max >= 4){
+                        setCurrentStep(prev => ({
+                            ...prev,
+                            current: 4
+                        }))
+                    }
+                }}
+            />
+        </div>
+    );
+}
+ 

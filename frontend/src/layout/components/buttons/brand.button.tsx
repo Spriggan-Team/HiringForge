@@ -1,4 +1,8 @@
 import type React from "react";
+
+import LeftToRightArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg';
+
+
 import styles from "./style.module.css"
 
 
@@ -66,7 +70,13 @@ const BrandButton: React.FC<BrandButtonProps> = ({
                 className={`${styles.btn} ${btnClassName}`}
             >
                 {text} 
-                {Icon && <Icon className={`${styles.svg} ${svgClassName} `}  /> }
+                {Icon ? 
+                    <Icon className={`${styles.svg} ${svgClassName} `}  />
+                     : <LeftToRightArrowSVG
+                            style={{ transform: "rotate(180deg)"  }} //--default transform for the default svg
+                            className={`${styles.svg} ${svgClassName} `}
+                        />
+                }
             </button>
         </div>
     );

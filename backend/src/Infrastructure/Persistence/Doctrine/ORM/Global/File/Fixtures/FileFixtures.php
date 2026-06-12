@@ -1,8 +1,9 @@
 <?php
 
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\File;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\File\Fixtures;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
@@ -27,7 +28,7 @@ class FileFixtures extends Fixture
     {
         for ($i = 0; $i < self::IMAGE_COUNT; $i++) {
             $image = (new FileEntity())
-                ->setOriginalName(self::IMAGE_NAMES[$i])
+                ->setName(self::IMAGE_NAMES[$i])
                 ->setMime('image/jpeg')
                 ->setSize((float) random_int(50_000, 3_000_000));
 

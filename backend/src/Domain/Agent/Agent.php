@@ -5,13 +5,12 @@ namespace App\Domain\Agent;
 use App\Domain\Shared\Account\Account;
 use App\Domain\Shared\EmailAddress;
 
-class Agent implements Account
+class Agent extends Account
 {
     public function __construct(
-        private EmailAddress $email,
+        string $email,
+        string $passwordHash,
         private string $authorId,
-        private string $passwordHash,
-        private ?string $id = null,
     ){}
 
 

@@ -12,7 +12,6 @@ use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Exception\FileSizeExceeded;
 use App\Domain\Exception\FileTimeExceeded;
 use App\Domain\Exception\ResourceCreationRejected;
-use App\Domain\Exception\RessourceAlreadyRegistered;
 use App\Domain\Exception\RessourceNotFound;
 
 use App\Domain\File\MediaFactoryInterface;
@@ -20,7 +19,7 @@ use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
 
-use App\Domain\OTP\Exception\OTPException;
+use App\Domain\OTP\Exceptions\OTPException;
 use App\Domain\OTP\OTPRepositoryInterface;
 
 use App\Domain\Shared\Account\AccountFlowPurpose;
@@ -29,7 +28,7 @@ use App\Domain\Shared\CustomUUID;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\PlainPassword;
-
+use App\Domain\Shared\TransactionManagerInterface;
 use App\Domain\User\Siret;
 use App\Domain\User\User;
 use App\Domain\User\UserRepositoryInterface;
@@ -43,7 +42,8 @@ class UserRegisterUseCase
         private UserRepositoryInterface $userRepository,
         private CompanyRepositoryInterface $companyRepository,
         private PasswordHasherInterface $hasher,
-        private OTPRepositoryInterface $OTPRepository
+        private OTPRepositoryInterface $OTPRepository,
+        private TransactionManagerInterface $transactionManager
     ){}
     
     /**
@@ -54,9 +54,12 @@ class UserRegisterUseCase
         $email = EmailAddress::create($command->email);
         
         // -- Check if email already exists
-        if ($this->userRepository->assertExist(email: $email->value())) {
-            throw new EmailAlreadyRegistered("This user already exists"); 
+        try{
+            $identity = $this->userRepository->assertExist(email: $email->value());
+            if($identity)
+                throw new EmailAlreadyRegistered("This user already exists"); 
         }
+        catch(RessourceNotFound){}
 
         $userId = AccountId::create();
 
@@ -98,13 +101,13 @@ class UserRegisterUseCase
             throw new CompanyAlreadyRegistered("Company already registered");
         }
 
+
         $company = Company::create(
             id: CustomUUID::generate(),
             name: $command->companyName,
             siret: Siret::create($command->siret),
             address: [$command->address],
         );
-
 
         // -- Create User with Admin Role
         $user = User::create(
@@ -183,11 +186,11 @@ class UserRegisterUseCase
         // -- User Profile Image (Correction appliquée)
         if ($command->profileImage) {
             $uploadMedia(
-                file: $command->profileImage, 
+                file: $command->profileImage,
                 purpose: MediaPurpose::PROFILE,
                 ownerType: MediaOwnerType::USER,
                 onAttach: fn($media) => $user->addImage($media),
-                onDetach: fn($media) => $user->removeImage($media)
+                onDetach: fn($media) => $user->removeImage()
             );
         }
 
@@ -204,8 +207,10 @@ class UserRegisterUseCase
 
         // -- Save elements
         try {
-            $this->companyRepository->save($company);
-            $this->userRepository->save($user);
+           $this->transactionManager->execute(function() use (&$company, &$user){
+             $this->companyRepository->save($company);
+             $this->userRepository->save($user);
+           });
         } catch (ResourceCreationRejected $e) {
             // Rollback files
             foreach ($successfulUploads as $storedFileName) {

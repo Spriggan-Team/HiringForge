@@ -1,7 +1,7 @@
 import { patch, post } from "../../handler";
 
 //import types
-import { AccountAlreadyRegistered, AccountNotFound, InvalidOTP, InvalidCredentials, RessourceCreationFailed } from "./exceptions";
+import { AccountAlreadyRegistered, AccountNotFound, InvalidOTP, InvalidCredentials, RessourceCreationFailed, CompanyAlreadyRegistered } from "./exceptions";
 import { ApiResponseCode, HttpBadResponse } from "../../exceptions";
 import type { AccountLoginResponse, AccountRegisterResponse, NoticeResponse } from "../response.types";
 
@@ -42,10 +42,12 @@ const performUserRegister = async (formData: FormData)=>{
         if(error instanceof HttpBadResponse){
             if(error.apiCode === ApiResponseCode.EXPIRED_OTP || error.apiCode === ApiResponseCode.INVALID_OTP)
                 throw new InvalidOTP();
-            if(error.apiCode === ApiResponseCode.ACCOUNT_ALREADY_EXISTS)
+            else if(error.apiCode === ApiResponseCode.ACCOUNT_ALREADY_EXISTS)
                 throw new AccountAlreadyRegistered();
-            if(error.apiCode === ApiResponseCode.RESSOURCE_CREATION_FAILED)
+            else if(error.apiCode === ApiResponseCode.RESSOURCE_CREATION_FAILED)
                 throw new RessourceCreationFailed();
+            else if(error.apiCode === ApiResponseCode.COMPANY_ALREADY_REGISTERED)
+                throw new CompanyAlreadyRegistered();
         }
         throw error;
     }

@@ -25,8 +25,6 @@ class UserAddressFixtures extends Fixture implements DependentFixtureInterface
                 country: 'France'
             );
 
-            $user->attachToAddress($address);
-
             // Cascade depuis User
             $manager->persist($user);
         }

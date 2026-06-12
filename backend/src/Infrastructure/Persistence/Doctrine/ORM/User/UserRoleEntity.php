@@ -22,6 +22,7 @@ class UserRoleEntity
     #[ORM\Column(type: "string", length: 255, nullable: true)]
     private ?string $description = null;
 
+
     public static function create(UserRole $name, ?string $description = null): self
     {
         $entity = new self();
@@ -29,6 +30,7 @@ class UserRoleEntity
         $entity->description = $description;
         return $entity;
     }
+    
 
     public function getId(): ?int
     {

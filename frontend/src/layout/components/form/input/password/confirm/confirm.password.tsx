@@ -30,7 +30,6 @@ const ConfirmPassword: React.FC<ConfirmPasswordProps> = ({
     validTxt,
     ...props
 }) => {
-    const { t } = useTranslation();
     const [value, setValue] = useState(defaultValue);
     const [isConfirm, setIsConfirm] = useState<boolean>(false);
 
@@ -49,8 +48,8 @@ const ConfirmPassword: React.FC<ConfirmPasswordProps> = ({
         <div className={styles.container}>
             <BasicInput 
                 {...props}
-                value={value} // Très important pour l'input contrôlé
-                onChange={(e) => setValue(e.target.value)} // On récupère la valeur en temps réel
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
                 leadingSVG={isConfirm ? OKCircleSVG : () => null}
                 enableViewToggle={!isConfirm}
             />

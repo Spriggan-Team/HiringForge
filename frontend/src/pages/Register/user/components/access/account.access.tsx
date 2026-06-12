@@ -11,7 +11,6 @@ import FormWrapper, { FormHint, FormInputs, FormTitle, FormSubmitSection } from 
 
 //-- SVG Components
 import EmailSVG from '/src/assets/svg/email/email-1-svgrepo-com.svg';
-import LeftToRightArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg';
 
 //-- Styles
 import styles from "./style.module.css"
@@ -34,22 +33,23 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
     const {t} = useTranslation();
     const {setPopup} = useAppContext();
 
-    const [password, setPassword] = useState<string>("");
     const [isPasswordStrong, setIsPasswordStrong] = useState(false);
     const [isPasswordConfirm, setIsPasswordConfirm] = useState<boolean>(false);
+    const [password, setPassword] = useState<string>(formData.get("password")?.toString() ?? "");
 
 
     const handleNext = (event: React.SubmitEvent<HTMLFormElement>) => {
-        //-- strong password
-        if(!isPasswordStrong){
-            setPopup({status: "error", message: t("userRegister.form.step1.inputs.password.error")})
-            setPopup(null);
-            return;
-        }
-
         //-- is password confirm
         if(!isPasswordConfirm){
             setPopup({status: "error", message: t("userRegister.form.step1.inputs.confirmPassword.error")})
+            setPopup(null);
+            return;
+        }
+        console.log("djdjdjdjdj")
+
+        //-- strong password
+        if(!isPasswordStrong){
+            setPopup({status: "error", message: t("userRegister.form.step1.inputs.password.error")})
             setPopup(null);
             return;
         }
@@ -83,6 +83,7 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                         width={"100%"} padding={5}
                         className="faint-border"
                         inputName="password"
+                        value={password}
                         backgroundColor={inputColor}
                         onChange={(event)=> setPassword(event.target.value)}
                         label={t("userRegister.form.step1.inputs.password.label")}
@@ -100,7 +101,6 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                         backgroundColor={inputColor}
                         setConfirm={setIsPasswordConfirm}
                         label={t("userRegister.form.step1.inputs.confirmPassword.label")}
-                        defaultValue={ formData.get("password")?.toString() ?? undefined}
                         validTxt={t("userRegister.form.step1.inputs.confirmPassword.valid")}
                         invalidTxt={t("userRegister.form.step1.inputs.confirmPassword.invalid")}
                     />
@@ -108,7 +108,6 @@ const AccountAccess: React.FC<AccountAccessProps>  = ({
                 <FormSubmitSection>
                     <BrandButton 
                         type="submit"
-                        svg={LeftToRightArrowSVG}
                         text={t("userRegister.buttons.logbtn")}
                     />
                     <FormHint text={t("userRegister.form.step1.policyText")} />

@@ -13,10 +13,6 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account
 #[ORM\Table(name: "agent")]
 class AgentEntity extends AccountEntity
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private ?int $id = null;
 
     #[ORM\OneToMany(
         mappedBy: "agent",

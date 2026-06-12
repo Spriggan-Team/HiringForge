@@ -7,42 +7,37 @@ use App\Domain\Shared\Account\Account;
 use App\Domain\Shared\Address;
 use App\Domain\Shared\EmailAddress;
 
-class Candidate implements Account
+class Candidate extends Account
 {
-    private CandidateId $id;
 
-    private string $firstName;
-    private string $lastName;
 
-    private EmailAddress $email;
-    private string $passwordHash;
-
-    private ?StaticMedia $image = null;
     private ?StaticMedia $cv;
 
     private ?Address $address;
     private int $searchRadius = 10; //default search radius on map
 
-    private ?string $description = null;
 
     private function __construct(
-        CandidateId $id, 
+        string $id, 
         string $firstName,
         string $lastName,
         EmailAddress $email,
         string $passwordHash,
-        ?StaticMedia $image,
-        ?StaticMedia $cv,
-        ?Address $address,
-        ?int $searchRadius,
+        ?StaticMedia $image = null,
+        ?StaticMedia $cv = null,
+        ?Address $address = null,
+        ?int $searchRadius = null,
+        ?string $description = null
     ){
-        $this->id = $id;
+        $this->id = $id ?? CandidateId::create()->value();
 
         $this->firstName = $firstName;
         $this->lastName = $lastName;
-        $this->email = $email;
+        $this->description = $description;
 
+        $this->email = $email;
         $this->passwordHash = $passwordHash;
+
         $this->image = $image;
         $this->cv = $cv;
 
@@ -53,11 +48,11 @@ class Candidate implements Account
     }
 
     public static function create(
-        CandidateId $id, 
         string $firstName,
         string $lastName,
         EmailAddress $email,
         string $passwordHash,
+        ?string $id = null, 
         ?StaticMedia $image = null,
         ?StaticMedia $cv = null,
         ?Address $address = null,
@@ -65,15 +60,15 @@ class Candidate implements Account
     ): self
     {
         return new self(
-            $id,
-            $firstName,
-            $lastName,
-            $email,
-            $passwordHash,
-            $image,
-            $cv,
-            $address,
-            $searchRadius
+            id: $id,
+            firstName: $firstName,
+            lastName: $lastName,
+            email: $email,
+            passwordHash: $passwordHash,
+            image: $image,
+            cv: $cv,
+            address: $address,
+            searchRadius: $searchRadius
         );
     }
 
@@ -81,50 +76,13 @@ class Candidate implements Account
     //   Business access
     //--------------------------
 
-    public function id():string
-    {
-        return $this->id->value();
-    }
 
-    public function firstName() : string 
-    {
-        return $this->firstName;    
-    }
-
-    public function lastName(): string
-    {
-        return $this->lastName;
-    }
-
-    public function email(): string
-    {
-        return $this->email->value();
-    }
-
-    public function passwordHash(): string
-    {
-        return $this->passwordHash;
-    }
-
-    public function image():StaticMedia
-    {
-        return $this->image;
-    }
 
     public function cv(): ?StaticMedia
     {
         return $this->cv;
     }
 
-    public function description(): ?string
-    {
-        return $this->description;
-    }
-
-    public function address(): ?Address
-    {
-        return $this->address;
-    }
 
     public function searchRadius(): int
     {
@@ -134,35 +92,6 @@ class Candidate implements Account
     // - Business change --
     //-----------------------------------------
 
-    public function setFirstName(string $firstName): static
-    {
-        $this->firstName = $firstName;
-        return $this;
-    }
-
-    public function setLastName(string $lastName):static
-    {
-        $this->lastName = $lastName;
-        return $this;
-    }
-
-    public function setEmail(EmailAddress $email): static
-    {
-        $this->email = $email;
-        return $this;
-    }
-
-    public function setImage(?StaticMedia $image): static
-    {
-        $this->image = $image;
-        return $this;
-    }
-
-    public function removeImage():static
-    {
-        $this->image = null;
-        return $this;
-    }
 
     public function setCv(?StaticMedia $cv):static
     {
@@ -176,17 +105,6 @@ class Candidate implements Account
         return $this;
     }
 
-    public function setDescription(?string $description):static
-    {
-        $this->description = $description;
-        return $this;
-    }
-
-    public function setAddress(?Address $address): static
-    {
-        $this->address = $address;
-        return $this;
-    }
 
     public function setSearchRadius(int $searchRadius): static
     {

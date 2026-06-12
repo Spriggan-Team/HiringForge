@@ -41,7 +41,8 @@ class UserEntity extends AccountEntity
 
     #[ORM\OneToOne(
         inversedBy: "user_role",
-        targetEntity: UserRoleEntity::class
+        targetEntity: UserRoleEntity::class,
+        cascade: ['persist']
     )]
     #[ORM\JoinColumn(nullable: false)]
     private ?UserRoleEntity $userRole = null;

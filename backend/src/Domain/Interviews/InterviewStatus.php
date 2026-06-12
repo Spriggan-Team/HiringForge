@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Interview;
+namespace App\Domain\Interviews;
 
 enum InterviewStatus: string
 {

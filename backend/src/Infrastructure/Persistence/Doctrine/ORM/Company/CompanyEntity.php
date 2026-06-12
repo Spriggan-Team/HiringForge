@@ -18,9 +18,8 @@ use Doctrine\ORM\Mapping as ORM;
 class CompanyEntity
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    private ?int $id = null;
+    #[ORM\Column(type: "guid", unique: true)]
+    private ?string $id = null;
 
     #[ORM\Column(length: 150)]
     private string $name;
@@ -72,6 +71,7 @@ class CompanyEntity
 
     #[ORM\OneToMany(
         mappedBy: "company",
+        cascade:['persist', 'remove'],
         targetEntity: UserEntity::class
     )]
     private Collection $recruiters;
@@ -85,9 +85,11 @@ class CompanyEntity
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->companyImages = new ArrayCollection();
+        $this->companyAddresses = new ArrayCollection();
     }
 
     public static function create(
+        string $id,
         string $name,
         string $siret,
         ?FileEntity $logo = null,
@@ -95,6 +97,7 @@ class CompanyEntity
         ?FileEntity $videoPresentation = null,
     ): self {
         $entity = new self()
+                    ->setId($id)
                     ->setLogo($logo)
                     ->setName($name)
                     ->setSiret($siret)
@@ -147,6 +150,11 @@ class CompanyEntity
     // Utils / SETTERS
     //--------------------------------
 
+    public function setId(string $id): self{
+        $this->id = $id;
+        return $this;
+    }
+
     public function setName(string $name): self{
         $this->name = $name;
         return $this;
@@ -170,15 +178,16 @@ class CompanyEntity
     public function addAddress(AddressEntity $address): static
     {
         $companyAddress = new CompanyAddressEntity($this, $address);
-        if($this->companyAddresses->contains($companyAddress)){
-            $this->companyAddresses->add($companyAddress);
-        }
+        $this->companyAddresses->add($companyAddress);
         return $this;
     }
 
 
-    public function attachToImage(FileEntity $image): static
+    public function attachToImage(?FileEntity $image): static
     {
+        if(!$image)
+            return $this;
+
         //Forbide duplicates
         foreach($this->companyImages as $img){
             if($img->getImage() === $image){
@@ -200,9 +209,9 @@ class CompanyEntity
         }
     }
 
-    public function attachPresentation(FileEntity $video): static
+    public function attachPresentation(?FileEntity $video): static
     {
-        if(!str_contains($video->getMime(), 'video')){
+        if($video && !str_contains($video->getMime(), 'video')){
             return $this;
         }
         $this->videoPresentation = $video;

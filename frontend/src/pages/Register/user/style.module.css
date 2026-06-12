@@ -14,6 +14,8 @@
     
     overflow-x: hidden; 
 }
+
+
 .navbar {
     display: flex;
     justify-content: space-between; 
@@ -24,6 +26,7 @@
     gap: 16px;
 }
 
+
 .actions {
     display: flex;
     align-items: center;
@@ -31,12 +34,13 @@
     font-size: 15px;
 }
 
+
 .mainContainerWrapper {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex: 1;
     width: 100%; 
+    flex: 1;
     box-sizing: border-box;
     min-width: 0;
 }
@@ -44,16 +48,17 @@
 .mainContainer {
     display: flex;
     justify-content: center;
-    align-items: center;
     gap: 4rem;
     padding: 50px 75px;
+    margin: 0 0 12px 0;
     border-radius: 28px;
     box-sizing: border-box;
     position: relative;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1300px;
     background: #FBFCFE;
     min-width: 0;
+
 }
 
 .progessContainer {
@@ -130,8 +135,9 @@
 }
 
 .form {
-    width: 100%;
-    max-width: 430px;
+    width: 420px;
+    /* width: 100%; */
+    /* max-width: 430px; */
     margin-inline: auto;
     padding: 32px;
     display: flex;
@@ -240,6 +246,10 @@
         padding: 16px 6px;
     }
     
+    .mainContainer .formTitle{
+        text-align: center;
+    }
+
     .form {
         padding: 16px 8px;
     }

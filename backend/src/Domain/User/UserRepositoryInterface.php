@@ -2,7 +2,7 @@
 
 namespace App\Domain\User;
 
-use App\Domain\Sharedp\KnownIdentity;
+use App\Domain\Shared\KnownIdentity;
 
 interface UserRepositoryInterface 
 {

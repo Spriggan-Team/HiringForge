@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Fixtures;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileFixtures;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\Image\ImageEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\Fixtures\FileFixtures;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\Fixtures\UserFixtures;
+use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -35,9 +35,9 @@ class UserImageFixtures extends Fixture implements DependentFixtureInterface
                 $image = $this->getReference('image_'.$imageIndex, FileEntity::class);
 
                 // Création correcte avec le constructeur
-                $userImage = new UserImageEntity($user, $image);
+                // $userImage = new CompanyIma($user, $image);
 
-                $manager->persist($userImage);
+                // $manager->persist($userImage);
             }
         }
 

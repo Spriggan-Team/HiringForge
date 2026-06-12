@@ -10,7 +10,7 @@ use App\Application\Usecases\Agent\CreateAgentUseCase;
 use App\Application\Usecases\Agent\DeleteAgentUsecase;
 
 use App\Domain\ApplicationErrorCode;
-use App\Domain\OTP\Exception\OTPException;
+use App\Domain\OTP\Exceptions\OTPException;
 use App\Domain\Exception\RessourceAlreadyRegistered;
 use App\Domain\Exception\RessourceNotFound;
 

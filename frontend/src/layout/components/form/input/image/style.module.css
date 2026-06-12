@@ -21,7 +21,7 @@
   
   cursor: pointer;
   position: relative;
-  overflow: hidden;
+  overflow: hidden; 
   transition: all 0.2s ease;
   
   padding: 20px;
@@ -33,14 +33,23 @@
   transform: translateY(-1px);
 }
 
+/* svg style */
 .icon {
   font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+  color: #777;
+  transition: color 0.2s ease;
+}
+
+.uploadBox:hover .icon {
+  color: #646cff;
 }
 
 .title {
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
+  color: #111827; 
 }
 
 .subtitle {
@@ -48,16 +57,19 @@
   color: #777;
 }
 
+/* --- OPTIMISATION  (PREVIEW) --- */
 
 .preview {
-  width: 100%;
-  max-width: 480px;
-  max-height: 270px; 
-  object-fit: contain; 
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
   border-radius: 8px;
-  background: #000000; 
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-  cursor: default;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.uploadBox:hover .preview {
+  transform: scale(1.02); 
 }
 
 .fileName {
@@ -66,7 +78,7 @@
   text-align: center;
   word-break: break-all;
   color: #374151;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .error {

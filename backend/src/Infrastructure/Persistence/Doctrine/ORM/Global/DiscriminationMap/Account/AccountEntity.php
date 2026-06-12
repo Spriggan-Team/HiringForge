@@ -33,14 +33,14 @@ class AccountEntity
     #[ORM\Column(type: "guid", unique: true)]
     protected string $id;
 
-    #[ORM\Column(length: 255, unique: true, nullable: false)]
-    protected string $email;
-
     #[ORM\Column(length: 150)]
     protected string $firstName;
 
     #[ORM\Column(length: 150)]
     protected string $lastName;
+
+    #[ORM\Column(length: 255, unique: true, nullable: false)]
+    protected string $email;
 
     #[ORM\Column(length: 255, nullable: false)]
     protected string $password;

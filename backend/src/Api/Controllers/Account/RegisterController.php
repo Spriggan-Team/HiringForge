@@ -15,12 +15,14 @@ use Exception;
 use  Psr\Log\LoggerInterface;
 use App\Domain\ApplicationErrorCode;
 use App\Domain\Exception\CompanyAlreadyRegistered;
-use App\Domain\OTP\Exception\OTPException;
+
+use App\Domain\OTP\Exceptions\OTPException;
 use App\Domain\Exception\FileSizeExceeded;
 use App\Domain\Exception\FileTimeExceeded;
 use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Exception\ResourceCreationRejected;
 use App\Domain\Exception\RessourceAlreadyRegistered;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -98,8 +100,8 @@ class RegisterController extends AbstractController
                 email: trim($inputBag->get('email')),
                 siret: trim($inputBag->get('siret')),
                 password: $inputBag->get('password'),
-                images: $request->files->get('images', []),
-                profileImage: $request->request->get("profileImage", null), 
+                images: $request->files->get('images', []), //-- company images
+                profileImage: $request->files->get("profileImage", null), 
                 videoPresentation: $request->files->get('videoPresentation',null),
                 description: trim($inputBag->get("description", null)),
                 logo: $request->files->get("logo"),

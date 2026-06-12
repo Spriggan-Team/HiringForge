@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Interview;
 
-use App\Domain\Interview\InterviewStatus;
+use App\Domain\Interviews\InterviewStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 

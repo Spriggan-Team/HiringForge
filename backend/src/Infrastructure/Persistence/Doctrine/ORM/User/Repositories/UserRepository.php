@@ -4,15 +4,15 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories;
 
 use App\Domain\Exception\ResourceCreationRejected;
 use App\Domain\User\User as DomainEntity;
-use App\Domain\Sharedp\KnownIdentity;
+use App\Domain\Shared\KnownIdentity;
+
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountRole;
 use App\Domain\User\UserRepositoryInterface;
-
+use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
-
-
+use App\Infrastructure\Persistence\Doctrine\ORM\User\UserRoleEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 
@@ -37,11 +37,11 @@ class UserRepository implements UserRepositoryInterface
 
         $account = $accountRepository->findOneBy($criteria);
         if(!$account)
-            throw new RessourceNotFound();
+            throw new RessourceNotFound("User Account not found");
 
         $user = $userRepository->find($account->getId());
         if(!$user)
-            throw new RessourceNotFound();
+            throw new RessourceNotFound("User account not identified");
 
         return new KnownIdentity(
             uuid: $user->getId(),
@@ -82,11 +82,14 @@ class UserRepository implements UserRepositoryInterface
     public function save(DomainEntity $user): void
     {
         try{
-            $entity = UserEntityMapper::toDoctrineEntity($user, $this->em);
+            $company = $this->em->getReference(CompanyEntity::class, $user->companyId());
+            $userRole =  $this->em->getRepository(UserRoleEntity::class)->findOneBy([ "name" => $user->role() ]); // UserRoleEntity::create(name: $user->role());
+
+            $entity = UserEntityMapper::toDoctrineEntity($user, $company, $userRole);
             $this->em->persist($entity);
             $this->em->flush();
         }
-        catch(\Exception){
+        catch(\Exception $exception){
             throw new ResourceCreationRejected();
         }
     }

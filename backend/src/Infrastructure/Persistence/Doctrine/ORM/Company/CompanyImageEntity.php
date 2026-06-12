@@ -12,9 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Entity()]
 #[ORM\Table(
-      name: "user_image",
+      name: "company_images",
       uniqueConstraints: [
-            new ORM\UniqueConstraint(name: "uniq_user_image", columns: ["user_id", 'image_id'])
+            new ORM\UniqueConstraint(name: "uniq_company_image", columns: ["company_id", 'image_id'])
       ]
     )
 ]

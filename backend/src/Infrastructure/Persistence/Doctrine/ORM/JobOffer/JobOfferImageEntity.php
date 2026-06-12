@@ -25,7 +25,7 @@ class JobOfferImageEntity
     #[ORM\OneToOne(
         targetEntity: FileEntity::class,
         cascade: ['persist'],
-        mappedBy: "jobOfferImage",
+        inversedBy: "jobOfferImage",
         orphanRemoval: true
     )]
     #[ORM\JoinColumn(nullable: false)]

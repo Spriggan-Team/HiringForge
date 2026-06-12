@@ -6,7 +6,6 @@ use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthentificateAccount;
 
 
-
 use Exception;
 
 use App\Application\DTO\Auth\AuthenticatedPerson;
@@ -29,6 +28,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
 // use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\CustomCredentials;
+
 
 
 class LoginAuthenticatorController extends AbstractAuthenticator
@@ -65,8 +65,8 @@ class LoginAuthenticatorController extends AbstractAuthenticator
         );
 
         $role = match ($request->getPathInfo()) {
-            '/candidates/login' => AccountRole::CANDIDATE->value,
-            '/agents/login'     => AccountRole::AGENT->value,
+            '/candidate/login' => AccountRole::CANDIDATE->value,
+            '/agent/login'     => AccountRole::AGENT->value,
             default             => AccountRole::USER->value,
         };
 
@@ -91,6 +91,7 @@ class LoginAuthenticatorController extends AbstractAuthenticator
         );
     }
 
+    
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         /** @var AuthenticatedPerson $user */

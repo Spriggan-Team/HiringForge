@@ -4,7 +4,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Agent;
 
 use App\Domain\Agent\Agent;
 use App\Domain\Agent\AgentRepositoryInterface;
-use App\Domain\Sharedp\KnownIdentity;
+use App\Domain\Shared\KnownIdentity;
 use Override;
 
 class AgentRepository implements AgentRepositoryInterface{

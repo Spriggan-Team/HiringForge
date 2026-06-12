@@ -3,7 +3,7 @@
 namespace App\Domain\Shared\Account;
 
 use App\Domain\Shared\EmailAddress;
-use App\Domain\Sharedp\KnownIdentity;
+use App\Domain\Shared\KnownIdentity;
 
 
 /**

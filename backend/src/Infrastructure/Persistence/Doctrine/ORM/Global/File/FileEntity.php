@@ -69,7 +69,7 @@ class FileEntity
 
     #[ORM\OneToOne(
         targetEntity: JobOfferImageEntity::class,
-        inversedBy: 'file'
+        mappedBy: 'file'
     )]
     private JobOfferImageEntity $jobOfferImage;
 

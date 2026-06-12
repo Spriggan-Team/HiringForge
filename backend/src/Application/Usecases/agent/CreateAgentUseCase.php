@@ -12,9 +12,10 @@ use App\Domain\Agent\AgentRepositoryInterface;
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 
-use App\Domain\OTP\Exception\OTPException;
+use App\Domain\OTP\Exceptions\OTPException;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Exception\RessourceAlreadyRegistered;
+
 use App\Domain\Shared\PlainPassword;
 use App\Domain\User\UserRepositoryInterface;
 
@@ -59,7 +60,7 @@ class CreateAgentUseCase
             throw new OTPException(isInvalid: true);
 
         $agent = new Agent(
-            email: $email, 
+            email: $email->value(), 
             passwordHash: $this->hasher->hash(new PlainPassword($command->password)->value()),
             authorId: $command->authorId
         );

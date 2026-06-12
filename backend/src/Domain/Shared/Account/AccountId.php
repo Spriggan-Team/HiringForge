@@ -6,7 +6,7 @@ namespace App\Domain\Shared\Account;
 use App\Domain\Shared\CustomUUID;
 use DomainException;
 
-abstract class AccountId
+class AccountId
 {
     public function __construct(
         private string $id

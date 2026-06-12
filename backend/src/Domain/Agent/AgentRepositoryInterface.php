@@ -2,7 +2,7 @@
 
 namespace App\Domain\Agent;
 
-use App\Domain\Sharedp\KnownIdentity;
+use App\Domain\Shared\KnownIdentity;
 
 interface AgentRepositoryInterface
 {

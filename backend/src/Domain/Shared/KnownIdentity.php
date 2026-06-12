@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Sharedp;
+namespace App\Domain\Shared;
 
 use App\Domain\Shared\Account\AccountRole;
 

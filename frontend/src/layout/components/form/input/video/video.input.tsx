@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./styles.module.css";
 
 interface VideoInputProps {
@@ -6,22 +6,42 @@ interface VideoInputProps {
   inputName?:string;
   subtitle?: string;
   maxDuration?: number;
-  maxSize?: number
+  maxSize?: number;
+  defaultFile?: File | null;
   onChange?: (file: File) => void;
 }
+
 
 const VideoInput: React.FC<VideoInputProps> = ({
   onChange,
   maxSize,
   inputName,
-  maxDuration,
+  maxDuration, //-- the length of the element in second
+  defaultFile = null,
   title = "Sélectionner une vidéo",
   subtitle = "Cliquez ici pour choisir un fichier",
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+
   const [currentFile, setCurrentFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState("");
   const [error, setError] = useState("");
 
+  //-- Handle sudden change of default value
+  useEffect(() => {
+    if (!defaultFile) return;
+
+    const objectUrl = URL.createObjectURL(defaultFile);
+
+    setCurrentFile(defaultFile);
+    setPreviewUrl(objectUrl);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [defaultFile]);
+
+
+
+  //-- Handle file change (upload)
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -31,7 +51,6 @@ const VideoInput: React.FC<VideoInputProps> = ({
 
     setError("");
 
-    //-- size checking
     if (maxSize && file.size > maxSize) {
       setError(
         `La vidéo dépasse la taille maximale autorisée (${(
@@ -41,41 +60,37 @@ const VideoInput: React.FC<VideoInputProps> = ({
         ).toFixed(2)} MB).`
       );
 
-      if (inputRef.current) {
-        inputRef.current.value = "";
-      }
-
+      inputRef.current && (inputRef.current.value = "");
       return;
     }
 
-    //-- no control
-    if (!maxDuration) {
+    const updateVideo = () => {
+      const objectUrl = URL.createObjectURL(file);
       setCurrentFile(file);
+      setPreviewUrl(objectUrl);
       onChange?.(file);
+    };
+
+    if (!maxDuration) {
+      updateVideo();
       return;
     }
 
     const video = document.createElement("video");
-
     video.preload = "metadata";
 
     video.onloadedmetadata = () => {
       URL.revokeObjectURL(video.src);
 
-      if (maxDuration && video.duration > maxDuration) {
+      if (video.duration > maxDuration) {
         setError(
           `La vidéo dépasse la durée maximale autorisée (${maxDuration}s).`
         );
 
-        if (inputRef.current) {
-          inputRef.current.value = "";
-        }
-
+        inputRef.current && (inputRef.current.value = "");
         return;
       }
-
-      setCurrentFile(file);
-      onChange?.(file);
+      updateVideo();
     };
 
     video.src = URL.createObjectURL(file);
@@ -84,8 +99,8 @@ const VideoInput: React.FC<VideoInputProps> = ({
   return (
     <div className={styles.wrapper}>
       <input
-        type="file"
         ref={inputRef}
+        type="file"
         name={inputName}
         accept="video/*"
         className={styles.hiddenInput}
@@ -96,14 +111,23 @@ const VideoInput: React.FC<VideoInputProps> = ({
         className={styles.uploadBox}
         onClick={() => inputRef.current?.click()}
       >
-        <div className={styles.icon}>🎥</div>
+        {previewUrl ? (
+          <>
+            <video
+              src={previewUrl}
+              className={styles.preview}
+              controls
+              onClick={(e)=>e.stopPropagation()}
+            />
 
-        {currentFile ? (
-          <div className={styles.fileName}>
-            {currentFile.name}
-          </div>
+            <div className={styles.fileName}>
+              {currentFile?.name}
+            </div>
+          </>
         ) : (
           <>
+            <div className={styles.icon}>🎥</div>
+
             <div className={styles.title}>
               {title}
             </div>
@@ -123,5 +147,7 @@ const VideoInput: React.FC<VideoInputProps> = ({
     </div>
   );
 };
+
+
 
 export default VideoInput;
