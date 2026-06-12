@@ -8,10 +8,11 @@ export const ApiResponseCode = {
     EXPIRED_OTP: "expired_otp",
     INVALID_OTP: "invalid_otp",
 
-    //-- account
+    //-- account & company
     ACCOUNT_ALREADY_EXISTS: "account_already_exists",
     ACCOUNT_NOT_FOUND: "account_not_found",
     INVALID_CREDENTIALS: "invalid_credential",
+    COMPANY_ALREADY_REGISTERED: "company_already_registered",
 
     //-- file
     FILE_MISMATCH_TYPE: "file_mismatch_type",

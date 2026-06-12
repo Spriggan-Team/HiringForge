@@ -70,3 +70,12 @@ a:hover{
   font-size: 20px;
   font-weight: 500;
 }
+
+/** App Container **/
+.app-container{
+  gap: 15px;
+  display: flex;
+}
+
+/** NavBar **/
+.nav-bar{}

@@ -3,6 +3,9 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\File;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyImageEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferImageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserImageEntity;
@@ -56,13 +59,13 @@ class FileEntity
         mappedBy: 'videoPresentation',
         targetEntity: UserEntity::class
     )]
-    private ?UserEntity $userVideoPresentation = null;
+    private ?UserEntity $companyVideoPresentation = null;
 
     #[ORM\OneToOne(
         mappedBy: 'logo',
         targetEntity: UserEntity::class
     )]
-    private ?UserEntity $userLogo = null;
+    private ?CompanyEntity $companyLogo = null;
 
     #[ORM\OneToOne(
         targetEntity: JobOfferImageEntity::class,
@@ -72,11 +75,18 @@ class FileEntity
 
     #[ORM\OneToMany(
         mappedBy: "image",
-        targetEntity: UserImageEntity::class, 
+        targetEntity: CompanyImageEntity::class, 
         cascade:['persist', 'remove']
     )]
-    private Collection $userImages;
+    private Collection $companyImages;
 
+
+
+    #[ORM\OneToOne(
+        mappedBy: "image",
+        targetEntity: AccountEntity::class
+    )]
+    private AccountEntity  $accountImage;
 
     //-------------------
     //  Construct
@@ -85,7 +95,7 @@ class FileEntity
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
-        $this->userImages = new ArrayCollection();
+        $this->companyImages = new ArrayCollection();
     }
     
     /* =======================
@@ -128,7 +138,7 @@ class FileEntity
 
     public function getUserImages()
     {
-        return $this->userImages;
+        return $this->companyImages;
     }
     
     /* =======================

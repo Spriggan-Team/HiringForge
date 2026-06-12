@@ -2,10 +2,9 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer;
 
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
+
 
 #[ORM\Entity]
 #[ORM\Table('job_offer_images')]

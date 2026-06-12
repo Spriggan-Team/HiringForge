@@ -22,9 +22,9 @@ class CandidateEntityMapper
         $image = $entity->getImage() ;
         if($image){
             $staticImage = new StaticMedia(
-                $image->getOriginalName(),
-                $image->getSize(),
-                $image->getMime()
+                name: $image->getName(),
+                size: $image->getSize(),
+                mime: $image->getMime()
             );
         }
 
@@ -33,9 +33,9 @@ class CandidateEntityMapper
 
         if($cv){
             $staticCv = new StaticMedia(
-                $cv->getOriginalName(), 
-                $cv->getSize(),
-                $cv->getMime()
+                name: $cv->getName(), 
+                size: $cv->getSize(),
+                mime: $cv->getMime()
             );
         }
 
@@ -77,7 +77,7 @@ class CandidateEntityMapper
         if($cv)
         {
             $fileEntity = new FileEntity();
-            $fileEntity->setOriginalName($cv->name)
+            $fileEntity->setName($cv->name)
                        ->setSize($cv->size)
                        ->setMime($cv->mime);
             $entity->attachCV($fileEntity);
@@ -86,7 +86,7 @@ class CandidateEntityMapper
         $image = $candidate->image();
         if($image){
             $fileEntity = new FileEntity();
-            $fileEntity->setOriginalName($image->name)
+            $fileEntity->setName($image->name)
                        ->setSize($image->size)
                        ->setMime($image->mime);
             $entity->attachImage($fileEntity);

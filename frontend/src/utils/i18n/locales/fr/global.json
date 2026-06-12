@@ -18,8 +18,21 @@
             "optionnal": "optionnel"
         },
         "messages":{
+            "welcome": "Bonjour",
             "secureData": "Données sécurisées",
             "error": "Une erreur inattendue est survenue"
+        },
+        "menu":{
+            "home": "Acceuil",
+            "poste": "Postes",
+            "calendar": "Calendrier",
+            "agents": "Agents",
+            "candidates": "Candidates",
+            "interview": "Entretien",
+            "settings": "Paramèters"
+        },
+        "navbar":{
+
         }
     }
 }

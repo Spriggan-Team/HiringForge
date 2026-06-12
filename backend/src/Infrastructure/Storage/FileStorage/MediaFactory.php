@@ -2,7 +2,6 @@
 
 namespace App\Infrastructure\Storage\FileStorage;
 
-use App\Domain\ApplicationErrorCode;
 use App\Domain\File\StaticMedia;
 use App\Domain\File\TimedMedia;
 use App\Domain\File\MediaFactoryInterface;

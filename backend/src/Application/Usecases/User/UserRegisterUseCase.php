@@ -3,12 +3,16 @@
 namespace App\Application\Usecases\User;
 
 use App\Application\DTO\User\RegisterUserCommand;
-use App\Application\Usecases\Account\AccountRegister; 
+use App\Application\Usecases\Account\AccountRegister;
 
+use App\Domain\Company\Company;
+use App\Domain\Company\CompanyRepositoryInterface;
+use App\Domain\Exception\CompanyAlreadyRegistered;
 use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Exception\FileSizeExceeded;
 use App\Domain\Exception\FileTimeExceeded;
 use App\Domain\Exception\ResourceCreationRejected;
+use App\Domain\Exception\RessourceAlreadyRegistered;
 use App\Domain\Exception\RessourceNotFound;
 
 use App\Domain\File\MediaFactoryInterface;
@@ -20,47 +24,43 @@ use App\Domain\OTP\Exception\OTPException;
 use App\Domain\OTP\OTPRepositoryInterface;
 
 use App\Domain\Shared\Account\AccountFlowPurpose;
+use App\Domain\Shared\Account\AccountId;
+use App\Domain\Shared\CustomUUID;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\PlainPassword;
 
 use App\Domain\User\Siret;
 use App\Domain\User\User;
-use App\Domain\User\UserId;
 use App\Domain\User\UserRepositoryInterface;
-
-
-
+use App\Domain\User\UserRole;
 
 class UserRegisterUseCase
 {
     public function __construct(
         private MediaFactoryInterface $mediaFactory,
         private MediaStorageInterface $storage,
-        private UserRepositoryInterface $repository,
+        private UserRepositoryInterface $userRepository,
+        private CompanyRepositoryInterface $companyRepository,
         private PasswordHasherInterface $hasher,
         private OTPRepositoryInterface $OTPRepository
     ){}
     
     /**
-     * @throws \DomainException|\Exception|OTPException|EmailAlreadyRegistered|OTPException|ResourceCreationRejected
+     * @throws \DomainException|\Exception|OTPException|EmailAlreadyRegistered|ResourceCreationRejected
      */
     public function execute(RegisterUserCommand $command): AccountRegister
     {    
         $email = EmailAddress::create($command->email);
         
-        try {
-            $existingUser = $this->repository->assertExist(email: $email->value());
-            if ($existingUser) {
-                throw new EmailAlreadyRegistered("This user already exists"); 
-            }
-        } catch (\Exception $exception) {
-            //silence error
+        // -- Check if email already exists
+        if ($this->userRepository->assertExist(email: $email->value())) {
+            throw new EmailAlreadyRegistered("This user already exists"); 
         }
 
-        $userId = UserId::create();
+        $userId = AccountId::create();
 
-        /** @var string[] filenames array that have failed échoué */
+        /** @var string[] filenames array that have failed */
         $filesFailedSize = [];
         $filesFailedTimeout = [];
         $filesFailedGeneric = [];
@@ -90,38 +90,49 @@ class UserRegisterUseCase
                     );
                 }
             }
-            
-            //-- rethrow the exception to halt registration execution!
             throw $e;
         }
 
+        // -- Create Company
+        if($this->companyRepository->exists($command->companyName)){
+            throw new CompanyAlreadyRegistered("Company already registered");
+        }
 
-
-        // -- Create user
-        $user = User::create(
-            userId: $userId,
-            name: $command->name,
-            email: $email,
-            description: $command->description,
-            passwordHash: $this->hasher->hash((new PlainPassword($command->password))->value()),
+        $company = Company::create(
+            id: CustomUUID::generate(),
+            name: $command->companyName,
             siret: Siret::create($command->siret),
-            address: $command->address,
+            address: [$command->address],
         );
 
-        // -- Upload video
+
+        // -- Create User with Admin Role
+        $user = User::create(
+            userId: $userId->value(),
+            email: $email,
+            lastName: $command->lastName,
+            firstName: $command->firstName,
+            description: $command->description,
+            passwordHash: $this->hasher->hash((new PlainPassword($command->password))->value()),
+            role: UserRole::COMPANY_ADMIN, //-- Is admin by default
+            companyId: $company->id()
+        );
+
+
+        // -- Upload video (Company - presentation vidéo)
         if ($command->videoPresentation) {
             try {
                 $timedMedia = $this->mediaFactory->createTimedMedia($command->videoPresentation);
-                $user->addVideoPresentation($timedMedia);
+                $company->addVideoPresentation($timedMedia);
                 
                 $this->storage->store(
                     file: $command->videoPresentation,
-                    ownerId: $userId->value(),
-                    ownerType: MediaOwnerType::USER,
+                    ownerId: $company->id(),
                     mediaPurpose: MediaPurpose::PROFILE,
-                    errorCallback: function($result) use (&$user, &$filesFailedGeneric) {
+                    ownerType: MediaOwnerType::COMPANY,
+                    errorCallback: function($result) use (&$company, &$filesFailedGeneric) {
                         $filesFailedGeneric[] = $result->originalName;
-                        $user->removeVideoPresentation();
+                        $company->removeVideoPresentation();
                     },
                 );
             } catch (FileSizeExceeded $e) {
@@ -131,68 +142,78 @@ class UserRegisterUseCase
             }
         }
 
-        //-- method for handling signle upload (static media)
-        $uploadMedia = function($file, MediaPurpose $purpose, callable $onAttach, callable $onDetach) 
-        use (&$filesFailedGeneric, &$filesFailedSize, &$successfulUploads, $userId, $user) {
-            try {
-                $staticMedia = $this->mediaFactory->createStaticMedia($file);
-                
-                $onAttach($staticMedia);
+        // -- Method for handling single upload (static media)
+        $uploadMedia = function($file, MediaPurpose $purpose, MediaOwnerType $ownerType, callable $onAttach, callable $onDetach) 
+            use (&$filesFailedGeneric, &$filesFailedSize, &$successfulUploads, $userId, $user) {
+                try {
+                    $staticMedia = $this->mediaFactory->createStaticMedia($file);
+                    
+                    $onAttach($staticMedia);
 
-                $this->storage->store(
-                    file: $file,
-                    ownerId: $userId->value(),
-                    storedFileName: $staticMedia->name,
-                    ownerType: MediaOwnerType::USER,
-                    mediaPurpose: $purpose,
-                    errorCallback: function($result) use (&$filesFailedGeneric, $onDetach, $staticMedia) {
-                        $filesFailedGeneric[] = $result->originalName;
-                        $onDetach($staticMedia);
-                    },
-                    successCallback: function($result) use (&$successfulUploads) {
-                        $successfulUploads[] = $result->storedName;
-                    }
-                );
-            } catch (FileSizeExceeded $e) {
-                $filesFailedSize[] = $e->getPayload()["originalName"];
-            }
-        };
-
+                    $this->storage->store(
+                        file: $file,
+                        ownerId: $userId->value(),
+                        storedFileName: $staticMedia->name,
+                        ownerType: $ownerType,
+                        mediaPurpose: $purpose,
+                        errorCallback: function($result) use (&$filesFailedGeneric, $onDetach, $staticMedia) {
+                            $filesFailedGeneric[] = $result->originalName;
+                            $onDetach($staticMedia);
+                        },
+                        successCallback: function($result) use (&$successfulUploads) {
+                            $successfulUploads[] = $result->storedName;
+                        }
+                    );
+                } catch (FileSizeExceeded $e) {
+                    $filesFailedSize[] = $e->getPayload()["originalName"];
+                }
+            };
 
         // --- Treatment of logo
         if ($command->logo) {
             $uploadMedia(
                 file: $command->logo,
                 purpose: MediaPurpose::PROFILE,
-                onAttach: fn($media) => $user->setLogo($media),
+                ownerType: MediaOwnerType::COMPANY,
+                onAttach: fn($media) => $company->setLogo($media),
+                onDetach: fn($media) => $company->removeImage($media)
+            );
+        }
+
+        // -- User Profile Image (Correction appliquée)
+        if ($command->profileImage) {
+            $uploadMedia(
+                file: $command->profileImage, 
+                purpose: MediaPurpose::PROFILE,
+                ownerType: MediaOwnerType::USER,
+                onAttach: fn($media) => $user->addImage($media),
                 onDetach: fn($media) => $user->removeImage($media)
             );
         }
 
-
-        // --- Treatment of Images
+        // --- Treatment of Images (Company images)
         foreach ($command->images as $uploadedImage) {
             $uploadMedia(
                 file: $uploadedImage,
                 purpose: MediaPurpose::PROFILE,
-                onAttach: fn($media) => $user->addImages($media),
-                onDetach: fn($media) => $user->removeImage($media)
+                ownerType: MediaOwnerType::COMPANY,
+                onAttach: fn($media) => $company->addImages($media),
+                onDetach: fn($media) => $company->removeImage($media)
             );
         }
 
-
-
-        // -- Save user
+        // -- Save elements
         try {
-            $this->repository->save($user);
+            $this->companyRepository->save($company);
+            $this->userRepository->save($user);
         } catch (ResourceCreationRejected $e) {
-            // Rollback 
+            // Rollback files
             foreach ($successfulUploads as $storedFileName) {
                 try {
                     $this->storage->remove(
                         uniqName: $storedFileName,
                         ownerId: $userId->value(),
-                        ownerType: MediaOwnerType::USER,
+                        ownerType: MediaOwnerType::COMPANY,
                         purpose: MediaPurpose::PROFILE
                     );
                 } catch (\Exception $storageException) {}
@@ -201,7 +222,6 @@ class UserRegisterUseCase
             throw $e;
         }
         
-        //-- dto
         return new AccountRegister(
             filesFailedGeneric: $filesFailedGeneric,
             filesFailedTimeout: $filesFailedTimeout,

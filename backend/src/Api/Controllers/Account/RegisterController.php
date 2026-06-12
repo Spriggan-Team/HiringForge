@@ -14,14 +14,13 @@ use App\Application\Usecases\User\UserRegisterUseCase;
 use Exception;
 use  Psr\Log\LoggerInterface;
 use App\Domain\ApplicationErrorCode;
-
+use App\Domain\Exception\CompanyAlreadyRegistered;
 use App\Domain\OTP\Exception\OTPException;
 use App\Domain\Exception\FileSizeExceeded;
 use App\Domain\Exception\FileTimeExceeded;
 use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Exception\ResourceCreationRejected;
-
-
+use App\Domain\Exception\RessourceAlreadyRegistered;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -93,19 +92,22 @@ class RegisterController extends AbstractController
             $inputBag = $request->request;
 
             $command = new RegisterUserCommand(
-                name:  $inputBag->get('name'),
-                email: $inputBag->get('email'),
-                siret: $inputBag->get('siret'),
+                firstName: trim($inputBag->get("firstName")),
+                lastName: trim($inputBag->get("lastName")),
+                companyName: trim($inputBag->get('companyName')),
+                email: trim($inputBag->get('email')),
+                siret: trim($inputBag->get('siret')),
                 password: $inputBag->get('password'),
                 images: $request->files->get('images', []),
+                profileImage: $request->request->get("profileImage", null), 
                 videoPresentation: $request->files->get('videoPresentation',null),
-                description: $inputBag->get("description", null),
+                description: trim($inputBag->get("description", null)),
                 logo: $request->files->get("logo"),
-                verificationCode: $inputBag->get("verificationCode", null),
+                verificationCode: trim( $inputBag->get("verificationCode", null)),
                 address:  Address::create(
-                    street: $inputBag->get("street"),
-                    postalCode: $inputBag->get("postalCode"),
-                    country: $inputBag->get("country"),
+                    street: trim($inputBag->get("street")),
+                    postalCode: trim($inputBag->get("postalCode")),
+                    country: trim($inputBag->get("country")),
                 )
             );
 
@@ -114,11 +116,18 @@ class RegisterController extends AbstractController
             return ApiResponse::success($result)->toJsonResponse();
         }
         //-- account error fallback
-        catch(EmailAlreadyRegistered $emailEception){
+        catch(EmailAlreadyRegistered $emailException){
             return ApiResponse::error(
                 message: 'This email is already registered', 
-                throwable: $emailEception,
+                throwable: $emailException,
                 code: ApplicationErrorCode::ACCOUNT_ALREADY_EXISTS
+            )->toJsonResponse();
+        }
+        catch(CompanyAlreadyRegistered $companyAlreadyRegistered){
+            return ApiResponse::error(
+                message: 'This company is already registered', 
+                throwable: $companyAlreadyRegistered,
+                code: ApplicationErrorCode::COMPANY_ALREADY_REGISTERED
             )->toJsonResponse();
         }
         //-- Otp error fallback

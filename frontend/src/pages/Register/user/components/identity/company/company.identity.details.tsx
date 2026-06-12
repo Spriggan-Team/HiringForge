@@ -3,10 +3,10 @@ import { useTranslation } from "react-i18next";
 
 
 //--Custom components
-import BasicInput from "../../../../../layout/components/form/input/basic.input";
-import FormWrapper, { FormHint, FormInputs, FormSubmitSection, FormTitle } from "../../../../../layout/components/form/form.wrapper";
-import VideoInput from "../../../../../layout/components/form/input/video/video.input";
-import BrandButton from "../../../../../layout/components/buttons/brand.button";
+import BasicInput from "../../../../../../layout/components/form/input/basic.input";
+import FormWrapper, { FormHint, FormInputs, FormSubmitSection, FormTitle } from "../../../../../../layout/components/form/form.wrapper";
+import VideoInput from "../../../../../../layout/components/form/input/video/video.input";
+import BrandButton from "../../../../../../layout/components/buttons/brand.button";
 
 
 //-- SVG Components
@@ -16,7 +16,7 @@ import LeftToRightArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-dow
 
 //-- custom styles
 import styles from "./style.module.css"
-import CustomTextarea from "../../../../../layout/components/form/input/textarea/custom.textarea";
+import CustomTextarea from "../../../../../../layout/components/form/input/textarea/custom.textarea";
 
 
 
@@ -29,7 +29,7 @@ interface IdentityDetailProps{
 }
 
 
-const IdentityDetail: React.FC<IdentityDetailProps> = ({
+const CompanyIdentityDetail: React.FC<IdentityDetailProps> = ({
     formData,
     onNext
 }) => {
@@ -42,7 +42,7 @@ const IdentityDetail: React.FC<IdentityDetailProps> = ({
                     <FormTitle title={t("userRegister.form.step2.title")}/>
                     <BasicInput
                         svg={PersonSVG} 
-                        inputName="name"
+                        inputName="companyName"
                         className="faint-border"
                         placeholder={t("userRegister.form.step2.inputs.name.placeholder")}
                         label={t("userRegister.form.step2.inputs.name.label")} 
@@ -83,4 +83,4 @@ const IdentityDetail: React.FC<IdentityDetailProps> = ({
     );
 }
  
-export default IdentityDetail;
+export default CompanyIdentityDetail;

@@ -12,7 +12,13 @@ class RegisterUserCommand
 {
     public function __construct(
         #[Assert\NotBlank]
-        public string $name,
+        public string $lastName,
+        
+        #[Assert\NotBlank]
+        public string $firstName,
+
+        #[Assert\NotBlank]
+        public string $companyName,
 
         #[Assert\NotBlank]
         #[Assert\Email]
@@ -35,10 +41,11 @@ class RegisterUserCommand
         
         public ?string $description = null,
         public ?UploadedFile $logo = null,
+        public ?UploadedFile $profileImage = null,
         public ?UploadedFile $videoPresentation = null,
     ){}
 
-    public function withImages($uploads): static
+    public function withImages(array $uploads = []): static
     {
         $this->images = $uploads;
         return $this;

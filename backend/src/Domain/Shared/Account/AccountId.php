@@ -3,7 +3,7 @@
 
 namespace App\Domain\Shared\Account;
 
-
+use App\Domain\Shared\CustomUUID;
 use DomainException;
 
 abstract class AccountId
@@ -52,7 +52,7 @@ abstract class AccountId
      */
     public static function isValid(string $id)
     {
-        return \Ramsey\Uuid\Uuid::isValid($id);
+        return CustomUUID::isValid($id);
     }
 
     /**
@@ -60,6 +60,6 @@ abstract class AccountId
      */
     private static function generateId(): string 
     {
-        return \Ramsey\Uuid\Uuid::uuid4();
+        return CustomUUID::generate();
     }
 }

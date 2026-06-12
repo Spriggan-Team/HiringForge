@@ -10,10 +10,11 @@ enum ApplicationErrorCode: string{
     case EXPIRED_OTP = "expired_otp";
     case INVALID_OTP = "invalid_otp";
     
-    //-- account
+    //-- account & account
     case ACCOUNT_ALREADY_EXISTS = "account_already_exists";
     case ACCOUNT_NOT_FOUND = "account_not_found";
     case INVALID_CREDENTIALS = "invalid_credential";
+    case COMPANY_ALREADY_REGISTERED = "company_already_registered";
 
     //-- file
     case FILE_MISMATCH_TYPE = "file_mismatch_type";

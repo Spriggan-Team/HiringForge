@@ -9,12 +9,12 @@ use App\Domain\Shared\EmailAddress;
 use App\Domain\User\Siret;
 use App\Domain\User\User as DomainEntity;
 use App\Domain\User\UserId;
-
-
+use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
-
+use App\Infrastructure\Persistence\Doctrine\ORM\User\UserRoleEntity;
+use Doctrine\ORM\EntityManagerInterface;
 
 class UserEntityMapper 
 {
@@ -22,38 +22,22 @@ class UserEntityMapper
      * This function trun an existing a user domain entity into a doctrine entity
      * @return DoctrineEntity
      */
-public static function toDoctrineEntity(DomainEntity $user): UserEntity
+    public static function toDoctrineEntity(DomainEntity $user, EntityManagerInterface $em): UserEntity
     {
-        $address = AddressEntity::create(
-            street: $user->address()->street,
-            postalCode: $user->address()->postalCode,
-            country: $user->address()->country
-        );
+        $company = $em->getReference(CompanyEntity::class, $user->companyId());
+        $userRole =  UserRoleEntity::create(name: $user->role());
 
         $entity = UserEntity::create(
             id: $user->id(),
-            name: $user->name(),
             email: $user->email(),
+            firstName: $user->firstName(),
+            lastName: $user->lastName(),
             password: $user->passwordHash(),
-            siret: $user->siret(),
-            address: $address,
             description: $user->description(),
-            logo: new FileEntity()
-                        ->setName($user->logo()->name)
-                        ->setMime($user->logo()->mime)
-                        ->setSize($user->logo()->size)
+            company: $company,
+            userRole: $userRole,
         );
 
-        $entity->attachToAddress($address);
-
-        foreach ($user->images() as $uploadedImage) {
-            $image = new FileEntity();
-            $image->setName($uploadedImage->name)
-                  ->setMime($uploadedImage->mime)
-                  ->setSize($uploadedImage->size);
-                  
-            $entity->attachToImage($image);
-        }
 
         return $entity;
     }
@@ -64,33 +48,24 @@ public static function toDoctrineEntity(DomainEntity $user): UserEntity
      */
     public static function toDomainEntity(UserEntity $doctrine): DomainEntity
     {
-        $userImages = [];
-        foreach($doctrine->getUserImages() as $userImageEntity){
-            $userImages[] = $userImageEntity->image->name;
+        $image = null;
+        if($doctrine->getImage()){
+            $image = new StaticMedia(
+                name: $doctrine->getImage()->getName(),
+                size: $doctrine->getImage()->getSize(),
+                mime: $doctrine->getImage()->getMime()
+            );
         }
-        $logo = $doctrine->getLogo();
-
+       
         return DomainEntity::create(
-            name: $doctrine->getName(),
-            userId: UserId::hydrate($doctrine->getId()),
-            
-            images: $userImages,
+            firstName: $doctrine->getFirstName(),
+            lastName: $doctrine->getLastName(),
+            image: $image,
             email: EmailAddress::hydrate($doctrine->getEmail()),
             passwordHash: $doctrine->getPassword(),
             description: $doctrine->getDescription(),
-
-            logo: $logo ? StaticMedia::hydrate(
-                name: $logo->getName(),
-                size: $logo->getSize(),
-                mime: $logo->getMime(),
-            ) : null,
-            siret:  Siret::hydrate($doctrine->getSiret()),
-
-            address:  Address::hydrate(
-                street: $doctrine->getAddress()->getStreet(),
-                postalCode: $doctrine->getAddress()->getPostalCode(),
-                country: $doctrine->getAddress()->getCountry()
-            )
+            companyId: $doctrine->getCompany()->getId(),
+            role: $doctrine->getUserRole()->getName()
         );
     }
 
@@ -100,10 +75,20 @@ public static function toDoctrineEntity(DomainEntity $user): UserEntity
      */
     public static function copy(DomainEntity $user, UserEntity $entity): void
     {
-        $entity->setName($user->name())
+        $image = null;
+        if($entity->getImage()){
+            $image = new StaticMedia(
+                name: $entity->getImage()->getName(),
+                size: $entity->getImage()->getSize(),
+                mime: $entity->getImage()->getMime()
+            );
+        }
+
+        $entity->setFirstName($user->firstName())
+               ->setLastName($user->lastName())
                ->setEmail($user->email())
+               ->setImage($image)
                ->setPassword($user->passwordHash())
-               ->setSiret($user->siret())
                ->setDescription($user->description());
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Company;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use Doctrine\ORM\Mapping as ORM;
@@ -18,7 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
       ]
     )
 ]
-class UserImageEntity
+class CompanyImageEntity
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -31,27 +31,27 @@ class UserImageEntity
 
     #[ORM\ManyToOne(
         targetEntity: FileEntity::class,
-        inversedBy: "userImages",
+        inversedBy: "companyImages",
         cascade: ['persist', 'remove']
     )]
     #[ORM\JoinColumn(nullable: false)]
     private FileEntity $image;
 
     #[ORM\ManyToOne(
-        targetEntity: UserEntity::class,
-        inversedBy: "userImages",
+        targetEntity: CompanyEntity::class,
+        inversedBy: "companyImages",
     )]
     #[ORM\JoinColumn(nullable: false)]
-    private UserEntity $user;
+    private CompanyEntity $company;
 
 
     //-------------------
     //  Constructions...
     //-------------------
 
-    public function __construct(UserEntity $user, FileEntity $image)
+    public function __construct(CompanyEntity $user, FileEntity $image)
     {
-        $this->user = $user;
+        $this->company = $user;
         $this->image= $image;
     }
 

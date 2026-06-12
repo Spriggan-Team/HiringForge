@@ -5,6 +5,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\A
 use App\Domain\Shared\Account\AccountRole;
 use App\Infrastructure\Persistence\Doctrine\ORM\Agent\AgentEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens\OTPVerificationTokenEntity;
@@ -30,33 +31,42 @@ class AccountEntity
 {
     #[ORM\Id]
     #[ORM\Column(type: "guid", unique: true)]
-    private string $id;
+    protected string $id;
 
     #[ORM\Column(length: 255, unique: true, nullable: false)]
-    private string $email;
+    protected string $email;
+
+    #[ORM\Column(length: 150)]
+    protected string $firstName;
+
+    #[ORM\Column(length: 150)]
+    protected string $lastName;
 
     #[ORM\Column(length: 255, nullable: false)]
-    private string $password;
+    protected string $password;
 
     #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $description = null;
-
+    protected ?string $description = null;
 
     #[ORM\Column]
-    private \DateTimeImmutable $createdAt;
+    protected \DateTimeImmutable $createdAt;
 
     //--------------------
     //---- Relations
     //--------------------
 
-    #[ORM\OneToOne(mappedBy: "account", targetEntity: AdminSupervisionEntity::class)]
-    private ?AdminSupervisionEntity $adminSupervision = null;
+    #[ORM\OneToOne(
+        inversedBy: "accountImage",
+        targetEntity: FileEntity::class
+    )]
+    protected ?FileEntity $image = null;
+
 
     #[ORM\OneToMany(
         mappedBy: "account",
         targetEntity: OTPVerificationTokenEntity::class
     )]
-    private ?Collection $otpTokens = null;
+    protected ?Collection $otpTokens = null;
 
 
     //---------
@@ -67,11 +77,18 @@ class AccountEntity
     }
 
 
+
     //---------------
     //  GETTER
     //--------------
     public function getId(): string { return $this->id; }
 
+    public function getFirstName() : string { return $this->firstName; }
+    public function getLastName() : string { return $this->lastName; }
+
+    public function getImage() : ?FileEntity {
+        return $this->image;
+    }
 
     public function getEmail():string { return $this->email; }
 
@@ -81,23 +98,21 @@ class AccountEntity
 
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     
-    public function getAdminUser()
-    {
-        return $this->adminSupervision;
-    }
 
     public function getOTPToken() {
         return $this->otpTokens;
     }
 
     
-    public function getRole(): AccountRole{
+    public function getAccountType(): AccountRole{
         return match (true) {
             $this instanceof UserEntity => AccountRole::USER,
             $this instanceof AgentEntity => AccountRole::AGENT,
             $this instanceof CandidateEntity => AccountRole::CANDIDATE,
         };
     }
+
+
 
     //---------------------------
     //  SETTERS
@@ -109,6 +124,15 @@ class AccountEntity
         return $this;
     }
     
+    public function setFirstName(string $firstName): self{
+        $this->firstName = $firstName;
+        return $this;
+    }
+
+    public function setLastName(string $lastName): self{
+        $this->lastName = $lastName;
+        return $this;
+    }
 
     public function setEmail(string $email): static{ 
         $this->email = $email;
@@ -126,18 +150,9 @@ class AccountEntity
         return $this;
     }
 
-    public function isAdmin(): bool
-    {
-        return $this->adminSupervision !== null;
+    public function setImage(?FileEntity $file): self{
+        $this->image = $file;
+        return $this;
     }
-
-    public function promoteToAdmin(): void
-    {
-        if ($this->isAdmin()) {
-            return;
-        }
-        $this->adminSupervision = new AdminSupervisionEntity($this);
-    }
-
 
 }

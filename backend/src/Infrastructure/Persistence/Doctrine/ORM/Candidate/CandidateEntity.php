@@ -6,7 +6,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
-
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferViewEntity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -21,27 +21,12 @@ class CandidateEntity extends AccountEntity
     // Extra  Columns
     //-----------------------
 
-    #[ORM\Column(length: 255, nullable: false)]
-    private string $lastName;
-
-    #[ORM\Column(length: 255, nullable: false)]
-    private string $firstName;
-
     #[ORM\Column(type: 'integer')]
     private int $searchRadius;
 
     //---------------------------------
     //-------Relations
     //--------------------------------
-
-    #[ORM\OneToOne(
-        inversedBy: 'candidateImage',
-        targetEntity: FileEntity::class,
-        cascade: ['persist'],
-        orphanRemoval: true
-    )]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?FileEntity $image = null;
 
 
     #[ORM\OneToOne(
@@ -63,17 +48,21 @@ class CandidateEntity extends AccountEntity
     private Collection $applications;
 
 
-    #[ORM\OneToOne(
-        inversedBy: "candidate",
-        targetEntity: AddressEntity::class,
-        cascade: ['persist', 'remove']
-    )]
-    private AddressEntity $address;
+    #[ORM\OneToOne(targetEntity: AddressEntity::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(name: 'address_id', nullable: true)]
+    private ?AddressEntity $address = null;
 
 
     #[ORM\OneToMany(mappedBy: "candidate", targetEntity: InterviewEntity::class)]
     private Collection $interviews;
 
+
+    #[ORM\OneToMany(
+        mappedBy: "candidate",
+        targetEntity: JobOfferViewEntity::class,
+        cascade:['persist', 'remove']
+    )]
+    private Collection $jobOfferViews;
     
     //------------------------
     //  Construction...
@@ -83,6 +72,7 @@ class CandidateEntity extends AccountEntity
     {
         $this->interviews  = new ArrayCollection();
         $this->applications = new ArrayCollection();
+        $this->jobOfferViews = new ArrayCollection();
     }
 
     public static function create()
@@ -111,8 +101,13 @@ class CandidateEntity extends AccountEntity
         return $this->address;
     }
 
+
     public function getSearchRadius(): int {
         return $this->searchRadius;
+    }
+
+    public function getJobOfferViews(): Collection{
+        return $this->jobOfferViews;
     }
     
     /* =======================
@@ -154,6 +149,11 @@ class CandidateEntity extends AccountEntity
     public function attachToAddress(AddressEntity $address):static
     {
         $this->address = $address;
+        return $this;
+    }
+
+    public function addJobViews(JobOfferViewEntity $jobOfferViews): self{
+        $this->jobOfferViews->add($jobOfferViews);
         return $this;
     }
 }

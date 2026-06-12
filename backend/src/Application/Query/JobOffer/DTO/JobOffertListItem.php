@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Query\JobOffer;
+namespace App\Application\Query\JobOffer\DTO;
 
 /**
  * Lightweight projection representing a job offer in listing contexts.

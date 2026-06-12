@@ -20,7 +20,8 @@ import SideForm from "./components/sideform/side.form";
 import StageTitle from "../../../layout/components/indicators/stage/stage.title";
 import StatusItem from "../../../layout/components/indicators/statusItem/status.item";
 import LanguageSelector from "../../../layout/components/selectors/language/language.selctor";
-import  IdentityDetail from "./components/identity/identity.details";
+import  CompanyIdentityDetail from "./components/identity/company/company.identity.details";
+
 
 //-- services
 import AuthServices from "../../../api/services/auth/auth";
@@ -28,7 +29,6 @@ import { objectToFormData } from "../../../utils/convertor";
 import { AccountAlreadyRegistered, InvalidOTP, RessourceCreationFailed } from "../../../api/services/auth/exceptions";
 
 //-- SVG - Components
-
 import SecureAccount from "./components/security/LockAccount";
 
 //-- Images - Ressources
@@ -287,17 +287,21 @@ const UserRegister = () => {
                                         setCurrentStep(prev => ({ current: 2, max: 2 > prev.max ? 2 : prev.max }))
                                     }}
                                 />
-                                : currentStep.current == 2 ?
-                                    <IdentityDetail
-                                        formData={formData.current} 
-                                        onNext={sendOTPCode}
+                                :  currentStep.current == 2 ?
+                                    <SecureAccount 
+                                        formData={formData.current}
+                                        onNext={handleCompletion}
                                     />
+
                                     : currentStep.current == 3 ?
-                                        <SecureAccount 
-                                            formData={formData.current}
-                                            onNext={handleCompletion}
-                                        />
-                                        :<></>    
+                                       <></>
+
+                                    : currentStep.current === 4 ?
+                                         <CompanyIdentityDetail
+                                            formData={formData.current} 
+                                            onNext={sendOTPCode}
+                                        /> 
+                                        : <></>
                             }
                         </div>
                     </div>

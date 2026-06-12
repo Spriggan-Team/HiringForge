@@ -82,7 +82,7 @@ class UserRepository implements UserRepositoryInterface
     public function save(DomainEntity $user): void
     {
         try{
-            $entity = UserEntityMapper::toDoctrineEntity($user);
+            $entity = UserEntityMapper::toDoctrineEntity($user, $this->em);
             $this->em->persist($entity);
             $this->em->flush();
         }

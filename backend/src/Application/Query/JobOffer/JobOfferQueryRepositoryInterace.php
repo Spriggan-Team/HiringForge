@@ -2,6 +2,10 @@
 
 namespace App\Application\Query\JobOffer;
 
+use App\Application\Query\JobOffer\DTO\JobOfferStatistics;
+use App\Application\Query\JobOffer\DTO\JobOffertListItem;
+
+
 interface JobOfferQueryRepositoryInterace
 {
     /**
@@ -19,4 +23,11 @@ interface JobOfferQueryRepositoryInterace
      * @return JobOffertListItem[]          #should return a serializable value;
      */
     public function fetchJobOfferViewCollection(?int $limit= null, ?int $skip=null): array;
+
+
+    /**
+     * Analyzes and counts the job offers associated with a user.
+     * Returns statistics such as active, open, and pending-review offers.
+     */
+    public function analyseJobOfferCollection(string $userId): JobOfferStatistics;
 }

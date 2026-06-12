@@ -22,13 +22,13 @@ const SideMenu = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     const menuItems = [
-        { id: "home", svg: HomeSVG, label: t("userHome.menu.home") },
-        { id: "poste", svg: PostSVG, label: t("userHome.menu.poste") },
-        { id: "candidates", svg: CandidateSVG, label: t("userHome.menu.candidates") },
-        { id: "interview", svg: CandidateSVG, label: t("userHome.menu.interview") },
-        { id: "calendar", svg: CalendarSVG, label: t("userHome.menu.calendar") },
-        { id: "agents", svg: AgentSVG, label: t("userHome.menu.agents") },
-        { id: "settings", svg: SettingsSVG, label: t("userHome.menu.settings") },
+        { id: "home", svg: HomeSVG, label: t("global.menu.home") },
+        { id: "poste", svg: PostSVG, label: t("global.menu.poste") },
+        { id: "candidates", svg: CandidateSVG, label: t("global.menu.candidates") },
+        { id: "interview", svg: CandidateSVG, label: t("global.menu.interview") },
+        { id: "calendar", svg: CalendarSVG, label: t("global.menu.calendar") },
+        { id: "agents", svg: AgentSVG, label: t("global.menu.agents") },
+        { id: "settings", svg: SettingsSVG, label: t("global.menu.settings") },
     ];
 
     return (

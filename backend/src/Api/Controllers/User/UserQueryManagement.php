@@ -4,16 +4,18 @@ namespace App\Api\Controllers\User;
 
 
 use App\Api\Responder\ApiResponse;
-
-
+use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
 use App\Application\Usecases\User\FetchUser;
-use App\Domain\Shared\Account\AccountRole;
+use App\Application\Usecases\User\ViewPerformanceMetrics;
 use Psr\Log\LoggerInterface;
+use App\Domain\Shared\Account\AccountRole;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
+
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
 
 
 #[Route("/users")]
@@ -50,6 +52,24 @@ class UserQueryManagement extends AbstractController
         catch (\Exception $exception)
         {
             return ApiResponse::error('User not found', throwable: $exception)->toJsonResponse();
+        }
+    }
+
+    
+    #[Route("/{userId}/kpi", methods: ['GET'], name: "view_kpi_metrics")]
+    public function getKpi(
+        string $userId,
+        JobOfferQueryRepositoryInterace $jobOfferQueryRepository
+    ) {
+        try{
+            $result = $jobOfferQueryRepository->analyseJobOfferCollection($userId);
+            return ApiResponse::success($result)->toJsonResponse();
+        }
+        catch(\Exception $exception){
+            return ApiResponse::error(
+                message: "Something wrong happened",
+                throwable: $exception
+            )->toJsonResponse();
         }
     }
 }

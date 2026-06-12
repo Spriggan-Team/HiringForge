@@ -13,6 +13,9 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping\OneToMany;
 
+
+
+
 #[ORM\Entity]
 #[ORM\Table(name: "job_offer")]
 class JobOfferEntity 
@@ -26,6 +29,7 @@ class JobOfferEntity
 
     #[ORM\Column(type: 'json', nullable: false)]
     private array $content = [];
+
 
     #[ORM\Column(nullable: false)]
     private \DateTimeImmutable $createdAt;
@@ -43,6 +47,7 @@ class JobOfferEntity
         orphanRemoval: true
     )]
     private Collection $categories;
+
 
 
     #[ORM\ManyToOne( inversedBy: "jobOffers", targetEntity: UserEntity::class )]
@@ -73,12 +78,22 @@ class JobOfferEntity
     )]
     private Collection $images;
 
+    #[ORM\OneToMany(
+        mappedBy: 'jobOffer',
+        targetEntity: JobOfferViewEntity::class,
+        cascade: ['persist'],
+        orphanRemoval: true
+    )]
+    private Collection $views;
+
+
     public function __construct()
     {
         $this->interviews  = new ArrayCollection();
         $this->categories = new ArrayCollection();
         $this->applications =  new ArrayCollection();
         $this->images = new ArrayCollection();
+        $this->views = new ArrayCollection();
     }
 
     public static function reconstitue(
@@ -122,6 +137,10 @@ class JobOfferEntity
     public function getInterviews() : Collection { return $this->interviews; }
     public function getImages() : Collection { return $this->images; }
 
+    public function getViewers(): ?Collection{
+        return $this->views;
+    }
+
     /* =======================
      * SETTERS
      * ======================= */
@@ -164,6 +183,11 @@ class JobOfferEntity
     public function setUser(UserEntity $user): static
     {
         $this->user = $user;
+        return $this;
+    }
+
+    public function addViewer(JobOfferViewEntity $viewer): self{
+        $this->views->add($viewer);
         return $this;
     }
 }

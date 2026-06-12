@@ -35,13 +35,12 @@ class MediaStorage implements MediaStorageInterface
 
 
     public function store(
-        /** @var  UploadedFile */
         mixed $file,
-        ?string $ownerId = null,
-        ?string $storedFileName = null,
+        string $ownerId,
         /** @var string[] a array of filename  */
-        ?MediaOwnerType $ownerType = null,
-        ?MediaPurpose $mediaPurpose = null,
+        MediaOwnerType $ownerType,
+        MediaPurpose $mediaPurpose,
+        ?string $storedFileName = null,
         ?callable  $successCallback = null,
         ?callable  $errorCallback = null
     ): void

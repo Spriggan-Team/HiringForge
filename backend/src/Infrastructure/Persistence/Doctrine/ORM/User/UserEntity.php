@@ -2,61 +2,30 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
-
+use App\Domain\User\UserRole;
+use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\Mapping\JoinColumn;
 
 
-#[ORM\Table(name: "user")]
+
 #[ORM\Entity]
+#[ORM\Table(name: "user")]
 class UserEntity extends AccountEntity
 {
-
     //------------------------
     // Extra  Columns
     //-----------------------
 
-    
-    #[ORM\Column(length: 150)]
-    private string $name;
-
-    #[ORM\Column(length: 255, nullable: false)]
-    private string $siret;
 
     //------------------------
     //  Relations
     //-----------------------
-
-    #[ORM\OneToOne(
-        inversedBy: 'userVideoPresentation',
-        targetEntity: FileEntity::class,
-        cascade: ['persist', 'remove']
-    )]
-    #[JoinColumn(nullable: true)]
-    private ?FileEntity $videoPresentation = null;
-
-    #[ORM\OneToOne(
-        inversedBy: 'userLogo',
-        targetEntity: FileEntity::class,
-        cascade: ['persist', 'remove']
-    )]
-    #[JoinColumn(nullable: true)]
-    private ?FileEntity $logo = null;
-
-    #[ORM\OneToOne(
-        targetEntity: UserAddressEntity::class,
-        mappedBy: 'user',
-        cascade: ['persist', 'remove']
-    )]
-    private UserAddressEntity $userAddress;
 
 
     #[ORM\OneToMany(
@@ -65,12 +34,17 @@ class UserEntity extends AccountEntity
     )]
     private ?Collection $jobOffers = null;
 
-    #[ORM\OneToMany(
-        mappedBy: "user",
-        targetEntity: UserImageEntity::class,
-        cascade:['persist', 'remove']
+
+    #[ORM\ManyToOne(inversedBy: "recruiters", targetEntity: CompanyEntity::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?CompanyEntity $company = null;
+
+    #[ORM\OneToOne(
+        inversedBy: "user_role",
+        targetEntity: UserRoleEntity::class
     )]
-    private ?Collection $userImages = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private ?UserRoleEntity $userRole = null;
 
 
     //------------------------
@@ -81,28 +55,32 @@ class UserEntity extends AccountEntity
     {
         parent::__construct();
         $this->jobOffers = new ArrayCollection();
-        $this->userImages = new ArrayCollection();
     }
 
     public static function create(
         string $id,
-        string $name,
         string $email,
+        string $firstName,
+        string $lastName,
         string $password,
-        string $siret,
-        AddressEntity $address,
+        CompanyEntity $company,
         ?string $description = null,
-        ?FileEntity $logo = null,
+        ?UserRoleEntity $userRole = null,
     ): self {
         $entity = new self();
-        $entity->setId($id)
-               ->setLogo($logo)
-               ->setName($name)
-               ->setEmail($email)
-               ->setDescription($description)
-               ->setPassword($password)
-               ->setSiret($siret)
-               ->attachToAddress($address);
+        
+        //-- assignement
+        $entity->id = $id;
+        $entity->lastName = $lastName;
+        $entity->firstName = $firstName;
+
+        $entity->email = $email;
+        $entity->password = $password;
+
+        $entity->company = $company;
+        $entity->description = $description;
+        $entity->userRole = $userRole;
+
         return $entity;
     }
 
@@ -110,78 +88,28 @@ class UserEntity extends AccountEntity
      * GETTERS
      * ======================= */
 
-    public function getLogo(): ?FileEntity { return $this->logo; } 
+    public function getJobOffer(): Collection { return $this->jobOffers; }
 
-    public function getName(): string { return $this->name; }
-
-    public function getAddress(): AddressEntity { 
-        return $this->userAddress->getAdrdress();
+    public function getCompany() : CompanyEntity {
+        return $this->company;
     }
 
-    public function getSiret(){ return $this->siret; }
-
-    public function getVideoPresentation(){ return $this->videoPresentation; }
-
-    public function getJobOffer(): Collection { return $this->jobOffers; }
-    public function getUserImages(): Collection { return $this->userImages; }
+    public function getUserRole(): UserRoleEntity{
+        return $this->userRole;
+    }
 
     /* =======================
      * SETTERS
      * ======================= */
-    public function setLogo(FileEntity $logo): static{
-        $this->logo = $logo;
+
+    public function setCompany(CompanyEntity $company): static{
+        $this->company = $company;
         return $this;
     }
 
-    public function setName(string $name): static { 
-        $this->name = $name;
-        return $this;    
-    }
-
-    public function setSiret(string $siret): static{
-        $this->siret = $siret;
-        return $this;    
-    }
-    //--------------------------------
-    // Utils
-    //--------------------------------
-
-    public function attachToAddress(AddressEntity $address): static
-    {
-        $userAddress = new UserAddressEntity($this, $address);
-        $this->userAddress = $userAddress;
+    public function setUserRole(UserRoleEntity $userRole) : static {
+        $this->userRole = $userRole;
         return $this;
     }
 
-    public function attachToImage(FileEntity $image): static
-    {
-        //Forbide duplicates
-        foreach($this->userImages as $img){
-            if($img->getImage() === $image){
-                return $this;
-            }
-        }
-        $userImage = new UserImageEntity($this, $image);
-        $this->userImages->add($userImage);
-        return $this;
-    }
-    
-
-    public function removeImage(FileEntity $image): void
-    {
-        foreach ($this->userImages as $userImage) {
-            if ($userImage->getImage() === $image) {
-                $this->userImages->removeElement($userImage);
-            }
-        }
-    }
-
-    public function attachPresentation(FileEntity $video): static
-    {
-        if(!str_contains($video->getMime(), 'video')){
-            return $this;
-        }
-        $this->videoPresentation = $video;
-        return $this;
-    }
 }
