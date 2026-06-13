@@ -4,17 +4,12 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories;
 
 use App\Domain\File\StaticMedia;
-use App\Domain\Shared\Address;
 use App\Domain\Shared\EmailAddress;
-use App\Domain\User\Siret;
 use App\Domain\User\User as DomainEntity;
-use App\Domain\User\UserId;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\User\UserRoleEntity;
-use Doctrine\ORM\EntityManagerInterface;
+
 
 class UserEntityMapper 
 {
@@ -25,7 +20,6 @@ class UserEntityMapper
     public static function toDoctrineEntity(
         DomainEntity $user, 
         CompanyEntity $companyProxy, 
-        ?UserRoleEntity $userRole
     ): UserEntity {
         return UserEntity::create(
             id: $user->id(),
@@ -35,7 +29,7 @@ class UserEntityMapper
             password: $user->passwordHash(),
             description: $user->description(),
             company: $companyProxy,     // Reçu depuis le repository
-            userRole: $userRole,        // Reçu depuis le repository
+            userRole: $user->role(),        // Reçu depuis le repository
         );
     }
 
@@ -62,7 +56,7 @@ class UserEntityMapper
             passwordHash: $doctrine->getPassword(),
             description: $doctrine->getDescription(),
             companyId: $doctrine->getCompany()->getId(),
-            role: $doctrine->getUserRole()->getName()
+            role: $doctrine->getUserRole()
         );
     }
 

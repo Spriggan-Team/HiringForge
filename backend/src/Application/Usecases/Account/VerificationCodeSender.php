@@ -2,6 +2,7 @@
 
 namespace App\Application\Usecases\Account;
 
+use App\Api\Responder\ApiResponse;
 use App\Domain\OTP\OTP;
 use App\Domain\Shared\EmailAddress;
 
@@ -64,6 +65,7 @@ class VerificationCodeSender
         }
         catch(RessourceNotFound){}
 
+
         // -- Generate warning if OTP is still active (Il n'est PAS expiré)
         if ($lastOtp && !$lastOtp->isExpired()) { 
             $remainingSeconds = $lastOtp->getRemainingSeconds();
@@ -89,6 +91,7 @@ class VerificationCodeSender
 
             return; 
         }
+
         
         // --- Create a new OTP code and save it
         $otp = OTP::create(
@@ -96,6 +99,7 @@ class VerificationCodeSender
             purpose: $purpose
         );
         $this->OTPRepository->save($emailString, $otp);
+
 
         // --- Send the plain text code via email, NOT the hash
         $emailMessage->code = $otp->plainCode;

@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User;
 
+use App\Domain\User\User;
 use App\Domain\User\UserRole;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
@@ -39,13 +40,8 @@ class UserEntity extends AccountEntity
     #[ORM\JoinColumn(nullable: false)]
     private ?CompanyEntity $company = null;
 
-    #[ORM\OneToOne(
-        inversedBy: "user_role",
-        targetEntity: UserRoleEntity::class,
-        cascade: ['persist']
-    )]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?UserRoleEntity $userRole = null;
+    #[ORM\Column(nullable: false, enumType: UserRole::class)]
+    private UserRole $userRole = UserRole::RECRUITER;
 
 
     //------------------------
@@ -66,7 +62,7 @@ class UserEntity extends AccountEntity
         string $password,
         CompanyEntity $company,
         ?string $description = null,
-        ?UserRoleEntity $userRole = null,
+        ?UserRole $userRole = null,
     ): self {
         $entity = new self();
         
@@ -95,7 +91,7 @@ class UserEntity extends AccountEntity
         return $this->company;
     }
 
-    public function getUserRole(): UserRoleEntity{
+    public function getUserRole(): UserRole{
         return $this->userRole;
     }
 
@@ -108,7 +104,7 @@ class UserEntity extends AccountEntity
         return $this;
     }
 
-    public function setUserRole(UserRoleEntity $userRole) : static {
+    public function setUserRole(UserRole $userRole) : static {
         $this->userRole = $userRole;
         return $this;
     }

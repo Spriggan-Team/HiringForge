@@ -4,7 +4,8 @@ namespace App\Domain\OTP;
 
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountFlowPurpose;
-use App\Domain\Shared\Account\AccountRole;
+
+
 
 interface OTPRepositoryInterface
 {

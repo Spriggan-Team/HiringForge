@@ -2,8 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account;
 
-use App\Api\Responder\ApiResponse;
-use App\Domain\Shared\EmailAddress;
+
 use App\Domain\Shared\KnownIdentity;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
@@ -58,6 +57,7 @@ class AccountRepository implements AccountRepositoryInterface
         if (!$accountData) {
             throw new RessourceNotFound();
         }
+
 
         return new KnownIdentity(
             uuid: $accountData['id'],

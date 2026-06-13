@@ -223,8 +223,12 @@ const Login = () => {
                         {mode === "Login"
                             ? t("login.buttons.logbtn")
                             : mode === "ResetPassword"
-                            ? t("forgottenPassword.buttons.resetBtn")
-                            : ""}
+                            ? phase == 1 ? 
+                                t("forgottenPassword.buttons.sentOTPCode")
+                                : phase === 2 
+                                    ? t("forgottenPassword.buttons.resetBtn") : ""
+                            : ""
+                        }
                     </button>
                 </div>
 

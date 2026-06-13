@@ -12,7 +12,6 @@ use App\Domain\User\UserRepositoryInterface;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\User\UserRoleEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 
@@ -83,9 +82,8 @@ class UserRepository implements UserRepositoryInterface
     {
         try{
             $company = $this->em->getReference(CompanyEntity::class, $user->companyId());
-            $userRole =  $this->em->getRepository(UserRoleEntity::class)->findOneBy([ "name" => $user->role() ]); // UserRoleEntity::create(name: $user->role());
 
-            $entity = UserEntityMapper::toDoctrineEntity($user, $company, $userRole);
+            $entity = UserEntityMapper::toDoctrineEntity($user, $company);
             $this->em->persist($entity);
             $this->em->flush();
         }
