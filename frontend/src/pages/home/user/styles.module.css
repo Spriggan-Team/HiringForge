@@ -1,3 +1,22 @@
-.container{
+.main{
+    gap: 15px;
     display: flex;
+    flex-direction: column;
+}
+
+.kpiSection {
+    gap: 15px;
+    display: flex;
+}
+
+/** -- KANBAN -- **/
+.view {
+    /* background-color: bisque; */
+}
+
+.pipeline > * + *{
+    margin-top: 8px ;
+}
+
+.pipeline .title{
 }

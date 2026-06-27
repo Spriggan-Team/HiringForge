@@ -73,8 +73,13 @@ a:hover{
 
 /** App Container **/
 .app-container{
-  gap: 15px;
   display: flex;
+}
+
+.app-container .app-view{
+  padding: 18px 25px;
+  width: 100%;
+  /* background: red; */
 }
 
 /** NavBar **/

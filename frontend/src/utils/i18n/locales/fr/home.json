@@ -1,5 +1,43 @@
 {
-    "userHome":{
+  "userHome": {
 
+    "header": {
+      "leading": {
+        "summary_sentence": "Vous avez {{openPostsText}} et {{candidaturesText}} à traiter",
+
+        "open_post_one": "{{count}} poste ouvert",
+        "open_post_other": "{{count}} postes ouverts",
+
+        "candidature_one": "{{count}} candidature",
+        "candidature_other": "{{count}} candidatures"
+      }
+    },
+
+    "inputs":{
+        "search":{
+            "placeholder": "Rechercher..."
+        }
+    },
+
+    "borad":{
+      "kanban":{
+        "title": "Recrutement pipeline",
+        "colomns":{
+          "new": {
+            "title": "Nouveaux"
+          },
+          "interviews":{
+            "title": "Entretiens RH"
+          },
+          "techInterview":{
+            "title": "Entretiens Tech"
+          },
+          "hired":{
+            "title": "Embauchés"
+          }
+        }
+      }
     }
+
+  }
 }

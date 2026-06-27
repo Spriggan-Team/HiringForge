@@ -18,7 +18,7 @@
             "optionnal": "optionnel"
         },
         "messages":{
-            "welcome": "Bonjour",
+            "welcome": "Bonjour {{name}}",
             "secureData": "Données sécurisées",
             "error": "Une erreur inattendue est survenue"
         },

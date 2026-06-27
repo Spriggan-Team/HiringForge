@@ -8,6 +8,7 @@ const host = import.meta.env.VITE_API_HOST;
 const baseURL  = `http://${host}:${port}/api`;
 const DEV = import.meta.env.DEV;
 
+
 type RequestData = Record<string, any> | FormData | null;
 
 
@@ -130,3 +131,13 @@ export const del = <T>(
   endpoint: string,
   headers?: HeadersInit
 ) => request<T>(endpoint, "DELETE", undefined, headers);
+
+
+
+export const generateAuthorizationBearerHeader = (): HeadersInit => {
+  const token = localStorage.getItem("token");
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+};

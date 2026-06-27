@@ -1,4 +1,4 @@
-
+//-- convert svg to png
 export async function svgToPng(svgString: string) {
     const blob = new Blob([svgString], {type: "image/svg+xml"})
     const url =  URL.createObjectURL(blob)
@@ -22,6 +22,8 @@ export async function svgToPng(svgString: string) {
     return canvas.toDataURL("image/png");
 }
 
+
+//-- Convert an object into a formdata
 export function objectToFormData(
     obj: Record<string, any>, 
     form?: FormData, 
@@ -65,3 +67,4 @@ export function objectToFormData(
 const mapKey = (key: string, transformMap?: Record<string, string>): string => {
     return transformMap?.[key] ?? key;
 };
+

@@ -1,0 +1,202 @@
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 75px;
+    gap: 32px;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ==========================
+   LEADING SECTION
+   ========================== */
+
+.leadingSection {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    flex: 1;
+}
+
+.leadingSection .title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.leadingSection .desc {
+    margin: 4px 0 0;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ==========================
+   ACTION SECTION
+   ========================== */
+
+.actionSection {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+}
+
+/* Search Box */
+.search {
+    width: 280px;
+}
+
+.input {
+    background: #e5e7eb;
+    border: 1px solid #cbd5e1; 
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.input:hover {
+    border-color: #94a3b8;
+    background: #d1d5db;
+}
+
+/* Notification Button & Badge */
+.notification {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.notification:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+.notficationRing {
+    color: #64748b;
+}
+
+.notification:hover .notficationRing {
+    color: #0f172a;
+}
+
+/* Badge numérique réactif */
+.notification::after {
+    content: var(--notifNumber);
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    
+    min-width: 1.7em;
+    height: 1.7em;
+    padding: 0 0.3em;
+    box-sizing: border-box;
+    
+    background: #ef4444;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    border-radius: 10px;
+    
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: monospace, sans-serif;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+/* Profile Section */
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.profile:hover {
+    background: #f1f5f9;
+}
+
+.img {
+    width: 42px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+}
+
+/* --- PROFILE MENu ----*/
+.profileMenu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile .txt {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.profile .username {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.profile .txt span:last-child {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #94a3b8;
+}
+
+.arrow {
+    color: #94a3b8;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.profile:hover .arrow {
+    color: #0f172a;
+    transform: translateY(1px);
+}
+
+/* ==========================
+   RESPONSIVE SCOPE
+   ========================== */
+@media (max-width: 768px) {
+    .leadingSection {
+        display: none; 
+    }
+    
+    .container {
+        justify-content: flex-end; 
+        height: 65px;
+    }
+}
+
+@media (max-width: 480px) {
+    .search {
+        display: none; 
+    }
+}

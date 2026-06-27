@@ -1,9 +1,13 @@
+
 export interface RecruiterDashboardKpis {
-    postulationRate: number;
-    activeJobs: number;
-    interviews: number;
-    hirings: number;
-    reviewJobs: number;
+    totalOffers: number,
+    viewCount: number,
+    applicationCount: number, //candidatures
+    activeOffers: number,
+    pendingReviewOffers: number,
+    closedOffers: number,
+    applicationRate: number;
+    scheduledInterviews: number;
 }
 
 export interface KpiCardData {

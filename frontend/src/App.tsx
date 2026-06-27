@@ -7,7 +7,7 @@ import AppContextProvider from './context/app.context'
 import { AppSpinner } from './layout/components/indicators/spinner/spinner'
 import AppPopup from './layout/components/popup/app.popup'
 import SideMenu from './layout/components/menu/sidebar/side.menu'
-import NavBar from './layout/components/navigation/navbar/navbar'
+import NavBar from './pages/home/components/navbar/navbar'
 
 import Login from './pages/Login/page'
 import UserRegister from './pages/Register/user/page'
@@ -37,7 +37,7 @@ function App() {
                     <Route path={RouteScheme.directorRegister}  element={<DirectorRegister />} />
 
                     { /** Dashboard */  }
-                    <Route element={<AppLayout />}>
+                    <Route element={<UserAppLayout />}>
                       <Route path={RouteScheme.userHome} element={<UserHome />} />
                     </Route>
 
@@ -52,12 +52,14 @@ function App() {
 export default App
 
 
-const AppLayout = () => {
+const UserAppLayout = () => {
   return (
     <div className='app-container'>
       <SideMenu />
-      <NavBar className='nav-bar' />
-      <Outlet />
+      <div className='app-view'>
+        <NavBar className='nav-bar' />
+        <Outlet  />
+      </div>
     </div>
   );
 }
