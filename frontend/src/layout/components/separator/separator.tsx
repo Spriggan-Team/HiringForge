@@ -1,29 +1,41 @@
+import styles from "./style.module.css";
 
-
-import styles from "./style.module.css"
-
-interface SeparatorProps{
+interface SeparatorProps {
     width?: string;
     height?: string;
+    orient?: "vertical" | "horizontal";
     backgroundColor?: string;
+    margin?: string
+    className?: string;
 }
 
+
 const Separator: React.FC<SeparatorProps> = ({
-    width = "100%",
-    height = "2px",
-    backgroundColor = "#D9D9D9" 
+    width,
+    height,
+    margin,
+    className,
+    orient = "horizontal",
+    backgroundColor = "#E5E7EB",
 }) => {
-    return ( 
+    const computedWidth =
+        width ?? (orient === "horizontal" ? "100%" : "1px");
+
+    const computedHeight =
+        height ?? (orient === "horizontal" ? "1px" : "100%");
+
+    return (
         <div
+            aria-hidden="true"
+            className={`${styles.container} ${styles[orient]} ${className}`}
             style={{
-                ["--width" as string]: width,
-                ["--height" as string]: height,
-                ["--bgColor" as string]: backgroundColor,
+                ["--separator-margin" as string]: margin,
+                ["--separator-width" as string]: computedWidth,
+                ["--separator-height" as string]: computedHeight,
+                ["--separator-color" as string]: backgroundColor,
             }}
-            className={styles.container}
-        >
-        </div>
+        />
     );
-}
- 
+};
+
 export default Separator;

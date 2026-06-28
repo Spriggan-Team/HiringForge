@@ -1,0 +1,14 @@
+.container{
+    color: #3B82F6 ;
+    display: inline;
+}
+
+.container * {
+    vertical-align: middle;
+}
+
+.svg{}
+
+.link{
+    cursor: var(--cursor);
+}

@@ -1,6 +1,12 @@
-.container{
-    width: var(--width);
-    height: var(--height);
-    border-radius: 10px;
-    background: var(--bgColor);
+.container {
+    flex-shrink: 0;
+    
+    /* On applique les variables calculées */
+    width: var(--separator-width);
+    height: var(--separator-height);
+    
+    background: var(--separator-color);
+    margin: var(----separator-margin);
+    border-radius: 999px;
 }
+

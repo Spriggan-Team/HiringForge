@@ -16,7 +16,7 @@ export interface GaugeProps{
 const Gauge: React.FC<GaugeProps> = ({
     percent = 0,
     width,
-    activeColor,
+    activeColor = "#3B82F6",
     foregroundColor,
     height,
     borderRadius,

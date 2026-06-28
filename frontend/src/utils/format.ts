@@ -1,6 +1,8 @@
 
 //format minutes to hours - min ...
 export function formatRemainingTime(minutes: number): string {
+    if(Number.isNaN(minutes)) return "";
+
     if (minutes <= 0) {
         return "Completed";
     }

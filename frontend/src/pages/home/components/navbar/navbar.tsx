@@ -61,7 +61,7 @@ const NavBar: React.FC<NavBarProps> = ({
                     <BasicInput
                         svg={SearchSVGComponent}
                         className={styles.input}
-                        backgroundColor="#e5e7eb"
+                        backgroundColor="white"
                         placeholder={t("userHome.inputs.search.placeholder")}
                     />
                 </div>

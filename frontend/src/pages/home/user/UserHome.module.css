@@ -1,0 +1,119 @@
+.container {
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.main {
+    padding: 24px;
+    display: flex;
+    gap: 32px;
+    
+    box-sizing: border-box;
+    flex-direction: column;
+
+    /* margin: 0 auto; */
+    /* background: #000; */
+}
+
+/* ==========================
+   KPI GRID SYSTEM
+   ========================== */
+
+.kpiSection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
+/* ==========================
+   SPLIT VIEW (KANBAN + SIDEBAR)
+   ========================== */
+
+.splitView {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 32px;
+    /* background: #000; */
+    align-items: start;
+    width: 100%;
+}
+
+.boardContent {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 0;
+}
+
+.recruitmentPipeline{
+    width: 100%;
+}
+
+.sidebar {
+    width: 100%;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: sticky;
+    top: 24px; 
+}
+
+.sidebar > * {
+    width: 360px;
+}
+
+
+/* ==========================
+   PRIORITY TASK
+   ========================== */
+
+.priorityTaskSection{
+
+}
+
+/* ==========================
+   CALENDAR
+   ========================== */
+
+.calendarSection{
+    gap: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.calendar {}
+
+
+
+/* ==========================
+   RESPONSIVE LAYOUTS
+   ========================== */
+
+@media (max-width: 1200px) {
+    .splitView {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    
+    .sidebar {
+        position: static;
+        width: 100%;
+    }
+}
+
+/* Mobiles */
+@media (max-width: 640px) {
+    .main {
+        padding: 16px;
+        gap: 24px;
+    }
+
+    .kpiSection {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+    }
+}

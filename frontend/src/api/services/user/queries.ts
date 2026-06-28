@@ -6,19 +6,20 @@ import { generateAuthorizationBearerHeader, get } from "../../handler";
 const getKPI = async ()=>{
     try{
         const kpiData = await get<RecruiterDashboardKpis>(`/users/kpi`, generateAuthorizationBearerHeader());
-        return kpiData
+        return kpiData;
     }
     catch(error){
+        console.error("Something went wrong", error)
         throw error;
     }
 }
 
 
 
+
 const UserQueriesServices = {
     getKPI
 }
-
 
 
 export default UserQueriesServices;

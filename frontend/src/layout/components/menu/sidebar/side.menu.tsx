@@ -19,7 +19,7 @@ import styles from "./styles.module.css"
 const SideMenu = () => {
     const { t } = useTranslation();
     const [active, setActive] = useState("home");
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(true);
 
     const menuItems = [
         { id: "home", svg: HomeSVG, label: t("global.menu.home") },

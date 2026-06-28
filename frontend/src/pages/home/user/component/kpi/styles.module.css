@@ -1,29 +1,46 @@
-.container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.container{
+    position: relative;
 
-    height: 140px;
-    padding: 18px 20px;
-    gap: 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 
-    border: 1px solid rgba(169, 171, 175, 0.22);
-    border-radius: 22px;
+    gap:20px;
 
-    background: #fff;
+    height:150px;
+    min-width: 220px;
+    padding: 15px 20px;
+
+    overflow:hidden;
+
+    border-radius:20px;
+    border:1px solid #edf1f5;
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff 0%,
+            #fbfcfd 100%
+        );
+
+    box-shadow:
+        0 1px 2px rgba(16,24,40,.04),
+        0 10px 30px rgba(16,24,40,.05);
 
     transition:
-        transform 0.25s ease,
-        box-shadow 0.25s ease,
-        border-color 0.25s ease;
+        transform .25s,
+        box-shadow .25s,
+        border-color .25s;
 }
 
-.container:hover {
-    transform: translateY(-2px);
-    border-color: rgba(16, 185, 129, 0.25);
+
+.container:hover{
+    transform:translateY(-3px);
+
+    border-color:#dbe5ef;
+
     box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.05),
-        0 4px 10px rgba(0, 0, 0, 0.03);
+        0 16px 35px rgba(16,24,40,.08);
 }
 
 
@@ -37,12 +54,64 @@
     height: 100%;
 }
 
-.title {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    color: #3b3c3d;
+.header{
+    gap: 25px;
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
 }
+
+
+.title{
+    font-size: .8rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.count{
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #111827;
+}
+
+
+/** ------------- Icon Container ---------------- **/
+
+
+
+.iconContainer{
+    position:relative;
+
+    width:40px;
+    height:40px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    border-radius:14px;
+    background:var(--icon-bg-color);
+
+    color:white;
+    flex-shrink:0;
+}
+
+.iconContainer::after{
+    position:absolute;
+    content:"";
+    inset:-10px;
+    z-index:-1;
+
+    border-radius:inherit;
+    background:var(--icon-bg-color);
+
+    opacity:.15;
+    filter:blur(12px);
+}
+
 
 
 /* ── KPI VALUE ───────────────────────────────────── */
@@ -50,25 +119,27 @@
 .percent {
     display: flex;
     align-items: baseline; 
+    font-size: 2.2rem;  
+    font-weight: 700;
     line-height: 1;
     letter-spacing: -0.04em;
-}
-
-.percent strong {
-    font-size: 2.75rem;
-    font-weight: 700;
     color: #111827;
+
 }
 
-.percent sup {
+.percent strong{
+    font-size:2.95rem;
+    font-weight:700;
+
+    letter-spacing:-.05em;
+    color:#0f172a;
+}
+
+.percent sup{
     margin-left: 3px;
-    margin-bottom: 6px;    
-
-    font-size: 1rem;
+    font-size: .9rem;
     font-weight: 600;
-    letter-spacing: -0.02em;
-
-    color: #9ca3af;
+    color: #94a3b8;
 }
 
 
@@ -77,26 +148,30 @@
 .desc {
     display: flex;
     align-items: center;
-    margin: 0;
-    font-size: 0.8125rem;
     color: #9ca3af;
+    
+    gap: 5px;
+    margin: 0;
+    font-size: .8rem;
 }
 
-.badge {
+.badge{
     display: inline-flex;
-    align-items: center;
+    align-items:center;
 
-    margin-right: 7px;
-    padding: 3px 9px;
+    gap:4px;
+    padding:4px 10px;
+    border-radius:999px;
 
-    border-radius: 999px;
-    background: rgba(16, 185, 129, 0.1);
-    color: #059669;
-
-    font-size: 0.75rem;
+    font-size: .72rem;
     font-weight: 700;
-    letter-spacing: -0.01em;
+
+
+    color:#059669;
+    background:#ecfdf5;
+    border:1px solid #bbf7d0;
 }
+
 
 
 /* ── CHART ───────────────────────────────────────── */

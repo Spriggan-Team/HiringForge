@@ -31,8 +31,30 @@
             "interview": "Entretien",
             "settings": "Paramèters"
         },
-        "navbar":{
+        "navbar":{},
+        
+        "dates": {
+            "thisMonth": "ce mois",
+            "today": "Aujourd'hui",
+            "calendar": "Calendrier"
+        },
+        "duration":{
+            "publishSince": "Publié il y a {{time}}"
+        },
 
+        "link":{
+            "viewAll": "Voir tout"
+        },
+
+        "candidate": {
+            "candidateLabel_one": "candidat",
+            "candidateLabel_other": "candidats"
+        },
+        "interview": {
+            "interviewLabel_one": "entretien",
+            "interviewLabel_other": "entretiens"
         }
     }
 }
+
+

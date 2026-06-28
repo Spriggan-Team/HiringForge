@@ -1,9 +1,17 @@
 .card{
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    height: 100%;
+    padding: 10px 10px;
     border-radius: 15px;
+    justify-content: space-between;
 }
 
 .name{
-
+    font-weight: bold;
 }
 
-.time{}
+.time{
+    color: rgba(0, 0, 0, 0.687);
+}

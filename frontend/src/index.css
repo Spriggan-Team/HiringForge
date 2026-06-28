@@ -74,6 +74,7 @@ a:hover{
 /** App Container **/
 .app-container{
   display: flex;
+  background: #f8fafc;
 }
 
 .app-container .app-view{
@@ -84,3 +85,24 @@ a:hover{
 
 /** NavBar **/
 .nav-bar{}
+
+
+
+/** Scrollbar **/
+.scrollbar::-webkit-scrollbar {
+    height: 6px;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

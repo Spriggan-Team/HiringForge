@@ -19,6 +19,14 @@
         }
     },
 
+    "kpi":{
+      "postulationRate": "Taux de postulation",
+      "openOffers": "Offres ouvertes",
+      "reviewOffers": " A revoir",
+      "interviews": "Entretiens",
+      "hired": "Embauchés"
+    },
+
     "borad":{
       "kanban":{
         "title": "Recrutement pipeline",
@@ -37,7 +45,16 @@
           }
         }
       }
-    }
+    },
 
+    "priorityTask":{
+      "title": "Priorités"
+    },
+    "agenda": {
+      "title": "Agenda d'aujourd'hui"
+    },
+    "acitveOffer":{
+      "title": "ActiveOffers"
+    }
   }
 }
