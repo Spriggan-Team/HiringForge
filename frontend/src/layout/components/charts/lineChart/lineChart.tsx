@@ -2,18 +2,17 @@ import * as d3 from "d3";
 import { useRef, useState, useEffect } from "react";
 import styles from "./LineChart.module.css";
 
+// ─────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────
 
-
-export interface LineChartPops {
-    onChartReady?: ({
-        svg,
-        xAxisGroup,
-        yAxisGroup,
-        chartsGridX,
-        divContainer,
-    }: onChartReadyFuncProps) => void;
+export interface LineChartProps {
+    onChartReady?: (props: OnChartReadyFuncProps) => void;
     margin?: Readonly<{
-        top?: number; right?: number; bottom?: number; left?: number;
+        top?: number;
+        right?: number;
+        bottom?: number;
+        left?: number;
     }>;
     appTheme?: {
         CURVE: {
@@ -29,23 +28,37 @@ export interface LineChartPops {
     };
     dataset: Dataset;
     className?: string;
+
     tickSettings?: {
-        tickVisibility?: boolean;
+        tickVisibility?:  boolean;
         xTickVisibility?: boolean;
         yTickVisibility?: boolean;
     };
+
     axisSettings?: {
-        axisVisibility?: boolean;
+        /**
+         * Controls how X-axis tick labels are formatted.
+         *
+         * - "month" → always show abbreviated month names  (Jan, Feb …)
+         * - "day"   → always show abbreviated day names    (Mon, Tue …)
+         * - "auto"  → pick based on the date range:
+         *     • ≤ 14 days  → day names
+         *     • otherwise  → month names
+         */
+        axisFormat?: {
+            x?: "month" | "day" | "auto";
+        };
+        axisVisibility?:  boolean;
         xAxisVisibility?: boolean;
         yAxisVisibility?: boolean;
     };
 }
 
 export interface GraphDatum {
-    coords: Point[];
+    coords:   Point[];
     settings: {
         backupColor?: string;
-        type: "line" | "area";
+        type:          "line" | "area";
         areaMultiplier?: number;
         line?: Partial<React.SVGAttributes<SVGPathElement>>;
         area?: Partial<React.SVGAttributes<SVGPathElement>>;
@@ -53,38 +66,34 @@ export interface GraphDatum {
 }
 
 export interface CurveData {
-    x: number[];
-    defs?: [
-        {
-            gradients?: {
-                linear?: [
-                    {
-                        id: string;
-                        target: string;
-                        stop: { offset: string; stopColor: string; stopOpacity: number }[];
-                        coords: { x1: string; y1: string; x2: string; y2: string };
-                    }
-                ];
-            };
-        }
-    ];
+    x:              number[];
+    defs?: [{
+        gradients?: {
+            linear?: [{
+                id:     string;
+                target: string;
+                stop:   { offset: string; stopColor: string; stopOpacity: number }[];
+                coords: { x1: string; y1: string; x2: string; y2: string };
+            }];
+        };
+    }];
     dotIndicator?: {
-        r?: number;
-        fill?: string;
-        class?: string;
-        cursor?: string;
-        stroke?: number;
-        rPulse?: number;
+        r?:           number;
+        fill?:        string;
+        class?:       string;
+        cursor?:      string;
+        stroke?:      number;
+        rPulse?:      number;
         strokeWidth?: number;
     };
     areaMultiplier?: number;
-    attr?: Partial<React.SVGAttributes<SVGPathElement>>;
-    type?: "line" | "area";
+    attr?:           Partial<React.SVGAttributes<SVGPathElement>>;
+    type?:           "line" | "area";
 }
 
 export interface Dataset {
-    dates: Date[];
-    data: CurveData[];
+    dates:   Date[];
+    data:    CurveData[];
     maximum: number;
 }
 
@@ -93,13 +102,76 @@ interface Point {
     y: number;
 }
 
-export interface onChartReadyFuncProps {
+export interface OnChartReadyFuncProps {
     divContainer: HTMLDivElement;
-    svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
-    chartsGridX: d3.Selection<SVGGElement, unknown, null, undefined>;
-    yAxisGroup: d3.Selection<SVGGElement, unknown, null, undefined>;
-    xAxisGroup: d3.Selection<SVGGElement, unknown, null, undefined>;
+    svg:          d3.Selection<SVGSVGElement, unknown, null, undefined>;
+    chartsGridX:  d3.Selection<SVGGElement,   unknown, null, undefined>;
+    yAxisGroup:   d3.Selection<SVGGElement,   unknown, null, undefined>;
+    xAxisGroup:   d3.Selection<SVGGElement,   unknown, null, undefined>;
 }
+
+// ─────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────
+
+
+/**
+ * Decide tick format based on the date range and the axisFormat prop.
+ *
+ * "auto" rule:
+ *   - span ≤ 14 days  → one tick per day,  label = "Mon", "Tue" …
+ *   - span  > 14 days → one tick per month, label = "Jan", "Feb" …
+ */
+function resolveXFormat(
+    dates:       Date[],
+    axisFormat?: "month" | "day" | "auto",
+): { mode: "month" | "day" } {
+    const mode = axisFormat ?? "auto";
+    if (mode === "month") return { mode: "month" };
+    if (mode === "day")   return { mode: "day" };
+
+    // auto
+    const spanMs   = dates[dates.length - 1].getTime() - dates[0].getTime();
+    const spanDays = spanMs / (1000 * 60 * 60 * 24);
+    return { mode: spanDays <= 14 ? "day" : "month" };
+}
+
+
+/**
+ * Build the array of tick Date values for the X axis.
+ *
+ * - mode "month" → first day of each month present in the range
+ * - mode "day"   → one entry per date in the dataset
+ */
+function buildXTicks(dates: Date[], mode: "month" | "day"): Date[] {
+    if (mode === "day") return dates.map(d => new Date(d));
+
+    // month mode
+    const ticks: Date[] = [];
+    const dateMin = dates[0];
+    const dateMax = dates[dates.length - 1];
+    const cursor  = new Date(dateMin.getFullYear(), dateMin.getMonth(), 1);
+    const end     = new Date(dateMax.getFullYear(), dateMax.getMonth() + 1, 1);
+
+    while (cursor < end) {
+        ticks.push(new Date(cursor));
+        cursor.setMonth(cursor.getMonth() + 1);
+    }
+    return ticks;
+}
+
+
+/** Format a tick Date for display. */
+function buildXFormatter(mode: "month" | "day"): (d: Date | d3.NumberValue) => string {
+    if (mode === "month") return d => d3.timeFormat("%b")(d as Date);   // "Jan"
+    return d => d3.timeFormat("%a")(d as Date);                          // "Mon"
+}
+
+
+
+// ─────────────────────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────────────────────
 
 export const LineChart = ({
     dataset,
@@ -109,285 +181,280 @@ export const LineChart = ({
     axisSettings,
     onChartReady,
     className,
-}: LineChartPops) => {
+}: LineChartProps) => {
     const divContainer = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
+    // ── Responsive sizing ─────────────────────────────────────
     useEffect(() => {
         if (!divContainer.current) return;
-        const resizeObserver = new ResizeObserver((entries) => {
-            if (!entries || entries.length === 0) return;
+        const ro = new ResizeObserver(entries => {
+            if (!entries.length) return;
             const { width, height } = entries[0].contentRect;
             if (width > 0 && height > 0) setDimensions({ width, height });
         });
-        resizeObserver.observe(divContainer.current);
-        return () => resizeObserver.disconnect();
+        ro.observe(divContainer.current);
+        return () => ro.disconnect();
     }, []);
 
+    // ── Draw ──────────────────────────────────────────────────
     useEffect(() => {
         if (!divContainer.current || dimensions.width === 0 || dimensions.height === 0) return;
+        if (!dataset.dates?.length || !dataset.data?.length) return;
 
         const { width, height } = dimensions;
+
+        // Resolved margins — always numeric
+        const mg = {
+            top:    margin?.top    ?? 20,
+            right:  margin?.right  ?? 15,
+            bottom: margin?.bottom ?? 30,   // extra room for x-axis labels
+            left:   margin?.left   ?? 40,   // extra room for y-axis labels
+        };
+
+        // Theme defaults — use dark-friendly colours
+        const axesFill        = appTheme?.CURVE?.axes?.fill        ?? "#94a3b8";
+        const axesStroke      = appTheme?.CURVE?.axes?.stroke      ?? "#475569";
+        const axesStrokeWidth = appTheme?.CURVE?.axes?.strokeWidth ?? 1;
+
+        // ── Clear previous render ─────────────────────────────
         d3.select(divContainer.current).selectAll("*").remove();
 
+        // ── SVG ───────────────────────────────────────────────
         const svg = d3
             .select(divContainer.current)
             .append("svg")
-            .attr("width", width)
-            .attr("height", height)
+            .attr("width",   width)
+            .attr("height",  height)
             .attr("viewBox", `0 0 ${width} ${height}`)
-            .style("display", "block")
+            .style("display",  "block")
             .style("overflow", "visible");
 
-        // === SCALES ===
+        // ── Scales ────────────────────────────────────────────
+        const sortedDates = [...dataset.dates].sort((a, b) => +a - +b);
+        const [dateMin, dateMax] = d3.extent(sortedDates) as [Date, Date];
 
-        //-- Get Min & Max Dates
-        const [dateMin, dateMax] = d3.extent(dataset.dates) as [Date, Date];
-
-        // Add a small padding on each side (half a month) so the first/last
-        // data points don't sit exactly on the axis edge.
-        const domainPadMs = (dateMax.getTime() - dateMin.getTime()) / (dataset.dates.length * 2);
-        const xDomainStart = new Date(dateMin.getTime() - domainPadMs);
-        const xDomainEnd   = new Date(dateMax.getTime() + domainPadMs);
+        // Small padding so the first/last points aren't clipped
+        const spanMs      = dateMax.getTime() - dateMin.getTime();
+        const padMs       = spanMs / (Math.max(sortedDates.length, 2) * 2);
+        const xDomainStart = new Date(dateMin.getTime() - padMs);
+        const xDomainEnd   = new Date(dateMax.getTime() + padMs);
 
         const xScale = d3
             .scaleTime()
             .domain([xDomainStart, xDomainEnd])
-            .range([(margin?.left || 0), width - (margin?.right || 0)]);
+            .range([mg.left, width - mg.right]);
 
         const yScale = d3
             .scaleLinear()
             .domain([0, dataset.maximum || 100])
-            .range([height - (margin?.bottom || 0), (margin?.top || 0)]);
+            .nice()
+            .range([height - mg.bottom, mg.top]);
 
-        // === AXES ===
+        // ── Y Axis ────────────────────────────────────────────
+        const showYAxis  = axisSettings?.axisVisibility !== false && axisSettings?.yAxisVisibility !== false;
+        const showYTicks = tickSettings?.tickVisibility  !== false && tickSettings?.yTickVisibility  !== false;
 
-        // Y-Axis
         const yAxis = d3
             .axisLeft(yScale)
             .ticks(5)
             .tickSizeOuter(0)
-            .tickFormat((d) => d3.format("~s")(d as number));
+            .tickSizeInner(showYTicks ? -(width - mg.left - mg.right) : 0)  // full-width grid lines
+            .tickFormat(d => d3.format("~s")(d as number));
 
         const yAxisGroup = svg
             .append("g")
             .attr("class", "y-axis")
-            .attr("transform", `translate(${margin?.left || 0}, 0)`)
+            .attr("transform", `translate(${mg.left}, 0)`)
             .call(yAxis);
 
+        // Remove the vertical domain line
         yAxisGroup.select(".domain").remove();
 
-        yAxisGroup.selectAll("line")
-            .attr("x2", width - (margin?.left || 0) - (margin?.right || 0))
+        // Style grid tick lines
+        yAxisGroup.selectAll<SVGLineElement, unknown>(".tick line")
+            .attr("stroke",           axesStroke)
+            .attr("stroke-width",     axesStrokeWidth)
             .attr("stroke-dasharray", "4 4")
-            .attr("stroke", appTheme?.CURVE?.axes?.stroke || "#444")
-            .attr("stroke-width", 1)
-            .attr("opacity", 0.8);
+            .attr("opacity",          showYTicks ? 0.45 : 0);
 
-        yAxisGroup.selectAll("text")
-            .attr("x", -10)
-            .attr("dy", 4)
-            .attr("text-anchor", "end")
-            .attr("fill", appTheme?.CURVE?.axes?.fill || "#f8fafc")
-            .style("font-size", "12px");
+        // Style tick labels
+        yAxisGroup.selectAll<SVGTextElement, unknown>(".tick text")
+            .attr("fill",         axesFill)
+            .attr("x",            -8)
+            .attr("dy",           "0.32em")
+            .attr("text-anchor",  "end")
+            .style("font-size",   "11px")
+            .style("display",  () => showYTicks  ? null : "none");
 
-        svg.selectAll(".tick").filter((t) => t === 0).remove();
+        // ── X Axis ────────────────────────────────────────────
+        const showXAxis  = axisSettings?.axisVisibility !== false && axisSettings?.xAxisVisibility !== false;
+        const showXTicks = tickSettings?.tickVisibility  !== false && tickSettings?.xTickVisibility  !== false;
 
-        // Main group
-        const chartsGridX = svg.append("g").attr("class", "charts-grid");
+        const { mode }    = resolveXFormat(sortedDates, axisSettings?.axisFormat?.x);
+        const tickValues  = buildXTicks(sortedDates, mode);
+        const tickFormat  = buildXFormatter(mode);
 
-        //-- Generate one tick per month present in the data range.
-        const tickValues: Date[] = [];
-        const cursor = new Date(dateMin.getFullYear(), dateMin.getMonth(), 1);
-        const endMonth = new Date(dateMax.getFullYear(), dateMax.getMonth() + 1, 1);
-        while (cursor < endMonth) {
-            tickValues.push(new Date(cursor));
-            cursor.setMonth(cursor.getMonth() + 1);
-        }
-
-        // X-Axis
         const xAxis = d3
             .axisBottom(xScale)
             .tickValues(tickValues)
-            .tickFormat((d) => d3.timeFormat("%b")(d as Date))
-            .tickSizeOuter(0);
+            .tickFormat(tickFormat)
+            .tickSizeOuter(0)
+            .tickSizeInner(6);
+
+        const chartsGridX = svg.append("g").attr("class", "charts-grid");
 
         const xAxisGroup = chartsGridX
             .append("g")
             .attr("class", "x-axis")
-            .attr("transform", `translate(0, ${height - (margin?.bottom || 0)})`)
+            .attr("transform", `translate(0, ${height - mg.bottom})`)
             .call(xAxis);
 
-        xAxisGroup.selectAll("text")
-            .attr("fill", appTheme?.CURVE?.axes?.fill || "#f8fafc")
-            .style("font-size", "12px");
+        // Style the horizontal domain line
+        xAxisGroup.select(".domain")
+            .attr("stroke",       showXAxis ? axesStroke : "none")
+            .attr("stroke-width", axesStrokeWidth);
 
-        xAxisGroup.selectAll(".domain, .tick line")
-            .attr("stroke", appTheme?.CURVE?.axes?.stroke || "#f8fafc")
-            .attr("stroke-width", appTheme?.CURVE?.axes?.strokeWidth || 1);
+        // Style tick marks
+        xAxisGroup.selectAll<SVGLineElement, unknown>(".tick line")
+            .attr("stroke",       showXTicks ? axesStroke : "none")
+            .attr("stroke-width", axesStrokeWidth);
 
-        // === FILTERS (Visibility) ===
-        if (tickSettings) {
-            if (typeof tickSettings.tickVisibility !== "undefined" && !tickSettings.tickVisibility) {
-                xAxisGroup.selectAll(".tick").remove();
-                yAxisGroup.selectAll(".tick").remove();
-            } else {
-                if (typeof tickSettings.xTickVisibility !== "undefined" && !tickSettings.xTickVisibility)
-                    xAxisGroup.selectAll(".tick").remove();
-                if (typeof tickSettings.yTickVisibility !== "undefined" && !tickSettings.yTickVisibility)
-                    yAxisGroup.selectAll(".tick").remove();
-            }
-        }
+            
+        // Style tick labels
+        xAxisGroup.selectAll<SVGTextElement, unknown>(".tick text")
+            .attr("fill",       axesFill)
+            .attr("dy",         "1em")
+            .style("font-size", "11px")
+            .style("display",   () => showXTicks ? null : "none");
 
-        if (axisSettings) {
-            if (typeof axisSettings.axisVisibility !== "undefined" && !axisSettings.axisVisibility) {
-                xAxisGroup.selectAll(".domain").remove();
-                yAxisGroup.selectAll(".domain").remove();
-            }
-            if (typeof axisSettings.xAxisVisibility !== "undefined" && !axisSettings.xAxisVisibility)
-                xAxisGroup.selectAll(".domain").remove();
-            if (typeof axisSettings.yAxisVisibility !== "undefined" && !axisSettings.yAxisVisibility)
-                yAxisGroup.selectAll(".domain").remove();
-        }
 
-        // === DATA PREPARATION ===
-        const grapDatum: GraphDatum[] = dataset.data.map((mark: any) => {
-            const type = mark.type || "line";
-            const settings: any = {
+        // ── Data preparation ──────────────────────────────────
+        const graphData: GraphDatum[] = dataset.data.map(mark => {
+            const type = mark.type ?? "line";
+            const settings: GraphDatum["settings"] = {
                 type,
                 areaMultiplier: mark.areaMultiplier,
-                line: type === "line" ? { ...mark.attr } : undefined,
-                area: type === "area" ? { ...mark.attr } : undefined,
-                backupColor: undefined,
+                line: type === "line" ? { ...(mark.attr ?? {}) } : undefined,
+                area: type === "area" ? { ...(mark.attr ?? {}) } : undefined,
             };
 
             if (mark.defs) {
-                mark.defs.forEach((defs: any) => {
-                    const dfs = svg.append("defs");
-                    defs.gradients?.linear?.forEach((ln: any) => {
-                        const gradient = dfs
+                mark.defs.forEach(defs => {
+                    const dfsEl = svg.append("defs");
+                    defs.gradients?.linear?.forEach(ln => {
+                        const grad = dfsEl
                             .append("linearGradient")
                             .attr("id", ln.id)
-                            .attr("x1", ln.coords.x1)
-                            .attr("y1", ln.coords.y1)
-                            .attr("x2", ln.coords.x2)
-                            .attr("y2", ln.coords.y2);
+                            .attr("x1", ln.coords.x1).attr("y1", ln.coords.y1)
+                            .attr("x2", ln.coords.x2).attr("y2", ln.coords.y2);
 
-                        ln.stop.forEach((stp: any) =>
-                            gradient
-                                .append("stop")
-                                .attr("offset", stp.offset)
-                                .attr("stop-color", stp.stopColor)
+                        ln.stop.forEach(stp =>
+                            grad.append("stop")
+                                .attr("offset",       stp.offset)
+                                .attr("stop-color",   stp.stopColor)
                                 .attr("stop-opacity", stp.stopOpacity)
                         );
 
-                        if (type === "area") settings.area = { ...settings.area, fill: `url(#${ln.id})` };
+                        if (type === "area") settings.area = { ...settings.area, fill:   `url(#${ln.id})` };
                         if (type === "line") settings.line = { ...settings.line, stroke: `url(#${ln.id})` };
                     });
                 });
             }
 
-            const coords = dataset.dates.map((d: any, idx: number) => ({
+            const coords: Point[] = dataset.dates.map((d, idx) => ({
                 x: d,
-                y: mark.x[idx],
+                y: mark.x[idx] ?? 0,
             }));
 
             return { coords, settings };
         });
 
-        // === DRAW CURVES ===
-        grapDatum.forEach((graphData: GraphDatum, i: number) => {
-            const curveDegree = 0.5;
+        // ── Draw curves ───────────────────────────────────────
+        const curveFn = d3.curveCatmullRom.alpha(0.5);
+
+        graphData.forEach((gd, i) => {
             const dot = dataset.data[i].dotIndicator;
 
-            if (graphData.settings.type === "area") {
-                const areaMultiplier = graphData.settings?.areaMultiplier || 1;
+            if (gd.settings.type === "area") {
+                const mul = gd.settings.areaMultiplier ?? 1;
                 chartsGridX
                     .append("path")
-                    .datum(graphData.coords)
-                    .attr("fill", (graphData.settings.area?.fill as string) || "black")
-                    .attr("stroke", (graphData.settings.area?.stroke as string) || "none")
-                    .attr("stroke-width", (graphData.settings.area?.strokeWidth as number) ?? 0)
-                    .attr(
-                        "d",
-                        d3
-                            .area<any>()
-                            .x((d) => xScale(d.x))
+                    .datum(gd.coords)
+                    .attr("fill",         (gd.settings.area?.fill   as string) ?? "transparent")
+                    .attr("stroke",       (gd.settings.area?.stroke as string) ?? "none")
+                    .attr("stroke-width", (gd.settings.area?.strokeWidth as number) ?? 0)
+                    .attr("d",
+                        d3.area<Point>()
+                            .x(d => xScale(d.x))
                             .y0(yScale(0))
-                            .y1((d) => yScale(d.y * areaMultiplier))
-                            .curve(d3.curveCatmullRom.alpha(curveDegree))
+                            .y1(d => yScale(d.y * mul))
+                            .curve(curveFn)
                     );
             }
 
-            if (graphData.settings.type === "line") {
-                const areaMatch = grapDatum.find(
-                    (g: any) =>
-                        g.settings.type === "area" &&
-                        g.coords.length === graphData.coords.length &&
-                        g.coords.every(
-                            (p: any, idx: number) => +p.x === +graphData.coords[idx].x
-                        )
+            if (gd.settings.type === "line") {
+                // Check if a matching area series exists to inherit its multiplier
+                const areaMatch = graphData.find(
+                    g => g.settings.type === "area" &&
+                         g.coords.length === gd.coords.length &&
+                         g.coords.every((p, idx) => +p.x === +gd.coords[idx].x)
                 );
-
-                const areaMultiplier = areaMatch?.settings?.areaMultiplier ?? 1;
-                const transformedLineCoords = graphData.coords.map((d: any) => ({
-                    ...d,
-                    y: d.y * areaMultiplier,
-                }));
+                const mul = areaMatch?.settings?.areaMultiplier ?? 1;
+                const transformed = gd.coords.map(d => ({ ...d, y: d.y * mul }));
 
                 chartsGridX
                     .append("path")
-                    .datum(transformedLineCoords)
-                    .attr(
-                        "stroke",
-                        (graphData.settings.line?.stroke as string) ||
-                        (graphData.settings.line?.fill as string) ||
-                        "black"
+                    .datum(transformed)
+                    .attr("fill",         "none")
+                    .attr("stroke",
+                        (gd.settings.line?.stroke as string) ||
+                        (gd.settings.line?.fill   as string) ||
+                        "#3b82f6"
                     )
-                    .attr("stroke-width", (graphData.settings.line?.strokeWidth as number) ?? 2)
-                    .attr("fill", "none")
-                    .attr(
-                        "d",
-                        d3
-                            .line<any>()
-                            .x((d) => xScale(d.x))
-                            .y((d) => yScale(d.y))
-                            .curve(d3.curveCatmullRom.alpha(curveDegree))
+                    .attr("stroke-width", (gd.settings.line?.strokeWidth as number) ?? 2)
+                    .attr("stroke-linejoin", "round")
+                    .attr("stroke-linecap",  "round")
+                    .attr("d",
+                        d3.line<Point>()
+                            .x(d => xScale(d.x))
+                            .y(d => yScale(d.y))
+                            .curve(curveFn)
                     );
             }
 
             if (dot) {
                 chartsGridX
-                    .selectAll(dot.class || ".dot-paid")
-                    .data(graphData.coords)
+                    .selectAll(`.dot-${i}`)
+                    .data(gd.coords)
                     .enter()
                     .append("circle")
-                    .attr("class", dot.class || "dot-paid")
-                    .attr("cx", (d) => xScale(d.x))
-                    .attr("cy", (d) => yScale(d.y))
-                    .attr("r", dot.r || 7)
-                    .attr("fill", dot.fill || "black")
-                    .attr("stroke", dot.stroke || "var(--app-textColor)")
-                    .attr("stroke-width", dot.strokeWidth || 1)
-                    .style("cursor", "pointer")
-                    .on("mouseover", (event) => {
-                        d3.select(event.currentTarget).transition().attr("r", dot.rPulse || 9);
+                    .attr("class",        `dot-${i}`)
+                    .attr("cx",           d => xScale(d.x))
+                    .attr("cy",           d => yScale(d.y))
+                    .attr("r",            dot.r            ?? 5)
+                    .attr("fill",         dot.fill         ?? "#fff")
+                    .attr("stroke",       dot.stroke       ?? axesStroke)
+                    .attr("stroke-width", dot.strokeWidth  ?? 1.5)
+                    .style("cursor",      dot.cursor       ?? "pointer")
+                    .on("mouseover", function () {
+                        d3.select(this).transition().duration(120).attr("r", dot.rPulse ?? 8);
                     })
-                    .on("mouseout", (event) => {
-                        d3.select(event.currentTarget).transition().attr("r", dot.r || 7);
+                    .on("mouseout", function () {
+                        d3.select(this).transition().duration(120).attr("r", dot.r ?? 5);
                     });
             }
         });
 
-        if (onChartReady) {
-            onChartReady({ svg, chartsGridX, divContainer: divContainer.current!, xAxisGroup, yAxisGroup });
-        }
-    }, [dimensions, appTheme, margin, onChartReady, dataset]);
+        // ── Callback ──────────────────────────────────────────
+        onChartReady?.({ svg, chartsGridX, divContainer: divContainer.current!, xAxisGroup, yAxisGroup });
+
+    }, [dimensions, appTheme, margin, dataset, tickSettings, axisSettings, onChartReady]);
 
     return (
         <div
             ref={divContainer}
-            className={`${styles?.container || ""} ${className || ""}`}
+            className={`${styles.container} ${className ?? ""}`}
             style={{ width: "100%", height: "100%" }}
         />
     );

@@ -39,7 +39,6 @@ const chartData = mockMonthlyViews.map(({ count }) => count);
 const chartDates = mockMonthlyViews.map(({ month }) => new Date(month));
 
 
-
 const KpiCard: React.FC<KpiCardPrps> = ({ 
     svg: Icon,
     increase,

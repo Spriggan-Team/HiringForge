@@ -9,10 +9,14 @@ import MenuDrawer, {
     MenuDrawerItem,
     MenuDrawerTrigger
 } from "../../../../../layout/components/menu/drawer/menu.drawer";
+import { 
+    LineChart
+} from "../../../../../layout/components/charts/lineChart/lineChart";
 
 //-- CSS Styles
 import styles from "./StatsChart.module.css"
-import { LineChart } from "../../../../../layout/components/charts/lineChart/lineChart";
+
+
 
 
 const total = {
@@ -21,9 +25,9 @@ const total = {
     hired: 45
 }
 
-const StatsDataMock = {};
+interface StatsChartProps{}
 
-const StatsChart = () => {
+const StatsChart: React.FC<StatsChartProps> = ({}) => {
     const {t} = useTranslation();
     
     return (
@@ -76,10 +80,9 @@ const StatsChart = () => {
                 />
             </div>
 
-            <div className={styles.linechart}>
-                <LineChart
-                    
-                />
+            {/** LineChart */}
+            <div className={styles.linechartWrapper}>
+                <LineChartComponent />
             </div>
         </div>
     );
@@ -124,3 +127,91 @@ const LegenItem: React.FC<LegenItemProps> = ({
     );
 }
  
+
+
+
+/** -- Linechart -- */
+
+const startOfWeek = new Date("2026-06-23"); // exemple (lundi)
+
+const getDate = (offset: number) => {
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + offset);
+    return d;
+};
+
+const statsDataMock = {
+    dates: Array.from({ length: 7 }, (_, i) => getDate(i)),
+
+    candidates: [124, 132, 145, 167, 180, 190, 205],
+    interviews: [12, 18, 20, 25, 22, 28, 30],
+    hired: [1, 2, 3, 3, 4, 5, 6],
+};
+
+
+
+
+const LineChartComponent = () => {
+    const maxValue = Math.max(
+        ...statsDataMock.candidates,
+        ...statsDataMock.interviews,
+        ...statsDataMock.hired
+    );
+
+    return (
+        <div className={styles.linechart}>
+            <LineChart
+                className={styles.chart}
+                margin={{
+                    top: 20,
+                    right: 15,
+                    bottom: 15,
+                    left: 6,
+                }}
+                axisSettings={{
+                    axisVisibility: true,
+                    xAxisVisibility: true,
+                    yAxisVisibility: true
+                }}
+                tickSettings={{
+                    tickVisibility: true,
+                    xTickVisibility: true,
+                    yTickVisibility: true,
+                }}
+                dataset={{
+                    maximum: maxValue,
+
+                    // ✅ Dates réelles
+                    dates: statsDataMock.dates,
+
+                    data: [
+                        {
+                            x: statsDataMock.candidates,
+                            type: "line",
+                            attr: {
+                                stroke: "#3B82F6",
+                                strokeWidth: 2.5,
+                            },
+                        },
+                        {
+                            x: statsDataMock.interviews,
+                            type: "line",
+                            attr: {
+                                stroke: "#8B5CF6",
+                                strokeWidth: 2.5,
+                            },
+                        },
+                        {
+                            x: statsDataMock.hired,
+                            type: "line",
+                            attr: {
+                                stroke: "#22C55E",
+                                strokeWidth: 2.5,
+                            },
+                        },
+                    ],
+                }}
+            />
+        </div>
+    );
+};
