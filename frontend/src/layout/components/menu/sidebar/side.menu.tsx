@@ -1,6 +1,11 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+
+
+//-- Services
+import RouteScheme from "../../../../route.scheme";
 
 //-- Components
 import LogoSVG from '/src/assets/custom-logo.svg';
@@ -16,19 +21,22 @@ import ChevronLeftSVG from "/src/assets/svg/menu/chevron-right-double-svgrepo-co
 import styles from "./styles.module.css"
 
 
+
 const SideMenu = () => {
     const { t } = useTranslation();
+    const navigate = useNavigate();
+
     const [active, setActive] = useState("home");
     const [isCollapsed, setIsCollapsed] = useState(true);
 
     const menuItems = [
-        { id: "home", svg: HomeSVG, label: t("global.menu.home") },
-        { id: "poste", svg: PostSVG, label: t("global.menu.poste") },
-        { id: "candidates", svg: CandidateSVG, label: t("global.menu.candidates") },
-        { id: "interview", svg: CandidateSVG, label: t("global.menu.interview") },
-        { id: "calendar", svg: CalendarSVG, label: t("global.menu.calendar") },
-        { id: "agents", svg: AgentSVG, label: t("global.menu.agents") },
-        { id: "settings", svg: SettingsSVG, label: t("global.menu.settings") },
+        { id: "home", svg: HomeSVG, label: t("global.menu.home"), route: "" },
+        { id: "poste", svg: PostSVG, label: t("global.menu.poste"), route: RouteScheme.userJobs },
+        { id: "candidates", svg: CandidateSVG, label: t("global.menu.candidates"), route: "" },
+        { id: "interview", svg: CandidateSVG, label: t("global.menu.interview"), route: "" },
+        { id: "calendar", svg: CalendarSVG, label: t("global.menu.calendar"), route: "" },
+        { id: "agents", svg: AgentSVG, label: t("global.menu.agents"), route: "" },
+        { id: "settings", svg: SettingsSVG, label: t("global.menu.settings"), route: "" },
     ];
 
     return (
@@ -50,7 +58,10 @@ const SideMenu = () => {
                         svg={item.svg}
                         text={item.label}
                         active={active === item.id}
-                        onClick={() => setActive(item.id)}
+                        onClick={() => {
+                            setActive(item.id)
+                            navigate(item.route)
+                        }}
                     />
                 ))}
             </nav>

@@ -3,8 +3,6 @@ import React, {
     useCallback,
     useContext,
     useEffect,
-    useId,
-    useRef,
     useState,
 } from "react";
 
@@ -34,9 +32,11 @@ interface DragContextValue {
     abortDrag:  () => void;
 }
 
+
 // ─────────────────────────────────────────────────────────────
 // Context
 // ─────────────────────────────────────────────────────────────
+
 
 const DragContext = createContext<DragContextValue | null>(null);
 

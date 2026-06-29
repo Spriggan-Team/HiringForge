@@ -6,12 +6,13 @@ import { initReactI18next } from "react-i18next";
 import authFR from "./locales/fr/auth.json";
 import globalFR from "./locales/fr/global.json";
 import homeFR from "./locales/fr/home.json"
+import notificationFR from "./locales/fr/notification.json"
 
 // EN
 import authEN from "./locales/en/auth.json";
 import globalEN from "./locales/en/global.json";
 import homeEN from "./locales/en/home.json"
-
+import notificationEN from "./locales/en/notification.json"
 
 const resources = {
 
@@ -20,6 +21,7 @@ const resources = {
             ...globalFR,
             ...authFR,
             ...homeFR,
+            ...notificationFR,
         }
     },
 
@@ -28,6 +30,7 @@ const resources = {
             ...globalEN,
             ...authEN,
             ...homeEN,
+            ...notificationEN,
         }
     }
 };
@@ -65,6 +68,7 @@ declare module "i18next" {
                 typeof globalFR
                 & typeof authFR
                 & typeof homeFR
+                & typeof notificationFR
         };
     }
 }

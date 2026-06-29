@@ -55,6 +55,14 @@
     },
     "acitveOffer":{
       "title": "ActiveOffers"
+    },
+
+    "statistics":{
+      "title": "Statistiques",
+      "drawer":{
+        "instrcution": "Sélectionner une semaine",
+        "addOption": "Entrée une date"
+      }
     }
   }
 }

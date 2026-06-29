@@ -36,7 +36,9 @@
         "dates": {
             "thisMonth": "ce mois",
             "today": "Aujourd'hui",
-            "calendar": "Calendrier"
+            "calendar": "Calendrier",
+            "thisWeek": "Cette semaine",
+            "lastWeek": "La semaine dernière"
         },
         "duration":{
             "publishSince": "Publié il y a {{time}}"
@@ -53,6 +55,15 @@
         "interview": {
             "interviewLabel_one": "entretien",
             "interviewLabel_other": "entretiens"
+        },
+
+        "hired": {
+            "hiredLabel_one": "Embauché",
+            "hiredLabel_other": "Embauchés"
+        },
+
+        "action": {
+            "recentAction": "Actions récentes"
         }
     }
 }

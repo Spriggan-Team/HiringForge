@@ -40,6 +40,8 @@
     width: 100%;
 }
 
+/** Main vue (board content) **/
+
 .boardContent {
     display: flex;
     flex-direction: column;
@@ -50,6 +52,19 @@
 .recruitmentPipeline{
     width: 100%;
 }
+
+.bottom{ /** bottom section **/
+    gap: 2rem;
+    width: 100%;
+    display: flex;
+    margin-top: 5px;
+}
+
+.bottom .stats{
+    width: 100%;
+}
+
+/** Side content **/
 
 .sidebar {
     width: 100%;

@@ -16,6 +16,7 @@ import RegisterationEntry from './pages/Register/register/page'
 import CandidateRegister from './pages/Register/candidate/candidate.register'
 import DirectorRegister from './pages/Register/director/director.register'
 import UserHome from './pages/home/user/page'
+import UserJobPage from './pages/jobs/user/page'
 
 
 
@@ -39,6 +40,7 @@ function App() {
                     { /** Dashboard */  }
                     <Route element={<UserAppLayout />}>
                       <Route path={RouteScheme.userHome} element={<UserHome />} />
+                      <Route path={RouteScheme.userJobs} element={<UserJobPage />} />
                     </Route>
 
                   </Routes>

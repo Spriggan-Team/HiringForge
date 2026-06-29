@@ -10,16 +10,19 @@ import UserQueriesServices from "../../../api/services/user/queries";
 import type {  RecruiterDashboardKpis } from "../../../features/dashboard/KpiData";
 
 //-- Custom Component
+import Title from "../../../layout/components/text/title/title";
 import KpiCard, { KpiCount, KpiPercentage } from "./component/kpi/kpi.card";
 import RecruitmentPipeline from "./component/pipeline/recrutement.pipeline";
 import Calendar from "../../../layout/components/cards/calendar/calendar";
 import Separator from "../../../layout/components/separator/separator";
-import Title from "../../../layout/components/text/title/title";
 import PriorityTask from "./component/task/priority.task";
 import SectionHeader from "../../../layout/components/sections/sectionHeader/section.header";
 import ViewAllLink from "../../../layout/components/link/view.all.link";
 import Agenda from "./component/agenda/agenda";
 import ActiveOfferSection from "./component/offers/active.offer";
+import RecentActionPool from "./component/recent/recent.action.pool";
+import StatsChart from "./component/stats/stast.chart";
+
 
 //-- SVG Components
 import JobOfferSVG from "/src/assets/svg/menu/work-svgrepo-com-v2.svg"
@@ -121,7 +124,12 @@ const UserHome = () => {
 
                         {/** CURVES & RECENT ACTIONS */}
                         <div className={styles.bottom}>
-                            
+                            <div className={styles.recent}>
+                                <RecentActionPool />
+                            </div>
+                            <div className={styles.stats}>
+                                <StatsChart />
+                            </div>
                         </div>
                     </div>
 
@@ -152,6 +160,4 @@ const UserHome = () => {
 }
  
 export default UserHome;
-
-
 

@@ -20,6 +20,7 @@ const RouteScheme = {
     //-- JOBS
     jobs: "/jobs",
     jobDetails: "/jobs/:id",
+    userJobs: "/user/jobs"
 
 }
 

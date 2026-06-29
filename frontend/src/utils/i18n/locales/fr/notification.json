@@ -1,0 +1,8 @@
+{
+    "notification": {
+        "postulate": "{{person}} a postulé au poste {{offer}}",
+        "createInterview": "{{person}} → {{interview}}",
+        "publishOffer": "Offre {{title}} publiée",
+        "confirmInterview": "{{person}} Dupont a confirmé son entretien"
+    }
+}
