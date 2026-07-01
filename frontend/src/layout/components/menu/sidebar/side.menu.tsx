@@ -19,6 +19,7 @@ import ChevronLeftSVG from "/src/assets/svg/menu/chevron-right-double-svgrepo-co
 
 // CSS- style
 import styles from "./styles.module.css"
+import { navigateTo } from "../../../../App";
 
 
 
@@ -26,7 +27,7 @@ const SideMenu = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
 
-    const [active, setActive] = useState("home");
+    const [active, setActive] = useState(localStorage.getItem("menu") ?? "home");
     const [isCollapsed, setIsCollapsed] = useState(true);
 
     const menuItems = [
@@ -60,7 +61,7 @@ const SideMenu = () => {
                         active={active === item.id}
                         onClick={() => {
                             setActive(item.id)
-                            navigate(item.route)
+                            navigateTo(navigate, item.route, { menuId:  item.id})
                         }}
                     />
                 ))}

@@ -20,8 +20,10 @@
         "messages":{
             "welcome": "Bonjour {{name}}",
             "secureData": "Données sécurisées",
+            "seeDetails": "Voir détails",
             "error": "Une erreur inattendue est survenue"
         },
+
         "menu":{
             "home": "Acceuil",
             "poste": "Postes",
@@ -68,8 +70,17 @@
             "offerLabel_other": "offers"
         },
 
-        "action": {
-            "recentAction": "Actions récentes"
+        "views":{
+            "viewsLabel_one": "vue",
+            "viewsLabel_other": "vues"
+        },
+
+
+        "actions": {
+            "recentAction": "Actions récentes",
+            "edit": "Editer",
+            "duplicate": "Dupliquer",
+            "delete": "Supprimer"
         },
 
         "filters":{
@@ -94,6 +105,14 @@
 
         "map":{
             "error": "Impossible de localiser cette adresse — affichage de la position par défaut."
+        },
+
+        "location": {
+            "title": "Location"
+        },
+
+        "contract":{
+            "title": "Contrat"
         }
     }
 }

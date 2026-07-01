@@ -1,6 +1,13 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+
+//-- Services
+import { navigateTo } from "../../../App";
+import RouteScheme from "../../../route.scheme";
+import { jobsData, jobsViewData } from "../../../core/mock/job.data";
+
 
 //-- Custom Components
 import CurrentJob from "./components/currentJob/current.job";
@@ -17,18 +24,20 @@ import AddSVGComponent from "/src/assets/svg/add/add-svgrepo-com.svg"
 
 //-- CSS styles 
 import styles from "./UserJobPage.module.css"
-import { jobsData } from "../../../core/mock/job.data";
 
 
 
 
 
-interface UserJobPageProps{}
+
+interface UserJobsPageProps{}
 
 
-const UserJobPage: React.FC<UserJobPageProps> = ({}) => {
+const UserJobsPage: React.FC<UserJobsPageProps> = ({}) => {
     const { t } = useTranslation();
-    const [currentJobId, setCurrentJobId] = useState<string>("");
+    const navigate = useNavigate();
+
+    const [currentJobId, setCurrentJobId] = useState<string>("1");
 
     return (
         <main className={styles.container}>
@@ -51,10 +60,10 @@ const UserJobPage: React.FC<UserJobPageProps> = ({}) => {
                     />
                 </div>
                 <BrandButton
-                    onClick={()=> null}
                     svg={AddSVGComponent}
                     btnClassName={styles.createJob}
                     text={t("jobs.buttons.create")}
+                    onClick={()=> navigateTo(navigate, RouteScheme.createJob)}
                 />
             </div>
             
@@ -72,7 +81,7 @@ const UserJobPage: React.FC<UserJobPageProps> = ({}) => {
                 </div>
 
                 <div className={styles.selectedJob}>
-                    <CurrentJob />
+                    <CurrentJob job={jobsViewData[currentJobId]} />
                 </div>
             </div>
             
@@ -83,4 +92,4 @@ const UserJobPage: React.FC<UserJobPageProps> = ({}) => {
     );
 }
  
-export default UserJobPage;
+export default UserJobsPage;

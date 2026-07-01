@@ -20,8 +20,13 @@ const RouteScheme = {
     //-- JOBS
     jobs: "/jobs",
     jobDetails: "/jobs/:id",
-    userJobs: "/user/jobs"
 
+    //--JOB USER
+    userJobs: "/user/jobs",
+    userSingleJob: "/user/jobs/:id",
+
+    //-- User (recruteur) & Agents
+    createJob: "/jobs/create",
 }
 
 export default RouteScheme;

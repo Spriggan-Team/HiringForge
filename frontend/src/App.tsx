@@ -16,7 +16,9 @@ import RegisterationEntry from './pages/Register/register/page'
 import CandidateRegister from './pages/Register/candidate/candidate.register'
 import DirectorRegister from './pages/Register/director/director.register'
 import UserHome from './pages/home/user/page'
-import UserJobPage from './pages/jobs/user/page'
+import UserJobsPage from './pages/jobs/user/page'
+import UserPageSinglePage from './pages/jobs/user/single/page'
+import CreateJobPage from './pages/jobs/create/create.job.page'
 
 
 
@@ -40,7 +42,9 @@ function App() {
                     { /** Dashboard */  }
                     <Route element={<UserAppLayout />}>
                       <Route path={RouteScheme.userHome} element={<UserHome />} />
-                      <Route path={RouteScheme.userJobs} element={<UserJobPage />} />
+                      <Route path={RouteScheme.userJobs} element={<UserJobsPage />} />
+                      <Route path={RouteScheme.userSingleJob} element={<UserPageSinglePage />}/>
+                      <Route path={RouteScheme.createJob} element={<CreateJobPage /> }/>
                     </Route>
 
                   </Routes>
@@ -67,4 +71,31 @@ const UserAppLayout = () => {
     </div>
   );
 }
- 
+
+
+
+type NavigateFn = (path: string, params?: any) => void;
+
+interface NavigateOptions {
+  params?: Record<string, any>;
+  menuId?: string;
+  persistMenu?: boolean;
+}
+
+export const navigateTo = (
+  navigate: NavigateFn,
+  route: string,
+  options: NavigateOptions = {}
+) => {
+  const {
+    params,
+    menuId,
+    persistMenu = true,
+  } = options;
+
+  navigate(route, params);
+
+  if (persistMenu && menuId) {
+    localStorage.setItem("menu", menuId);
+  }
+};

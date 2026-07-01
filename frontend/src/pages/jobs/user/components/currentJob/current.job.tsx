@@ -1,29 +1,42 @@
 
+import { useTranslation } from "react-i18next";
+
 //-- Services
 import { jobsViewData } from "../../../../../core/mock/job.data";
+import type { JobView } from "../../../../../features/jobs/JobOffer";
 
 //--Custom Components
 import QuillRenderer from "../../../../../layout/components/editors/quill/quill.renderer";
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../../layout/components/menu/drawer/menu.drawer";
 import SectionHeader from "../../../../../layout/components/sections/sectionHeader/section.header";
+import InfoPill from "../../../../../layout/components/badges/pill/info.pill";
 
 //-- Custom SVG Component
 import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-svgrepo-com.svg"
 
 //-- Styles CSS
 import styles from "./CurrentJob.module.css"
-import InfoPill from "../../../../../layout/components/badges/pill/info.pill";
-
-interface CurrentJobProps{}
 
 
-const CurrentJob: React.FC<CurrentJobProps> = ({}) => {
+interface CurrentJobProps{
+    job: JobView
+}
+
+
+
+const CurrentJob: React.FC<CurrentJobProps> = ({
+    job
+}) => {
+    const {t} = useTranslation();
+
     return (
-        <div className={`${styles.container} card`}>
+        <div 
+            className={`${styles.container} card`}
+        >
             {/* IMAGE */}
             <div className={styles.imageWrapper}>
                 <img
-                    src={jobsViewData[0].mainImage ?? "/jobs/placeholder-job.jpg"}
+                    src={job.mainImage ?? "/jobs/placeholder-job.jpg"}
                     alt="Job cover"
                     className={styles.image}
                 />
@@ -48,9 +61,9 @@ const CurrentJob: React.FC<CurrentJobProps> = ({}) => {
                                 </MenuDrawerTrigger>
 
                                 <MenuDrawerBody>
-                                <MenuDrawerItem value="edit">Edit</MenuDrawerItem>
-                                <MenuDrawerItem value="duplicate">Duplicate</MenuDrawerItem>
-                                <MenuDrawerItem value="delete">Delete</MenuDrawerItem>
+                                <MenuDrawerItem value="edit">{t("global.actions.edit")}</MenuDrawerItem>
+                                <MenuDrawerItem value="duplicate">{t("global.actions.duplicate")}</MenuDrawerItem>
+                                <MenuDrawerItem value="delete">{t("global.actions.delete")}</MenuDrawerItem>
                                 </MenuDrawerBody>
                             </MenuDrawer>
                         }
@@ -59,25 +72,44 @@ const CurrentJob: React.FC<CurrentJobProps> = ({}) => {
 
                 {/* META INFO GRID */}
                 <div className={styles.metaGrid}>
-                    <div className={styles.metaItem}>
-                        <span className={styles.metaLabel}>Salary</span>
-                        <span className={styles.metaValue}>€48K - €55K</span>
-                    </div>
+                    {
+                        job.salary && (
+                            <div className={styles.metaItem}>
+                                <span className={styles.metaLabel}>{t("global.salary.title")}</span>
+                                <span className={styles.metaValue}>
+                                    {job.salary?.min && job.salary.max 
+                                        ? `${job.devise} ${job.salary.min} - ${job.devise} ${job.salary.max}` 
+                                        : job.salary?.min ?
+                                            `min: ${job.devise}${job.salary.min}`
+                                            : job.salary.max && `max: ${job.devise}${job.salary?.max}`
+                                    }
+                                </span>
+                            </div>
+                        )
+                    }
 
-                    <div className={styles.metaItem}>
-                        <span className={styles.metaLabel}>Location</span>
-                        <span className={styles.metaValue}>Paris / Remote</span>
-                    </div>
+                    {job.location && (
+                        <div className={styles.metaItem}>
+                            <span className={styles.metaLabel}>{t("global.location.title")}</span>
+                            <span className={styles.metaValue}>
+                                {`${job.location.street ?? ""} ${job.location.city ?? ""} ${job.location.country ?? ""} ${job.jobWorkMode ? `/ ${job.jobWorkMode}` : ""}`}
+                            </span>
+                        </div>
+                    )}
 
-                    <div className={styles.metaItem}>
-                        <span className={styles.metaLabel}>Contract</span>
-                        <span className={styles.metaValue}>CDI</span>
-                    </div>
+                    {
+                        job.contract && (
+                            <div className={styles.metaItem}>
+                                <span className={styles.metaLabel}>{t("global.contract.title")}</span>
+                                <span className={styles.metaValue}>{job.contract}</span>
+                            </div>
+                        )
+                    }
                 </div>
 
                 {/* CATEGORIES */}
                 <div className={styles.categories}>
-                    {jobsViewData[0].categories.map((cat) => (
+                    {job.categories.map((cat) => (
                         <JobCatItem key={cat} content={cat} />
                     ))}
                 </div>
@@ -86,7 +118,7 @@ const CurrentJob: React.FC<CurrentJobProps> = ({}) => {
             {/* CONTENT SCROLLABLE */}
             <div className={styles.contentWrapper}>
                 <div className={`${styles.content} scrollbar`}>
-                    <QuillRenderer content={jobsViewData[0].content} />
+                    <QuillRenderer content={job.content} />
                 </div>
                 <div className={`${styles.fadeBottom} fadeBottom`} />
             </div>
@@ -94,16 +126,18 @@ const CurrentJob: React.FC<CurrentJobProps> = ({}) => {
             {/* FOOTER */}
             <div className={styles.footer}>
                 <div className={styles.footerLeft}>
-                    <span className={styles.views}>👁 1.2k views</span>
-                    <span className={styles.applicants}>🧑‍💻 38 applicants</span>
+                    <span className={styles.views}>{job.views}{t("global.views.viewsLabel", {count: job.views ?? 0})}</span>
+                    <span className={styles.applicants}>🧑‍💻 {job.applications} {t("global.candidate.candidateLabel", {count: job.applications ?? 0})}</span>
                 </div>
-                <button className={styles.primaryAction}>Apply now</button>
+                <button className={styles.primaryAction}>{t("global.messages.seeDetails")}</button>
             </div>
         </div>
     );
 }
  
+
 export default CurrentJob;
+
 
 
 /** Job Category */

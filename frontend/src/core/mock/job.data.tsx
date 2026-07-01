@@ -203,14 +203,15 @@ export const jobsData: JobSummary[] = [
 ];
 
 
-export const jobsViewData: JobView[] = [
-{
+export const jobsViewData: Record<string, JobView> = { // id, JobViews
+  "1": {
     id: "1",
     title: "Développeur Front-end React",
     categories: ["Développement", "Frontend", "React"],
-    salary: 48000,
+    salary: { min: 35000, max: 45000 },
     devise: "EUR",
-    status: "published",
+    contract: "Alternance",
+    publicationStatus: "published",
     activityStatus: "active",
     mainImage: undefined,
     content: {
@@ -253,16 +254,18 @@ export const jobsViewData: JobView[] = [
         },
       ],
     },
+    views: 120, applications: 8,
     createdAt: new Date("2025-01-10"),
     updatedAt: new Date("2025-02-01"),
   },
-  {
+  "2": {
     id: "2",
     title: "Développeur Back-end Node.js",
     categories: ["Développement", "Backend", "Node.js"],
-    salary: 50000,
+    salary: { min: 40000, max: 55000 },
     devise: "EUR",
-    status: "published",
+    contract: "CDI",
+    publicationStatus: "published",
     activityStatus: "active",
     mainImage: undefined,
     content: {
@@ -305,16 +308,18 @@ export const jobsViewData: JobView[] = [
         },
       ],
     },
+    views: 340, applications: 22,
     createdAt: new Date("2025-01-15"),
     updatedAt: new Date("2025-02-08"),
   },
-  {
+  "3": {
     id: "3",
     title: "Développeur Full-stack",
     categories: ["Développement", "Full Stack"],
-    salary: 55000,
+    salary: { fix: 42000 },
     devise: "EUR",
-    status: "published",
+    contract: "CDI",
+    publicationStatus: "published",
     activityStatus: "pending",
     mainImage: undefined,
     content: {
@@ -357,16 +362,17 @@ export const jobsViewData: JobView[] = [
         },
       ],
     },
+    views: 890, applications: 61 ,
     createdAt: new Date("2025-01-22"),
     updatedAt: new Date("2025-02-14"),
   },
-  {
+  "4": {
     id: "4",
     title: "UX/UI Designer",
     categories: ["Design", "UX", "UI"],
-    salary: 43000,
+    salary:   { min: 50000, max: 65000 },
     devise: "EUR",
-    status: "published",
+    publicationStatus: "published",
     activityStatus: "active",
     mainImage: undefined,
     content: {
@@ -409,16 +415,17 @@ export const jobsViewData: JobView[] = [
         },
       ],
     },
+    views: 1500, applications: 120,
     createdAt: new Date("2025-01-27"),
     updatedAt: new Date("2025-02-11"),
   },
-    {
-        id: "4",
+  "5": {
+        id: "5",
         title: "UX/UI Designer",
         categories: ["Design", "UX", "UI"],
-        salary: 43000,
+        salary:   { min: 60000, max: 80000 },
         devise: "EUR",
-        status: "published",
+        publicationStatus: "published",
         activityStatus: "active",
         mainImage: undefined,
         content: {
@@ -461,67 +468,17 @@ export const jobsViewData: JobView[] = [
             },
             ],
         },
+         views: 75, applications: 3,
         createdAt: new Date("2025-01-27"),
         updatedAt: new Date("2025-02-11"),
-    },
-    {
-        id: "5",
-        title: "Product Designer",
-        categories: ["Design", "Product"],
-        salary: 46000,
-        devise: "EUR",
-        status: "draft",
-        activityStatus: "pending",
-        mainImage: undefined,
-        content: {
-            ops: [
-            {
-                insert: "Nous recherchons un Product Designer expérimenté pour rejoindre notre équipe de produit. Le candidat idéal aura une expérience de plusieurs années dans la conception de produits et une bonne connaissance des outils de design.",
-            },
-            {
-                insert: "\n",
-            },
-            {
-                insert: "Responsabilités :\n",
-            },
-            {
-                insert: "- Concevoir des produits innovants et utilisateur-friendly\n",
-            },
-            {
-                insert: "- Collaborer avec l'équipe de développement pour intégrer les designs\n",
-            },
-            {
-                insert: "- Travailler avec l'équipe de produit pour comprendre les besoins des utilisateurs\n",
-            },
-            {
-                insert: "- Développer des prototypes et des maquettes pour valider les designs\n",
-            },
-            {
-                insert: "\n",
-            },
-            {
-                insert: "Exigences :\n",
-            },
-            {
-                insert: "- 3+ ans d'expérience dans la conception de produits\n",
-            },
-            {
-                insert: "- Connaissance des outils de design tels que Sketch, Figma, Adobe XD\n",
-            },
-            {
-                insert: "- Compréhension des principes de design de produits\n",
-            },
-            ],
-        },
-        createdAt: new Date("2025-02-02"),
-    },
-    {
+  },
+  "6":{
         id: "6",
         title: "Product Manager",
         categories: ["Product", "Management"],
-        salary: 62000,
+        salary: { min: 70000, max: 90000 },
         devise: "EUR",
-        status: "published",
+        publicationStatus: "published",
         activityStatus: "active",
         mainImage: undefined,
         content: {
@@ -564,16 +521,17 @@ export const jobsViewData: JobView[] = [
             },
             ],
         },
+        views: 980, applications: 38,
         createdAt: new Date("2025-02-05"),
         updatedAt: new Date("2025-02-28"),
-    },
-    {
+  },
+  "7":{
         id: "7",
         title: "DevOps Engineer",
         categories: ["Infrastructure", "DevOps", "Cloud"],
-        salary: 58000,
+        salary:  { min: 45000, max: 60000 },
         devise: "EUR",
-        status: "published",
+        publicationStatus: "published",
         activityStatus: "active",
         mainImage: undefined,
         content: {
@@ -616,16 +574,17 @@ export const jobsViewData: JobView[] = [
             },
             ],
         },
+        views: 2100, applications: 180,
         createdAt: new Date("2025-02-10"),
         updatedAt: new Date("2025-03-01"),
-    },
-  {
+  },
+  "8":{
     id: "8",
     title: "Cloud Engineer AWS",
     categories: ["Cloud", "AWS", "Infrastructure"],
-    salary: 60000,
+    salary:   { max: 52000 },
     devise: "EUR",
-    status: "published",
+    publicationStatus: "published",
     activityStatus: "pending",
     mainImage: undefined,
     content: {
@@ -640,16 +599,17 @@ export const jobsViewData: JobView[] = [
             { insert: "- 3+ ans en cloud engineering\n- Culture DevOps\n- Sens de la performance\n" },
         ],
     },
+    views: 430, applications: 19 ,
     createdAt: new Date("2025-02-15"),
     updatedAt: new Date("2025-03-03"),
   },
-  {
+  "9":{
     id: "9",
     title: "Data Engineer",
     categories: ["Data", "Engineering"],
-    salary: 57000,
+    salary:   { min: 38000, max: 50000 },
     devise: "EUR",
-    status: "published",
+    publicationStatus: "published",
     activityStatus: "active",
     mainImage: undefined,
     content:{
@@ -664,16 +624,17 @@ export const jobsViewData: JobView[] = [
             { insert: "- Expérience data engineering\n- Esprit analytique\n- Bonnes pratiques data\n" },
         ],
     },
+     views: 1250, applications: 74 ,
     createdAt: new Date("2025-02-18"),
     updatedAt: new Date("2025-03-08"),
   },
-  {
+  "10":{
     id: "10",
     title: "Data Scientist",
     categories: ["Data", "Machine Learning", "AI"],
-    salary: 65000,
+    salary:   { fix: 75000 },
     devise: "EUR",
-    status: "closed",
+    publicationStatus: "closed",
     activityStatus: "pending",
     mainImage: undefined,
     content: {
@@ -688,16 +649,17 @@ export const jobsViewData: JobView[] = [
         { insert: "- Bac+5 data science\n- Expérience ML production\n- Esprit recherche\n" },
         ],
     },
+    views: 60, applications: 2,
     createdAt: new Date("2025-02-22"),
     updatedAt: new Date("2025-03-15"),
   },
-  {
+  "11":{
     id: "11",
     title: "QA Automation Engineer",
     categories: ["QA", "Automation", "Testing"],
-    salary: 47000,
+    salary:   { min: 55000, max: 70000 },
     devise: "EUR",
-    status: "published",
+    publicationStatus: "published",
     activityStatus: "active",
     mainImage: undefined,
     content: {
@@ -712,16 +674,17 @@ export const jobsViewData: JobView[] = [
             { insert: "- QA automation\n- Sens du détail\n- Expérience agile\n" },
         ],
     },
+     views: 1750, applications: 96,
     createdAt: new Date("2025-03-01"),
     updatedAt: new Date("2025-03-20"),
   },
-  {
+  "12":{
     id: "12",
     title: "Mobile Developer Flutter",
     categories: ["Mobile", "Flutter"],
-    salary: 49000,
+    salary:  { min: 65000, max: 85000 },
     devise: "EUR",
-    status: "draft",
+    publicationStatus: "draft",
     activityStatus: "pending",
     mainImage: undefined,
     content: {
@@ -736,15 +699,16 @@ export const jobsViewData: JobView[] = [
             { insert: "- 2+ ans Flutter\n- Autonomie mobile\n- Sens UI\n" },
         ],
     },
+    views: 300, applications: 14,
     createdAt: new Date("2025-03-05"),
   },
-  {
+  "13":{
     id: "13",
     title: "Ingénieur IA",
     categories: ["IA", "Machine Learning", "Python"],
-    salary: 72000,
+    salary:   { max: 100000 },
     devise: "EUR",
-    status: "published",
+    publicationStatus: "published",
     activityStatus: "active",
     mainImage: undefined,
     content: {
@@ -759,16 +723,17 @@ export const jobsViewData: JobView[] = [
             { insert: "- Bac+5 IA ou recherche\n- Expérience ML\n- Curiosité forte\n" },
         ],
     },
+    views: 540, applications: 27,
     createdAt: new Date("2025-03-10"),
     updatedAt: new Date("2025-03-28"),
   },
-  {
+  "14": {
     id: "14",
     title: "Architecte Logiciel",
     categories: ["Architecture", "Software"],
-    salary: 76000,
+    salary:   { fix: 90000 },
     devise: "EUR",
-    status: "published",
+    publicationStatus: "published",
     activityStatus: "active",
     mainImage: undefined,
         content: {
@@ -783,16 +748,17 @@ export const jobsViewData: JobView[] = [
             { insert: "- 7+ ans expérience\n- Vision système\n- Leadership technique\n" },
         ],
     },
+    views: 3200, applications: 240 ,
     createdAt: new Date("2025-03-12"),
     updatedAt: new Date("2025-04-02"),
   },
-  {
+  "15":{
     id: "15",
     title: "Scrum Master",
     categories: ["Agile", "Scrum", "Management"],
-    salary: 54000,
+    salary:   { fix: 48000 },
     devise: "EUR",
-    status: "closed",
+    publicationStatus: "closed",
     activityStatus: "pending",
     mainImage: undefined,
     content: {
@@ -807,7 +773,8 @@ export const jobsViewData: JobView[] = [
             { insert: "- Expérience Scrum Master\n- Leadership soft skills\n- Sens produit\n" },
         ],
     },
+    views: 60, applications: 2 ,
     createdAt: new Date("2025-03-18"),
     updatedAt: new Date("2025-04-05"),
   },
-];
+};

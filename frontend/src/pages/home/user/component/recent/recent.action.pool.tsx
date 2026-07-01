@@ -49,7 +49,7 @@ const RecentActionPool: React.FC<RecentActionPoolProps> = ({}) => {
     return (
         <div className={styles.container}>
             <SectionHeader
-                title={t("global.action.recentAction")}
+                title={t("global.actions.recentAction")}
                 action={<ViewAllLink />}
             />
             <div className={styles.items}>
