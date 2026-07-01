@@ -88,13 +88,21 @@ export default MenuDrawer;
 
 interface MenuDrawerTriggerProps {
     className?: string;
-    style?: React.CSSProperties,
+    style?: React.CSSProperties;
+
+    displayArrowDown?: boolean;
+    applyDefaultStyle?: boolean;
+
     children: (selected: any) => React.ReactNode;
 }
 
 export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
-    className,
     style,
+    className,
+
+    displayArrowDown = true,
+    applyDefaultStyle= true,
+    
     children,
 }) => {
     const { isOpen, toggle, selected } = useDrawer();
@@ -104,16 +112,20 @@ export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
             style={style}
             type="button"
             onClick={toggle}
-            className={`${styles.trigger} ${className}`}
+            className={`${applyDefaultStyle ? styles.trigger : ""} ${className}`}
             aria-expanded={isOpen}
         >
             <span>{children(selected)}</span>
+            {
+                displayArrowDown && (
+                    <DownArrowSVG
+                        width={14}
+                        height={14}
+                        className={`${styles.arrow} ${isOpen ? styles.open : ""}`}
+                    />
+                )
+            }
 
-            <DownArrowSVG
-                width={14}
-                height={14}
-                className={`${styles.arrow} ${isOpen ? styles.open : ""}`}
-            />
         </button>
     );
 };

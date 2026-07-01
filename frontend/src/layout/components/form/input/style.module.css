@@ -15,7 +15,7 @@
     transition: color .2s ease;
 }
 
-.container:focus-within .label {
+.inputContainerFocusStyle:focus-within .label {
     color: #2563eb;
     transform: translateX(2px);
 }
@@ -33,11 +33,12 @@
 }
 
 
-.inputSection:focus-within {
+.inputSectionFocusStyle:focus-within {
     background: white;
     box-shadow: 0 0 0 3px rgba(15,82,255,.15);
     outline: 1px solid #2563eb; 
 }
+
 
 .inputSection:user-invalid{
     border: 1px solid #dc2626; /* Bordure rouge pro */

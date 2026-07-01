@@ -6,20 +6,28 @@ import styles from "./SectionHeader.module.css"
 
 
 interface SectionHeaderProps{
-    title: string;
+    title: string | React.ReactNode;
+    fontSize?: string;
     action?: React.ReactNode
 }
 
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({
     title,
+    fontSize,
     action
 }) => {
     return (
         <div className={styles.container}>
-            <div className={styles.txt}>
-                <Title title={title}/>
-            </div>
+            {
+                typeof title === "string" ? (
+                    <div className={styles.txt}>
+                        <Title title={title} fontSize={fontSize}/>
+                    </div>
+                )
+                : title
+            }
+
             { action && (
                 <div className={styles.leading}>
                     {action}

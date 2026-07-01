@@ -1,8 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Sekuya&display=swap');
 
-:root{
-  --textSecondaryColor: #536075
-}
+
 
 *{
   margin: 0;
@@ -86,6 +84,10 @@ a:hover{
 /** NavBar **/
 .nav-bar{}
 
+/** Main **/
+main{
+  padding: 24px;
+}
 
 
 /** Scrollbar **/
@@ -105,4 +107,36 @@ a:hover{
 
 .scrollbar::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
+}
+
+/** Input **/
+.input {
+  border-radius: 12px;
+  background: #e5e7eb;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1; 
+}
+
+.input:hover {
+  background: #d1d5db;
+  border-color: #94a3b8;
+}
+
+
+/** Card style **/
+.card{
+  background: #FFF;
+  padding: 14px 16px;
+
+  border-radius: 16px;
+  border: 1px solid #E5E7EB;
+}
+
+/* fade bottom */
+.fadeBottom {
+  position: absolute;
+  bottom: 0;
+  height: 50px;
+  width: 100%;
+  background: linear-gradient(transparent, white);
 }

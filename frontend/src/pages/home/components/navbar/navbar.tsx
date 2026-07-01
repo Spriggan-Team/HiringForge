@@ -60,8 +60,8 @@ const NavBar: React.FC<NavBarProps> = ({
                 <div className={styles.search}>
                     <BasicInput
                         svg={SearchSVGComponent}
-                        className={styles.input}
                         backgroundColor="white"
+                        className={`${styles.input} input`}
                         placeholder={t("userHome.inputs.search.placeholder")}
                     />
                 </div>

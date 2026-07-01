@@ -10,7 +10,6 @@ import UserQueriesServices from "../../../api/services/user/queries";
 import type {  RecruiterDashboardKpis } from "../../../features/dashboard/KpiData";
 
 //-- Custom Component
-import Title from "../../../layout/components/text/title/title";
 import KpiCard, { KpiCount, KpiPercentage } from "./component/kpi/kpi.card";
 import RecruitmentPipeline from "./component/pipeline/recrutement.pipeline";
 import Calendar from "../../../layout/components/cards/calendar/calendar";

@@ -4,7 +4,6 @@ import BrandButton, { type BrandButtonProps } from "../../buttons/brand.button";
 
 //-- SVG Components 
 import OKCircleSVG from "../../../../assets/svg/check/ok-circle-svgrepo-com.svg";
-import LeftToRightArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg';
 
 //-- Styles
 import styles from "./style.module.css"
@@ -73,11 +72,10 @@ const ProcessChecklistCard: React.FC<ProcessChecklistCardProps> = ({
             
             <div className={styles.btn}>
                 <BrandButton
+                    onClick={onClick}
                     text={buttonText}
                     fill={fillButton}
                     fillColor={primaryColor}
-                    svg={LeftToRightArrowSVG}
-                    onClick={onClick}
                     color={secondaryColor ?? "white"}
                     backgroundColor={primaryColor}
                     fillForegroundColor={fillButtonForegroundColor ?? secondaryColor}

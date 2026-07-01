@@ -1,0 +1,176 @@
+
+:root{
+  --textSecondaryColor: #536075;
+  
+  --interviews-color: #4690EE;
+  --offer-color: #E7BB6C;
+  --candidates-color: #2ECC71;
+  --hired-color: #9B59B6;
+}
+
+.container {
+    width: 100%;
+    max-width: 620px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+
+/** Header **/
+
+.header {
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) repeat(4, 90px);
+    align-items: center;
+
+    padding: 0 24px;
+}
+
+.leading {
+    display: flex;
+    align-items: center;
+}
+
+.hint {
+    text-align: center;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    opacity: .7;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+/** List Items **/
+
+.itemsWrapper{
+    position: relative;
+}
+
+.items {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: 625px;
+    overflow-y: auto;
+    padding: 0 5px;
+}
+
+.items::-webkit-scrollbar {
+    width: 5px;
+}
+
+/** Single Item **/
+
+.item {
+    display: grid;
+    align-items: center;
+    grid-template-columns: minmax(260px, 1fr) repeat(4, 90px);
+
+    gap: 12px;
+    padding: 18px 24px;
+    border-radius: 14px;
+
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+}
+
+
+.item:hover {
+    transform: translateY(-2px);
+}
+
+
+.informations {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    min-width: 0;
+}
+
+
+.item .informations > * + *{
+    margin-left: 15px;
+}
+
+.title {
+    font-size: 1rem;
+    font-weight: 700;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.locationRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    font-size: .88rem;
+    color: var(--text-secondary);
+
+    overflow: hidden;
+}
+
+.locationRow span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.item .cardinals{
+    gap: 35px;
+    display: flex;
+}
+
+
+/** Cardinals **/
+
+.cardinal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 6px;
+}
+
+
+.countSection {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.count {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1;
+    text-transform: capitalize;
+}
+
+.separator {}
+
+
+
+.label {
+    font-size: .78rem;
+    color: var(--text-secondary);
+
+    white-space: nowrap;
+}
+
+.circle {
+    width: 8px;
+    height: 8px;
+
+    flex-shrink: 0;
+    border-radius: 50%;
+
+    background: var(--bgColor, var(--neutral-400));
+}

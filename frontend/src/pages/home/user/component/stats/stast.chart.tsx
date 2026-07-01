@@ -142,7 +142,6 @@ const getDate = (offset: number) => {
 
 const statsDataMock = {
     dates: Array.from({ length: 7 }, (_, i) => getDate(i)),
-
     candidates: [124, 132, 145, 167, 180, 190, 205],
     interviews: [12, 18, 20, 25, 22, 28, 30],
     hired: [1, 2, 3, 3, 4, 5, 6],

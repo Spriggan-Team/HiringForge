@@ -37,7 +37,7 @@ import styles from "./styles.module.css"
 
 const RegisterationEntry = () => {
     const { t } = useTranslation();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     return (
         <div className={styles.container}>

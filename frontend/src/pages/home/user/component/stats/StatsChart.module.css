@@ -94,9 +94,11 @@
 
 /* ---------- LINE CHART ---------- */
 
+
 .linechartWrapper{
-    width: 514px;
+    width: 528px;
 }
+
 
 .linechart {
     width: 100%;
@@ -106,4 +108,9 @@
     border: 1px dashed #E5E7EB;
 
     margin-right: 15px;
+}
+
+
+@media (max-width: 1250px){
+    
 }

@@ -62,8 +62,38 @@
             "hiredLabel_other": "Embauchés"
         },
 
+        
+        "offer": {
+            "offerLabel_one": "offer",
+            "offerLabel_other": "offers"
+        },
+
         "action": {
             "recentAction": "Actions récentes"
+        },
+
+        "filters":{
+            "title": "Filters"
+        },
+        "jobs":{
+            "publicationState": {
+                "title":"État de publication",
+                "publish": "Publié",
+                "draft": "Brouillon",
+                "closed": "Closed"
+            },
+            "offerStatus":{
+                "title": "Statut de l'offre",
+                "active": "Active",
+                "pending": "En cours"
+            }
+        },
+        "salary":{
+            "title": "Rénumération"
+        },
+
+        "map":{
+            "error": "Impossible de localiser cette adresse — affichage de la position par défaut."
         }
     }
 }

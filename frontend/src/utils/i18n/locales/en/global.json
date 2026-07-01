@@ -20,6 +20,10 @@
         "messages":{
             "secureData": "Secure data",
             "error": "An unexpected error occurred"
+        },
+
+        "map":{
+            "error": "Couldn't locate this address — showing default location."
         }
     }
 }

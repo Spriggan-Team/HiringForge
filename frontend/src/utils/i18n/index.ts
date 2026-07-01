@@ -7,12 +7,15 @@ import authFR from "./locales/fr/auth.json";
 import globalFR from "./locales/fr/global.json";
 import homeFR from "./locales/fr/home.json"
 import notificationFR from "./locales/fr/notification.json"
+import jobsFR from "./locales/fr/jobs.json"
 
 // EN
 import authEN from "./locales/en/auth.json";
 import globalEN from "./locales/en/global.json";
 import homeEN from "./locales/en/home.json"
 import notificationEN from "./locales/en/notification.json"
+import jobsEN from "./locales/en/jobs.json"
+
 
 const resources = {
 
@@ -22,6 +25,7 @@ const resources = {
             ...authFR,
             ...homeFR,
             ...notificationFR,
+            ...jobsFR,
         }
     },
 
@@ -31,6 +35,7 @@ const resources = {
             ...authEN,
             ...homeEN,
             ...notificationEN,
+            ...jobsEN,
         }
     }
 };
@@ -38,21 +43,16 @@ const resources = {
 
 
 i18n
-.use(initReactI18next)
+    .use(initReactI18next)
+    .init({
+        resources,
+        fallbackLng: "fr",
 
-.init({
-
-    resources,
-
-    fallbackLng: "fr",
-
-    lng: "fr",
-
-    interpolation: {
-
-        escapeValue: false
-    }
-});
+        lng: "fr",
+        interpolation: {
+            escapeValue: false
+        }
+    });
 
 
 
@@ -69,6 +69,7 @@ declare module "i18next" {
                 & typeof authFR
                 & typeof homeFR
                 & typeof notificationFR
+                & typeof jobsFR
         };
     }
 }

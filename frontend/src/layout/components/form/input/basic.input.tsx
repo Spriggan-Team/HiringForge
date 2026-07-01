@@ -9,8 +9,10 @@ import styles from "./style.module.css";
 
 
 export interface BasicInputProps {
-    inputName?: string;
+    value?:string;
     label?: string;
+    inputName?: string;
+
     width?: number | string;
     padding?: string | number;
     placeholder?: string;
@@ -19,18 +21,21 @@ export interface BasicInputProps {
     
     type?: "text" | "password";
     textColor?: string;
-    value?:string;
     required?: boolean;
     extraInputProps?: React.HTMLAttributes<HTMLInputElement>
     
     className?: string;
     iconClassName?: string;
     icon2ClassName?: string;
-    enableViewToggle?: boolean; //work with password inputs types
+
+    enableViewToggle?: boolean; //-- work with password inputs types
+    enableFocusWithinDefaultDesign?: boolean; //-- controle focus state
+
     svg?: React.FC<React.SVGProps<SVGSVGElement>>;
+    leadingSVG?: React.FC<React.SVGProps<SVGSVGElement>>;
+    leading?: React.ReactNode;
 
     inputRef?: React.RefObject<null | HTMLInputElement>;
-    leadingSVG?: React.FC<React.SVGProps<SVGSVGElement>>;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>)=>void;
     onBlur?: (event: React.FocusEvent<HTMLInputElement>)=> void;
     onFocus?: (event: React.FocusEvent<HTMLInputElement>)=> void;
@@ -43,24 +48,32 @@ export interface BasicInputProps {
  */
 const BasicInput: React.FC<BasicInputProps> = ({
     svg: Icon,
+    leading: LeadingComponent,
     leadingSVG: Icon2,
+
     label,
-    width,
     value,
+
+    width,
     type = "text",
     placeholder,
     inputName,
     required,
+
     padding,
     className,
     borderRadius,
+
     inputRef: ref,
     onBlur, onFocus,
     onChange = ()=>{},
+
     enableViewToggle = true,
-    backgroundColor = "#ECEAF1",
+    enableFocusWithinDefaultDesign = true,
+
     iconClassName,
     icon2ClassName,
+    backgroundColor = "#ECEAF1",
 
     extraInputProps
 }) => {
@@ -71,10 +84,12 @@ const BasicInput: React.FC<BasicInputProps> = ({
 
 
     return (
-        <div className={styles.container}>
+        <div 
+            className={`${styles.container} ${enableFocusWithinDefaultDesign ? styles.inputContainerFocusStyle : ""}`}
+        >
             {label && <label htmlFor={inputName} className={styles.label} >{label}</label>}
             <div
-                className={`${styles.inputSection} ${className}`}
+                className={`${styles.inputSection} ${className} ${enableFocusWithinDefaultDesign ? styles.inputSectionFocusStyle : ""}`}
                 style={{ 
                     background: backgroundColor,
                     ["--border" as any]:(borderRadius && typeof borderRadius == 'number' ?  `${borderRadius}px` : borderRadius) ??  "8px",  
@@ -111,7 +126,7 @@ const BasicInput: React.FC<BasicInputProps> = ({
                         )}
                     </button>
                 )}
-                
+                {LeadingComponent ? LeadingComponent : null }
                 {Icon2 && <Icon2 className={`${styles.svg} ${icon2ClassName}`} />}
             </div>
         </div>

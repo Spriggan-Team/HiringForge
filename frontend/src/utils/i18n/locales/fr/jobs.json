@@ -1,0 +1,16 @@
+{
+    "jobs":{
+        "title": "Job title",
+        "buttons":{
+            "create": "Créer une offre"
+        },
+        "inputs":{
+            "searchJob":{
+                "placeholder": "Rechercher une offre ?"
+            },
+            "searchAddress":{
+                "placeholder": "Rechercher avec une addrèsse ? "
+            }
+        }
+    }
+}

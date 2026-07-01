@@ -1,3 +1,65 @@
 
 
-.container{}
+.container{
+    gap: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+/** Header **/
+
+.header{
+    gap: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* background: #000; */
+}
+
+.searchInputsSection {
+    display: flex;
+    overflow: hidden;
+    padding: 5px 10px;
+    background: white;
+
+    border-radius: 15px;
+    border: 1px solid #cbd5e1; 
+}
+
+.searchInputsSection > *:not(:first-child) {
+    position: relative;
+}
+
+.searchInputsSection > *:not(:first-child)::before {
+    content: "";
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 2px;
+    height: 80%;
+    border-radius: 20%;
+    display: block;
+
+    background: #00000081;
+    transform: translateY(15%);
+}
+
+
+.header .input{
+    width: 425px;
+    border-radius: 0;
+}
+
+
+.header .createJob{
+    min-width: 205px;
+}
+
+/** Body **/
+.body{
+    width: 100%;
+    gap: 25px;
+    display: flex;
+}

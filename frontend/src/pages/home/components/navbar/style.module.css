@@ -56,17 +56,6 @@
     width: 280px;
 }
 
-.input {
-    background: #e5e7eb;
-    border: 1px solid #cbd5e1; 
-    border-radius: 12px;
-    box-sizing: border-box;
-}
-
-.input:hover {
-    border-color: #94a3b8;
-    background: #d1d5db;
-}
 
 /* Notification Button & Badge */
 .notification {

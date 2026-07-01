@@ -11,7 +11,14 @@ const Title: React.FC<TitleProps> = ({
     fontSize
 }) => { //fz around 18px
     return ( 
-        <h1 className={styles.title}>{title}</h1>
+        <h1
+            style={{
+                fontSize: fontSize ?? "1.125rem"
+            }}
+            className={styles.title}
+        >
+            {title}
+        </h1>
     );
 }
  
