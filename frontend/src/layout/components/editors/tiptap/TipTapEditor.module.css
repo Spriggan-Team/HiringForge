@@ -1,0 +1,88 @@
+.container {
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+.separator {
+    height: 1px;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    flex-shrink: 0; 
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.button {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: background-color .15s ease, transform .12s ease;
+}
+
+.button:hover {
+    background: rgba(255, 255, 255, .06);
+}
+
+.button:active {
+    transform: scale(.96);
+}
+
+.active {
+    background: rgba(255, 255, 255, .12);
+}
+
+/**
+    Editor
+**/
+
+/* Style for @tiptap/extension-placeholder */
+.editor :global(.ProseMirror p.is-editor-empty:first-child::before) {
+    height: 0;
+    float: left;
+    color: #adb5bd;
+    pointer-events: none;
+    content: attr(data-placeholder);
+}
+
+.editor :global(.ProseMirror) {
+    outline: none;
+    min-height: 180px;
+    line-height: 1.6;
+    height: 100%;
+}
+
+/** Sizeable editor **/
+
+/* Option A : Sizeable on y axis*/
+.flexibleY :global(.ProseMirror) {
+    resize: vertical;
+    overflow: auto;
+}
+
+/* Option B : Sizeable on x axis*/
+.flexibleX :global(.ProseMirror) {
+    resize: horizontal;
+    overflow: auto;
+}
+
+/* Option C : Sizeable on both axis (Everywhere) */
+.flexibleBoth :global(.ProseMirror) {
+    resize: both;
+    overflow: auto;
+}

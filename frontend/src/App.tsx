@@ -1,14 +1,17 @@
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
 
-//-- Compoenents
+//--Services
 import RouteScheme from './route.scheme'
+import { useAppContext } from './hooks/context'
 import AppContextProvider from './context/app.context'
 
+//-- Custom Compoenents
 import { AppSpinner } from './layout/components/indicators/spinner/spinner'
 import AppPopup from './layout/components/popup/app.popup'
 import SideMenu from './layout/components/menu/sidebar/side.menu'
 import NavBar from './pages/home/components/navbar/navbar'
 
+//-- Pages
 import Login from './pages/Login/page'
 import UserRegister from './pages/Register/user/page'
 import EntryPage from './pages/entry'
@@ -59,8 +62,6 @@ export default App
 
 
 const UserAppLayout = () => {
-
-  
   return (
     <div className='app-container'>
       <SideMenu />

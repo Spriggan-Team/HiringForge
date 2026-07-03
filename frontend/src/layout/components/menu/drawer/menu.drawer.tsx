@@ -93,7 +93,7 @@ interface MenuDrawerTriggerProps {
     displayArrowDown?: boolean;
     applyDefaultStyle?: boolean;
 
-    children: (selected: any) => React.ReactNode;
+    children:  (selected: any) => React.ReactNode | React.ReactNode;
 }
 
 export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
@@ -115,7 +115,13 @@ export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
             className={`${applyDefaultStyle ? styles.trigger : ""} ${className}`}
             aria-expanded={isOpen}
         >
-            <span>{children(selected)}</span>
+            <span>
+                {
+                    typeof children === "function" ?
+                        children(selected)
+                        : children
+                }
+            </span>
             {
                 displayArrowDown && (
                     <DownArrowSVG
@@ -139,11 +145,15 @@ interface MenuDrawerBodyProps {
     children: React.ReactNode;
     
     style?: React.CSSProperties,
+    position?: "top-right" |  "initial"
 }
+
 
 export const MenuDrawerBody: React.FC<MenuDrawerBodyProps> = ({
     children,
-    className, style,
+    className, 
+    style,
+    position = "top-right"
 }) => {
     const { isOpen } = useDrawer();
 
@@ -151,7 +161,7 @@ export const MenuDrawerBody: React.FC<MenuDrawerBodyProps> = ({
 
     return (
         <div 
-            className={styles.bodyWrapper}
+            className={`${styles.bodyWrapper} ${position === "top-right" ? styles.topLeft : ""}`}
         >
             <div 
                 style={style}

@@ -126,7 +126,7 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
             {/* FOOTER */}
             <div className={styles.footer}>
                 <div className={styles.footerLeft}>
-                    <span className={styles.views}>{job.views}{t("global.views.viewsLabel", {count: job.views ?? 0})}</span>
+                    <span className={styles.views}>{job.views} {t("global.views.viewsLabel", {count: job.views ?? 0})}</span>
                     <span className={styles.applicants}>🧑‍💻 {job.applications} {t("global.candidate.candidateLabel", {count: job.applications ?? 0})}</span>
                 </div>
                 <button className={styles.primaryAction}>{t("global.messages.seeDetails")}</button>

@@ -123,12 +123,16 @@ main{
 }
 
 
-/** Card style **/
+/** Card style !Important **/
 .card{
   background: #FFF;
   padding: 14px 16px;
 
   border-radius: 16px;
+  border: 1px solid #E5E7EB;
+}
+
+.card-border{
   border: 1px solid #E5E7EB;
 }
 

@@ -15,6 +15,7 @@ import DownArrowSVGComponent from "/src/assets/svg/menu/down-arrow-5-svgrepo-com
 //-- CSS Styles
 import styles from "./style.module.css"
 import BasicInput from "../../../../layout/components/form/input/basic.input";
+import { useAppContext } from "../../../../hooks/context";
 
 
 export interface NavBarProps{
@@ -27,14 +28,7 @@ const NavBar: React.FC<NavBarProps> = ({
     className
 }) => {
     const { t } = useTranslation();
-    
-    const [notificationCount, setNotificationCount] = useState<number>(0);
-    const [kpiData, setKpiData] = useState<RecruiterDashboardKpis | null>(null);
-    const [userBasicData, setUserBasicData] = useState<UserBasicData | null>(null);
-
-    useEffect(()=>{
-
-    }, [])
+    const { navbar } = useAppContext();
 
     //-- Text
     const postsTxt = t('userHome.header.leading.open_post', { count: 0 });
@@ -51,9 +45,11 @@ const NavBar: React.FC<NavBarProps> = ({
 
             <div className={styles.leadingSection}>
                 <h1 className={styles.title}>
-                    {t("global.messages.welcome", { name: "Nexus Gaming" })}
+                    {navbar?.title ?? t("global.messages.welcome", { name: "Nexus Gaming" })}
                 </h1>
-                <p className={styles.desc}>{informationTxt}</p>
+                <p className={styles.desc}>
+                    { navbar?.description ?? informationTxt }
+                </p>
             </div>
 
             <div className={styles.actionSection}>

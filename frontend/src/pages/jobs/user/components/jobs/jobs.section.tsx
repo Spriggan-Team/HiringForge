@@ -96,6 +96,7 @@ const configJobStatusColor = {
   },
 };
 
+
 const JobItem: React.FC<JobItemProps> = ({
   id,
   title,

@@ -1,0 +1,44 @@
+.container {
+    color: inherit;
+}
+
+.list {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+}
+
+
+.link {
+    color: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color .2s ease;
+}
+
+.link:hover {
+    color: var(--overlayColor);
+}
+
+
+.current {
+    color: inherit;
+    font-weight: 500;
+    cursor: default;
+}
+
+.separator {
+    margin: 0 5px;
+    user-select: none;
+    opacity: 0.65;
+}

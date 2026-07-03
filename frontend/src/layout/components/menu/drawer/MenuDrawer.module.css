@@ -47,6 +47,10 @@
 /** -- Drawer Body-- **/
 
 .bodyWrapper{
+
+}
+
+.topLeft{
     top: 0;
     right: 0;
     position: absolute;
@@ -55,8 +59,9 @@
     transform: translate(50%, -100%);
 }
 
+
 .body {
-    margin-top: 6px;
+    /* margin-top: 6px; */
     padding: 6px;
 
     border: 2px solid #E2E8F0;

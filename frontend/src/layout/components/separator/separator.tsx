@@ -7,6 +7,7 @@ interface SeparatorProps {
     backgroundColor?: string;
     margin?: string
     className?: string;
+    radius?: string;
 }
 
 
@@ -14,6 +15,7 @@ const Separator: React.FC<SeparatorProps> = ({
     width,
     height,
     margin,
+    radius,
     className,
     orient = "horizontal",
     backgroundColor = "#E5E7EB",
@@ -33,6 +35,7 @@ const Separator: React.FC<SeparatorProps> = ({
                 ["--separator-width" as string]: computedWidth,
                 ["--separator-height" as string]: computedHeight,
                 ["--separator-color" as string]: backgroundColor,
+                ["--separator-border-radius" as string]: radius ?? "999px",
             }}
         />
     );

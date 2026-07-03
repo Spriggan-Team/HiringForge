@@ -6,6 +6,7 @@ import EyeClosedSVG from "/src/assets/svg/toggle/close.eye.svg";
 import EyeOpenSVG from  "/src/assets/svg/toggle/open.eye.svg";
 
 import styles from "./style.module.css";
+import InputLabel from "./input.label";
 
 
 export interface BasicInputProps {
@@ -87,7 +88,7 @@ const BasicInput: React.FC<BasicInputProps> = ({
         <div 
             className={`${styles.container} ${enableFocusWithinDefaultDesign ? styles.inputContainerFocusStyle : ""}`}
         >
-            {label && <label htmlFor={inputName} className={styles.label} >{label}</label>}
+            {label && <InputLabel className={styles.label} label={label}/> }
             <div
                 className={`${styles.inputSection} ${className} ${enableFocusWithinDefaultDesign ? styles.inputSectionFocusStyle : ""}`}
                 style={{ 

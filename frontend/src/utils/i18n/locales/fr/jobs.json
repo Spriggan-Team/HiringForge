@@ -1,5 +1,6 @@
 {
     "jobs":{
+        "jobs": "Jobs",
         "title": "Job title",
         "buttons":{
             "create": "Créer une offre"
@@ -11,6 +12,67 @@
             "searchAddress":{
                 "placeholder": "Rechercher avec une addrèsse ? "
             }
+        },
+
+        "createJob":{
+            "generalInformationSection":{
+                "title": "Information générales",
+                "inputs":{
+                    "offerTitle": {
+                        "label": "Titre du poste",
+                        "placeholder": "Ex: React Frontend Développer"
+                    },
+                    "department": {
+                        "label": "Departement",
+                        "placeholder": "Selectionner un departement"
+                    },
+                    "location":{
+                        "label": "Lieu",
+                        "placeholder": "Ex: Paris, France"
+                    },
+                    "offerType":{
+                        "label": "Type de poste",
+                        "placeholder": "Selectionner un type"
+                    }
+                }
+            },
+
+            "postDescriptionSection":{
+                "title":"Description du poste",
+                "inputs": {
+                    "description":{
+                        "label": "Description détaillé",
+                        "placeholder": "Décrivez les missions, responsabilités et le contexte du poste"
+                    }
+                }
+            },
+
+            "skillSection":{
+                "title":"Compétences requises",
+                "inputs":{
+                    "addSkill": {
+                        "label": "Ajouter des compétences",
+                        "placeholder": "Ex: React, TypeScript, HTML"
+                    }
+                }
+            },
+
+            "salarySection":{
+                "title": "Salaire",
+                "inputs":{
+                    "salary":{
+                        "label": "Fourchettes de renumération",
+                        "minSalary": {
+                            "placeholder": "Salaire minimum"
+                        },
+                        "maxSalary":{
+                            "placeholder": "Salaire maximum"
+                        }
+                    }
+                }
+            }
+
         }
+
     }
 }

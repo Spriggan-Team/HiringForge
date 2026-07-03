@@ -1,0 +1,37 @@
+.container{
+    gap: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.contextBox{
+    gap: 5px;
+    display: flex;
+    max-width: 520px;
+    flex-direction: column;
+}
+
+.contextBox .inputs{
+    gap: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.inputs .input{}
+
+.contextBox .inlineInputs{
+    gap: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.contextBox .inlineInputs .separator{}
+
+/**Editor **/
+.editor{
+    max-height: 200px;
+}
+
+
+/** Menu Drawer **/
+.drawerTrigger{}

@@ -1,3 +1,4 @@
+
 .container {
     display: flex;
     flex-direction: column;
@@ -34,11 +35,11 @@
 }
 
 /* ==========================================================================
-   Le Input Range Personnalisé
+   Custom Input
    ========================================================================== */
 
 .input {
-    -webkit-appearance: none; /* Désactive le look par défaut sur Chrome/Safari */
+    -webkit-appearance: none;
     appearance: none;
     flex: 1;
     height: 100%;
@@ -50,11 +51,11 @@
     outline: none;
 }
 
-/* --- La Piste (Track) --- */
+/* --- Track(Track) --- */
 
 .input::-webkit-slider-runnable-track {
     width: 100%;
-    height: 6px; /* Piste fine plus moderne */
+    height: 6px; 
     background: #e2e8f0; /* Slate 200 */
     border-radius: 999px;
     transition: background 0.2s ease;
@@ -69,26 +70,27 @@
 }
 
 .input:hover::-webkit-slider-runnable-track {
-    background: #cbd5e1; /* Slate 300 au survol complet du slider */
+    background: #cbd5e1; 
 }
 
-/* --- Le Bouton (Thumb) --- */
+/* --- The button (Thumb) --- */
 
 .input::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    margin-top: -5px; /* Aligne le bouton verticalement au centre de la piste ( (6px - 16px) / 2 ) */
+    margin-top: -5px;
     height: 16px;
     width: 16px;
     border-radius: 50%;
+
     background: #3b82f6; /* Blue 500 */
-    border: 2px solid #ffffff; /* Effet de bordure blanche pour le détacher */
+    border: 2px solid #ffffff; 
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1);
     transition: transform 0.1s ease, background-color 0.2s ease;
 }
 
 .input::-moz-range-thumb {
-    height: 12px; /* Ajusté sans le margin-top négatif pour Firefox */
+    height: 12px;
     width: 12px;
     border-radius: 50%;
     background: #3b82f6;
@@ -101,10 +103,10 @@
 
 .input:hover::-webkit-slider-thumb {
     background: #2563eb; /* Blue 600 */
-    transform: scale(1.1); /* Léger grossissement au survol */
+    transform: scale(1.1); 
 }
 
 .input:active::-webkit-slider-thumb {
-    background: #1d4ed8; /* Blue 700 au drag */
+    background: #1d4ed8; 
     transform: scale(1.15);
 }
