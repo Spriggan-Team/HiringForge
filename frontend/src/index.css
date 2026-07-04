@@ -110,6 +110,7 @@ main{
 }
 
 /** Input **/
+
 .input {
   border-radius: 12px;
   background: #e5e7eb;
@@ -120,6 +121,16 @@ main{
 .input:hover {
   background: #d1d5db;
   border-color: #94a3b8;
+}
+
+.input-placeholder::placeholder {
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+.input-like-placeholder {
+    font-size: 14px;
+    color: #9ca3af;
 }
 
 

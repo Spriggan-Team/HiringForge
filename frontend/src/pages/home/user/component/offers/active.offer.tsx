@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+//--Services
+import { activeJobOfferData } from "../../../../../core/mock/job.data";
+
 //-- Custom component
 import SectionHeader from "../../../../../layout/components/sections/sectionHeader/section.header";
 import ViewAllLink from "../../../../../layout/components/link/view.all.link";
 import Gauge from "../../../../../layout/components/progress/gauge/gauge";
 import Title from "../../../../../layout/components/text/title/title";
+import TagList from "../../../../../layout/components/text/tag.list";
 
 //-- SVG Components
 import CandidateSVG from "/src/assets/svg/menu/candidate-for-elections-svgrepo-com.svg"
@@ -17,75 +21,14 @@ import ImagePlaceholder from "/src/assets/images/image-placeholder.png"
 import styles from "./ActiveOffer.module.css"
 
 
-const mockData = [
-    {
-        title: "Développeur Front-End React",
-        image: null,
-        candidates: 24,
-        interviews: 8,
-        tags: ["CDI", "Hybride", "Paris"],
-        treatmentProgress: 0.72,
-        remainingCandidates: 6,
-        delay: "1j",
-    },
-    {
-        title: "UX/UI Designer",
-        image: null,
-        candidates: 17,
-        interviews: 5,
-        tags: ["CDI", "Remote", "Lyon"],
-        treatmentProgress: 0.48,
-        remainingCandidates: 9,
-        delay: "3j",
-    },
-    {
-        title: "Développeur Back-End Node.js",
-        image: null,
-        candidates: 31,
-        interviews: 12,
-        tags: ["CDI", "Hybride", "Bordeaux"],
-        treatmentProgress: 0.81,
-        remainingCandidates: 4,
-        delay: "Aujourd'hui",
-    },
-    {
-        title: "Product Manager",
-        image: null,
-        candidates: 14,
-        interviews: 4,
-        tags: ["CDI", "Paris"],
-        treatmentProgress: 0.36,
-        remainingCandidates: 10,
-        delay: "5j",
-    },
-    {
-        title: "Data Analyst",
-        image: null,
-        candidates: 19,
-        interviews: 6,
-        tags: ["CDD", "Remote", "Nantes"],
-        treatmentProgress: 0.57,
-        remainingCandidates: 5,
-        delay: "2j",
-    },
-    {
-        title: "Ingénieur DevOps",
-        image: null,
-        candidates: 11,
-        interviews: 3,
-        tags: ["CDI", "Télétravail", "Lille"],
-        treatmentProgress: 0.29,
-        remainingCandidates: 8,
-        delay: "6j",
-    },
-];
+
 
 interface ActiveOfferSectionProps{}
 
 
 const ActiveOfferSection: React.FC<ActiveOfferSectionProps> = () => {
     const { t } = useTranslation();
-    const [activeOffer, setActiveOffers] = useState(mockData);
+    const [activeOffer, setActiveOffers] = useState(activeJobOfferData);
 
     return (
         <div className={`${styles.container}`}>
@@ -175,14 +118,7 @@ const ActiveOffer: React.FC<ActiveOfferprops> = ({
             
             {/** TAGS */}
             <div className={styles.tags}>
-                {(tags ?? []).map((item, key)=>(
-                    <span
-                        key={key} 
-                        className={styles.tag}
-                    >
-                        {item}
-                    </span>
-                ))}
+                <TagList tags={tags ?? []} />
             </div>
 
             {/** CARDINALS */}

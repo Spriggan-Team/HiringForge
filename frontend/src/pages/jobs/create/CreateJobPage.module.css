@@ -1,2 +1,5 @@
 
-.container{}
+.container{
+    gap: 25px;
+    display: flex;
+}

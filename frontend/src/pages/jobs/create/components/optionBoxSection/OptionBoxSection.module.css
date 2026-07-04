@@ -1,3 +1,44 @@
 .container{
-    
+    gap: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.card{
+    gap: 15px;
+    display: flex;
+    flex-direction: column;
+    background: #000;
+    width: 290px;
+}
+
+.contentBox{
+    gap: 10px;
+    display: flex;
+    flex-direction: column;   
+}
+
+.checkboxSection{
+    gap: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+/** additionnal options **/
+.inputs{
+    gap: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+/** overview **/
+
+.overview{
+    min-height: 0120px;
+}
+
+/** skills & salary **/
+.pill{
+    gap: 15px;
+    display: flex;
 }

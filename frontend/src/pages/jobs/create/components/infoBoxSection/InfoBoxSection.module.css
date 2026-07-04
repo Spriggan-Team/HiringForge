@@ -17,7 +17,9 @@
     flex-direction: column;
 }
 
+
 .inputs .input{}
+
 
 .contextBox .inlineInputs{
     gap: 5px;
@@ -25,7 +27,49 @@
     align-items: center;
 }
 
+/** Drawer **/
+.drawer{
+    width: 100%;
+    /* background: #000; */
+}
+
+.drawer .activate{
+    color: black;
+}
+
+
+/** Skill inputs **/
+.inputSkillsSection{
+    display: flex;
+    flex-direction: column;
+}
+
+.inputSkillsSection .inputSection{
+    gap: 5px;
+    display: flex;
+}
+
+.inputSkillsSection button{
+    height: "100%";
+    padding: 5px 10px;
+
+    color: #64748B;
+    background: #F1F5F9;
+    
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.skills{
+    gap: 5px;
+    display: flex;
+}
+
+
+/** inline inputs (Salary section) **/
 .contextBox .inlineInputs .separator{}
+
 
 /**Editor **/
 .editor{

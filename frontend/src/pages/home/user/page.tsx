@@ -117,8 +117,8 @@ const UserHome = () => {
                             <RecruitmentPipeline />
                         </div>
 
-                        <Separator height="2px"/>
                         {/** ACTIVE OFFERS */}
+                        <Separator height="2px"/>
                         <ActiveOfferSection />
 
                         {/** CURVES & RECENT ACTIONS */}

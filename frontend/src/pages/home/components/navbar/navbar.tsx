@@ -47,9 +47,16 @@ const NavBar: React.FC<NavBarProps> = ({
                 <h1 className={styles.title}>
                     {navbar?.title ?? t("global.messages.welcome", { name: "Nexus Gaming" })}
                 </h1>
-                <p className={styles.desc}>
-                    { navbar?.description ?? informationTxt }
-                </p>
+                { 
+                    navbar?.description ?
+                     typeof navbar.description === "string" ? 
+                        (
+                            <p className={styles.desc}>{navbar.description}</p>
+                        )
+                        : navbar.description
+                    : informationTxt
+                }
+          
             </div>
 
             <div className={styles.actionSection}>

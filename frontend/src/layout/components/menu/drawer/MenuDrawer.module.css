@@ -1,7 +1,7 @@
 .container {
     display: flex;
-    flex-direction: column;
     position: relative;
+    flex-direction: column;
 }
 
 
@@ -33,10 +33,16 @@
     border-color: #E2E8F0;
 }
 
+.trigger .leading{
+    gap: 15px;
+    display: flex;
+}
+
 .arrow {
     transition: transform .2s ease;
     color: #64748B;
 }
+
 
 /** -- State (open) -- **/
 
@@ -46,8 +52,33 @@
 
 /** -- Drawer Body-- **/
 
-.bodyWrapper{
+.bodyWrapper{}
 
+
+.body {
+    padding: 6px;
+
+    border-radius: 10px;
+    background: white;
+    border: 2px solid #E2E8F0;
+
+
+    gap: 6px;
+    display: flex;
+    flex-direction: column;
+
+    animation: fade .15s ease;
+}
+
+.initial {
+    flex: 1;
+    display: flex;
+    width: 100%;
+    min-height: 0;
+}
+
+.initial .body {
+    flex: 1;
 }
 
 .topLeft{
@@ -59,23 +90,13 @@
     transform: translate(50%, -100%);
 }
 
-
-.body {
-    /* margin-top: 6px; */
-    padding: 6px;
-
-    border: 2px solid #E2E8F0;
-    border-radius: 10px;
-    background: white;
-
-
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-
-    animation: fade .15s ease;
+.absoluteBottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    top: calc(100%);
 }
-
 
 /** -- DrawerItem (selectionable) -- **/
 

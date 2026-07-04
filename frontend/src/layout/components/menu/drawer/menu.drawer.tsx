@@ -1,6 +1,12 @@
 
 
-import { createContext, useContext, useState } from "react";
+import { 
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useState
+} from "react";
 
 //-- SVG- Components
 import DownArrowSVG from "/src/assets/svg/arrows/down-arrow-5-svgrepo-com.svg"
@@ -93,8 +99,12 @@ interface MenuDrawerTriggerProps {
     displayArrowDown?: boolean;
     applyDefaultStyle?: boolean;
 
-    children:  (selected: any) => React.ReactNode | React.ReactNode;
+    children:
+        | React.ReactNode
+        | ((selected: any) => React.ReactNode);
+    leading?:  React.ReactNode;
 }
+
 
 export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
     style,
@@ -104,6 +114,7 @@ export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
     applyDefaultStyle= true,
     
     children,
+    leading: Leading,
 }) => {
     const { isOpen, toggle, selected } = useDrawer();
 
@@ -122,16 +133,18 @@ export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
                         : children
                 }
             </span>
-            {
-                displayArrowDown && (
-                    <DownArrowSVG
-                        width={14}
-                        height={14}
-                        className={`${styles.arrow} ${isOpen ? styles.open : ""}`}
-                    />
-                )
-            }
-
+            <div className={styles.leading}>
+                {Leading && Leading}
+                {
+                    displayArrowDown && (
+                        <DownArrowSVG
+                            width={14}
+                            height={14}
+                            className={`${styles.arrow} ${isOpen ? styles.open : ""}`}
+                        />
+                    )
+                }
+            </div>
         </button>
     );
 };
@@ -142,17 +155,21 @@ export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
 
 interface MenuDrawerBodyProps {
     className?: string;
+
     children: React.ReactNode;
+    applyDefaultStyle?: boolean;
     
     style?: React.CSSProperties,
-    position?: "top-right" |  "initial"
+    position?: "top-right" | "initial-absolute" | "initial"
 }
 
 
 export const MenuDrawerBody: React.FC<MenuDrawerBodyProps> = ({
     children,
-    className, 
+    
     style,
+    className,
+    applyDefaultStyle = true, 
     position = "top-right"
 }) => {
     const { isOpen } = useDrawer();
@@ -161,11 +178,19 @@ export const MenuDrawerBody: React.FC<MenuDrawerBodyProps> = ({
 
     return (
         <div 
-            className={`${styles.bodyWrapper} ${position === "top-right" ? styles.topLeft : ""}`}
+            className={`
+                ${applyDefaultStyle ? styles.bodyWrapper : ""} 
+                ${position === "top-right" ? 
+                        styles.topLeft 
+                        : position == "initial-absolute"
+                            ? styles.absoluteBottom
+                            : styles.initial
+                }
+            `}
         >
             <div 
                 style={style}
-                className={`${styles.body} ${className}`}
+                className={`${applyDefaultStyle ? styles.body : ""} ${className}`}
             >
                 {children}
             </div>
@@ -180,34 +205,60 @@ export const MenuDrawerBody: React.FC<MenuDrawerBodyProps> = ({
 
 interface MenuDrawerItemProps {
     className?: string;
+    applyDefaultStyle?: boolean;
     style?: React.CSSProperties,
 
     value: any;
     children: React.ReactNode;
+
+    onClick?: (e: React.MouseEvent)=>void;     //-- helps detect click ( e.g: it is used for define custom behaviour )
+    selectionStateTriggerer?: boolean;  //-- determine how an drawer item should be selected when its default behaviour is disable
+    disableDefaultBehaviour?: boolean; //-- disabling default drawer item behaviour means desactivating selection on click
 }
 
-export const MenuDrawerItem: React.FC<MenuDrawerItemProps> = ({
-    className,
-    style,
 
+export const MenuDrawerItem: React.FC<MenuDrawerItemProps> = ({
+    style,
+    className,
+    applyDefaultStyle = true,
     value,
     children,
+    onClick,
+    selectionStateTriggerer,
+    disableDefaultBehaviour = false,
 }) => {
     const { setSelected, setIsOpen } = useDrawer();
+
+    const handleSelect = useCallback((e?: React.MouseEvent) => {
+        if (!disableDefaultBehaviour) {
+            setSelected(value);
+            setIsOpen(false);
+        }
+
+        onClick?.(e as any);
+    }, [disableDefaultBehaviour, setSelected, setIsOpen, value, onClick]);
+
+    useEffect(() => {
+        if (selectionStateTriggerer) {
+            handleSelect();
+        }
+    }, [selectionStateTriggerer, handleSelect]);
 
     return (
         <div
             style={style}
-            className={`${styles.item} ${className}`}
-            onClick={() => {
-                setSelected(value);
-                setIsOpen(false);
-            }}
+            className={`
+                ${className}
+                ${applyDefaultStyle ? styles.item : ""}
+            `}
+            onClick={handleSelect}
         >
             {children}
         </div>
     );
 };
+
+
 
 /**-- MenuDrawerInput -- */
 
@@ -218,6 +269,7 @@ interface MenuDrawerInputProps {
     className?: string;
     style?: React.CSSProperties,
 }
+
 
 export const MenuDrawerInput: React.FC<MenuDrawerInputProps> = ({
     placeholder,

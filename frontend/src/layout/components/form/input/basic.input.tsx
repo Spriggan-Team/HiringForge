@@ -4,13 +4,13 @@ import React, { useRef, useState } from "react";
 import PasswordSVG from '/src/assets/svg/security/password-svgrepo-com.svg';
 import EyeClosedSVG from "/src/assets/svg/toggle/close.eye.svg";
 import EyeOpenSVG from  "/src/assets/svg/toggle/open.eye.svg";
-
-import styles from "./style.module.css";
 import InputLabel from "./input.label";
+
+import styles from "./BasicInput.module.css";
 
 
 export interface BasicInputProps {
-    value?:string;
+    value?: any;
     label?: string;
     inputName?: string;
 
@@ -20,7 +20,7 @@ export interface BasicInputProps {
     backgroundColor?: string;
     borderRadius?: number | string;
     
-    type?: "text" | "password";
+    type?: "text" | "password" | string;
     textColor?: string;
     required?: boolean;
     extraInputProps?: React.HTMLAttributes<HTMLInputElement>
@@ -105,7 +105,7 @@ const BasicInput: React.FC<BasicInputProps> = ({
                     name={inputName}
                     type={currentType}
                     placeholder={placeholder ? placeholder : type === "password" ? "••••••••" : ""}
-                    className={styles.input}
+                    className={`${styles.input} input-placeholder`}
                     onChange={onChange}
                     onFocus={onFocus}
                     onBlur={onBlur}

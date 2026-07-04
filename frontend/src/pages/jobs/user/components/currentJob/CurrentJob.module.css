@@ -107,27 +107,7 @@
   color: #0f172a;
 }
 
-/* =====================
-   CATEGORIES
-===================== */
 
-
-.categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-
-.category {
-  padding: 5px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  border-radius: 999px;
-  background: #eef2ff;
-  color: #4338ca;
-  border: 1px solid #e0e7ff;
-}
 
 /* =====================
    CONTENT SCROLLABLE

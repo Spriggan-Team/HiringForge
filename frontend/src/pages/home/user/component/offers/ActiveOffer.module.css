@@ -47,30 +47,7 @@
     object-fit: cover;
 }
 
-.item .tags {
-    gap: 16px;
-    display: flex;
-    align-items: center;
-}
 
-.tags > .tag {
-    color: #64748B;
-    font-size: 0.875rem;
-    position: relative;
-}
-
-/* Tags */
-.tags > .tag + .tag::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: -9px;
-    width: 4px;
-    height: 4px;
-    background: #94A3B8;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-}
 
 /* Cardinal */
 .cardinal {

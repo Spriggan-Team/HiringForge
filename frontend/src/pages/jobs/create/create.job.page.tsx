@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 //--Custom Comoponents
@@ -15,8 +15,11 @@ import RouteScheme from "../../../route.scheme";
 
 //-- CSS Styles
 import styles from "./CreateJobPage.module.css"
+import JobContextProvider from "../../../context/job.context";
 
 
+
+/** -- Page Components: CreateJobPage -- */
 
 interface CreateJobPageProps{}
 
@@ -46,15 +49,17 @@ const CreateJobPage: React.FC<CreateJobPageProps> = () => {
     },[setNavbar])
     
     return (
-        <main className={styles.container}>
-            <div className={styles.mainInfoBox}>
-                <InfoBoxSection />
-            </div>
+        <JobContextProvider>
+            <main className={styles.container}>
+                {/* <div className={styles.mainInfoBox}>
+                    <InfoBoxSection />
+                </div>
 
-            <div className={styles.paramBox}>
-                <OptionBoxSection />
-            </div>
-        </main>
+                <div className={styles.paramBox}>
+                    <OptionBoxSection />
+                </div> */}
+            </main>
+        </JobContextProvider>
     );
 }
 

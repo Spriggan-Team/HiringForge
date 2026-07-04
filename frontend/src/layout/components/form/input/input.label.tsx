@@ -3,18 +3,24 @@
 import styles from "./InputLabel.module.css"
 
 interface InputLabelProps{
-    label: string;
+    label?: string;
     inputName?: string;
     className?: string;
+
+    children?: React.ReactNode
 }
 
 const InputLabel: React.FC<InputLabelProps> = ({
     label,
     inputName,
-    className
+    className,
+    children
 }) => {
+    if(!label && !children)
+        return null;
+
     return (
-        <label htmlFor={inputName} className={`${styles.label} ${className}`} >{label}</label>
+        <label htmlFor={inputName} className={`${styles.label} ${className}`} >{label ? label : children ?? ""}</label>
     );
 }
  

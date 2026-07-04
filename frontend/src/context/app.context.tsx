@@ -2,7 +2,7 @@ import {
     useState,
     createContext,
 } from "react";
-import type { AppLoadingState, AppPopUpSettings, UserAppNavBarProps } from "./app.context.type";
+import type { AppLoadingState, AppPopUpSettings, UserAppNavBarProps } from "./context.type";
 
 
 interface AppContextProps{

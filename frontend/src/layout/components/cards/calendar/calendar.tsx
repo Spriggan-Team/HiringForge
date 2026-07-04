@@ -7,6 +7,7 @@ import React, {
     useState,
 } from "react";
 
+
 import {
     addMonths,
     eachDayOfInterval,
@@ -21,10 +22,9 @@ import {
     subMonths,
 } from "date-fns";
 
+
+//-- CSS modules
 import styles from "./Calendar.module.css";
-
-
-// Context — exposes selected date and confirm/cancel functions to children
 
 
 interface CalendarContextValue {
@@ -34,7 +34,9 @@ interface CalendarContextValue {
     cancel:       () => void;        // parent calls this to reject the selection
 }
 
+
 const CalendarContext = createContext<CalendarContextValue | null>(null);
+
 
 
 export const useCalendarContext = () => {
@@ -49,6 +51,8 @@ export const useCalendarContext = () => {
 
 interface CalendarProps {
     width?: string;
+
+    defaultSelectedDate?: Date | null; //-- default value
     validate?:        (date: Date) => boolean;
     onDateChange?:    (date: Date) => void;
     // children = context popover 
@@ -61,15 +65,18 @@ interface CalendarProps {
 
 const Calendar: React.FC<CalendarProps> = ({
     width,
+    
     validate,
     onDateChange,
+    defaultSelectedDate= null,
+
     children,
     className,
 }) => {
     const today = startOfToday();
 
-    const [currentMonth, setCurrentMonth] = useState(today);
-    const [selectedDate, setSelectedDate] = useState<Date | null>(today);
+    const [currentMonth, setCurrentMonth] = useState(defaultSelectedDate ?? today);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(defaultSelectedDate ?? today);
 
     // pendingDate  (the date the user just clicked, before confirmation)
     const [pendingDate,  setPendingDate]  = useState<Date | null>(null);

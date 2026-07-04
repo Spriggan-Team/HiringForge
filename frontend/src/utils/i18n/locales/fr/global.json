@@ -24,6 +24,10 @@
             "error": "Une erreur inattendue est survenue"
         },
 
+        "text":{
+            "fork": "Fourchette"
+        },
+
         "menu":{
             "home": "Acceuil",
             "poste": "Postes",
@@ -40,7 +44,12 @@
             "today": "Aujourd'hui",
             "calendar": "Calendrier",
             "thisWeek": "Cette semaine",
-            "lastWeek": "La semaine dernière"
+            "lastWeek": "La semaine dernière",
+            "inputs":{
+                "selectCalandarDate":{
+                    "placeholder": "Aucune"
+                }
+            }
         },
         "duration":{
             "publishSince": "Publié il y a {{time}}"
@@ -48,6 +57,10 @@
 
         "link":{
             "viewAll": "Voir tout"
+        },
+
+        "buttons":{
+            "add": "Ajouter"
         },
 
         "candidate": {
@@ -97,6 +110,17 @@
                 "title": "Statut de l'offre",
                 "active": "Active",
                 "pending": "En cours"
+            },
+            "visibilityStatus":{
+                "title": "Visibilité",
+                "publish":{
+                    "title": "Public",
+                    "desc": "Visible par tout les candidats"
+                },
+                "private":{
+                    "title": "Privé",
+                    "desc": "Visible uniquement sur invitation"
+                }
             }
         },
         "salary":{

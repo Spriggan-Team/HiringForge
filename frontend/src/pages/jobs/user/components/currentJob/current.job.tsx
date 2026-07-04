@@ -2,7 +2,6 @@
 import { useTranslation } from "react-i18next";
 
 //-- Services
-import { jobsViewData } from "../../../../../core/mock/job.data";
 import type { JobView } from "../../../../../features/jobs/JobOffer";
 
 //--Custom Components
@@ -16,6 +15,7 @@ import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-s
 
 //-- Styles CSS
 import styles from "./CurrentJob.module.css"
+import JobSkill from "../skills/job.skill";
 
 
 interface CurrentJobProps{
@@ -78,10 +78,10 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
                                 <span className={styles.metaLabel}>{t("global.salary.title")}</span>
                                 <span className={styles.metaValue}>
                                     {job.salary?.min && job.salary.max 
-                                        ? `${job.devise} ${job.salary.min} - ${job.devise} ${job.salary.max}` 
+                                        ? `${job.salary.devise} ${job.salary.min} - ${job.salary.devise} ${job.salary.max}` 
                                         : job.salary?.min ?
-                                            `min: ${job.devise}${job.salary.min}`
-                                            : job.salary.max && `max: ${job.devise}${job.salary?.max}`
+                                            `min: ${job.salary.devise}${job.salary.min}`
+                                            : job.salary.max && `max: ${job.salary.devise}${job.salary?.max}`
                                     }
                                 </span>
                             </div>
@@ -108,9 +108,9 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
                 </div>
 
                 {/* CATEGORIES */}
-                <div className={styles.categories}>
-                    {job.categories.map((cat) => (
-                        <JobCatItem key={cat} content={cat} />
+                <div className={styles.skills}>
+                    {job.skills?.map((skill, index) => (
+                        <JobSkill key={index} content={skill} />
                     ))}
                 </div>
             </div>
@@ -139,22 +139,3 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
 export default CurrentJob;
 
 
-
-/** Job Category */
-
-interface JobCatItemProps{
-    content: string;
-    bgColor?: "#64748B"
-}
-
-const JobCatItem: React.FC<JobCatItemProps> = ({
-    content,
-    bgColor
-}) => {
-    return (
-        <div className={styles.category}>
-            {content}
-        </div>
-    );
-}
- 

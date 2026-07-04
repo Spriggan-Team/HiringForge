@@ -7,7 +7,9 @@ import styles from "./CheckBoxInput.module.css";
 
 
 interface CheckBoxInputProps {
-    text: string;
+    text?: string;
+    desc?: string;
+    children?:string;
 
     value?: string;
     checked?: boolean;
@@ -15,6 +17,8 @@ interface CheckBoxInputProps {
     id?: string;
     inputName?: string;
     className?: string;
+    indicatorClassName?: string;
+    borderRadius?: string;
 
     disabled?: boolean;
     onChange?: (checked: boolean) => void;
@@ -24,11 +28,17 @@ interface CheckBoxInputProps {
 const CheckBoxInput: React.FC<CheckBoxInputProps> = ({
     id,
     text,
+    children,
+    desc,
+
     value,
     checked,
     inputName,
     className,
+    indicatorClassName,
+
     disabled = false,
+    borderRadius,
     onChange,
 }) => {
 
@@ -41,16 +51,21 @@ const CheckBoxInput: React.FC<CheckBoxInputProps> = ({
         >
             <input
                 id={inputId}
-                className={styles.input}
                 type="checkbox"
-                name={inputName ?? inputId}
                 value={value}
                 checked={checked}
                 disabled={disabled}
+                className={styles.input}
+                name={inputName ?? inputId}
                 onChange={(e) => onChange?.(e.target.checked)}
             />
 
-            <span className={styles.box}>
+            <span
+                style={{
+                    borderRadius: borderRadius ?? "6px",
+                }}
+                className={`${styles.box} ${indicatorClassName}`}
+            >
                 <svg
                     viewBox="0 0 24 24"
                     className={styles.icon}
@@ -66,9 +81,23 @@ const CheckBoxInput: React.FC<CheckBoxInputProps> = ({
                 </svg>
             </span>
 
-            <span className={styles.label}>
-                {text}
-            </span>
+            <div>
+                {children && (children)}
+                {
+                    text && (
+                        <span className={styles.label}>
+                            {text}
+                        </span>
+                    )
+                }
+                {
+                    desc && (
+                        <span className={styles.desc}>
+                            {desc}
+                        </span>
+                    )
+                }
+            </div>
         </label>
     );
 };
