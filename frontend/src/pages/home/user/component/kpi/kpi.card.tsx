@@ -16,6 +16,7 @@ interface KpiCardPrps{
     title?:string;
     children?: React.ReactNode,
     svg?: React.FC<React.SVGProps<SVGSVGElement>>;
+    svgStyle?: React.CSSProperties
 }
 
 
@@ -47,6 +48,7 @@ const KpiCard: React.FC<KpiCardPrps> = ({
     displayCurve = false,
     children = <></>,
     className,
+    svgStyle,
     iconBgColor = "#0155fe6c",
 }) => {
     const {t} = useTranslation()
@@ -67,7 +69,7 @@ const KpiCard: React.FC<KpiCardPrps> = ({
                                     ['--icon-bg-color' as string]: iconBgColor,
                                 }}
                             >
-                                <Icon width={25} height={25} />
+                                <Icon style={svgStyle} width={25} height={25} />
                             </div>
                         )
                     }

@@ -4,17 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 //-- Services
-import { navigateTo } from "../../../App";
-import RouteScheme from "../../../route.scheme";
-import { jobsData, jobsViewData } from "../../../core/mock/job.data";
+import { navigateTo } from "../../App";
+import RouteScheme from "../../route.scheme";
+import { jobsData, jobsViewData } from "../../core/mock/job.data";
 
 
 //-- Custom Components
-import CurrentJob from "./components/currentJob/current.job";
-import JobsSection from "./components/jobs/jobs.section";
-import BasicInput from "../../../layout/components/form/input/basic.input";
-import BrandButton from "../../../layout/components/buttons/brand.button";
-import JobMapFilters from "./components/filters/job.map.filter";
+import CurrentJob from "./user/components/currentJob/current.job";
+import JobsSection from "./user/components/jobs/jobs.section";
+import BasicInput from "../../layout/components/form/input/basic.input";
+import BrandButton from "../../layout/components/buttons/brand.button";
+import JobMapFilters from "./user/components/filters/job.map.filter";
 
 
 //-- SVG components
@@ -24,7 +24,6 @@ import AddSVGComponent from "/src/assets/svg/add/add-svgrepo-com.svg"
 
 //-- CSS styles 
 import styles from "./UserJobPage.module.css"
-
 
 
 
@@ -82,7 +81,9 @@ const UserJobsPage: React.FC<UserJobsPageProps> = ({}) => {
 
                 <div className={styles.selectedJob}>
                     <CurrentJob 
-                        onClick={(id)=> navigateTo(navigate, RouteScheme.userJobView)}
+                        onClick={(id)=> 
+                            navigateTo(navigate, RouteScheme.userJobView, { params: { id }})
+                        }
                         job={jobsViewData[currentJobId]}
                     />
                 </div>

@@ -37,14 +37,26 @@ const JobsSection: React.FC<JobsSectionProps> = ({
   return (
     <div className={`${styles.container} ${className}`}>
         <div className={styles.header}>
-            <div className={styles.leading} />
+            {/** HIDDEN OPTIONS MANAGER */}
+            <div className={styles.options}>
+
+            </div>
             
-            {/**Hint */}
-            <span className={styles.hint}>{t("global.candidate.candidateLabel_one")}</span>
-            <span className={styles.hint}>{t("global.interview.interviewLabel_one")}</span>
-            <span className={styles.hint}>{t("global.offer.offerLabel_one")}</span>
-            <span className={styles.hint}>{t("global.hired.hiredLabel_one")}</span>
+            {/** HINTS SECTION */}
+            <div
+              className={styles.hintsSection}
+            >
+                <div className={styles.leading} />
+            
+                {/**Hint */}
+                <span className={styles.hint}>{t("global.candidate.candidateLabel_one")}</span>
+                <span className={styles.hint}>{t("global.interview.interviewLabel_one")}</span>
+                <span className={styles.hint}>{t("global.offer.offerLabel_one")}</span>
+                <span className={styles.hint}>{t("global.hired.hiredLabel_one")}</span>
+            </div>
         </div>
+
+        {/** JOB ITEMS */}
         <div className={styles.itemsWrapper}>
             <div className={`${styles.items} scrollbar`}>
               <SelectionContainer

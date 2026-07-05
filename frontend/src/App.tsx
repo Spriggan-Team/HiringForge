@@ -19,9 +19,9 @@ import RegisterationEntry from './pages/Register/register/page'
 import CandidateRegister from './pages/Register/candidate/candidate.register'
 import DirectorRegister from './pages/Register/director/director.register'
 import UserHome from './pages/home/user/page'
-import UserJobsPage from './pages/jobs/user/page'
-import UserPageSinglePage from './pages/jobs/user/single/page'
+import UserJobsPage from './pages/jobs/page'
 import CreateJobPage from './pages/jobs/create/create.job.page'
+import PrivateJobViewPage from './pages/jobs/view/page'
 
 
 
@@ -42,12 +42,20 @@ function App() {
                     <Route path={RouteScheme.candidateRegister} element={<CandidateRegister />} />
                     <Route path={RouteScheme.directorRegister}  element={<DirectorRegister />} />
 
-                    { /** Dashboard */  }
-                    <Route element={<UserAppLayout />}>
-                      <Route path={RouteScheme.userHome} element={<UserHome />} />
-                      <Route path={RouteScheme.userJobs} element={<UserJobsPage />} />
-                      <Route path={RouteScheme.userJobView} element={<UserPageSinglePage />}/>
-                      <Route path={RouteScheme.createJob} element={<CreateJobPage /> }/>
+                    {/** PROTECTED ROUTES (AUTHENTIFICATION REQUIRED) */}
+                    <Route 
+                      element={<AuthAccessGranted />}
+                    >
+                      <Route element={<UserAppLayout />}>
+                        { /** Dashboard */  }
+                        <Route path={RouteScheme.userHome} element={<UserHome />} />
+                        { /** JOBS VIEWS */  }
+                        <Route path={RouteScheme.userJobs} element={<UserJobsPage />} />
+                        { /** SINGLE JOB VIEW */  }
+                        <Route path={RouteScheme.userJobView} element={<PrivateJobViewPage />}/>
+                        { /** CREATE JOB  */  }
+                        <Route path={RouteScheme.createJob} element={<CreateJobPage /> }/>
+                      </Route>
                     </Route>
 
                   </Routes>
@@ -59,6 +67,7 @@ function App() {
 }
 
 export default App
+
 
 
 const UserAppLayout = () => {
@@ -73,9 +82,19 @@ const UserAppLayout = () => {
   );
 }
 
+const AuthAccessGranted = ()=>{
+  return (
+      <EntryPage>
+        <Outlet />
+      </EntryPage>
+  );
+}
+
 
 
 type NavigateFn = (path: string, params?: any) => void;
+
+
 
 interface NavigateOptions {
   params?: Record<string, any>;
@@ -94,8 +113,21 @@ export const navigateTo = (
     persistMenu = true,
   } = options;
 
-  navigate(route, params);
+  let finalRoute = route;
 
+  /** Safe Replace   */
+  if (params) {
+    for (const [key, value] of Object.entries(params)) {
+      finalRoute = finalRoute.replaceAll(
+        `:${key}`,
+        encodeURIComponent(String(value))
+      );
+    }
+  }
+
+  navigate(finalRoute);
+
+  /** Persist menu state */
   if (persistMenu && menuId) {
     localStorage.setItem("menu", menuId);
   }

@@ -91,6 +91,7 @@ const UserHome = () => {
                         trendLabel={t("global.dates.today")}
                         title={t("userHome.kpi.interviews")}
                         iconBgColor="#f0e8fd"
+                        svgStyle={{ color: "#cdaaec" }}
                     >
                         <KpiCount count="4" />
                     </KpiCard>

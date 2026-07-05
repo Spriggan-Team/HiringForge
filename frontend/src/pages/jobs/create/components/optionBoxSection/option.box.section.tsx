@@ -160,7 +160,7 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
                 <div className={styles.contentBox}>
                     <Title title={t("jobs.createJob.additionnalOpstions.title")} />
                     <div className={styles.inputs}>
-                        {/**EXPERTISE LEVEL */}
+                        {/** EXPERTISE LEVEL */}
                         <BasicInput
                             {...globalBasicInputInput}
                             label={t("jobs.createJob.additionnalOpstions.inputs.expertiseLevel.label")}
