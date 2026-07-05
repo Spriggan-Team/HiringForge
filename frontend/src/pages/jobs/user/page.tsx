@@ -81,7 +81,10 @@ const UserJobsPage: React.FC<UserJobsPageProps> = ({}) => {
                 </div>
 
                 <div className={styles.selectedJob}>
-                    <CurrentJob job={jobsViewData[currentJobId]} />
+                    <CurrentJob 
+                        onClick={(id)=> navigateTo(navigate, RouteScheme.userJobView)}
+                        job={jobsViewData[currentJobId]}
+                    />
                 </div>
             </div>
             

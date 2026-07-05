@@ -13,16 +13,20 @@ interface ImageInputProps {
   inputName?: string;
   subtitle?: string;
   maxSize?: number;
+
   defaultFile?: File | null;
   onChange?: (file: File) => void;
+  className?: string 
 }
 
 
 const ImageInput: React.FC<ImageInputProps> = ({
   onChange,
-  inputName,
   maxSize,
+  inputName,
   defaultFile = null,
+
+  className,
   title = "Sélectionner une image",
   subtitle = "Cliquez ici pour choisir un fichier",
 }) => {
@@ -93,7 +97,7 @@ const ImageInput: React.FC<ImageInputProps> = ({
   };
 
   return (
-    <div className={styles.wrapper}>
+    <div className={`${styles.wrapper} ${className}`}>
       <input
         type="file"
         ref={inputRef}

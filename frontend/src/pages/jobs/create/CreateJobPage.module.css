@@ -3,3 +3,61 @@
     gap: 25px;
     display: flex;
 }
+
+
+/** CONTENT **/
+
+.container .content{
+    gap: 15px;
+    display: flex;
+}
+
+.content .columns{
+    display: flex;
+    gap: 10px;
+}
+
+.side {
+    position: sticky;
+    top: var(--space-page);
+
+    display: flex;
+    justify-content: center;
+}
+
+.backButton {
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface);
+
+    cursor: pointer;
+
+    box-shadow: var(--shadow);
+    transition: 0.15s ease;
+}
+
+.backButton:hover {
+    transform: translateX(-2px);
+    background: var(--bg);
+}
+
+
+/** IMAGE **/
+
+.button{
+    height: fit-content;
+    width: fit-content;
+}
+
+.image{
+    width: 420px;
+    height: fit-content;
+}
+

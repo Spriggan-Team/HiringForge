@@ -26,6 +26,9 @@ const JobSkill: React.FC<SkillProps> = ({
 
     svgHoverBackgroundColor
 }) => {
+    if(!content)
+        return null;
+    
     return (
         <div
             style={{

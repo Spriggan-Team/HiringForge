@@ -203,7 +203,7 @@ export const jobsData: JobSummary[] = [
 ];
 
 
-export const jobsViewData: Record<string, JobView> = { // id, JobViews
+export const jobsViewData: any = { // id, JobViews
   "1": {
     id: "1",
     title: "Développeur Front-end React",

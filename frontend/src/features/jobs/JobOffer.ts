@@ -58,8 +58,9 @@ export interface PublicJobView {
 
 
 
-interface JobLanguage {
-    languageCode: string; //-- Code iso
+export interface JobLanguage {
+    code: string; //-- Code iso
+    nativeLabel: string;
     proficiencyLevel: LanguageLevel;
 }
 
@@ -89,8 +90,11 @@ export interface RecruiterJobView {
     activityStatus: JobActivityStatus;
     publicationStatus: JobPublicationStatus;
 
+    visibilityStatus: visibilityStatus;
+
     views: number;
     applications: number;
+    expertise?: ExpertiseLevel;
 }
 
 
@@ -106,13 +110,27 @@ type JobWorkMode = "remote" | "onsite" | "hybrid";
 export type JobStatus = JobPublicationStatus | JobActivityStatus;
 export type JobPublicationStatus = "draft" | "closed" | "published";
 export type JobActivityStatus = "active" | "pending";
+export type visibilityStatus = "private" | "public"
 
-export type LanguageLevel =
-    | "beginner"
-    | "intermediate"
-    | "advanced"
-    | "fluent"
-    | "native";
+
+type ExpertiseLevel =
+    | "intern"
+    | "junior"
+    | "mid"
+    | "confirmed"
+    | "senior"
+    | "lead"
+    | "staff"
+    | "principal";
+
+export type LanguageLevel =  
+    | 'A1' 
+    | 'A2' 
+    | 'B1' 
+    | 'B2' 
+    | 'C1' 
+    | 'C2' 
+    | 'native'
 
 
 /**
@@ -160,7 +178,14 @@ export const INITIAL_JOB_VIEW: PublicJobView & RecruiterJobView = {
     /** RecruiterJobView */
     activityStatus: "pending",
     publicationStatus: "draft",
+    visibilityStatus: "public",
 
     views: 0,
     applications: 0,
 };
+
+
+export const LANGUAGES_LEVEL_VALUES = [
+    'A1', 'A2','B1' , 'B2' , 'C1',
+    'C2' , 'native'
+] as const;

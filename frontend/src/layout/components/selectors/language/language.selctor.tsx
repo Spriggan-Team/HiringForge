@@ -4,7 +4,7 @@ import { useState } from 'react';
 import BrowserSVG from '/src/assets/svg/net/internet-svgrepo-com.svg';
 import DownArrowSVG from '/src/assets/svg/arrows/down-arrow-5-svgrepo-com.svg';
 
-import styles from "./style.css.module.css"
+import styles from "./LanguageSelector.module.css"
 
 const LanguageSelector = () => {
     const [language, setLanguage] = useState("Français");

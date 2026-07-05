@@ -86,7 +86,7 @@ const JobMapFilters: React.FC<JobFilterWithMapProps> = ({
                             />
                             <CheckBoxInput
                                 checked={publishedState.published}
-                                text={t("global.jobs.publicationState.publish")}
+                                text={t("global.jobs.publicationState.published")}
                                 onChange={(value) => {
                                     const newState = { ...publishedState, draft: value };
 

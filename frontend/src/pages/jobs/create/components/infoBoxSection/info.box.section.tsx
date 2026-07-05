@@ -9,7 +9,7 @@ import Title from "../../../../../layout/components/text/title/title";
 import InputLabel from "../../../../../layout/components/form/input/input.label";
 import TipTapEditor from "../../../../../layout/components/editors/tiptap/tiptap.editor";
 import Separator from "../../../../../layout/components/separator/separator";
-import BasicInput, { type BasicInputProps } from "../../../../../layout/components/form/input/basic.input";
+import BasicInput, { globalBasicInputInput, type BasicInputProps } from "../../../../../layout/components/form/input/basic.input";
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../../layout/components/menu/drawer/menu.drawer";
 import JobSkill from "../../../user/components/skills/job.skill";
 
@@ -18,41 +18,40 @@ import styles from "./InfoBoxSection.module.css"
 
 
 
-interface InfoBoxSectionProps{}
+interface InfoBoxSectionProps{
 
-
-const globalBasicInputInput: BasicInputProps = {
-    width: "100%",
-    backgroundColor: "#FFFFFF",
-    className: `${styles.input} card-border`,
 }
 
 
-
 const InfoBoxSection: React.FC<InfoBoxSectionProps> = ({
-
 }) => {
     /** i18n */
     const { t } = useTranslation();
-    
+
     /**-- Context --*/
     const { currentJob, setCurrentJob } = useJob();
-
+    
+    /** location string (!important) */
     const [location, setLocation] = useState<string>("");
+
     const [skillInput, setSkillInput] = useState<string>("");
-    const [jobContratType, setJobContractType] =useState<string[]>([]);
+    const [jobContratType, setJobContractType] =useState<string[]>(["CDI", "Stage"]);
     const [deviseCollecttion, setDeviseCollection] = useState<string[]>(["CAD", "USD", "EUR"]);
 
+    useEffect(()=>{
 
+    }, [])
 
     /**Render */
     return (
         <div className={styles.container}>
+
             {/** GENERALES INFOS SECTION */}
             <div className={`${styles.contextBox} card`}>
                 <Title 
                     title={t("jobs.createJob.generalInformationSection.title")}
                 />
+
                 <div className={styles.inputs}>
                     <BasicInput
                         {...globalBasicInputInput}
@@ -75,9 +74,11 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = ({
                             <MenuDrawerTrigger
                             {...globalBasicInputInput}
                             className={`${globalBasicInputInput.className} input-like-placeholder`}
-                            >
+                        >
                                 {(selected) => (
-                                    <span>{selected ?? t("jobs.createJob.generalInformationSection.drawers.department.placeholder")}</span>
+                                    <span className={`${selected ? styles.activate : ""}`}>
+                                        {selected ?? t("jobs.createJob.generalInformationSection.drawers.department.placeholder")}
+                                    </span>
                                 )}
                             </MenuDrawerTrigger>
                             <MenuDrawerBody
@@ -94,29 +95,40 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = ({
                         <BasicInput
                             value={location}
                             {...globalBasicInputInput}
-                            onChange={(event)=> setLocation(event.target.value)}
+                            onChange={(event)=> {
+                                const address = event.target.value;
+                                const [street, city = undefined , country = undefined ] = address.split(",")
+                                setCurrentJob((prev)=>({
+                                    ...prev,
+                                    location:{
+                                        street, country, city
+                                    }
+                                }))
+                                setLocation(address);
+                            }}
                             label={t("jobs.createJob.generalInformationSection.inputs.location.label")}
                             placeholder={t("jobs.createJob.generalInformationSection.inputs.location.placeholder")}
                         />
 
                         <div className={styles.drawer}>
                             <InputLabel label={t("jobs.createJob.generalInformationSection.inputs.offerType.label")} />
-                            <MenuDrawer>
+                            <MenuDrawer
+                                onChange={(value)=>{
+                                    if(value)
+                                        setCurrentJob((prev)=>{
+                                            return ({...prev, contract: value})
+                                        })
+                                }}
+                            >
                                 <MenuDrawerTrigger
-                                {...globalBasicInputInput}
-                                className={`${globalBasicInputInput.className} input-like-placeholder`}
+                                    {...globalBasicInputInput}
+                                    className={`${globalBasicInputInput.className} input-like-placeholder`}
                                 >
-                                    {(selected) =>{
-                                        if(selected)
-                                            setCurrentJob((prev)=>{
-                                                return ({...prev, contract: selected})
-                                            })
-                                        return (
+                                    {(selected) =>(
                                             <span className={`${selected ? styles.activate : ""}`}>
                                                 {selected ?? t("jobs.createJob.generalInformationSection.inputs.offerType.placeholder")}
                                             </span>
-                                        );
-                                    }}
+                                    )}
                                 </MenuDrawerTrigger>
                                 <MenuDrawerBody
                                     position="initial-absolute"
@@ -133,6 +145,7 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = ({
                     </div>
                 </div>
             </div>
+
 
             {/** DESCRIPTION SECTION */}
             <div className={`${styles.contextBox}  card`}>
@@ -256,12 +269,15 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = ({
                             }}
                             placeholder={t("jobs.createJob.salarySection.inputs.salary.minSalary.placeholder")}
                         />
-                        <MenuDrawer>
-                            <MenuDrawerTrigger className={`${styles.drawerTrigger} card-border`}>
-                                {(value)=> {
-                                    setCurrentJob((prev)=>({...prev, salary:{ devise: value}}))
-                                    return (<span>{value ?? "EUR"}</span>)
-                                }}
+                        <MenuDrawer
+                            onChange={(value)=>{
+                                setCurrentJob((prev)=>({...prev, salary:{ devise: value }}))
+                            }}
+                        >
+                            <MenuDrawerTrigger 
+                                className={`${styles.drawerTrigger} card-border`}
+                            >
+                                {(value)=>  (<span>{value ?? "EUR"}</span>) }
                             </MenuDrawerTrigger>
                             <MenuDrawerBody>
                                 {

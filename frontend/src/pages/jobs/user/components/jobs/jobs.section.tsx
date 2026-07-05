@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { JobStatus, JobSummary } from "../../../../../features/jobs/JobOffer";
 
 //--Custom components
-import InfoPill from "../../../../../layout/components/badges/pill/info.pill";
+import InfoPill, { type InfoPillProps } from "../../../../../layout/components/badges/pill/info.pill";
 import Separator from "../../../../../layout/components/separator/separator";
 
 //-- SVG Compoenents
@@ -13,6 +13,9 @@ import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.
 
 //-- CSS module
 import styles from "./JobSection.module.css"
+import { useEffect, useState } from "react";
+import { jobStatusStyles } from "../../../../../context/job.context";
+import { SelectionContainer } from "../../../../../layout/components/form/input/selection/selection";
 
 
 
@@ -44,12 +47,17 @@ const JobsSection: React.FC<JobsSectionProps> = ({
         </div>
         <div className={styles.itemsWrapper}>
             <div className={`${styles.items} scrollbar`}>
+              <SelectionContainer
+                showCheckbox
+                className={styles.selectionContainer}
+              >
                 {data.map((job) => (
-                <JobItem 
-                    key={job.id} {...job}
-                    onClick={onClick}
-                />
+                  <JobItem 
+                      key={job.id} {...job}
+                      onClick={onClick}
+                  />
                 ))}
+              </SelectionContainer>
             </div>
             <div className={`${styles.fadeBottom} fadeBottom`}/>
         </div>
@@ -68,33 +76,6 @@ type JobItemProps = JobSummary & {
   className?: string;
 }
 
-
-const configJobStatusColor = {
-  active: {
-    txtColor: "#047857",
-    bgColor: "#D1FAE5",
-  },
-
-  pending: {
-    txtColor: "#2563EB",
-    bgColor: "#DBEAFE",
-  },
-
-  published: {
-    txtColor: "#7C3AED",
-    bgColor: "#EDE9FE",
-  },
-
-  draft: {
-    txtColor: "#475569",
-    bgColor: "#F1F5F9",
-  },
-
-  closed: {
-    txtColor: "#DC2626",
-    bgColor: "#FEE2E2",
-  },
-};
 
 
 const JobItem: React.FC<JobItemProps> = ({
@@ -120,13 +101,30 @@ const JobItem: React.FC<JobItemProps> = ({
         case "pending":
             return t("global.jobs.offerStatus.pending");
         case "published":
-            return t("global.jobs.publicationState.publish");
+            return t("global.jobs.publicationState.published");
         case "draft":
             return t("global.jobs.publicationState.draft");
         case "closed":
             return t("global.jobs.publicationState.closed");
     }
   }
+
+  const [infoPillSettings, setInfoPillSettings] = useState<InfoPillProps>({ text: "" });
+
+  useEffect(()=>{
+    const computed = getComputedStyle(document.documentElement);
+
+    const text = renderStatus(status);
+    const txtColor = computed.getPropertyValue(jobStatusStyles[status]?.txtColor);
+    const backgroundColor = computed.getPropertyValue(jobStatusStyles[status]?.bgColor);
+
+    setInfoPillSettings({ 
+      text,
+      txtColor,
+      indicator: true,
+      backgroundColor,
+    })
+  },[])
 
   return (
     <div 
@@ -145,12 +143,7 @@ const JobItem: React.FC<JobItemProps> = ({
           <LocationSVGComponent height={15} width={15}/>
           <span>{address}</span>
         </div>
-        <InfoPill
-            indicator
-            text={renderStatus(status)}
-            txtColor={configJobStatusColor[status]?.txtColor}
-            backgroundColor={configJobStatusColor[status]?.bgColor}
-        />
+        <InfoPill {...infoPillSettings}/>
       </div>
 
       <div className={styles.cardinals}>

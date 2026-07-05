@@ -135,3 +135,13 @@ const BasicInput: React.FC<BasicInputProps> = ({
 };
 
 export default BasicInput;
+
+
+/** Style Config */
+
+
+export const globalBasicInputInput: BasicInputProps = {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    className: `${styles.input} card-border`,
+}

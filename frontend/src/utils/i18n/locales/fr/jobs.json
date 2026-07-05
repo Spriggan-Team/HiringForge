@@ -3,7 +3,8 @@
         "jobs": "Jobs",
         "title": "Job title",
         "buttons":{
-            "create": "Créer une offre"
+            "create": "Créer une offre",
+            "cancel": "Annuler"
         },
         "inputs":{
             "searchJob":{
@@ -95,6 +96,9 @@
                         "label": "Language requis",
                         "placeholder": "Selectionner une langue"
                     }
+                },
+                "switchs":{
+                    "jobWorkMode": "Télétravail possible"
                 }
             },
 

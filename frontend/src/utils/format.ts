@@ -31,3 +31,23 @@ export function formatRemainingTime(minutes: number): string {
 
     return `${mins} min`;
 }
+
+export const formatSalary = (salary?: {
+    min?: number;
+    max?: number;
+    devise?: string;
+}) => {
+    if (!salary) return "";
+    console.log({salary});
+    const parts = [];
+
+    if (salary.min !== undefined && salary.min !== 0) {
+        parts.push(`${salary.min}${salary.devise ?? ""}`);
+    }
+
+    if (salary.max !== undefined && salary.max !== 0) {
+        parts.push(`${salary.max}${salary.devise ?? ""}`);
+    }
+
+    return parts.join(" - ");
+};

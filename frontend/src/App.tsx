@@ -46,7 +46,7 @@ function App() {
                     <Route element={<UserAppLayout />}>
                       <Route path={RouteScheme.userHome} element={<UserHome />} />
                       <Route path={RouteScheme.userJobs} element={<UserJobsPage />} />
-                      <Route path={RouteScheme.userSingleJob} element={<UserPageSinglePage />}/>
+                      <Route path={RouteScheme.userJobView} element={<UserPageSinglePage />}/>
                       <Route path={RouteScheme.createJob} element={<CreateJobPage /> }/>
                     </Route>
 

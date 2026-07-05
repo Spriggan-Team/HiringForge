@@ -1,30 +1,35 @@
 
-import { createContext, useContext, useEffect } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 //--Custom Comoponents
 import BreadCrumbs from "../../../layout/components/navigation/auth/link/bread.crumbs";
 import InfoBoxSection from "./components/infoBoxSection/info.box.section";
 import OptionBoxSection from "./components/optionBoxSection/option.box.section";
-
+import ImageInput from "../../../layout/components/form/input/image/image";
+import InputLabel from "../../../layout/components/form/input/input.label";
 
 //-- Services
-import { useAppContext } from "../../../hooks/context";
+import { navigateTo } from "../../../App";
 import RouteScheme from "../../../route.scheme";
+import { useAppContext } from "../../../hooks/context";
+import JobContextProvider  from "../../../context/job.context";
 
+//-- SVG components
+import RightToLeftArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg';
 
 //-- CSS Styles
 import styles from "./CreateJobPage.module.css"
-import JobContextProvider from "../../../context/job.context";
-
 
 
 /** -- Page Components: CreateJobPage -- */
 
 interface CreateJobPageProps{}
 
-
 const CreateJobPage: React.FC<CreateJobPageProps> = () => {
+    const navigate = useNavigate();
+
     const { t } = useTranslation();
     const { setNavbar } = useAppContext();
 
@@ -51,13 +56,36 @@ const CreateJobPage: React.FC<CreateJobPageProps> = () => {
     return (
         <JobContextProvider>
             <main className={styles.container}>
-                {/* <div className={styles.mainInfoBox}>
-                    <InfoBoxSection />
-                </div>
+                {/**-- ASIDE (icon) -- */}
+                <aside className={styles.side}>
+                    <button
+                        className={`${styles.backButton} card`}
+                        onClick={()=> navigateTo(navigate, RouteScheme.userJobs)} 
+                    >
+                        <RightToLeftArrowSVG width={15} height={15} />
+                    </button>
+                </aside>
 
-                <div className={styles.paramBox}>
-                    <OptionBoxSection />
-                </div> */}
+                <section className={styles.content}>
+                    {/**-- COLUMNS -- */}
+                    <div className={styles.columns}>
+                        {/** MAIN INPUT COLUMN */}
+                        <div className={styles.mainInfoBox}>
+                            <InfoBoxSection />
+                        </div>
+
+                        {/** IMAGE */}
+                        <div className={`${styles.image} card`}>
+                            <InputLabel label={"Main image"}/>
+                            <ImageInput />
+                        </div>
+                        
+                        {/** PARAM SETTINGS */}
+                        <div className={styles.paramBox} >
+                            <OptionBoxSection />
+                        </div>
+                    </div>
+                </section>
             </main>
         </JobContextProvider>
     );

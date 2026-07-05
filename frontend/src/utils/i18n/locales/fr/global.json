@@ -102,7 +102,7 @@
         "jobs":{
             "publicationState": {
                 "title":"État de publication",
-                "publish": "Publié",
+                "published": "Publié",
                 "draft": "Brouillon",
                 "closed": "Closed"
             },

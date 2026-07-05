@@ -19,13 +19,15 @@ import JobSkill from "../skills/job.skill";
 
 
 interface CurrentJobProps{
-    job: JobView
+    job: JobView;
+    onClick: (id: string) => void;
 }
 
 
 
 const CurrentJob: React.FC<CurrentJobProps> = ({
-    job
+    job,
+    onClick
 }) => {
     const {t} = useTranslation();
 
@@ -129,7 +131,16 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
                     <span className={styles.views}>{job.views} {t("global.views.viewsLabel", {count: job.views ?? 0})}</span>
                     <span className={styles.applicants}>🧑‍💻 {job.applications} {t("global.candidate.candidateLabel", {count: job.applications ?? 0})}</span>
                 </div>
-                <button className={styles.primaryAction}>{t("global.messages.seeDetails")}</button>
+                {/** SEE MORE BUTTON */}
+                <button 
+                    onClick={()=>{
+                        if(onClick)
+                            onClick(job.id)
+                    }}
+                    className={styles.primaryAction}
+                >
+                    {t("global.messages.seeDetails")}
+                </button>
             </div>
         </div>
     );

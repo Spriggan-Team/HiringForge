@@ -3,7 +3,7 @@
 import styles from "./style.module.css"
 
 
-interface InfoPillProps{
+export interface InfoPillProps{
     text: string;
     backgroundColor?: string;
     txtColor?: string;
@@ -16,6 +16,9 @@ const InfoPill: React.FC<InfoPillProps> = ({
     txtColor,
     indicator
 }) => {
+    if(!text)
+        return null;
+    
     return (
         <div 
             className={styles.container}

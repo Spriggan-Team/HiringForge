@@ -50,6 +50,7 @@ export interface SelectionContextProps {
 }
 
 
+
 /**-- Context items --*/
 interface InternalCtx {
     isSelecting:      boolean;
@@ -82,7 +83,6 @@ const useSelCtx = () => {
 /**
  * Selection container
  */
-
 export const SelectionContainer = forwardRef<SelectionContextHandle, SelectionContextProps>(
     (
         {
@@ -219,7 +219,7 @@ SelectionContainer.displayName = "SelectionContainer";
 
 interface SelectableItemProps {
     itemKey:          string;
-    longPressDuration?: number;
+    longPressDuration: number;
     children:         React.ReactNode;
 }
 
@@ -227,7 +227,7 @@ interface SelectableItemProps {
 
 const SelectableItem: React.FC<SelectableItemProps> = ({
     itemKey,
-    longPressDuration = 500,
+    longPressDuration,
     children,
 }) => {
     const {
@@ -242,20 +242,32 @@ const SelectableItem: React.FC<SelectableItemProps> = ({
 
     const itemRef    = useRef<HTMLDivElement>(null);
     const isSelected = selectedKeys.has(itemKey);
+   
+    const longPressFiredRef = useRef(false);
     const timerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+    
     // -- Press detection
-    const onPointerDown = useCallback(() => {
-        if (isSelecting)  // already in selection — single tap toggles
+
+    const onPointerDown = useCallback((e: React.PointerEvent) => {
+        //-- In selection mode a simple tap toggles — no timer needed.
+        if (isSelecting) return;
+
+        if (e.pointerType === "mouse" && e.button !== 0) 
             return;
 
+        longPressFiredRef.current = false;
+
         timerRef.current = setTimeout(() => {
-            if (itemRef.current) 
+            // Timer fired before pointer-up → long press confirmed
+            longPressFiredRef.current = true;
+
+            if (itemRef.current) {
                 startSelection(itemKey, itemRef.current);
+            }
         }, longPressDuration);
     }, [isSelecting, itemKey, longPressDuration, startSelection]);
 
-    
+
     const cancelTimer = useCallback(() => {
         if (timerRef.current) {
             clearTimeout(timerRef.current);
@@ -263,28 +275,39 @@ const SelectableItem: React.FC<SelectableItemProps> = ({
         }
     }, []);
 
+    
+
     //-- Tap while in selection mode → toggle
     const onClick = useCallback((e: React.MouseEvent) => {
-        if (!isSelecting) 
+        //this click is the release at the end of a long-press.
+        if (longPressFiredRef.current) {
+            longPressFiredRef.current = false;
+            e.preventDefault();
+            e.stopPropagation();
             return;
-        
+        }
+
+        //-- genuine tap while already in selection mode → toggle.
+        if (!isSelecting) return;
+
         e.preventDefault();
         e.stopPropagation();
-        
-        if (itemRef.current) 
-            toggleKey(itemKey, itemRef.current);
+
+        if (itemRef.current) toggleKey(itemKey, itemRef.current);
     }, [isSelecting, itemKey, toggleKey]);
 
 
-    useEffect(() => () => cancelTimer(), [cancelTimer]);
+    useEffect(() => () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+    }, []);
 
 
     //-- CSS classes/state
     const classes = [
         styles.item,
         isSelecting && styles.selectionActive,
-        isSelected  && !disableDefault && styles.selected,
-        isSelected  && selectedClass,
+        isSelected && !disableDefault && styles.selected,
+        isSelected && selectedClass,
     ].filter(Boolean).join(" ");
 
 
@@ -297,8 +320,7 @@ const SelectableItem: React.FC<SelectableItemProps> = ({
             onPointerLeave={cancelTimer}
             onPointerCancel={cancelTimer}
             onClick={onClick}
-            //-- pprevent context menu on long press
-            onContextMenu={e => isSelecting && e.preventDefault()}
+            onContextMenu={e => { if (isSelecting) e.preventDefault(); }}
         >
             {/* Checkbox overlay */}
             {showCheckbox && isSelecting && (

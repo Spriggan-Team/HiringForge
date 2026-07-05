@@ -1,6 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Sekuya&display=swap');
 
 
+:root{
+  /** Global **/
+  --textSecondaryColor: #536075;
+  
+  --interviews-color: #4690EE;
+  --offer-color: #E7BB6C;
+  --candidates-color: #2ECC71;
+  --hired-color: #9B59B6;
+
+  /** Status txt**/
+  --status-active-text: #047857;
+  --status-active-bg: #D1FAE5;
+
+  --status-pending-text: #2563EB;
+  --status-pending-bg: #DBEAFE;
+
+  --status-published-text: #7C3AED;
+  --status-published-bg: #EDE9FE;
+
+  --status-draft-text: #475569;
+  --status-draft-bg: #F1F5F9;
+
+  --status-closed-text: #DC2626;
+  --status-closed-bg: #FEE2E2;
+
+}
+
 
 *{
   margin: 0;

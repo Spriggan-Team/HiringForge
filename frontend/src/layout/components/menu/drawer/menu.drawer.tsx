@@ -43,7 +43,9 @@ interface MenuDrawerProps {
     children: React.ReactNode;
     defaultValue?: any;
     className?: string;
-    style?: React.CSSProperties,
+    style?: React.CSSProperties;
+
+    triggerVisibility?: boolean;
     onChange?: (value: any) => void;
 }
 
@@ -51,10 +53,12 @@ interface MenuDrawerProps {
 const MenuDrawer: React.FC<MenuDrawerProps> = ({
     children,
     defaultValue,
+
     onChange,
+    triggerVisibility,
     
-    className,
     style,
+    className,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selected, setSelectedState] = useState(defaultValue);
@@ -65,6 +69,12 @@ const MenuDrawer: React.FC<MenuDrawerProps> = ({
         setSelectedState(value);
         onChange?.(value);
     };
+
+
+    useEffect(()=>{
+        if(triggerVisibility)
+            setIsOpen(triggerVisibility)
+    },[triggerVisibility]);
 
     return (
         <DrawerContext.Provider
@@ -223,6 +233,7 @@ export const MenuDrawerItem: React.FC<MenuDrawerItemProps> = ({
     applyDefaultStyle = true,
     value,
     children,
+
     onClick,
     selectionStateTriggerer,
     disableDefaultBehaviour = false,
@@ -237,6 +248,7 @@ export const MenuDrawerItem: React.FC<MenuDrawerItemProps> = ({
 
         onClick?.(e as any);
     }, [disableDefaultBehaviour, setSelected, setIsOpen, value, onClick]);
+
 
     useEffect(() => {
         if (selectionStateTriggerer) {

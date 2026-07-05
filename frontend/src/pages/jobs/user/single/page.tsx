@@ -1,6 +1,8 @@
 
 
+
 interface UserPageSinglePageProps{}
+
 
 const UserPageSinglePage: React.FC<UserPageSinglePageProps> = () => {
     return (
