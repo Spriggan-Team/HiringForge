@@ -24,7 +24,8 @@ import {
 
 
 //-- CSS modules
-import styles from "./Calendar.module.css";
+import styles from "./DatePicker.module.css";
+
 
 
 interface CalendarContextValue {
@@ -47,23 +48,28 @@ export const useCalendarContext = () => {
 };
 
 
+
 //--  Props
 
-interface CalendarProps {
+interface DatePickerProps {
     width?: string;
 
-    defaultSelectedDate?: Date | null; //-- default value
     validate?:        (date: Date) => boolean;
     onDateChange?:    (date: Date) => void;
+    defaultSelectedDate?: Date | null; //-- default value
+   
     // children = context popover 
     children?:        React.ReactNode; // It receives selectedDate / pendingDate / confirm / cancel via useCalendarContext()
+    
+    //-- styles
     className?:       string;
 }
 
 
+
 //--- Calendar
 
-const Calendar: React.FC<CalendarProps> = ({
+const DatePicker: React.FC<DatePickerProps> = ({
     width,
     
     validate,
@@ -95,6 +101,7 @@ const Calendar: React.FC<CalendarProps> = ({
         const lastDay  = endOfWeek(endOfMonth(currentMonth),     { weekStartsOn: 1 });
         return eachDayOfInterval({ start: firstDay, end: lastDay });
     }, [currentMonth]);
+
 
     //-- Handling date selection (click)
     const handleDayClick = (date: Date, buttonEl: HTMLButtonElement) => {
@@ -254,4 +261,4 @@ const Calendar: React.FC<CalendarProps> = ({
     );
 };
 
-export default Calendar;
+export default DatePicker;

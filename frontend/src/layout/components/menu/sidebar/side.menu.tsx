@@ -19,7 +19,7 @@ import ChevronLeftSVG from "/src/assets/svg/menu/chevron-right-double-svgrepo-co
 import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg"
 
 
-// CSS- style
+//-- CSS- style
 import styles from "./styles.module.css"
 import { navigateTo } from "../../../../App";
 
@@ -37,7 +37,7 @@ const SideMenu = () => {
         { id: "poste", svg: PostSVG, label: t("global.menu.poste"), route: RouteScheme.userJobs },
         { id: "candidates", svg: CandidateSVG, label: t("global.menu.candidates"), route: "" },
         { id: "interview", svg: InterviewsSVG, label: t("global.menu.interview"), route: "" },
-        { id: "calendar", svg: DateSVGComponent, label: t("global.menu.calendar"), route: "" },
+        { id: "calendar", svg: DateSVGComponent, label: t("global.menu.calendar"), route: RouteScheme.userSchedule },
         { id: "agents", svg: AgentSVG, label: t("global.menu.agents"), route: "" },
         { id: "settings", svg: SettingsSVG, label: t("global.menu.settings"), route: "" },
     ];

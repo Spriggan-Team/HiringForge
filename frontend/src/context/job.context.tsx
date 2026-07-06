@@ -71,29 +71,3 @@ export default JobContextProvider;
 
 
 
-export const jobStatusStyles: Record<JobStatus, { bgColor: string; txtColor: string }> = {
-    active: {
-        txtColor: "--status-active-text",
-        bgColor: "--status-active-bg",
-    },
-
-    pending: {
-        txtColor: "--status-pending-text",
-        bgColor: "--status-pending-bg",
-    },
-
-    published: {
-        txtColor: "--status-published-text",
-        bgColor: "--status-published-bg",
-    },
-
-    draft: {
-        txtColor: "--status-draft-text",
-        bgColor: "--status-draft-bg",
-    },
-
-    closed: {
-        txtColor: "--status-closed-text",
-        bgColor: "--status-closed-bg",
-    },
-};

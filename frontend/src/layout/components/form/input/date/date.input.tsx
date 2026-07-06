@@ -6,7 +6,7 @@ import MenuDrawer, {
     MenuDrawerBody,
     MenuDrawerTrigger,
 } from "../../../menu/drawer/menu.drawer";
-import Calendar from "../../../cards/calendar/calendar";
+import DatePicker from "../../../cards/calendar/datepicker/DatePicker";
 
 //-- CSS Modules
 import styles from "./DateInput.module.css"
@@ -56,7 +56,7 @@ const DateInput: React.FC<DateInputProps> = ({
                     position="initial-absolute"
                     applyDefaultStyle={false}
                 >
-                    <Calendar
+                    <DatePicker
                         defaultSelectedDate={selectedDate}
                         onDateChange={(date) => {
                             onSelectedDate?.(date);

@@ -12,7 +12,7 @@ import type {  RecruiterDashboardKpis } from "../../../features/dashboard/KpiDat
 //-- Custom Component
 import KpiCard, { KpiCount, KpiPercentage } from "./component/kpi/kpi.card";
 import RecruitmentPipeline from "./component/pipeline/recrutement.pipeline";
-import Calendar from "../../../layout/components/cards/calendar/calendar";
+import DatePicker from "../../../layout/components/cards/calendar/datepicker/DatePicker";
 import Separator from "../../../layout/components/separator/separator";
 import PriorityTask from "./component/task/priority.task";
 import SectionHeader from "../../../layout/components/sections/sectionHeader/section.header";
@@ -146,7 +146,7 @@ const UserHome = () => {
                                 title={t("global.dates.calendar")}
                                 action={<ViewAllLink />}
                             />
-                            <Calendar className={styles.calendar} width="100%"/>
+                            <DatePicker className={styles.calendar} width="100%"/>
                         </div>
                         {/** AGENDA */}
                         <div className={styles.agenda}>

@@ -6,7 +6,6 @@
 
 
 
-
 .inputContainerFocusStyle:focus-within .label {
     color: #2563eb;
     transform: translateX(2px);
@@ -55,10 +54,8 @@
     font-family: inherit;
     background: transparent;
     font-size: 15px;
-    color: #1f2937;
+    color: var(--color);
 }
-
-
 
 
 

@@ -1,3 +1,5 @@
+import type { Time } from "../features/shared/time";
+
 
 //format minutes to hours - min ...
 export function formatRemainingTime(minutes: number): string {
@@ -32,13 +34,15 @@ export function formatRemainingTime(minutes: number): string {
     return `${mins} min`;
 }
 
+
 export const formatSalary = (salary?: {
     min?: number;
     max?: number;
     devise?: string;
 }) => {
     if (!salary) return "";
-    console.log({salary});
+    
+    // console.log({salary});
     const parts = [];
 
     if (salary.min !== undefined && salary.min !== 0) {
@@ -50,4 +54,37 @@ export const formatSalary = (salary?: {
     }
 
     return parts.join(" - ");
+};
+
+
+
+//-- Get elapsed time
+export const getElapsedTime = (start: Time, end: Time): string => {
+    const startMinutes = start.hours * 60 + start.minutes;
+    const endMinutes = end.hours * 60 + end.minutes;
+
+    const elapsed = Math.max(0, endMinutes - startMinutes);
+
+    const hours = Math.floor(elapsed / 60);
+    const minutes = elapsed % 60;
+
+    if (hours === 0) {
+        return `${minutes}min`;
+    }
+
+    if (minutes === 0) {
+        return `${hours}h`;
+    }
+
+    return `${hours}h ${minutes}min`;
+};
+
+
+
+//-- delat time
+export const toSeconds = ({ hours, minutes }: Time) =>
+    hours * 3600 + minutes * 60;
+
+export const getDeltaSecondeTime = (start: Time, end: Time): number => {
+    return Math.max(0, toSeconds(end) - toSeconds(start));
 };

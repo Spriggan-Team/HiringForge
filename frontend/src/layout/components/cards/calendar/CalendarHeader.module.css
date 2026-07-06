@@ -1,0 +1,49 @@
+/*  CONTAINER LAYOUT*/
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px 0;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* MAIN SECTION (MONTH / YEAR SELECTORS) */
+
+.main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+.drawerContainer {
+    display: inline-flex;
+}
+
+/* style for drawer menu items */
+
+.drawerContainer button,
+.drawerContainer [role="button"] {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    text-transform: capitalize;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.drawerContainer button:hover,
+.drawerContainer [role="button"]:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+

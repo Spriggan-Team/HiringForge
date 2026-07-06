@@ -4,7 +4,21 @@
 :root{
   /** Global **/
   --textSecondaryColor: #536075;
+  --fade-background-color: #94A3B8;
+
+  /** Calendar theme **/
+  --calendar-task-low:      #CBD5E1; /* gris clair */
+  --calendar-task-normal:   #3B82F6; /* bleu */
+  --calendar-task-medium:   #6366F1; /* indigo */
+  --calendar-task-high:     #F59E0B; /* orange */
+  --calendar-task-urgent:   #DC2626; /* rouge */
+
+  --calendar-task-success:  #10B981; /* vert */
+  --calendar-task-warning:  #F59E0B; /* orange */
+  --calendar-task-danger:   #EF4444; /* rouge vif */
+
   
+  /** Offers Components**/
   --interviews-color: #4690EE;
   --offer-color: #E7BB6C;
   --candidates-color: #2ECC71;

@@ -104,6 +104,7 @@ export default MenuDrawer;
 
 interface MenuDrawerTriggerProps {
     className?: string;
+    iconClassName?: string;
     style?: React.CSSProperties;
 
     displayArrowDown?: boolean;
@@ -125,6 +126,7 @@ export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
     
     children,
     leading: Leading,
+    iconClassName,
 }) => {
     const { isOpen, toggle, selected } = useDrawer();
 
@@ -133,8 +135,8 @@ export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
             style={style}
             type="button"
             onClick={toggle}
-            className={`${applyDefaultStyle ? styles.trigger : ""} ${className}`}
             aria-expanded={isOpen}
+            className={`${applyDefaultStyle ? styles.trigger : ""} ${className}`}
         >
             <span>
                 {
@@ -143,10 +145,10 @@ export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
                         : children
                 }
             </span>
-            <div className={styles.leading}>
-                {Leading && Leading}
-                {
-                    displayArrowDown && (
+            <div className={`${styles.leading} ${iconClassName}`}>
+                {Leading ? 
+                    Leading
+                    : displayArrowDown && (
                         <DownArrowSVG
                             width={14}
                             height={14}

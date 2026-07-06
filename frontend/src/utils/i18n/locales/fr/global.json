@@ -21,7 +21,9 @@
             "welcome": "Bonjour {{name}}",
             "secureData": "Données sécurisées",
             "seeDetails": "Voir détails",
-            "error": "Une erreur inattendue est survenue"
+            "save": "Sauvegarde",
+            "error": "Une erreur inattendue est survenue",
+            "more": "Plus"
         },
 
         "text":{
@@ -40,6 +42,7 @@
         "navbar":{},
         
         "dates": {
+            "date": "Date",
             "thisMonth": "ce mois",
             "today": "Aujourd'hui",
             "calendar": "Calendrier",
@@ -52,6 +55,11 @@
             }
         },
         "duration":{
+            "time": {
+                "hours":{
+                    "hours_one": "Heure"
+                }
+            },
             "publishSince": "Publié il y a {{time}}"
         },
 

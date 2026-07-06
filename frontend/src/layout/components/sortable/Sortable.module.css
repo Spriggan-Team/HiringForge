@@ -1,0 +1,44 @@
+
+/*  Wrapper */
+
+.sortable {
+    display:   flex;
+    width:     100%;
+}
+
+.column {
+    flex-direction: column;
+}
+
+.row {
+    flex-direction: row;
+}
+
+/*  Item shell */
+
+.item {
+    /* prevent default */
+    touch-action:    none;
+    user-select:     none;
+    -webkit-user-select: none;
+
+    cursor: grab;
+    transition: transform 150ms ease;
+}
+
+.item:active {
+    cursor: grabbing;
+}
+
+/*  Dragging state*/
+
+/*
+* Slot in list
+ */
+.dragging {
+    opacity:    0;
+    /* Keep the placeholder in flow so sibling items reflow correctly */
+    visibility: hidden;
+    pointer-events: none;
+    cursor: grabbing;
+}

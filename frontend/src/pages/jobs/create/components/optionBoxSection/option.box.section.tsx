@@ -3,11 +3,12 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 //-- Services
-import { jobStatusStyles, useJob } from "../../../../../context/job.context";
+import RouteScheme from "../../../../../route.scheme";
+import {  useJob } from "../../../../../context/job.context";
 import { formatSalary } from "../../../../../utils/format";
 import { INITIAL_JOB_VIEW } from "../../../../../features/jobs/JobOffer";
 import { navigateTo } from "../../../../../App";
-import RouteScheme from "../../../../../route.scheme";
+import { jobStatusStyles } from "../../../../../context/styles";
 
 //-- Custom components
 import BasicInput, { globalBasicInputInput } from "../../../../../layout/components/form/input/basic.input";

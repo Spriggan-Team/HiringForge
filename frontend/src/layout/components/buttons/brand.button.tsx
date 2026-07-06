@@ -9,7 +9,7 @@ import styles from "./style.module.css"
 export interface BrandButtonProps {
     text: string;
     type?: "submit" | "reset" | "button";
-    svg?:  React.FC<React.SVGProps<SVGSVGElement>>
+    svg?:  React.FC<React.SVGProps<SVGSVGElement>> | null;
     onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
     
     width?: number | string;
@@ -55,7 +55,7 @@ const BrandButton: React.FC<BrandButtonProps> = ({
                 ["--color" as string]: fill ? color : fillColor,
                 ["--bg-color" as string]: fill ? backgroundColor : fillForegroundColor,
                 ["--width" as string]: (width && typeof width == 'number' ?  `${width}px` : width) ?? "100%" ,
-                ["--padding" as string]: (padding && typeof padding == 'number' ?  `${padding}px` : padding) ?? "9px 0" ,
+                ["--padding" as string]: (padding && typeof padding == 'number' ?  `${padding}px` : padding) ?? "9px 10px" ,
                 ["--radius" as string]: (borderRadius && typeof borderRadius == 'number' ?  `${borderRadius}px` : borderRadius) ?? "10px" ,
             }}
             className={styles.container}
@@ -72,10 +72,12 @@ const BrandButton: React.FC<BrandButtonProps> = ({
                 {text} 
                 {Icon ? 
                     <Icon className={`${styles.svg} ${svgClassName} `}  />
-                     : <RightToLeftArrowSVG
+                     : Icon !== null ?
+                        <RightToLeftArrowSVG
                             style={{ transform: "rotate(180deg)"  }} //--default transform for the default svg
                             className={`${styles.svg} ${svgClassName} `}
                         />
+                        :<></>
                 }
             </button>
         </div>

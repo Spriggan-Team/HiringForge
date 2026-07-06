@@ -22,6 +22,7 @@ import UserHome from './pages/home/user/page'
 import UserJobsPage from './pages/jobs/page'
 import CreateJobPage from './pages/jobs/create/create.job.page'
 import PrivateJobViewPage from './pages/jobs/view/page'
+import SchedulingWorkspace from './pages/schedule/scheduling.workspace'
 
 
 
@@ -46,16 +47,23 @@ function App() {
                     <Route 
                       element={<AuthAccessGranted />}
                     >
+                      {/** EXCLUSIVE RECRUITEUR ACCESS */}
                       <Route element={<UserAppLayout />}>
-                        { /** Dashboard */  }
-                        <Route path={RouteScheme.userHome} element={<UserHome />} />
-                        { /** JOBS VIEWS */  }
-                        <Route path={RouteScheme.userJobs} element={<UserJobsPage />} />
-                        { /** SINGLE JOB VIEW */  }
-                        <Route path={RouteScheme.userJobView} element={<PrivateJobViewPage />}/>
-                        { /** CREATE JOB  */  }
-                        <Route path={RouteScheme.createJob} element={<CreateJobPage /> }/>
+                          { /** Dashboard */  }
+                          <Route path={RouteScheme.userHome} element={<UserHome />} />
+                          { /** JOBS VIEWS */  }
+                          <Route path={RouteScheme.userJobs} element={<UserJobsPage />} />
+                          { /** SINGLE JOB VIEW */  }
+                          <Route path={RouteScheme.userJobView} element={<PrivateJobViewPage />}/>
+                          { /** CREATE JOB  */  }
+                          <Route path={RouteScheme.createJob} element={<CreateJobPage /> }/>
+                          {/** SCHEDULE PAGE */}
+                          <Route path={RouteScheme.userSchedule} element={<SchedulingWorkspace />} />
                       </Route>
+
+                      {/** PUBLIC ACCESS (AUTH) */}
+
+
                     </Route>
 
                   </Routes>
@@ -81,6 +89,7 @@ const UserAppLayout = () => {
     </div>
   );
 }
+
 
 const AuthAccessGranted = ()=>{
   return (

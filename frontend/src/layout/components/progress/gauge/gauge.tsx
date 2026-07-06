@@ -6,21 +6,26 @@ export interface GaugeProps{
     percent?: number;
     color?: string;
     width?: string | number;
+    
     activeColor?: string;
     foregroundColor?: string;
+    
     height?: string | number;
     className?: string;
     borderRadius?: string | number;
 }
 
+
 const Gauge: React.FC<GaugeProps> = ({
     percent = 0,
     width,
+    height,
+
     activeColor = "#3B82F6",
     foregroundColor,
-    height,
+    
+    className,
     borderRadius,
-    className
 }) => {
     if(percent < 0 || percent > 1)
         return;

@@ -21,9 +21,12 @@ const RouteScheme = {
     jobs: "/jobs",
     jobDetails: "/jobs/:id",
 
-    //--JOB USER
+    //-- JOB USER
     userJobs: "/user/jobs",
     userJobView: "/user/jobs/:id",
+
+    //-- JOB SCHEDULE
+    userSchedule: "/user/schedule",
 
     //-- User (recruteur) & Agents
     createJob: "/jobs/create",

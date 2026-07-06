@@ -1,0 +1,199 @@
+/* FORM CONTAINER */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 20px;
+    padding-top: 40px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    position: relative;
+}
+
+
+/** CLOSE Button SVG **/
+
+.closeButton {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 32px;
+    height: 32px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background: transparent;
+    color: #64748b;
+
+    cursor: pointer;
+    transition:
+        background-color .15s ease,
+        color .15s ease,
+        transform .15s ease;
+}
+
+.closeButton:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.closeButton:active {
+    transform: scale(.95);
+}
+
+.closeButton:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.closeButton svg {
+    fill: currentColor;
+}
+
+
+
+/** Title (input title) **/
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    border: none;
+    outline: none;
+    width: 100%;
+}
+
+/*  CONTENT GRID LAYOUT*/
+
+.content {
+    display: grid;
+    grid-template-columns: 140px 1fr; 
+    row-gap: 20px;
+    column-gap: 16px;
+    align-items: center; 
+}
+
+.label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+/* FIELDS SPECIFIC STYLING */
+
+.date {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+/* Badge Rate Selector */
+.rate {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 6px 12px 6px 22px;
+    
+    color: #1e293b;
+    cursor: pointer;
+    border-radius: 20px;
+    background-color: #f1f5f9;
+}
+
+.rate::before {
+    content: "";
+    position: absolute;
+    
+    left: 10px;
+    top: 50%;
+
+    width: 6px;
+    height: 6px;
+    transform: translateY(-50%);
+
+    border-radius: 50%;
+    background-color: var(--bgColor, #3b82f6);
+}
+
+/* TimePickers Row */
+
+.times {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* MEMBERS AVATAR LIST */
+
+.members {
+    gap: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.entry {
+    gap: -6px;
+    display: flex;
+    align-items: center;
+}
+
+.entry img {
+    width: 32px;
+    height: 32px;
+    border: 2px solid #ffffff;
+
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Add Member Round Button */
+.add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 32px;
+    padding: 0;
+    height: 32px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 50%;
+    
+    color: #64748b;
+    background-color: #f8fafc;
+    
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.add:hover {
+    color: #1e293b;
+    border-color: #94a3b8;
+    background-color: #f1f5f9;
+}
+
+.svg {
+    fill: currentColor;
+    display: block;
+}
+
+/* BOTTOM FOOTER ACTION */
+
+.bottom {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
+}

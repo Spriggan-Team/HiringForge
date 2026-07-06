@@ -1,21 +1,22 @@
 
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 //--Services & types
 import type { JobStatus, JobSummary } from "../../../../../features/jobs/JobOffer";
+import { jobStatusStyles } from "../../../../../context/styles";
 
 //--Custom components
-import InfoPill, { type InfoPillProps } from "../../../../../layout/components/badges/pill/info.pill";
 import Separator from "../../../../../layout/components/separator/separator";
+import InfoPill, { type InfoPillProps } from "../../../../../layout/components/badges/pill/info.pill";
+import { SelectionContainer } from "../../../../../layout/components/form/input/selection/selection";
 
 //-- SVG Compoenents
 import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.svg"
 
 //-- CSS module
 import styles from "./JobSection.module.css"
-import { useEffect, useState } from "react";
-import { jobStatusStyles } from "../../../../../context/job.context";
-import { SelectionContainer } from "../../../../../layout/components/form/input/selection/selection";
+
 
 
 

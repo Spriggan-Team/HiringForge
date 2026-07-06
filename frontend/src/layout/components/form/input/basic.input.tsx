@@ -74,6 +74,8 @@ const BasicInput: React.FC<BasicInputProps> = ({
 
     iconClassName,
     icon2ClassName,
+
+    textColor,
     backgroundColor = "#ECEAF1",
 
     extraInputProps
@@ -93,6 +95,7 @@ const BasicInput: React.FC<BasicInputProps> = ({
                 className={`${styles.inputSection} ${className} ${enableFocusWithinDefaultDesign ? styles.inputSectionFocusStyle : ""}`}
                 style={{ 
                     background: backgroundColor,
+                    ['--color' as string] : textColor ?? "#1f2937",
                     ["--border" as any]:(borderRadius && typeof borderRadius == 'number' ?  `${borderRadius}px` : borderRadius) ??  "8px",  
                     ["--width" as string]: (width && typeof width == 'number' ?  `${width}px` : width) ?? "252px" ,
                     ["--padding" as string]:  (padding && typeof padding == 'number' ?  `${padding}px` : padding) ?? "10px"
