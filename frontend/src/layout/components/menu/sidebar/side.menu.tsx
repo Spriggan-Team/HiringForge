@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 //-- Services
 import RouteScheme from "../../../../route.scheme";
+import { navigateTo } from "../../../../App";
 
 //-- SVG Components
 import LogoSVG from '/src/assets/custom-logo.svg';
@@ -21,7 +22,6 @@ import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg"
 
 //-- CSS- style
 import styles from "./styles.module.css"
-import { navigateTo } from "../../../../App";
 
 
 

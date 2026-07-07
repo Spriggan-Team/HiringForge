@@ -2,6 +2,8 @@
     "jobs":{
         "jobs": "Jobs",
         "title": "Job title",
+        "modifyJob": "Modifier le job",
+
         "buttons":{
             "create": "Créer une offre",
             "cancel": "Annuler"

@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 //--Services & types
-import type { JobStatus, JobSummary } from "../../../../../features/jobs/JobOffer";
+import type {  JobSummary } from "../../../../../features/jobs/JobOffer";
 import { jobStatusStyles } from "../../../../../context/styles";
+import { renderStatus } from "../../../utils/utils";
 
 //--Custom components
 import Separator from "../../../../../layout/components/separator/separator";
@@ -107,27 +108,13 @@ const JobItem: React.FC<JobItemProps> = ({
   const { t } = useTranslation();
   const status = activityStatus ?? publicationStatus;
 
-  const renderStatus = (status: JobStatus)=>{
-    switch(status){
-        case "active":
-            return t("global.jobs.offerStatus.active");
-        case "pending":
-            return t("global.jobs.offerStatus.pending");
-        case "published":
-            return t("global.jobs.publicationState.published");
-        case "draft":
-            return t("global.jobs.publicationState.draft");
-        case "closed":
-            return t("global.jobs.publicationState.closed");
-    }
-  }
 
   const [infoPillSettings, setInfoPillSettings] = useState<InfoPillProps>({ text: "" });
 
   useEffect(()=>{
     const computed = getComputedStyle(document.documentElement);
 
-    const text = renderStatus(status);
+    const text = renderStatus(t, status);
     const txtColor = computed.getPropertyValue(jobStatusStyles[status]?.txtColor);
     const backgroundColor = computed.getPropertyValue(jobStatusStyles[status]?.bgColor);
 

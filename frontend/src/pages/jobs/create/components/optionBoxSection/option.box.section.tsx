@@ -20,6 +20,7 @@ import JobSkill from "../../../user/components/skills/job.skill";
 import ToggleSwitch from "../../../../../layout/components/switch/toggle.switch";
 import InputLabel from "../../../../../layout/components/form/input/input.label";
 import LanguageSelectionWorkflow from "../../../../../layout/components/selectors/language/language.selection.workflow.";
+import SimpleButton from "../../../../../layout/components/buttons/simple/simple.button";
 
 
 //-- SVG Components
@@ -278,23 +279,21 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
 
             {/** CLOSURE BUTTONS */}
             <div className={styles.buttons}>
-                <button
+                <SimpleButton
+                    text={t("jobs.buttons.cancel")}
                     onClick={()=>{
                         setCurrentJob(INITIAL_JOB_VIEW);
                         if(onClose)
                             onClose();
                         navigateTo(navigate, RouteScheme.userJobs);
                     }}
-                    className={styles.close}
-                >
-                    {t("jobs.buttons.cancel")}
-                </button>
-                <button
+                />
+                <SimpleButton
+                    text={t("jobs.buttons.create")}
                     onClick={onComplete}
                     className={styles.complete}
-                >
-                    {t("jobs.buttons.create")}
-                </button>
+                />
+        
             </div>
         </div>
     );

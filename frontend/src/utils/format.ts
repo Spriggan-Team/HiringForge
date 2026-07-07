@@ -1,4 +1,4 @@
-import type { Time } from "../features/shared/time";
+import type { Time } from "../features/shared/global";
 
 
 //format minutes to hours - min ...

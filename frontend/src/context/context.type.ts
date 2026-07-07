@@ -11,6 +11,6 @@ export interface AppLoadingState { state: boolean, subtitle?: string }
 
 //--NavBar
 export interface UserAppNavBarProps {
-    title: string;
-    description?: string | React.ReactNode;
+    title: string | null;
+    description?: string | null | React.ReactNode;
 }

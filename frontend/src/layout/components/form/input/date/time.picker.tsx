@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 
 //Services & types
-import type { Time } from "../../../../../features/shared/time";
+import type { Time } from "../../../../../features/shared/global";
 
 //-- SVG Compoenenst
 import LeftArrowSVGComponent from "/src/assets/svg/arrows/arrow-left-334-svgrepo-com.svg";

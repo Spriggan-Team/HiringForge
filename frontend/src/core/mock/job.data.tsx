@@ -203,7 +203,7 @@ export const jobsData: JobSummary[] = [
 ];
 
 
-export const jobsViewData: any = { // id, JobViews
+export const jobsViewData = { // id, JobViews
   "1": {
     id: "1",
     title: "Développeur Front-end React",

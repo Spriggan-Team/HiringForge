@@ -5,16 +5,22 @@ import styles from "./style.module.css"
 
 export interface InfoPillProps{
     text: string;
-    backgroundColor?: string;
-    txtColor?: string;
     indicator?: boolean;
+    
+    txtColor?: string;
+    backgroundColor?: string;
+    borderRadius?: string | number;
 }
+
+
 
 const InfoPill: React.FC<InfoPillProps> = ({
     text,
-    backgroundColor,
+    indicator,
+
     txtColor,
-    indicator
+    borderRadius,
+    backgroundColor,
 }) => {
     if(!text)
         return null;
@@ -24,7 +30,8 @@ const InfoPill: React.FC<InfoPillProps> = ({
             className={styles.container}
             style={{
                 ["--txtColor" as string]: txtColor ?? "#264FEB",
-                ["--backgroundColor" as string]: backgroundColor ?? "#E3EDFE"
+                ["--backgroundColor" as string]: backgroundColor ?? "#E3EDFE",
+                ["--borderRadius" as string]: typeof borderRadius === "string" ? borderRadius : !borderRadius ? "15px" : `${borderRadius}px`
             }}
         >
             { indicator && <div className={styles.indicator} /> }

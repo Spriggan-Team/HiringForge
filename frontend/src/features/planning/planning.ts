@@ -1,4 +1,4 @@
-import type { Time } from "../shared/time";
+import type { Time } from "../shared/global";
 
 export interface CalendarEvent{
     title: string;

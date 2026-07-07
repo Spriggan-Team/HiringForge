@@ -92,8 +92,8 @@
 
 .absoluteBottom {
     position: absolute;
-    left: 0;
-    right: 0;
+    left: var(--menu-body-wrapper-left);
+    right: var(--menu-body-wrapper-right);
     z-index: 9999;
     top: calc(100%);
 }

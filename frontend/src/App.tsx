@@ -23,6 +23,7 @@ import UserJobsPage from './pages/jobs/page'
 import CreateJobPage from './pages/jobs/create/create.job.page'
 import PrivateJobViewPage from './pages/jobs/view/page'
 import SchedulingWorkspace from './pages/schedule/scheduling.workspace'
+import CandidatesPage from './pages/candidates/candidates.page'
 
 
 
@@ -59,10 +60,12 @@ function App() {
                           <Route path={RouteScheme.createJob} element={<CreateJobPage /> }/>
                           {/** SCHEDULE PAGE */}
                           <Route path={RouteScheme.userSchedule} element={<SchedulingWorkspace />} />
+                          {/** CANDIDATES */}
+                          <Route path={RouteScheme.userCandidate} element={<CandidatesPage />} />
                       </Route>
 
                       {/** PUBLIC ACCESS (AUTH) */}
-
+                      
 
                     </Route>
 

@@ -14,8 +14,8 @@ const RouteScheme = {
     directorRegister: "/candidate/register",
 
     //-- CANDIDATE
-    candidateDashboard: "/candidate/dashboard",
     candidateProfile: "/candidate/profil",
+    candidateDashboard: "/candidate/dashboard",
 
     //-- JOBS
     jobs: "/jobs",
@@ -25,11 +25,20 @@ const RouteScheme = {
     userJobs: "/user/jobs",
     userJobView: "/user/jobs/:id",
 
-    //-- JOB SCHEDULE
+    //-- USER JOB SCHEDULER
     userSchedule: "/user/schedule",
+
+    //-- USER CANDIDATES
+    userCandidate: "/user/candidates",
 
     //-- User (recruteur) & Agents
     createJob: "/jobs/create",
 }
 
 export default RouteScheme;
+
+
+
+export const PublicRoutes = [
+    RouteScheme.login,
+];

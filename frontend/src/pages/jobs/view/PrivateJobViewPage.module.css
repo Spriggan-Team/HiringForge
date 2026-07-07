@@ -1,0 +1,38 @@
+
+.main{
+    display: flex;
+}
+
+/** PANNEL **/
+.pannel{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.pannel .left{
+    gap: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.pannel .badge{}
+
+.pannel .right{
+    display: flex;
+    gap: 15px;
+}
+
+.pannel .editBtn{
+    gap: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.pannel .editsvg{
+    color: black;
+}
+
+.pannel .optionssvg{
+    
+}

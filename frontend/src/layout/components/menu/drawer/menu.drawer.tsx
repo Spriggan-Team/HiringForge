@@ -171,6 +171,9 @@ interface MenuDrawerBodyProps {
     children: React.ReactNode;
     applyDefaultStyle?: boolean;
     
+    left?: string;
+    right?: string;
+
     style?: React.CSSProperties,
     position?: "top-right" | "initial-absolute" | "initial"
 }
@@ -179,8 +182,12 @@ interface MenuDrawerBodyProps {
 export const MenuDrawerBody: React.FC<MenuDrawerBodyProps> = ({
     children,
     
-    style,
+    left,
+    right,
+
+    style={},
     className,
+
     applyDefaultStyle = true, 
     position = "top-right"
 }) => {
@@ -189,7 +196,12 @@ export const MenuDrawerBody: React.FC<MenuDrawerBodyProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div 
+        <div
+            style={{
+                ...style,
+                ["--menu-body-wrapper-left" as string]: left ?? 0,
+                ["--menu-body-wrapper-right" as string]: right ?? 0,
+            }}
             className={`
                 ${applyDefaultStyle ? styles.bodyWrapper : ""} 
                 ${position === "top-right" ? 

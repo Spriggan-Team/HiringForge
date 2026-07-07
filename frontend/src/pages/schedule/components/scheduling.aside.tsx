@@ -17,7 +17,7 @@ import TimeSVG from "/src/assets/svg/time/time-svgrepo-com.svg"
 //-- CSS Modules
 import styles from "./SchedulingAside.module.css"
 import { mockCalendarEvents } from "../../../core/mock/events";
-import type { Time } from "../../../features/shared/time";
+import type { Time } from "../../../features/shared/global";
 
 
 interface SchedulingAsideProps{

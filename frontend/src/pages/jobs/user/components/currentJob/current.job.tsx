@@ -63,9 +63,9 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
                                 </MenuDrawerTrigger>
 
                                 <MenuDrawerBody>
-                                <MenuDrawerItem value="edit">{t("global.actions.edit")}</MenuDrawerItem>
-                                <MenuDrawerItem value="duplicate">{t("global.actions.duplicate")}</MenuDrawerItem>
-                                <MenuDrawerItem value="delete">{t("global.actions.delete")}</MenuDrawerItem>
+                                    <MenuDrawerItem value="edit">{t("global.actions.edit")}</MenuDrawerItem>
+                                    <MenuDrawerItem value="duplicate">{t("global.actions.duplicate")}</MenuDrawerItem>
+                                    <MenuDrawerItem value="delete">{t("global.actions.delete")}</MenuDrawerItem>
                                 </MenuDrawerBody>
                             </MenuDrawer>
                         }

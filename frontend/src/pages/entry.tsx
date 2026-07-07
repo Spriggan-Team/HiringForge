@@ -1,7 +1,7 @@
 
 
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { redirectAccordingToSession } from "../core/auth.helpers";
 
 interface EntryPageProps{
@@ -12,9 +12,10 @@ const EntryPage: React.FC<EntryPageProps> = ({
     children
 }) => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(()=>{
-        redirectAccordingToSession(navigate)
+        redirectAccordingToSession(navigate, location)
     }, []);
 
     return ( <>{children}</> );

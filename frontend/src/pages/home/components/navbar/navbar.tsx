@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 //-- Data Types
+import { useAppContext } from "../../../../hooks/context";
 import type { UserBasicData } from "../../../../features/users/user.profile";
 import type { RecruiterDashboardKpis } from "../../../../features/dashboard/KpiData";
 
@@ -11,11 +12,10 @@ import type { RecruiterDashboardKpis } from "../../../../features/dashboard/KpiD
 import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg"
 import NotificationRingSVGComponent from "/src/assets/svg/menu/alarm-alert-bell-notification-warning-svgrepo-com.svg"
 import DownArrowSVGComponent from "/src/assets/svg/menu/down-arrow-5-svgrepo-com.svg"
+import BasicInput from "../../../../layout/components/form/input/basic.input";
 
 //-- CSS Styles
 import styles from "./style.module.css"
-import BasicInput from "../../../../layout/components/form/input/basic.input";
-import { useAppContext } from "../../../../hooks/context";
 
 
 export interface NavBarProps{
@@ -45,7 +45,13 @@ const NavBar: React.FC<NavBarProps> = ({
 
             <div className={styles.leadingSection}>
                 <h1 className={styles.title}>
-                    {navbar?.title ?? t("global.messages.welcome", { name: "Nexus Gaming" })}
+                    {
+                        navbar?.title ? 
+                            navbar.title
+                            : navbar?.title === null ?
+                                null
+                                :t("global.messages.welcome", { name: "Nexus Gaming" })
+                    }
                 </h1>
                 { 
                     navbar?.description ?
@@ -54,7 +60,8 @@ const NavBar: React.FC<NavBarProps> = ({
                             <p className={styles.desc}>{navbar.description}</p>
                         )
                         : navbar.description
-                    : informationTxt
+                    : navbar?.description === null 
+                        ? null : informationTxt
                 }
           
             </div>
