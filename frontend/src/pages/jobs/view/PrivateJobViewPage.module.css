@@ -1,6 +1,8 @@
 
 .main{
+    gap: 15px;
     display: flex;
+    flex-direction: column;
 }
 
 /** PANNEL **/
@@ -34,5 +36,5 @@
 }
 
 .pannel .optionssvg{
-    
+
 }

@@ -15,7 +15,7 @@ import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-s
 
 //-- Styles CSS
 import styles from "./CurrentJob.module.css"
-import JobSkill from "../skills/job.skill";
+import JobSkill from "../../../components/skills/job.skill";
 
 
 interface CurrentJobProps{

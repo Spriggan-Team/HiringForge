@@ -95,6 +95,7 @@ export interface RecruiterJobView {
     views: number;
     applications: number;
     expertise?: ExpertiseLevel;
+    cardinal: JobCardinal;
 }
 
 
@@ -106,7 +107,7 @@ export interface RecruiterJobView {
 export type JobView = PublicJobView & RecruiterJobView;
 
 
-type JobWorkMode = "remote" | "onsite" | "hybrid";
+export type JobWorkMode = "remote" | "onsite" | "hybrid";
 export type JobStatus = JobPublicationStatus | JobActivityStatus;
 export type JobPublicationStatus = "draft" | "closed" | "published";
 export type JobActivityStatus = "active" | "pending";
@@ -182,6 +183,13 @@ export const INITIAL_JOB_VIEW: PublicJobView & RecruiterJobView = {
 
     views: 0,
     applications: 0,
+
+    cardinal: {
+        candidates: 0,
+        interviews: 0,
+        offers: 0,
+        hired: 0,
+    }
 };
 
 

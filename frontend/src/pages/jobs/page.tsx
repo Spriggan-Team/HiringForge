@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { navigateTo } from "../../App";
 import RouteScheme from "../../route.scheme";
 import { jobsData, jobsViewData } from "../../core/mock/job.data";
+import type { JobView } from "../../features/jobs/JobOffer";
 
 
 //-- Custom Components
@@ -84,7 +85,7 @@ const UserJobsPage: React.FC<UserJobsPageProps> = ({}) => {
                         onClick={(id)=> 
                             navigateTo(navigate, RouteScheme.userJobView, { params: { id }})
                         }
-                        job={jobsViewData[currentJobId]}
+                        job={(jobsViewData[currentJobId]  as unknown as JobView)}
                     />
                 </div>
             </div>

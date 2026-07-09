@@ -16,7 +16,7 @@ import Title from "../../../../../layout/components/text/title/title";
 import CheckBoxInput from "../../../../../layout/components/form/input/checkbox/checkbox.input";
 import DateInput from "../../../../../layout/components/form/input/date/date.input";
 import TagList from "../../../../../layout/components/text/tag.list";
-import JobSkill from "../../../user/components/skills/job.skill";
+import JobSkill from "../../../components/skills/job.skill";
 import ToggleSwitch from "../../../../../layout/components/switch/toggle.switch";
 import InputLabel from "../../../../../layout/components/form/input/input.label";
 import LanguageSelectionWorkflow from "../../../../../layout/components/selectors/language/language.selection.workflow.";

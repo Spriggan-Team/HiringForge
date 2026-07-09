@@ -3,6 +3,10 @@
         "jobs": "Jobs",
         "title": "Job title",
         "modifyJob": "Modifier le job",
+        "department": "Departement",
+        "expertiseLevel": "Niveau d'expérience",
+        "requireLanguage": "Langue requise",
+        "remoteWorkEnable":"Télétravail possible",
 
         "buttons":{
             "create": "Créer une offre",
@@ -16,6 +20,17 @@
                 "placeholder": "Rechercher avec une addrèsse ? "
             }
         },
+
+        "overview":{
+            "title": "Aperçu"
+        },
+        "publicationDate": "Date de publication",
+
+        "pipeline":{
+            "candidates": "Pipeline des candidats",
+            "seeAllCandidates": "Voir tout les candidats"
+        },
+
 
         "createJob":{
             "generalInformationSection":{

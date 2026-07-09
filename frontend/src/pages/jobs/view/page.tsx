@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 //-- Services
@@ -13,9 +13,10 @@ import type { EntityAction } from "../../../features/shared/global";
 
 //-- Custom components
 import Title from "../../../layout/components/text/title/title";
-import JobInformationSection from "./components/job.information.section";
+import JobOverviewSection from "./components/overview/job.overview.section";
 import BreadCrumbs from "../../../layout/components/navigation/auth/link/bread.crumbs";
 import SimpleButton from "../../../layout/components/buttons/simple/simple.button";
+import TopBarNavigation from "../../../layout/components/navigation/topbar/topbar.navigation";
 import InfoPill, { type InfoPillProps } from "../../../layout/components/badges/pill/info.pill";
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/drawer/menu.drawer";
 
@@ -25,7 +26,7 @@ import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-s
 
 //-- CSS styles
 import styles from "./PrivateJobViewPage.module.css"
-
+import CandidatesViewSection from "./components/candidates/candidates.view.section";
 
 
 
@@ -36,6 +37,10 @@ export interface UserPageSinglePageProps{}
 
 type ViewModeTypes = 
     | "overview"
+    | "interviews"
+    | "candidates"
+    | "offers"
+    | "statistics"
 
 
 
@@ -45,11 +50,58 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
 
     /** States */
     const [action, setAction] = useState<EntityAction>(null);
-    const [viewMode, setViewMenu] = useState<ViewModeTypes>("overview");
+    const [viewMenu, setViewMenu] = useState<ViewModeTypes>("overview");
+
+    /** States (function) */
     const [jobView, setJobView] = useState(jobsViewData["1"] as unknown as JobView);
+
+    //-- Top Nav options
+    const options = useMemo(() => [
+        {
+            mode: "overview" as ViewModeTypes,
+            text: t("jobs.overview.title"),
+            current: viewMenu === "overview",
+            onClick: () => setViewMenu("overview"),
+        },
+        {
+            mode: "candidates" as ViewModeTypes,
+            current: viewMenu === "candidates",
+            count: jobView.cardinal?.candidates ?? 0,
+            onClick: () => setViewMenu("candidates"),
+            text: t("global.candidate.candidateLabel", {
+                count: jobView.cardinal?.candidates ?? 0,
+            }),
+        },
+        {
+            mode: "interviews" as ViewModeTypes,
+            current: viewMenu === "interviews",
+            count: jobView.cardinal?.interviews ?? 0,
+            onClick: () => setViewMenu("interviews"),
+            text: t("global.interview.interviewLabel", {
+                count: jobView.cardinal?.interviews ?? 0,
+            }),
+        },
+        {
+            mode: "offers" as ViewModeTypes,
+            current: viewMenu === "offers",
+            count: jobView.cardinal?.offers ?? 0,
+            onClick: () => setViewMenu("offers"),
+            text: t("global.offer.offerLabel", {
+                count: jobView.cardinal?.offers ?? 0,
+            }),
+        },
+        {
+            mode: "statistics" as ViewModeTypes,
+            current: viewMenu === "statistics",
+            onClick: () => setViewMenu("statistics"),
+            text: t("global.statistics.statistics_other"),
+        },
+    ], [viewMenu, jobView.cardinal, t]);
+
 
     /** Styles & design */
     const [infoPillSettings, setInfoPillSettings] = useState<InfoPillProps>({ text: "" });
+
 
     useEffect(()=>{
         const computed = getComputedStyle(document.documentElement);
@@ -66,7 +118,8 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
             backgroundColor,
             borderRadius: 10
         })
-    },[])
+
+    },[jobsViewData])
 
 
     /** Global Side effects */
@@ -138,17 +191,21 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
                 </div>
             </div>
 
-            {/** View */}
-            <div>
-
+            {/** View Mode (Naviagtion)*/}
+            <div className={styles.viewMode}>
+                <TopBarNavigation
+                    options={options}
+                />
             </div>
 
             {/** WIDGET (main content) */}
             <div className={styles.widget}>
                 {
-                    viewMode === "overview" && (
-                        <JobInformationSection />
-                    )
+                    viewMenu === "overview" ? 
+                        (<JobOverviewSection jobView={jobView} />)
+                    : viewMenu === "candidates" ? 
+                        (<CandidatesViewSection />)
+                    : null
                 }
             </div>
             

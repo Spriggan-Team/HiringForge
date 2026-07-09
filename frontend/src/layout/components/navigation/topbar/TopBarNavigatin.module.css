@@ -1,0 +1,140 @@
+/* ========================================================================== */
+/* TOP BAR */
+/* ========================================================================== */
+
+.container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    width: 100%;
+    overflow-x: auto;
+
+    padding: 0 6px;
+    border-bottom: 1px solid #e2e8f0;
+
+    scrollbar-width: none;
+}
+
+.container::-webkit-scrollbar {
+    display: none;
+}
+
+/* ========================================================================== */
+/* ITEM */
+/* ========================================================================== */
+
+.item {
+    position: relative;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 14px 14px;
+
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+
+    color: #64748b;
+
+    transition:
+        color .18s ease,
+        background .18s ease;
+}
+
+.item:hover {
+    color: #1e293b;
+}
+
+/* Active indicator */
+.item::after {
+    content: "";
+
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: -1px; /* se superpose à la bordure du container */
+
+    height: 3px;
+
+    border-radius: 999px 999px 0 0;
+
+    background: transparent;
+
+    transform: scaleX(.25);
+
+    transition:
+        background .18s ease,
+        transform .18s ease;
+}
+
+/* ========================================================================== */
+/* ACTIVE */
+/* ========================================================================== */
+
+.activate {
+    color: var(--active-color, #2563EB);
+    font-weight: 600;
+}
+
+.activate::after {
+    background: var(--active-color, #2563EB);
+    transform: scaleX(1);
+}
+
+.label {
+    font-size: .92rem;
+    font-weight: inherit;
+    color: inherit;
+}
+
+/* ========================================================================== */
+/* COUNT */
+/* ========================================================================== */
+
+.count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 20px;
+    height: 20px;
+
+    padding: 0 6px;
+
+    border-radius: 999px;
+
+    font-size: .72rem;
+    font-weight: 600;
+
+    color: #64748b;
+    background: #f1f5f9;
+
+    transition: .18s ease;
+}
+
+.activate .count {
+    background: color-mix(
+        in srgb,
+        var(--active-color, #2563EB) 14%,
+        white
+    );
+
+    color: var(--active-color, #2563EB);
+}
+
+/* ========================================================================== */
+/* MOBILE */
+/* ========================================================================== */
+
+@media (max-width:640px) {
+    .container {
+        gap: 2px;
+    }
+
+    .item {
+        padding-inline: 12px;
+    }
+}

@@ -23,11 +23,18 @@
             "seeDetails": "Voir détails",
             "save": "Sauvegarde",
             "error": "Une erreur inattendue est survenue",
-            "more": "Plus"
+            "more": "Plus",
+            "seeMore": "Voir plus"
         },
 
+
         "text":{
-            "fork": "Fourchette"
+            "fork": "Fourchette",
+            "place": "Lieu",
+            "unknown": "Unknow",
+            "notSpecify": "Pas préciser",
+            "status": "Statut",
+            "recentAction": "Recente action"
         },
 
         "menu":{
@@ -91,10 +98,16 @@
             "offerLabel_other": "offers"
         },
 
+        "statistics":{
+            "statistics_one": "Statistique",
+            "statistics_other": "Statistiques"
+        },
+
         "views":{
             "viewsLabel_one": "vue",
             "viewsLabel_other": "vues"
         },
+
 
 
         "actions": {

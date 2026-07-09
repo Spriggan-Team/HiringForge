@@ -1,0 +1,254 @@
+/*MAIN STRUCTURAL LAYOUT*/
+
+.container {
+    display: flex;
+    gap: 24px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.main {
+    flex: 2.8;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+
+
+.aside {
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    height: fit-content;
+}
+
+/** GLOBAL  **/
+
+.button {
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: transparent;
+    color: #2563eb;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.button:hover {
+    background-color: #f8fafc;
+}
+
+/*  VIEW CARD & META INFOS*/
+
+.view {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px;
+}
+
+.metaItems {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+}
+
+.meta {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    position: relative;
+}
+
+/* Precise CSS line separator between meta items */
+.meta:not(:first-child)::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 20%;
+    height: 60%;
+    width: 1px;
+    background-color: #e2e8f0;
+}
+
+.meta .svg {
+    color: #64748b;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.metaContent {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.meta .title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #0f172a;
+    text-transform: capitalize;
+}
+
+.meta .desc {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.content {
+    width: 100%;
+    color: #334155;
+    line-height: 1.6;
+}
+
+/* SKILLS & RECENT ACTIVITY  */
+
+.skillSection {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px;
+}
+
+.skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.recentActivitySection {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    /* border: 1px solid #E5E7EB; */
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.actions > div {
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.actions > div:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+
+/* PIPELINE CHART & LEGENDS*/
+
+.pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+.legend {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.legend .item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #475569;
+}
+
+.legend .item .left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend .circle {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    background-color: var(--bg-color, #cbd5e1);
+}
+
+.legend .right {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+
+
+/*   KEY INFORMATION */
+
+.keyInfoSection {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+}
+
+.keyInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+}
+
+.keyInfo .label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.keyInfo .value {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+/*  RESPONSIVE DESIGN BREAKPOINTS */
+
+/* Tablet & Intermediate Screen Viewports */
+@media (max-width: 1024px) {
+    .metaItems {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .meta:nth-child(2n+1)::before {
+        display: none; /* Drop visual separators on row wrapping breaks */
+    }
+}
+
+/* Mobile Viewports */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .main, .aside {
+        flex: none;
+        width: 100%;
+    }
+
+    .metaItems {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .meta::before {
+        display: none !important;
+    }
+}

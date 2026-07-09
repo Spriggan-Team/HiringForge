@@ -1,0 +1,94 @@
+.item {
+    display: flex;
+    align-items: center;
+
+    gap: 16px;
+    padding: 12px;
+    border-radius: 12px;
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+
+    width: 100%;
+    border-radius: 16px;
+
+}
+
+/* Icon container */
+.svg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+
+
+/* Deral with clickable */
+.item.clickable {
+    cursor: pointer;
+}
+
+.item.clickable:hover {
+    background-color: #F8FAFC;
+}
+
+/* ===========================
+   States & Color
+   ========================== */
+
+.postulate {
+    background-color: #EFF6FF; 
+    color: #2563EB;
+}
+
+.createInterview {
+    background-color: #FDF4FF;
+    color: #C084FC; 
+}
+
+.publishOffer {
+    background-color: #F0FDF4; 
+    color: #16A34A; 
+}
+
+.confirmInterview {
+    background-color: #ECFDF5; 
+    color: #059669; 
+}
+
+
+
+
+
+/* ============================
+   Notification content
+   =============================*/
+
+.main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-grow: 1;
+}
+
+.title {
+    color: #1E293B; /* Slate 800 */
+    font-size: 0.925rem;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.title strong {
+    color: #0F172A;
+    font-weight: 600;
+}
+
+
+.delayTime {
+    color: #94A3B8; /* Slate 400 */
+    font-size: 0.75rem;
+}

@@ -10,6 +10,7 @@ import ViewAllLink from "../../../../../layout/components/link/view.all.link";
 
 //-- CSS styles
 import styles from "./RecentActionPool.module.css"
+import RecentAction from "../../../../components/recentAction/recent.action";
 
 
 
@@ -46,6 +47,7 @@ interface RecentActionPoolProps{}
 const RecentActionPool: React.FC<RecentActionPoolProps> = ({}) => {
     const {t} = useTranslation();
     const [recentActions, setRecentAction] = useState(mockData);
+
     return (
         <div className={styles.container}>
             <SectionHeader
@@ -55,12 +57,13 @@ const RecentActionPool: React.FC<RecentActionPoolProps> = ({}) => {
             <div className={styles.items}>
                 {
                     recentActions.map((item, index)=>(
-                        <ActionItem
+                        <RecentAction
                             key={index}
                             type={item.type}
                             title={item.title}
                             delay={item.delay}
                             person={item.person}
+                            className={styles.item}
                         />
                     ))
                 }
@@ -71,70 +74,3 @@ const RecentActionPool: React.FC<RecentActionPoolProps> = ({}) => {
  
 export default RecentActionPool;
 
-
-/**-- Item -- */
-
-interface ActionItemProps{
-    person?: string|null;
-    title: string;
-    delay: string;
-    type: PersonActionType;
-    onClick?: React.MouseEventHandler<HTMLDivElement>
-}
-
-
-const actionConfigs: Record<PersonActionType, { icon: string; className: string }> = {
-    "postulate": { icon: "👤", className: styles.postulate },
-    "create-interview": { icon: "↗️", className: styles.createInterview },
-    "publish-offer": { icon: "📄", className: styles.publishOffer },
-    "confirm-interview": { icon: "✅", className: styles.confirmInterview },
-};
-
-const ActionItem: React.FC<ActionItemProps> = ({
-    title,
-    type,
-    person,
-    delay,
-    onClick
-}) => {
-    const {t} = useTranslation();
-    const config = actionConfigs[type];
-    
-    //-- Get title
-    const renderTitle = () => {
-        switch (type) {
-            case "postulate":
-                return t("notification.postulate", { person, offer: title });
-            case "create-interview":
-                return t("notification.createInterview", { person, interview: title });
-            case "publish-offer":
-                return t("notification.publishOffer", { title });
-            case "confirm-interview":
-                return t("notification.confirmInterview", { person });
-            default:
-                return "";
-        }
-    };
-
-    return (
-        <div 
-            onClick={onClick}
-            className={`${styles.item} ${onClick ? styles.clickable : ""}`}
-        >
-            {/* Icon  */}
-            <div className={`${styles.svg} ${config?.className}`}>
-                <div>{config?.icon}</div>
-            </div>
-            
-            <div className={styles.main}>
-                <span className={styles.title}>
-                    {renderTitle()}
-                </span>
-                <span className={styles.delayTime}>
-                    {delay}
-                </span>
-            </div>
-        </div>
-    );
-}
- 
