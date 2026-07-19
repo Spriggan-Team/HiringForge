@@ -2,9 +2,8 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens;
 
-use App\Api\Responder\ApiResponse;
-use App\Domain\Exception\RessourceNotFound;
 use App\Domain\OTP\OTP;
+use App\Domain\Exception\RessourceNotFound;
 use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Shared\Account\AccountFlowPurpose;
 

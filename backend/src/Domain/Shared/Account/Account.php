@@ -4,8 +4,7 @@ namespace App\Domain\Shared\Account;
 
 use App\Domain\File\StaticMedia;
 use App\Domain\Shared\EmailAddress;
-use App\Domain\User\UserId;
-use App\Domain\User\UserRole;
+
 
 abstract class Account
 {

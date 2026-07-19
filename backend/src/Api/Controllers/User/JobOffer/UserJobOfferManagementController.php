@@ -7,11 +7,11 @@ use DomainException;
 
 use App\Api\Responder\ApiResponse;
 
+use App\Domain\Shared\Account\AccountRole;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Application\DTO\JobOffer\ChangeJobOffferRequest;
-use App\Application\DTO\JobOffer\CreateJobOfferRequest;
+use App\Api\Controllers\User\JobOffer\Mapper\CreateJobOfferRequestMapper;
 
-use App\Domain\Shared\Account\AccountRole;
 
 use App\Application\Usecases\JobOffer\JobOfferImageRemover;
 use App\Application\Usecases\JobOffer\JobOfferImageUploader;
@@ -28,6 +28,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 
 
 /**
@@ -50,7 +51,8 @@ class UserJobOfferManagementController extends AbstractController
     #[Route("/", methods: ["POST"], name: "create_job_offer" )]
     public function createJobOffer(
         Request $request,
-        JobOfferRecorder $handler
+        JobOfferRecorder $handler,
+        CreateJobOfferRequestMapper $mapper
     ): JsonResponse
     {
         try
@@ -59,16 +61,13 @@ class UserJobOfferManagementController extends AbstractController
             $account = $this->getUser();
 
             $body = json_decode($request->getContent(), true);
-            $command = new CreateJobOfferRequest(
-                title:    $body['title'],
-                content:  $body['content'],
-                image: null,
-                categories: $body['categories'], //an array of categories' ids
-            );
+
+            $command = $mapper->fromArray($body);
             $offerId = $handler->execute(
                 accountId: $account->getId(),
                 command: $command
-            );;
+            );
+
             return ApiResponse::success(["offerId" => $offerId],"Everything went smoothly")->toJsonResponse();
         }
         catch(Exception $ex){
@@ -78,6 +77,7 @@ class UserJobOfferManagementController extends AbstractController
             )->toJsonResponse();
         }
     }
+
 
 
 

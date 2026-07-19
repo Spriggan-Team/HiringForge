@@ -2,13 +2,16 @@
 
 namespace App\Domain\Category\Repositories;
 
+use App\Domain\Category\Category;
 
-interface CategoryRepositoryInterace
+interface CategoryRepositoryInterface
 {
     /**
      * @param string[] categoriesIds - an array of the category to check existence
      * @throws \DomainException|\Exception  - logical error or error thrown by the systm
-     * @return void
+     * @return Category[]
      */
-    public function asserCategoriesExistence(array $categoriesIds): void;
+    public function getExistingByIds(array $categoriesIds): array;
+
+
 }

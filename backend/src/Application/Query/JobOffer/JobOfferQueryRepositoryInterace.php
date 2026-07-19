@@ -3,26 +3,65 @@
 namespace App\Application\Query\JobOffer;
 
 use App\Application\Query\JobOffer\DTO\JobOfferStatistics;
-use App\Application\Query\JobOffer\DTO\JobOffertListItem;
-
+use App\Application\Query\JobOffer\DTO\JobOfferListItem;
+use App\Domain\JobOffer\JobPublicationStatus;
 
 interface JobOfferQueryRepositoryInterace
 {
     /**
      * This return a view of a offer in the bdd.
      *  @throws RessourceNotFound
-     *  @return JobOffertListItem
+     *  @return JobOfferListItem
      */
-    public function fetchJobOfferViewById(string $offerId): JobOffertListItem;
+    public function fetchJobOfferViewById(
+        string $userId,
+        string $offerId
+    ): JobOfferListItem;
+
+
+    /** 
+     * Retreive job' views grouped by month
+     * 
+    */
+    public function fetchViewsGroupedByMonth(
+        string $userId,
+        string $jobId,    
+    );
+
 
     /**
-     * This function return a collection of all the JobOffer stored in bdd; The collection return must
-     * @param string $accountId             The id of an user
-     * @param ?int $limit                   The number of items you want to get back
-     * @param ?int skip                     The number of element you want to ignore in desc order by creation date
-     * @return JobOffertListItem[]          #should return a serializable value;
-     */
-    public function fetchJobOfferViewCollection(?int $limit= null, ?int $skip=null): array;
+     * Retrieves a collection of job offers.
+     *
+     * By default, only published job offers are returned. To retrieve job offers
+     * with any other status, the identifier of the requesting user must be provided.
+     *
+     * Results are ordered by creation date in descending order and support pagination.
+     *
+     * @param string|null $userId
+     *     Identifier of the user performing the retrieval.
+     *     Optional when fetching published job offers, but required when
+     *     requesting offers with a status other than JobPublicationStatus::PUBLISHED.
+     *
+     * @param int|null $limit
+     *     Maximum number of job offers to return.
+     *
+     * @param int|null $skip
+     *     Number of job offers to skip from the beginning of the result set.
+     *
+     * @param JobPublicationStatus|null $category
+     *     Status used to filter job offers.
+     *     Defaults to JobPublicationStatus::PUBLISHED. When a different status is specified,
+     *     the $userId parameter must be provided.
+     *
+     * @return JobOfferListItem[]
+     *     Collection of serializable job offer view models.
+ */
+    public function fetchJobOfferViewCollection(
+        ?string $userId = null,
+        ?int $limit = null,
+        ?int $skip = null,
+        ?JobPublicationStatus $category = JobPublicationStatus::PUBLISHED    
+    ): array;
 
 
     /**

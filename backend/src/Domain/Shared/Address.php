@@ -27,6 +27,7 @@ final class Address
         string $postalCode,
         string $country,
         ?string $street = null,
+        ?float $visibilityRange = null
     ):self
     {
         if (!$postalCode || trim($postalCode) === '') {
@@ -66,10 +67,10 @@ final class Address
         if(!$isSomethingMissing)
         {
             return  self::create(
-                $data["street"] ?? null,
-                $data["postalCode"],
-                $data['country'],
-                $data['visibilityRange'] ?? 10.0
+                street: $data["street"] ?? null,
+                postalCode: $data["postalCode"],
+                country: $data['country'],
+                visibilityRange: $data['visibilityRange'] ?? 10.0
             );
         }
         return null;
@@ -84,9 +85,9 @@ final class Address
      *          and when you are sure of the validity of your data beforehand.
      */
     public static function hydrate(
-        ?string $street = null,
         string $postalCode,
         string $country,
+        ?string $street = null,
     ): self
     {
         return new self(

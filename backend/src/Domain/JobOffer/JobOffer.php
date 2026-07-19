@@ -2,6 +2,12 @@
 
 namespace App\Domain\JobOffer;
 
+use App\Domain\Department\Department;
+use App\Domain\Shared\Contract\ContractType;
+use App\Domain\Shared\Language\Language;
+use App\Domain\Shared\LanguageLevel;
+use App\Domain\Shared\Skill\Skill;
+
 use DateTimeImmutable;
 use DomainException;
 
@@ -9,88 +15,230 @@ use DomainException;
 final class JobOffer
 {
     private string $id;
+
+    //-- Text content
     private string $title;
     private array  $content;
-    private  array  $categories;
-    private JobStatus $status;
-    /** @var JobOfferImage[] */
+
+    /** @var JobOfferImage[] - Images */
     private array $images = [];
+
+    //-- Categorization
+    private  array  $categories;
+    private ?Department $department = null;
+    private ?JobWorkMode $jobWorkMode = null;
+
+    //-- status & visibility
+    private ?JobActivityStatus $activityStatus = null;
+    private JobPublicationStatus $publicationStatus;
+    private  JobOfferVisibilityStatus $visibilityStatus = JobOfferVisibilityStatus::PUBLIC;  //-- control pubication visibility
+
+
+    //-- Constraint
+        /** @var Skill[]  */
+    private array $requiredSkills = [];
+
+        /**  @var RequiredLanguage[] */
+    private array $requiredLanguages = [];
+    private ?JobOfferExpertise $expertise = null;
+    private ?ContractType $contract = null;
+
+
+    //-- Salary
+    private ?float $maxSalary = null;
+    private ?float $minSalary = null;
+    private ?string $currency = null;
+
+
     private DateTimeImmutable $createdAt;
     private DateTimeImmutable $updatedAt;
+    private ?DateTimeImmutable $publicationDate = null;
+
 
     private function __construct(
         string $id,
         string $title,
         array $content,
         array $categories,
-        JobStatus $status,
+
         array $images,
+
         DateTimeImmutable $createdAt,
-        DateTimeImmutable $updatedAt
+        DateTimeImmutable $updatedAt,
+
+        JobOfferVisibilityStatus $visibilityStatus,
+        ?JobActivityStatus $activityStatus,
+        JobPublicationStatus $publicationStatus,
+
     ) {
-        $this->id          = $id;
-        $this->title       = $title;
-        $this->content     = $content;
-        $this->status      = $status;
-        $this->images       = $images;
-        $this->categories  = $categories;
-        $this->createdAt   = $createdAt;
-        $this->updatedAt   = $updatedAt;
+        $this->id = $id;
+
+        $this->title = $title;
+        $this->content = $content;
+
+        $this->categories = $categories;
+        $this->images = $images;
+
+        $this->visibilityStatus = $visibilityStatus;
+        $this->activityStatus = $activityStatus;
+        $this->publicationStatus = $publicationStatus;
+
+        $this->createdAt = $createdAt;
+        $this->updatedAt = $updatedAt;
     }
 
     // Create an offer
     public static function create(
         string $id,
         string $title,
-        array  $content,
-        array  $categories = [],
-        ?JobStatus $status = null,
-        array $images =  [],
+        array $content,
+
+        array $categories = [],
+        array $images = [],
+
+        ?JobActivityStatus $activityStatus = null,
+        JobPublicationStatus $publicationStatus = JobPublicationStatus::DRAFT,
+        JobOfferVisibilityStatus $visibilityStatus = JobOfferVisibilityStatus::PUBLIC,
+
     ): self
     {
-        if ($id === '') {
-            throw new DomainException("JobOffer id cannot be empty");
+        if (trim($id) === '') {
+            throw new DomainException(
+                "JobOffer id cannot be empty"
+            );
         }
 
         if (strlen(trim($title)) < 10) {
-            throw new DomainException("Job offer title must be at least 10 characters");
+            throw new DomainException(
+                "Job offer title must be at least 10 characters"
+            );
         }
 
         if (empty($content)) {
-            throw new DomainException("Job offer must have content");
+            throw new DomainException(
+                "Job offer content cannot be empty"
+            );
         }
 
         $now = new DateTimeImmutable();
 
         return new self(
             id: $id,
+
             title: $title,
             content: $content,
             categories: $categories,
-            status: $status ?? JobStatus::DRAFT,
+
             images: $images,
+
             createdAt: $now,
-            updatedAt: $now
+            updatedAt: $now,
+
+            visibilityStatus: $visibilityStatus,
+            activityStatus: $activityStatus,
+            publicationStatus: $publicationStatus
         );
     }
 
+
+    // -------------------- Getters --------------------
+
+    public function id(): string { return $this->id; }
+    public function title(): string { return $this->title; }
+    public function content(): array { return $this->content; }
+    public function status():    JobPublicationStatus {return $this->publicationStatus;}
+    public function createdAt(): DateTimeImmutable { return $this->createdAt; }
+    public function updatedAt(): DateTimeImmutable { return $this->updatedAt; }
+    public function categories(): array { return $this->categories;  } 
+
+    public function getActivityStatus() { return $this->activityStatus; }
+
+    public function images(): array
+    {
+        return $this->images;
+    }
+
+    public function requireSkills(): array
+    {
+        return $this->requiredSkills;
+    }
+
+    public function requiredLanguages(): array
+    {
+        return $this->requiredLanguages;
+    }
+
+    public function expertise(): ?JobOfferExpertise
+    {
+        return $this->expertise;
+    }
+
+    public function contract(): ?ContractType
+    {
+        return $this->contract;
+    }
+
+    public function department(): ?Department
+    {
+        return $this->department;
+    }
+
+    public function jobWorkMode(): ?JobWorkMode
+    {
+        return $this->jobWorkMode;
+    }
+
+    public function activityStatus(): ?JobActivityStatus
+    {
+        return $this->activityStatus;
+    }
+
+    public function publicationStatus(): JobPublicationStatus
+    {
+        return $this->publicationStatus;
+    }
+
+    public function visibilityStatus(): JobOfferVisibilityStatus
+    {
+        return $this->visibilityStatus;
+    }
+
+    public function minSalary(): ?float
+    {
+        return $this->minSalary;
+    }
+
+    public function maxSalary(): ?float
+    {
+        return $this->maxSalary;
+    }
+
+    public function currency(): ?string
+    {
+        return $this->currency;
+    }
+
+    public function publicationDate(){
+        return $this->publicationDate;
+    }
+    
     // -------------------- Business behaviors --------------------
 
 
     public function publish(): void
     {
-        if ($this->status == JobStatus::PUBLISHED) {
+        if ($this->publicationStatus == JobPublicationStatus::PUBLISHED) {
             throw new DomainException("Job offer already published");
         }
 
-        $this->status = JobStatus::PUBLISHED;
+        $this->publicationStatus = JobPublicationStatus::PUBLISHED;
         $this->touch();
     }
 
 
     public function rename(string $newTitle): void
     {
-        if ($this->status === JobStatus::PUBLISHED) {
+        if ($this->publicationStatus === JobPublicationStatus::PUBLISHED) {
             throw new DomainException("Published job offers cannot be renamed");
         }
 
@@ -105,14 +253,16 @@ final class JobOffer
 
     public function addImage(JobOfferImage $jobImage): void
     {
-        if ($this->status === JobStatus::PUBLISHED) {
+        if ($this->publicationStatus === JobPublicationStatus::PUBLISHED) {
             throw new DomainException("Published job offers cannot be renamed");
         }
         $jobImage->media->mustBe(sizeLimitation: 15728640  ); //15 mo
+
         foreach($this->images as $image){
             if($image->isMain)
-                 throw new DomainException(" Two file be set as 'main' for a given jobOffer ");
+                throw new DomainException(" Two file be set as 'main' for a given jobOffer ");
         }
+
         $this->images[] = $jobImage;
         $this->touch();
     }
@@ -120,7 +270,7 @@ final class JobOffer
 
     public function removeImage(JobOfferImage $JobImage): void
     {
-        if ($this->status === JobStatus::PUBLISHED) {
+        if ($this->publicationStatus === JobPublicationStatus::PUBLISHED) {
             throw new DomainException("Published job offers cannot be renamed");
         }
         $this->images = array_filter($this->images, fn($image) => $image->media->name === $JobImage->media->name); //Not reindexed
@@ -130,7 +280,7 @@ final class JobOffer
     
     public function changeContent(array $newContent): void
     {
-        if ($this->status === JobStatus::PUBLISHED) {
+        if ($this->publicationStatus === JobPublicationStatus::PUBLISHED) {
             throw new DomainException("Published job offers cannot be edited");
         }
 
@@ -149,15 +299,205 @@ final class JobOffer
     }
 
 
-    public function isPublished(): bool { return $this->status === JobStatus::PUBLISHED; }
+    public function isPublished(): bool { return $this->publicationStatus === JobPublicationStatus::PUBLISHED; }
     
-    // -------------------- Getters --------------------
 
-    public function id(): string { return $this->id; }
-    public function title(): string { return $this->title; }
-    public function content(): array { return $this->content; }
-    public function status():    JobStatus {return $this->status;}
-    public function createdAt(): DateTimeImmutable { return $this->createdAt; }
-    public function updatedAt(): DateTimeImmutable { return $this->updatedAt; }
-    public function categories(): array { return $this->categories;  } 
+    public function changeDepartment(?Department $department): void
+    {
+        if ($this->isPublished()) {
+            throw new DomainException("Published job offers cannot be edited");
+        }
+
+        $this->department = $department;
+        $this->touch();
+    }
+
+
+    public function changeWorkMode(?JobWorkMode $jobWorkMode): void
+    {
+        if ($this->isPublished()) {
+            throw new DomainException("Published job offers cannot be edited");
+        }
+
+        $this->jobWorkMode = $jobWorkMode;
+        $this->touch();
+    }
+
+
+
+    public function changeExpertise(?JobOfferExpertise $expertise): void
+    {
+        if ($this->isPublished()) {
+            throw new DomainException("Published job offers cannot be edited");
+        }
+
+        $this->expertise = $expertise;
+        $this->touch();
+    }
+
+
+
+    public function changeContractType(?ContractType $contract): void
+    {
+        if ($this->isPublished()) {
+            throw new DomainException("Published job offers cannot be edited");
+        }
+
+        $this->contract = $contract;
+        $this->touch();
+    }
+
+
+
+    public function changeSalary(
+        ?float $minSalary,
+        ?float $maxSalary,
+        ?string $currency
+    ): void {
+        if ($this->isPublished()) {
+            throw new DomainException("Published job offers cannot be edited");
+        }
+
+        if (
+            $minSalary !== null &&
+            $maxSalary !== null &&
+            $minSalary > $maxSalary
+        ) {
+            throw new DomainException("Minimum salary cannot exceed maximum salary");
+        }
+
+        $this->minSalary = $minSalary;
+        $this->maxSalary = $maxSalary;
+        $this->currency = $currency;
+
+        $this->touch();
+    }
+
+
+
+    public function changeVisibilityStatus(JobOfferVisibilityStatus $visibility): void
+    {
+        $this->visibilityStatus = $visibility;
+        $this->touch();
+    }
+
+
+    public function activate(): void
+    {
+        $this->activityStatus = JobActivityStatus::ACTIVE;
+        $this->touch();
+    }
+
+
+
+    public function deactivate(): void
+    {
+        $this->activityStatus = JobActivityStatus::INACTIVE;
+        $this->touch();
+    }
+
+    public function addSkill(Skill $skill): void
+    {
+        if ($this->isPublished()) {
+            throw new DomainException("Published job offers cannot be edited");
+        }
+
+        foreach ($this->requiredSkills as $existingSkill) {
+            if ($existingSkill->id() === $skill->id()) {
+                return;
+            }
+        }
+
+        $this->requiredSkills[] = $skill;
+        $this->touch();
+    }
+
+
+
+    public function removeSkill(Skill $skill): void
+    {
+        if ($this->isPublished()) {
+            throw new DomainException("Published job offers cannot be edited");
+        }
+
+        $this->requiredSkills = array_values(
+            array_filter(
+                $this->requiredSkills,
+                fn (Skill $item) => $item->id() !== $skill->id()
+            )
+        );
+
+        $this->touch();
+    }
+
+
+
+    public function addRequiredLanguage(RequiredLanguage  $reqLanguage): void
+    {
+        if ($this->isPublished()) {
+            throw new DomainException("Published job offers cannot be edited");
+        }
+
+        foreach($this->requiredLanguages as $requiredLanguage){
+
+            if(
+                $requiredLanguage
+                    ->language()
+                    ->id() === $reqLanguage->language()->id()
+            ){
+                throw new DomainException(
+                    "Language already required"
+                );
+            }
+        }
+
+
+        $this->requiredLanguages[] = $reqLanguage;
+
+
+        $this->touch();
+    }
+    
+
+
+    public function removeRequiredLanguage(Language $language): void
+    {
+        if ($this->isPublished()) {
+            throw new DomainException("Published job offers cannot be edited");
+        }
+
+        $this->requiredLanguages = array_values(
+            array_filter(
+                $this->requiredLanguages,
+                fn (Language $item) => $item->id() !== $language->id()
+            )
+        );
+
+        $this->touch();
+    }
+    
+
+    public function changeCategories(array $categories): void
+    {
+        if ($this->isPublished()) {
+            throw new DomainException("Published job offers cannot be edited");
+        }
+
+        $this->categories = $categories;
+        $this->touch();
+    }
+
+    public function schedulePublication(?DateTimeImmutable $publicationDate=null){
+        if ($this->isPublished()) {
+            throw new DomainException("Published job offers cannot set a publication date as they are already published");
+        }
+        
+        if($publicationDate && new DateTimeImmutable() < $publicationDate)
+        {
+            throw new DomainException("Published job offers cannot be published a past day");
+        }
+
+        $this->publicationDate = $publicationDate;
+        $this->touch();
+    }
 }

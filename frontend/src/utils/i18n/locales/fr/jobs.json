@@ -33,6 +33,9 @@
 
 
         "createJob":{
+            "messages":{
+                "creatingJob": "Création de l'offre d'emploi"
+            },
             "generalInformationSection":{
                 "title": "Information générales",
                 "inputs":{

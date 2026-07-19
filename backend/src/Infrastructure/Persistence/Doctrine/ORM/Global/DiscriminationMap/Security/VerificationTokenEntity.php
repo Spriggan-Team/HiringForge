@@ -3,7 +3,6 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Security;
 
 use App\Domain\Shared\Account\AccountFlowPurpose;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
@@ -28,7 +27,7 @@ class VerificationTokenEntity
     private ?AccountFlowPurpose $purpose = null;
 
     #[ORM\Column(nullable: false)]
-    private ?\DateTimeImmutable $expiresAt = null;
+    private ?\DateTimeImmutable $expiresAt = null; //tell when token as been mark as blaclisted
 
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
@@ -120,6 +119,11 @@ class VerificationTokenEntity
         if(!$this->expiresAt){
             $this->expiresAt = $expiresAt;
         }
+        return $this;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt){
+        $this->createdAt =$createdAt;
         return $this;
     }
 

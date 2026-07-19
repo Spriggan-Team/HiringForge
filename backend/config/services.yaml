@@ -64,9 +64,11 @@ services:
     App\Domain\Shared\TransactionManagerInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\DoctrineTransactionManager
 
+
     #--- Company
     App\Domain\Company\CompanyRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Company\Repositories\CompanyRepository
+
 
     #------ User ------
     App\Domain\User\UserRepositoryInterface:
@@ -75,9 +77,21 @@ services:
     App\Application\Query\Handlers\User\UserQueryRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories\UserQueryRepository
 
+
     #------ Candidate ----
     App\Domain\Candidate\CandidateRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\CandidateRepository
+
+
+    #------ Email -------
+    App\Domain\Email\EmailRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Email\EmailRepository
+
+    #------ OTP -------
+
+    App\Domain\OTP\OTPRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens\OTPRepository
+
 
     #----- JobOffer ------
     App\Domain\JobOffer\JobOfferRepositioryInterface:
@@ -86,20 +100,33 @@ services:
     App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferQueryRepository
     
+
     #----Category -------------------
     App\Domain\Category\Repositories\CategoryRepositoryInterace:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Category\Repositories\CategoryRepository
-
-    #------ Email -------
-    App\Domain\Email\EmailRepositoryInterface:
-        alias: App\Infrastructure\Persistence\Doctrine\ORM\Email\EmailRepository
     
-    #------ OTP -------
 
-    App\Domain\OTP\OTPRepositoryInterface:
-        alias: App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens\OTPRepository
+    #----- Skill------
+    App\Domain\Shared\Skill\SkillRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\Repositories\SkillRepository
 
-    #--------------
+
+    #---- Language --------------
+    App\Domain\Shared\Language\LanguageRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\Repositories\LanguageRepository
+
+
+    #---- Department
+    App\Domain\Department\DepartmentRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Department\Repositories\DepartmentRespository
+
+
+    #--- Contract type
+    App\Domain\Shared\Contract\ContractTypeRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Contract\Repositories\ContractTypeRepository
+
+
+    #-------------------------------
     # FileStorage Services
     #-------------------------------
     App\Infrastructure\Storage\FileStorage\MediaStorage:
@@ -113,7 +140,7 @@ services:
         alias: App\Infrastructure\Storage\FileStorage\MediaFactory
 
 
-    #--------------
+    #------------------------------
     # Email Services
     #-------------------------------
     App\Infrastructure\Email\EmailServices:
@@ -133,6 +160,8 @@ services:
     App\Domain\Shared\PasswordHasherInterface:
         alias: App\Infrastructure\Security\PasswordHasher
 
+    App\Domain\Security\TokenBlacklistRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens\TokenBlacklistRepository
 
     #------------------
     #   Dev Packages

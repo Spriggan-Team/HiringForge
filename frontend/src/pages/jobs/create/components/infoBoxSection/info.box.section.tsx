@@ -9,7 +9,7 @@ import Title from "../../../../../layout/components/text/title/title";
 import InputLabel from "../../../../../layout/components/form/input/input.label";
 import TipTapEditor from "../../../../../layout/components/editors/tiptap/tiptap.editor";
 import Separator from "../../../../../layout/components/separator/separator";
-import BasicInput, { globalBasicInputInput, type BasicInputProps } from "../../../../../layout/components/form/input/basic.input";
+import BasicInput, { globalBasicInputInput } from "../../../../../layout/components/form/input/basic.input";
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../../layout/components/menu/drawer/menu.drawer";
 import JobSkill from "../../../components/skills/job.skill";
 

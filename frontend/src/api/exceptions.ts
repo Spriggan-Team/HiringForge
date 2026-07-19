@@ -14,6 +14,10 @@ export const ApiResponseCode = {
     INVALID_CREDENTIALS: "invalid_credential",
     COMPANY_ALREADY_REGISTERED: "company_already_registered",
 
+    //-- auth/login
+    AUTH_ACCESS_EXPIRED: "access_expired",
+
+
     //-- file
     FILE_MISMATCH_TYPE: "file_mismatch_type",
     FILE_SIZE_EXCEEDED: "file_size_exceeded",
@@ -27,6 +31,7 @@ export type ApiResponseCodeType =
 
 
 
+
 //--- Api Générique error code
 export interface HttpBadResponseProps<T = unknown> {
     httpCode?: number;
@@ -35,6 +40,7 @@ export interface HttpBadResponseProps<T = unknown> {
     options?: ErrorOptions;
     payload?: T | null;
 }
+
 
 export class HttpBadResponse<T = unknown> extends Error {
     readonly httpCode?: number;
@@ -68,6 +74,7 @@ export interface ExceptionWithPayloadInterface<T>
     code?: number;
     options?: ErrorOptions;
 }
+
 
 export class ExceptionWithPayload<T = unknown> extends Error
 {

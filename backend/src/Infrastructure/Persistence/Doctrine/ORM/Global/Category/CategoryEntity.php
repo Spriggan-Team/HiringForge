@@ -15,11 +15,11 @@ class CategoryEntity
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private string $name;
+    private string $label;
 
     #[ORM\OneToMany(
         mappedBy: 'category',
@@ -39,16 +39,16 @@ class CategoryEntity
     //=====================
 
     public function getId(): ?int { return $this->id; }
-    public function getName(): string { return $this->name; }
+    public function getLabel(): string { return $this->label; }
     public function getJobCategories(): Collection { return $this->jobCategories; }
 
     //======================
     //   SETTERS
     //=====================
 
-    public function setName(string $name): static
+    public function setLabel(string $label): static
     {
-        $this->name = $name;
+        $this->label = $label;
         return $this;
     }
 

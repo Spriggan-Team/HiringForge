@@ -1,5 +1,5 @@
 import Utils from "../utils/html";
-import { HttpBadResponse, type ApiResponseCodeType } from "./exceptions";
+import { ApiResponseCode, HttpBadResponse, type ApiResponseCodeType } from "./exceptions";
 
 
 const port = import.meta.env.VITE_API_PORT;
@@ -43,6 +43,7 @@ const request = async <T, O = unknown>(
 
   const contentType = response.headers.get("content-type");
 
+  //-- Global Error handling
   if (!response.ok) {
       const errorBody = await response.text();
 
@@ -64,7 +65,7 @@ const request = async <T, O = unknown>(
 
             if (errorJson.code) {
               if(HttpBadResponse.isValidApiCode(errorJson.code)){
-                  apiCode = errorJson.code ;
+                apiCode = errorJson.code;
               }
             }
 

@@ -13,9 +13,8 @@ export class AccountNotFound extends ExceptionWithPayload{};
 
 //--Auth
 export class InvalidCredentials extends ExceptionWithPayload{};
-
+export class AccessExpired extends ExceptionWithPayload{};
 
 //--File
 export class FileSizeExceeded extends ExceptionWithPayload{};
-
 export class FileTimeExceeded extends ExceptionWithPayload{};

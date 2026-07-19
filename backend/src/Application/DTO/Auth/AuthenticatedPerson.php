@@ -22,12 +22,18 @@ final class AuthenticatedPerson implements UserInterface
          * @var array  string AccountRole::value
         * This array contains the roles of a defined user
         */
-        private array $roles
+        private array $roles,
+
+        private ?string $jti = null,
     ) {}
 
     public function getId()
     {
         return $this->id;
+    }
+
+    public function getJti(){
+        return $this->jti;
     }
 
     public function getUserIdentifier(): string

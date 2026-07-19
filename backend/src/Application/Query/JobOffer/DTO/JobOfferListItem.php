@@ -9,7 +9,7 @@ namespace App\Application\Query\JobOffer\DTO;
  * query repositories. It is not a domain entity and contains
  * no business logic.
  */
-class JobOffertListItem
+class JobOfferListItem
 {
     public function __construct(
         public string $id,

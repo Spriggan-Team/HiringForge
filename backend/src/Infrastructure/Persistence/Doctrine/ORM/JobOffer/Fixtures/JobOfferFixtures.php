@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Fixtures;
 
-use App\Domain\JobOffer\JobStatus;
+use App\Domain\JobOffer\JobPublicationStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\Fixtures\UserFixtures;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
@@ -52,7 +52,7 @@ class JobOfferFixtures extends Fixture implements DependentFixtureInterface
                 ])
                 ->setCreatedAt(new \DateTimeImmutable('-'.random_int(1, 30).' days'))
                 ->setUpdatedAt(new \DateTimeImmutable())
-                ->setStatus(JobStatus::PUBLISHED)
+                ->setPublicationStatus(JobPublicationStatus::PUBLISHED)
                 ->setUser($this->getReference('user_'.($i % 20), UserEntity::class));
 
             $manager->persist($job);

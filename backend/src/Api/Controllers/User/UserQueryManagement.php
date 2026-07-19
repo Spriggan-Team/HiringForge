@@ -6,9 +6,9 @@ namespace App\Api\Controllers\User;
 use App\Api\Responder\ApiResponse;
 use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
 use App\Application\Usecases\User\FetchUser;
-use App\Application\Usecases\User\ViewPerformanceMetrics;
+
+
 use Psr\Log\LoggerInterface;
-use App\Domain\Shared\Account\AccountRole;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -56,14 +56,16 @@ class UserQueryManagement extends AbstractController
     }
 
     
-    #[Route("/{userId}/kpi", methods: ['GET'], name: "view_kpi_metrics")]
+    #[Route("/kpi", methods: ['GET'], name: "view_kpi_metrics")]
     public function getKpi(
-        string $userId,
         JobOfferQueryRepositoryInterace $jobOfferQueryRepository
     ) {
         try{
-            $result = $jobOfferQueryRepository->analyseJobOfferCollection($userId);
-            return ApiResponse::success($result)->toJsonResponse();
+            /** @var AuthenticatedPerson */
+            $user = $this->getUser();
+
+            $result = $jobOfferQueryRepository->analyseJobOfferCollection($user->getId());
+            return ApiResponse::success(data: $result, message: "Everything went successfully")->toJsonResponse();
         }
         catch(\Exception $exception){
             return ApiResponse::error(
@@ -71,5 +73,10 @@ class UserQueryManagement extends AbstractController
                 throwable: $exception
             )->toJsonResponse();
         }
+    }
+
+    #[Route('/kanban')]
+    public function getKanbanResult(){
+
     }
 }

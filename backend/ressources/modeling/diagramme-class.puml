@@ -125,7 +125,7 @@ class JobOffer{
     id: string
     title: string
     content: string
-    status: JobStatus
+    status: JobPublicationStatus
     createdAt: Datetime
     updatedAt: Datetime
 }
@@ -301,11 +301,12 @@ UserRepository --> KeepTrace
 ' ENUM
 '========================
 
-enum JobStatus{
+enum JobPublicationStatus{
     DRAFT
     CLOSED
     PUBLISHED
 }
+
 
 '========================
 ' DASHBOARD (EXISTING LOGIC ONLY)

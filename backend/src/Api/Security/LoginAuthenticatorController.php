@@ -14,6 +14,7 @@ use App\Domain\ApplicationErrorCode;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountRole;
 use App\Infrastructure\Security\JwtAuthentificator;
+
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;

@@ -2,11 +2,11 @@
 
 namespace App\Domain\User;
 
+use App\Domain\Shared\Address;
 use App\Domain\Shared\KnownIdentity;
 
 interface UserRepositoryInterface 
 {
-    
     /**
      * A method to save a new ressource in storage/bdd
      * @param  User $user represents the user to persist
@@ -56,6 +56,10 @@ interface UserRepositoryInterface
      */
     public function findById(string $uuid): User;
 
+    /** Handle user deltion (recruiter) */
     public function delete(string $id): void;
+
+    /** Handle user address */
+    public function getOrganizationId(string $userId): string ;
     
 }

@@ -9,9 +9,12 @@ use App\Domain\Shared\KnownIdentity;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountRole;
 use App\Domain\User\UserRepositoryInterface;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
+
+
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 
@@ -110,4 +113,16 @@ class UserRepository implements UserRepositoryInterface
         throw new \Exception('Not implemented');
     }
 
+
+    #[Override]
+    public function getOrganizationId(string $userId): string
+    {
+        $user = $this->em->find(UserEntity::class, $userId);
+        if (!$user) {
+            throw new RessourceNotFound("User not found");
+        }
+
+        $company = $user->getCompany();
+        return $company->getId(); 
+    }
 }

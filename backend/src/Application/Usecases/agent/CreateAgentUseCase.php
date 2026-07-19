@@ -31,6 +31,7 @@ class CreateAgentUseCase
         private PasswordHasherInterface $hasher,
     ){}
 
+    
     /** Create an agent */
     public function execute(CreateAgentCommand $command) : Agent {
         $email = EmailAddress::create($command->email);

@@ -6,6 +6,8 @@ namespace App\Api\Security;
 use App\Api\Responder\ApiResponse;
 use App\Infrastructure\Security\JwtAuthentificator;
 use App\Application\DTO\Auth\AuthenticatedPerson;
+use App\Domain\ApplicationErrorCode;
+use App\Domain\Security\TokenBlacklistRepositoryInterface;
 
 
 use Symfony\Component\HttpFoundation\Request;
@@ -23,8 +25,10 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 class JwtAuthenticatorController extends AbstractAuthenticator
 {
     public function __construct(
-        private JwtAuthentificator $jwtService
+        private JwtAuthentificator $jwtService,
+        private TokenBlacklistRepositoryInterface $blacklister 
     ) {}
+
 
     public function supports(Request $request): ?bool
     {
@@ -37,6 +41,7 @@ class JwtAuthenticatorController extends AbstractAuthenticator
         return str_starts_with(strtolower($authHeader), "bearer ");
     }
 
+
     public function authenticate(Request $request): Passport
     {
         $authHeader = $request->headers->get("Authorization");
@@ -44,13 +49,25 @@ class JwtAuthenticatorController extends AbstractAuthenticator
             throw new CustomUserMessageAuthenticationException("Missing authentication token.");
         }
 
-        //-- jwt extraction
         $jwt = trim(substr($authHeader, 7));
 
         try {
-            $payload = $this->jwtService->decode($jwt);
-        } catch (\Exception) {
-            throw new CustomUserMessageAuthenticationException("Expired or invalid token.");
+            $token = $this->jwtService->decode($jwt);
+            $jti = $token->claims()->get('jti');
+
+            if ($jti && $this->blacklister->isBlacklisted($jti)) {
+                throw new CustomUserMessageAuthenticationException("Token has been blacklisted.", code: 401);
+            }
+            $payload = $token->claims()->get('payload');
+        }
+        catch (CustomUserMessageAuthenticationException $e) {
+            throw $e;
+        }
+        catch (\DomainException $e) {
+            throw new CustomUserMessageAuthenticationException($e->getMessage(), code: 401, previous: $e);
+        }
+        catch (\Exception $e) {
+            throw new CustomUserMessageAuthenticationException("Invalid token.", previous: $e);
         }
 
         // Payload Validation
@@ -61,7 +78,8 @@ class JwtAuthenticatorController extends AbstractAuthenticator
         $user = new AuthenticatedPerson(
             $payload['id'],
             $payload['sub'],
-            $payload['roles']
+            $payload['roles'],
+            $jti
         );
 
         return new SelfValidatingPassport(new UserBadge(
@@ -77,9 +95,11 @@ class JwtAuthenticatorController extends AbstractAuthenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
+
         return ApiResponse::error(
             message: $exception->getMessage(),
-            statusCode: 401 
+            statusCode: 401,
+            code: $exception->getCode() === 401 ?  ApplicationErrorCode::AUTH_ACCESS_EXPIRED : null
         )->toJsonResponse();
     }
 }

@@ -40,9 +40,9 @@ class UserEntity extends AccountEntity
     #[ORM\JoinColumn(nullable: false)]
     private ?CompanyEntity $company = null;
 
+
     #[ORM\Column(nullable: false, enumType: UserRole::class)]
     private UserRole $userRole = UserRole::RECRUITER;
-
 
     //------------------------
     //  Construction...

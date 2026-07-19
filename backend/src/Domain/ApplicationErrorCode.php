@@ -16,6 +16,9 @@ enum ApplicationErrorCode: string{
     case INVALID_CREDENTIALS = "invalid_credential";
     case COMPANY_ALREADY_REGISTERED = "company_already_registered";
 
+    //-- auth/login
+    case AUTH_ACCESS_EXPIRED = "access_expired";
+
     //-- file
     case FILE_MISMATCH_TYPE = "file_mismatch_type";
     case FILE_SIZE_EXCEEDED = "file_size_exceeded";

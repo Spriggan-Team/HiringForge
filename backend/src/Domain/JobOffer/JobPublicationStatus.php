@@ -2,11 +2,8 @@
 
 namespace App\Domain\JobOffer;
 
-enum JobStatus: string
+enum JobPublicationStatus: string
 {
-    case ACTIVE = "active";         //-- is associated to  at least one candidate
-    case PENDING = "pending";       //-- all current candidate has been with
-
     case DRAFT = 'draft';           // Is the initiate state of an offer
     case CLOSED = 'closed';         // means the data is deleted or not longer use
     

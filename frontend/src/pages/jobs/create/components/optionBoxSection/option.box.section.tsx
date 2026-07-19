@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 //-- Services
 import RouteScheme from "../../../../../route.scheme";
 import {  useJob } from "../../../../../context/job.context";
 import { formatSalary } from "../../../../../utils/format";
-import { INITIAL_JOB_VIEW } from "../../../../../features/jobs/JobOffer";
+import { INITIAL_JOB_VIEW, type JobView } from "../../../../../features/jobs/JobOffer";
 import { navigateTo } from "../../../../../App";
 import { jobStatusStyles } from "../../../../../context/styles";
 
@@ -32,7 +32,7 @@ import styles from "./OptionBoxSection.module.css"
 
 interface OptionBoxSectionProps{
     onClose?: ()=>void;
-    onComplete?: ()=>void;
+    onComplete?: (job: JobView)=>void;
     className?: string;
 }
 
@@ -42,7 +42,6 @@ interface OptionBoxSectionProps{
 const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
     onClose,
     onComplete,
-
     className
 }) => {
     const { t } = useTranslation();
@@ -82,7 +81,6 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
                 .getPropertyValue(jobStatusStyles[currentJob.publicationStatus].txtColor);
         setPubStatusColor(color);
     },[currentJob.publicationStatus]);
-
 
 
 
@@ -290,7 +288,9 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
                 />
                 <SimpleButton
                     text={t("jobs.buttons.create")}
-                    onClick={onComplete}
+                    onClick={()=> {
+                        onComplete?.(currentJob)
+                    }}
                     className={styles.complete}
                 />
         

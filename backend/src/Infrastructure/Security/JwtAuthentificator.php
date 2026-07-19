@@ -24,6 +24,7 @@ class JwtAuthentificator
     private const JWT_SECRET = "usdyoisdfhqMGHSkkd6@EZFè1+^8Z0.%dk673730ssshvV/5@";
 
     private Configuration $config;
+    public static $JWT_EXPIRATION_DURATION = "+1 hour" ;
 
     public function __construct()
     {
@@ -45,7 +46,7 @@ class JwtAuthentificator
             ->permittedFor('hiring_forge_front')
             ->issuedAt($now)
             ->identifiedBy(Uuid::uuid4()->toString())
-            ->expiresAt($now->modify("+1 hour"))
+            ->expiresAt($now->modify(self::$JWT_EXPIRATION_DURATION))
             ->withClaim("payload", $payload)
             ->getToken(
                 $this->config->signer(),
@@ -55,12 +56,15 @@ class JwtAuthentificator
         return $token->toString();
     }
 
-    public function decode(string $jwtTokenString): mixed
+
+
+    public function decode(string $jwtTokenString): UnencryptedToken
     {
         //-- Parse the string into a Token object first
         try {
             $token = $this->config->parser()->parse($jwtTokenString);
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             throw new DomainException("Invalid token format structure", 0, $e);
         }
 
@@ -81,9 +85,9 @@ class JwtAuthentificator
 
         //-- Validate the Token object
         if (!$this->config->validator()->validate($token, ...$constraints)) {
-            throw new DomainException("Invalid Token claims or signature mismatch");
+            throw new DomainException("Invalid Token claims or signature mismatch", code: 401);
         }
 
-        return $token->claims()->get('payload');
+        return $token;
     }
 }
