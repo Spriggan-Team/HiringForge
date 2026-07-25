@@ -113,7 +113,6 @@ class UserRepository implements UserRepositoryInterface
         throw new \Exception('Not implemented');
     }
 
-
     #[Override]
     public function getOrganizationId(string $userId): string
     {
@@ -125,4 +124,5 @@ class UserRepository implements UserRepositoryInterface
         $company = $user->getCompany();
         return $company->getId(); 
     }
+
 }

@@ -35,7 +35,7 @@ interface AccountRepositoryInterface
     public function exists(?string $uuid=null,  ?string  $email = null): bool;
 
     /**
-     * As its name indicate, this function is used to change the password of an existing user
+     * As its name indicate, this function is used to change the password of an existing account
      * @return void;
      */
     public function changePassword(string $email, string $hash): void;
@@ -46,5 +46,13 @@ interface AccountRepositoryInterface
      * @throws \Exception|RessourceNotFound
      */
     public function changeEmail(string $old, string $new): void;
+
+
+    /**
+     * @param string                                         $uuid is the account's id
+     * @throws RessourceNotFound|InvalidArgumentException    This is raised when an account is not identify in the bdd
+     * @return UserProfileItem                                  This is a view of all basics info about the account. It represents it profile information
+     */
+    public function fetchView(string $id);
 
 }

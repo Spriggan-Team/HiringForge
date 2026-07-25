@@ -21,8 +21,8 @@ final class CreateJobOfferRequestMapper
             languages: array_map(
                 fn(array $language) =>
                     new RequiredLanguageRequest(
-                        $language['languageId'],
-                        $language['level']
+                        languageId: $language['languageId'],
+                        level: $language['level']
                     ),
                 $body['languages'] ?? []
             ),
@@ -36,9 +36,9 @@ final class CreateJobOfferRequestMapper
 
             salary: isset($body['salary'])
                 ? new SalaryRequest(
-                    $body['salary']['min'] ?? null,
-                    $body['salary']['max'] ?? null,
-                    $body['salary']['currency'] ?? "EUR"
+                    min: $body['salary']['min'] ?? null,
+                    max: $body['salary']['max'] ?? null,
+                    currency: $body['salary']['currency'] ?? "EUR"
                 )
                 : null,
 

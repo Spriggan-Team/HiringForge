@@ -171,8 +171,8 @@ interface MenuDrawerBodyProps {
     children: React.ReactNode;
     applyDefaultStyle?: boolean;
     
-    left?: string;
-    right?: string;
+    left?: string | number;
+    right?: string | number;
 
     style?: React.CSSProperties,
     position?: "top-right" | "initial-absolute" | "initial"
@@ -199,8 +199,8 @@ export const MenuDrawerBody: React.FC<MenuDrawerBodyProps> = ({
         <div
             style={{
                 ...style,
-                ["--menu-body-wrapper-left" as string]: left ?? 0,
-                ["--menu-body-wrapper-right" as string]: right ?? 0,
+                ["--menu-body-wrapper-left" as string]: (typeof left === "number" ? `${left}px` : left) ?? 0,
+                ["--menu-body-wrapper-right" as string]: (typeof right === "number" ? `${right}px` : right) ?? 0,
             }}
             className={`
                 ${applyDefaultStyle ? styles.bodyWrapper : ""} 
@@ -232,7 +232,7 @@ interface MenuDrawerItemProps {
     applyDefaultStyle?: boolean;
     style?: React.CSSProperties,
 
-    value: any;
+    value?: any;
     children: React.ReactNode;
 
     onClick?: (e: React.MouseEvent)=>void;     //-- helps detect click ( e.g: it is used for define custom behaviour )
@@ -245,7 +245,7 @@ export const MenuDrawerItem: React.FC<MenuDrawerItemProps> = ({
     style,
     className,
     applyDefaultStyle = true,
-    value,
+    value = null,
     children,
 
     onClick,

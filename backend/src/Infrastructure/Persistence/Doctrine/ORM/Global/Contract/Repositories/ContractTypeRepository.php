@@ -58,22 +58,17 @@ final class ContractTypeRepository
         $qb = $this->em->createQueryBuilder();
 
         return $qb->select('c')
-            ->from(ContractTypeEntity::class, 'c')
-            ->where('c.default = :default') // Global
-            ->orWhere('c.organizationId = :orgId') // linked to this specific recruiter
-            ->andWhere(
-                $qb->expr()->orX(
-                    'c.country = :countryCode',
-                    'c.country IS NULL',
-                    'c.country = :remoteCode'
-                )
-            )
-            ->setParameter('default', true)
-            ->setParameter('orgId', $organizationId)
-            ->setParameter('countryCode', $countryCode)
-            ->setParameter('remoteCode', 'ZZ')
-            ->orderBy('c.label', 'ASC')
-            ->getQuery()
-            ->getResult();
+                ->from(ContractTypeEntity::class, 'c')
+                //  global OR organisation owner
+                ->where('(c.default = :default OR c.organizationId = :orgId)')
+                // country specify or not (& global)
+                ->andWhere('(c.country = :countryCode OR c.country IS NULL OR c.country = :remoteCode)')
+                ->setParameter('default', true)
+                ->setParameter('orgId', $organizationId)
+                ->setParameter('countryCode', $countryCode)
+                ->setParameter('remoteCode', 'ZZ')
+                ->orderBy('c.label', 'ASC')
+                ->getQuery()
+                ->getArrayResult();
     }
 }

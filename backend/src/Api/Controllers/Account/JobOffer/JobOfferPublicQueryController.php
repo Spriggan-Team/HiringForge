@@ -14,6 +14,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+
+
+#[Route("/jobs")]
 class JobOfferPublicQueryController extends AbstractController
 {
 
@@ -29,6 +32,7 @@ class JobOfferPublicQueryController extends AbstractController
                 skip: $request->query->get('skip'),
                 limit: $request->query->get('limit')
             );
+
             $catalog = $usecase->execute($query);
             return ApiResponse::success(
                 data: $catalog,
@@ -56,14 +60,14 @@ class JobOfferPublicQueryController extends AbstractController
         try
         {
             if(!$offerId){
-                return ApiResponse::error('Please, don\'t forget the id as a parameter in your request')->toJsonResponse();
+                return ApiResponse::error(message: 'Please, don\'t forget the id as a parameter in your request')->toJsonResponse();
             }
             $readable = $reader->execute($offerId);
             return ApiResponse::success(data: $readable)->toJsonResponse();
         }
         catch(Exception $ex){
             return  ApiResponse::error(
-                message: "Something went Found",
+                message: "Something went wrong",
                 throwable: $ex
             )->toJsonResponse();
         }

@@ -1,9 +1,10 @@
-import { patch, post } from "../../handler";
+import { authPost, patch, post } from "../../handler";
 
 //import types
-import { AccountAlreadyRegistered, AccountNotFound, InvalidOTP, InvalidCredentials, RessourceCreationFailed, CompanyAlreadyRegistered } from "./exceptions";
+import { AccountAlreadyRegistered, AccountNotFound, InvalidCredentials, CompanyAlreadyRegistered } from "./exceptions";
 import { ApiResponseCode, HttpBadResponse } from "../../exceptions";
-import type { AccountLoginResponse, AccountRegisterResponse, NoticeResponse } from "../response.types";
+import { type ApiResponse, type AccountLoginResponse, type AccountRegisterResponse, type NoticeResponse } from "../response.types";
+import { InvalidOTP, RessourceCreationFailed } from "../exceptions";
 
 
 
@@ -100,9 +101,26 @@ const login = async (email: string, password: string)=>{
     }
 }
 
+//-- Deconnexion
+
+const logout = async ()=>{
+    try{
+        const response = await authPost<ApiResponse>("/logout");
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
+
+
 const AuthServices = {
+    resetPassword,
     askVerificationCode,
-    performUserRegister, login, resetPassword
+    
+    login, 
+    logout,
+    performUserRegister, 
 }
 
 

@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Contract;
 
 use Doctrine\ORM\Mapping as ORM;
-
+use JsonSerializable;
 
 #[ORM\Entity]
 #[ORM\Table(name: "contract_type")]
@@ -29,7 +29,7 @@ class ContractTypeEntity
     private ?string $organizationId = null;
 
     
-    public function getId(): string
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -82,5 +82,16 @@ class ContractTypeEntity
     {
         $this->organizationId = $organizationId;
         return $this;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'id'             => $this->id,
+            'label'          => $this->label,
+            'country'        => $this->country,
+            'default'        => $this->default,
+            'organizationId' => $this->organizationId,
+        ];
     }
 }

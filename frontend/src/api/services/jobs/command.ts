@@ -9,7 +9,10 @@ const createJob = async(
     currentJob: JobView
 )=>{
     try{
-        const response = await post('/job_offer', currentJob);
+        const data = {
+            ...currentJob
+        }
+        const response = await post('/job_offer', data);
         return response;
     }
     catch(error){

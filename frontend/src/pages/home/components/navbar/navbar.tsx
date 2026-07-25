@@ -1,21 +1,24 @@
 
-
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-//-- Data Types
+//-- Services
 import { useAppContext } from "../../../../hooks/context";
-import type { UserBasicData } from "../../../../features/users/user.profile";
-import type { RecruiterDashboardKpis } from "../../../../features/dashboard/KpiData";
+import AuthServices from "../../../../api/services/auth/auth";
 
-//-- SVG Components
+//-- Custom Components
+import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../layout/components/menu/drawer/menu.drawer";
+import BasicInput from "../../../../layout/components/form/input/basic.input";
 import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg"
 import NotificationRingSVGComponent from "/src/assets/svg/menu/alarm-alert-bell-notification-warning-svgrepo-com.svg"
-import DownArrowSVGComponent from "/src/assets/svg/menu/down-arrow-5-svgrepo-com.svg"
-import BasicInput from "../../../../layout/components/form/input/basic.input";
+
+//-- SVG Components
+// import DownArrowSVGComponent from "/src/assets/svg/menu/down-arrow-5-svgrepo-com.svg"
 
 //-- CSS Styles
 import styles from "./style.module.css"
+import RouteScheme from "../../../../route.scheme";
 
 
 export interface NavBarProps{
@@ -28,7 +31,8 @@ const NavBar: React.FC<NavBarProps> = ({
     className
 }) => {
     const { t } = useTranslation();
-    const { navbar } = useAppContext();
+    const { navbar, setPopup } = useAppContext();
+    const navigate = useNavigate()
 
     //-- Text
     const postsTxt = t('userHome.header.leading.open_post', { count: 0 });
@@ -39,6 +43,19 @@ const NavBar: React.FC<NavBarProps> = ({
         candidaturesText: candTxt 
     });
     
+    
+    //-- Handlers
+    const handleLogout = useCallback(async()=>{
+        try{
+            await AuthServices.logout();
+        }
+        catch(error){
+            console.warn("Somethinf went wrong", error)
+        }
+        localStorage.clear();
+        setPopup({ status: "success", message: t("global.messages.logoutSuccess") });
+        navigate(RouteScheme.login);
+    },[])
 
     return (
         <div className={`${styles.container} ${className}`}>
@@ -87,21 +104,51 @@ const NavBar: React.FC<NavBarProps> = ({
                     />
                 </div>
 
-                <div className={styles.profile}>
-                    <img 
-                        alt=""
-                        className={styles.img}
-                        src="/src/assets/images/pngtree-glitch-effect-avatar-profile-vector-png-image_15605578.png" 
-                    />
-
-                    <div className={styles.profileMenu}>
-                        <div className={styles.txt}>
-                            <span className={styles.username}>Thomas</span>
-                            <span>Recruteur</span>
+                {/** User profile */}
+                <MenuDrawer>
+                    {/* On laisse le Trigger gérer la flèche grâce à displayArrowDown (par défaut à true) */}
+                    <MenuDrawerTrigger className={styles.profileTrigger}>
+                        <div className={styles.profileInfo}>
+                            <img 
+                                alt="Photo de profil de Thomas"
+                                className={styles.avatar}
+                                src="/src/assets/images/pngtree-glitch-effect-avatar-profile-vector-png-image_15605578.png" 
+                            />
+                            <div className={styles.profileDetails}>
+                                <span className={styles.username}>Thomas</span>
+                                <span className={styles.role}>Recruteur</span>
+                            </div>
                         </div>
-                        <DownArrowSVGComponent height={14} width={14} className={styles.arrow} />
-                    </div>
-                </div>
+                    </MenuDrawerTrigger>
+
+                    {/* menu body*/}
+                    <MenuDrawerBody 
+                        right={0}
+                        className={styles.profileDropdown}
+                        position="initial-absolute"
+                    >
+                        <MenuDrawerItem
+                            onClick={handleLogout}
+                            className={styles.logoutItem}
+                        >
+                            <svg 
+                                width="16" 
+                                height="16" 
+                                viewBox="0 0 24 24" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                strokeWidth="2" 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round"
+                            >
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
+                            </svg>
+                            <span>{t("global.connexion.logout")}</span>
+                        </MenuDrawerItem>
+                    </MenuDrawerBody>
+                </MenuDrawer>
                 
             </div>
 

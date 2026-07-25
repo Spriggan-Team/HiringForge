@@ -19,7 +19,7 @@ security:
 
         # API SECURISE 
         api:
-            pattern: ^/api/(candidates|agents|users)
+            pattern: ^/api/(candidates|agents|users|contract)
             stateless: true
             user_checker: App\Api\Security\AccountChecker
             custom_authenticators:
@@ -36,9 +36,10 @@ security:
         - { path: ^/api/(candidate|agent|user)/otp,      roles: PUBLIC_ACCESS }
 
         # -- ROUTES PRIVEES 
-        - { path: ^/api/candidates, roles: ROLE_CANDIDATE }
         - { path: ^/api/agents,     roles: ROLE_AGENT }
+        - { path: ^/api/candidates, roles: ROLE_CANDIDATE }
         - { path: ^/api/users,      roles: [ROLE_USER, ROLE_COMPANY_ADMIN] }
+        - { path: ^/api/contract,   roles: [ROLE_AUTHENTIFICATED] }
 
 when@test:
     security:

@@ -135,39 +135,81 @@
     border: 2px solid #e2e8f0;
 }
 
-/* --- PROFILE MENu ----*/
-.profileMenu {
+
+/*  PROFILE MENU OVERRIDES & ENHANCEMENTS  */
+
+.profileTrigger {
+    padding: 6px 10px !important;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.profileTrigger:hover {
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+/* profil info */
+.profileInfo {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
 }
 
-.profile .txt {
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.profileDetails {
     display: flex;
     flex-direction: column;
-    line-height: 1.3;
+    text-align: left;
+    line-height: 1.25;
 }
 
-.profile .username {
-    font-size: 0.9rem;
+.username {
+    font-size: 0.875rem;
     font-weight: 600;
     color: #0f172a;
 }
 
-.profile .txt span:last-child {
+.role {
     font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 400;
+}
+
+/* -- drop down body -- */
+.profileDropdown {
+    min-width: 180px;
+    margin-top: 6px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0 !important;
+}
+
+/*-- decconexion --- */
+.logoutItem {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.875rem;
     font-weight: 500;
-    color: #94a3b8;
+    color: #dc2626 !important; 
 }
 
-.arrow {
-    color: #94a3b8;
-    transition: color 0.2s ease, transform 0.2s ease;
+.logoutItem:hover {
+    background-color: #fef2f2 !important; 
+    color: #b91c1c !important;
 }
 
-.profile:hover .arrow {
-    color: #0f172a;
-    transform: translateY(1px);
+.logoutItem svg {
+    color: currentColor;
 }
 
 /* ==========================

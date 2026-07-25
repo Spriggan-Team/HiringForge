@@ -1,3 +1,5 @@
+import type { ContractType } from "../../features/contract/contract";
+import type { ApiResponseCodeType } from "../exceptions";
 
 //-----------------------------
 //--- Api Success response (Data)
@@ -7,7 +9,19 @@
 export type ApiResponse<T = undefined | null> = { data: T; message?: string; status?: "success" }
 
 export type NoticeResponse = ApiResponse<{ message: string }>
+export type ErrorApiResponse< T =  undefined | null >= { 
+    code: ApiResponseCodeType;
+    status: "error" | string;
+    message: string;
+    data: T
+}
 
+
+export function isErrorApiResponse(
+  value: ApiResponse | ErrorApiResponse | Error
+): value is ErrorApiResponse {
+  return "code" in value;
+}
 
 //-----------------------------
 //--- AUTH RESPONSES
@@ -44,6 +58,7 @@ export type KpiDataResponse = ApiResponse<{
     applicationRate: number
 }>
 
+
 //-----------------------------
 //--- JOB RESPONSES
 //-----------------------------
@@ -51,3 +66,11 @@ export type KpiDataResponse = ApiResponse<{
 export type CreateJobResponse = ApiResponse<{
     offerId: string;
 }>
+
+
+//----------------------
+//-- Contract
+//-------------------------
+
+export type ContractTypeResponse = ApiResponse<ContractType[]>;
+

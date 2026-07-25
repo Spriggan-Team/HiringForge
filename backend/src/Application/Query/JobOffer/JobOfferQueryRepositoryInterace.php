@@ -10,12 +10,13 @@ interface JobOfferQueryRepositoryInterace
 {
     /**
      * This return a view of a offer in the bdd.
+     * if userId specified, it only returns those associated to this user
      *  @throws RessourceNotFound
      *  @return JobOfferListItem
      */
     public function fetchJobOfferViewById(
-        string $userId,
-        string $offerId
+        string $offerId,
+        ?string $userId = null,
     ): JobOfferListItem;
 
 

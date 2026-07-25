@@ -51,7 +51,10 @@ class MediaStorage implements MediaStorageInterface
         }
         $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($file->getPathname());
         $path = $this->resolveTargetDirectory(
-            $mime, $ownerId, $ownerType, $mediaPurpose
+            mimeType: $mime, 
+            ownerId: $ownerId,
+            ownerType: $ownerType,
+            purpose: $mediaPurpose
         );
 
         if(!$this->filesystem->exists($path)){
@@ -89,46 +92,6 @@ class MediaStorage implements MediaStorageInterface
         throw new \Exception('Not implemented');
     }
 
-    /**
-     * This function is used to determinate where the file should precisily be stored in the 'Storage/Vault' folder
-     * @param ?string $mimeType             this is the mime type of the file that is to be recorded
-     * @param ?string $id                   This is the an uniq id that identify the emplacement where the file will be stored (sub folder identifier)
-     * @param ?MediaOwnerType  $ownerType    This describe what type of owner the file belongs to (User, Candidate ..ect). It is used to  create a category folder ...ect
-     * @param ?MediaPurpose    $purpose      The purpose indicates the owner sub directory that is follow
-     * @return string                       This is the new  file path generated
-     */
-    private function resolveTargetDirectory(
-        ?string $mimeType,
-        ?string $id, 
-        ?MediaOwnerType $ownerType,
-        ?MediaPurpose $purpose
-    ): string
-    {
-
-        $base = $this->baseStoragePath . $this->relatifPath ;
-
-        if($ownerType){
-            $base .= '/' .$ownerType->value;
-        }
-
-        $path  = match(true){
-                str_starts_with((string)$mimeType, 'image') => $base . '/images',
-                str_starts_with((string)$mimeType, 'video') => $base . '/videos',
-                str_starts_with((string)$mimeType, 'audio') => $base . '/audios',
-                str_starts_with((string)$mimeType, 'application/pdf') => $base . '/documents',
-                default => $base . '/others'
-        };
-
-        if($id){
-            $path .= '/' .  $id;
-        }
-
-        if($purpose){
-            $path .= '/' . $purpose->value;
-        }
-
-        return $path;
-    }
 
 
     public function remove(
@@ -143,10 +106,10 @@ class MediaStorage implements MediaStorageInterface
             $mimeType = null;
             
             $directoryPath = $this->resolveTargetDirectory(
-                $mimeType, 
-                $ownerId, 
-                $ownerType, 
-                $purpose
+                mimeType: $mimeType, 
+                ownerId: $ownerId, 
+                ownerType: $ownerType, 
+                purpose: $purpose
             );
 
             $fullFilePath = $directoryPath . '/' . $uniqName;
@@ -175,4 +138,46 @@ class MediaStorage implements MediaStorageInterface
             throw $exception;
         }
     }
+
+    /**
+     * This function is used to determinate where the file should precisily be stored in the 'Storage/Vault' folder
+     * @param ?string $mimeType             this is the mime type of the file that is to be recorded
+     * @param ?string $accountId                   This is the an uniq id that identify the emplacement where the file will be stored (sub folder identifier)
+     * @param ?MediaOwnerType  $ownerType    This describe what type of owner the file belongs to (User, Candidate ..ect). It is used to  create a category folder ...ect
+     * @param ?MediaPurpose    $purpose      The purpose indicates the owner sub directory that is follow
+     * @return string                       This is the new  file path generated
+     */
+    public function resolveTargetDirectory(
+        ?string $mimeType,
+        ?string $ownerId, 
+        ?MediaOwnerType $ownerType,
+        ?MediaPurpose $purpose
+    ): string
+    {
+
+        $base = $this->baseStoragePath . $this->relatifPath ;
+
+        if($ownerType){
+            $base .= '/' .$ownerType->value;
+        }
+
+        $path  = match(true){
+                str_starts_with((string)$mimeType, 'image') => $base . '/images',
+                str_starts_with((string)$mimeType, 'video') => $base . '/videos',
+                str_starts_with((string)$mimeType, 'audio') => $base . '/audios',
+                str_starts_with((string)$mimeType, 'application/pdf') => $base . '/documents',
+                default => $base . '/others'
+        };
+
+        if($ownerId){
+            $path .= '/' .  $ownerId;
+        }
+
+        if($purpose){
+            $path .= '/' . $purpose->value;
+        }
+
+        return $path;
+    }
+
 }

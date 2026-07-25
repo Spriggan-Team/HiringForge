@@ -5,6 +5,7 @@ namespace App\Domain\User;
 use App\Domain\Shared\Address;
 use App\Domain\Shared\KnownIdentity;
 
+
 interface UserRepositoryInterface 
 {
     /**
@@ -56,10 +57,12 @@ interface UserRepositoryInterface
      */
     public function findById(string $uuid): User;
 
+
+    /** retreive user company id */
+    public function getOrganizationId(string $userId): string ;
+
+    
     /** Handle user deltion (recruiter) */
     public function delete(string $id): void;
-
-    /** Handle user address */
-    public function getOrganizationId(string $userId): string ;
-    
+   
 }

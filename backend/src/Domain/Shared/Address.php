@@ -17,6 +17,8 @@ final class Address
         public readonly string $postalCode,
         public readonly string $country,
         public readonly ?string $street = null,
+        public readonly ?int $id = null,
+        public readonly ?float $visibilityRange = null,
     ) {}
 
     /** 
@@ -27,7 +29,8 @@ final class Address
         string $postalCode,
         string $country,
         ?string $street = null,
-        ?float $visibilityRange = null
+        ?float $visibilityRange = null,
+        ?int $id = null,
     ):self
     {
         if (!$postalCode || trim($postalCode) === '') {
@@ -38,9 +41,11 @@ final class Address
             throw new \InvalidArgumentException('Country name is required');
         }
         return new self(
-            $street,
-            $postalCode,
-            $country,
+            id: $id,
+            street: $street,
+            postalCode: $postalCode,
+            country: $country,
+            visibilityRange: $visibilityRange
         );
     }
     
@@ -88,17 +93,21 @@ final class Address
         string $postalCode,
         string $country,
         ?string $street = null,
+        ?int $id = null,
+        ?float $visibilityRange = null,
     ): self
     {
         return new self(
+            id: $id,
             street: $street,
             postalCode: $postalCode,
-            country: $country
+            country: $country,
+            visibilityRange: $visibilityRange
         );
     }
 
     //------------------------
-    //---Data representation Methods
+    //--- Data representation Methods (Formatting)
     //---------------------------
     
     public function __toString()
@@ -111,5 +120,12 @@ final class Address
         return "{$this->street}, {$this->postalCode} , {$this->country}";
     }
 
-
+    public function toArray(){
+        return [
+            "street" => $this->street,
+            "country" => $this->country,
+            "postalCode" => $this->postalCode,
+            "visibilityRange" => $this->visibilityRange,
+        ];
+    }
 }

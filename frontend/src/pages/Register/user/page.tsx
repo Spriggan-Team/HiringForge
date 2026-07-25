@@ -26,10 +26,16 @@ import  CompanyIdentityDetail from "./components/identity/company/company.identi
 //-- services
 import AuthServices from "../../../api/services/auth/auth";
 import { objectToFormData } from "../../../utils/convertor";
-import { AccountAlreadyRegistered, CompanyAlreadyRegistered, InvalidOTP, RessourceCreationFailed } from "../../../api/services/auth/exceptions";
+import { AccountAlreadyRegistered, CompanyAlreadyRegistered } from "../../../api/services/auth/exceptions";
+import { InvalidOTP, RessourceCreationFailed } from "../../../api/services/exceptions";
 
 //-- SVG - Components
 import SecureAccount from "./components/security/LockAccount";
+
+//-- Custom components
+import AuthSwitcher from "../../../layout/components/navigation/auth/auth.switcher";
+import AppIdentity from "../../../layout/components/identity/app.identity";
+import UserProfileIdentity from "./components/identity/user/user.profile";
 
 //-- Images - Ressources
 import OfficeWorkerImage from "/src/assets/images/office-worker.png"
@@ -37,9 +43,6 @@ import OfficeWorkerImage from "/src/assets/images/office-worker.png"
 
 //-- CSS Styles
 import  styles from "./style.module.css"
-import AuthSwitcher from "../../../layout/components/navigation/auth/auth.switcher";
-import AppIdentity from "../../../layout/components/identity/app.identity";
-import UserProfileIdentity from "./components/identity/user/user.profile";
 
 
 

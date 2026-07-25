@@ -86,4 +86,11 @@ class JobOfferQueryManagement extends AbstractController{
         
     }
 
+    
+    #[Route('/kanban')]
+    public function getKanbanResult(){
+
+    }
+
+
 }

@@ -59,4 +59,21 @@ interface MediaStorageInterface
         ?callable  $errorCallback = null
     ): void;
 
+    
+
+    /**
+     * This function is used to determinate where the file should precisily be stored in the 'Storage/Vault' folder
+     * @param ?string $mimeType             this is the mime type of the file that is to be recorded
+     * @param ?string $accountId                   This is the an uniq id that identify the emplacement where the file will be stored (sub folder identifier)
+     * @param ?MediaOwnerType  $ownerType    This describe what type of owner the file belongs to (User, Candidate ..ect). It is used to  create a category folder ...ect
+     * @param ?MediaPurpose    $purpose      The purpose indicates the owner sub directory that is follow
+     * @return string                       This is the new  file path generated
+     */
+    public function resolveTargetDirectory(
+        ?string $mimeType,
+        ?string $ownerId, 
+        ?MediaOwnerType $ownerType,
+        ?MediaPurpose $purpose
+    ): string;
+
 }

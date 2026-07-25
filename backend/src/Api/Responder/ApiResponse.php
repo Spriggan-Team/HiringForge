@@ -22,7 +22,7 @@ class ApiResponse
         self::$logger = $logger;
     }
 
-    public static function success(mixed $data, string $message = "", int $statusCode = 200): self
+    public static function success(mixed $data, string $message = "Everything went successfully", int $statusCode = 200): self
     {
         return new self([
             'status'  => 'success',
@@ -31,10 +31,11 @@ class ApiResponse
         ], $statusCode);
     }
 
-    public static function notice(string $message, int $statusCode = 200): self
+    public static function notice(string $message, int $statusCode = 200, ?ApplicationErrorCode $code = null,): self
     {
         return new self([
-            'message' => $message
+            'message' => $message,
+            'code' => $code
         ], $statusCode);
     }
 

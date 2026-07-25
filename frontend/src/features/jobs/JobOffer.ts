@@ -33,23 +33,24 @@ export interface PublicJobView {
     id: string;
 
     title: string;
+    /** JSON content (TipTap / Editor) */
+    content: Record<string, any>;
 
     skills: string[];
     categories: string[];
 
     salary?: Partial<Salary>;
 
-    contract?: string;
+    contract?: {
+        id: string;
+        label: string;
+    };
     requireLanguages: JobLanguage[];
     
     location?: Partial<Location>;
     
     mainImage?: string;
     jobWorkMode?: JobWorkMode;
-
-    
-    /** JSON content (TipTap / Editor) */
-    content: Record<string, any>;
     
     createdAt?: Date;
     updatedAt?: Date;
@@ -80,6 +81,12 @@ export interface Location{
 }
 
 
+export interface Department{
+    id: number;
+    label: string;
+    description?: string;
+}
+
 
 /** ----------------------------------------------------------------
  * Recruiter-only data
@@ -96,6 +103,8 @@ export interface RecruiterJobView {
     applications: number;
     expertise?: ExpertiseLevel;
     cardinal: JobCardinal;
+
+    department?: Department | null;
 }
 
 
@@ -158,7 +167,7 @@ export const INITIAL_JOB_VIEW: PublicJobView & RecruiterJobView = {
     },
     requireLanguages: [],
 
-    contract: "",
+    contract: undefined,
 
     location: {
         city: "",
@@ -189,7 +198,9 @@ export const INITIAL_JOB_VIEW: PublicJobView & RecruiterJobView = {
         interviews: 0,
         offers: 0,
         hired: 0,
-    }
+    },
+
+    department: null
 };
 
 

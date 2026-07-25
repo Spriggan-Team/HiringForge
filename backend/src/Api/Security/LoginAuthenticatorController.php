@@ -6,29 +6,29 @@ use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthentificateAccount;
 
 
-use Exception;
-
-use App\Application\DTO\Auth\AuthenticatedPerson;
-use App\Application\Usecases\Auth\AuthentificateAccountUseCase;
 use App\Domain\ApplicationErrorCode;
-use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountRole;
+use App\Domain\Exception\RessourceNotFound;
+use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Infrastructure\Security\JwtAuthentificator;
+use App\Application\Usecases\Auth\AuthentificateAccountUseCase;
+
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+
 
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 
-use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
+
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
-// use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\CustomCredentials;
 
 
 
@@ -55,6 +55,7 @@ class LoginAuthenticatorController extends AbstractAuthenticator
         ], true) && $request->isMethod('POST');
     }
 
+
     public function authenticate(Request $request): Passport
     {
         $body = json_decode($request->getContent(), true);
@@ -71,7 +72,7 @@ class LoginAuthenticatorController extends AbstractAuthenticator
         $role = match ($request->getPathInfo()) {
             '/candidate/login' => AccountRole::CANDIDATE->value,
             '/agent/login'     => AccountRole::AGENT->value,
-            default             => AccountRole::USER->value,
+            default            => AccountRole::USER->value,
         };
         
 
@@ -95,7 +96,7 @@ class LoginAuthenticatorController extends AbstractAuthenticator
         }
 
         $actor = new AuthenticatedPerson(
-            $personId,
+            id: $personId,
             sub: $account->email,
             roles: [$role]
         );
@@ -114,7 +115,7 @@ class LoginAuthenticatorController extends AbstractAuthenticator
         $jwt = $this->jwtService->generate([
             'id'    => $user->getId(),
             'sub'   => $user->getUserIdentifier(), //-- currently the email
-            'roles' => $user->getRoles(),
+            'roles' => array_merge($user->getRoles(), ["ROLE_AUTHENTIFICATED"]),
         ]);
 
         return ApiResponse::success(
@@ -126,6 +127,7 @@ class LoginAuthenticatorController extends AbstractAuthenticator
         )->toJsonResponse();
     }
 
+    
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         return ApiResponse::error(

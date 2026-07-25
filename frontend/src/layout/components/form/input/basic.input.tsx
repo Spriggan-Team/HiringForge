@@ -15,6 +15,7 @@ export interface BasicInputProps {
     inputName?: string;
 
     width?: number | string;
+    height?:  number | string;
     padding?: string | number;
     placeholder?: string;
     backgroundColor?: string;
@@ -56,6 +57,7 @@ const BasicInput: React.FC<BasicInputProps> = ({
     value,
 
     width,
+    height,
     type = "text",
     placeholder,
     inputName,
@@ -98,6 +100,7 @@ const BasicInput: React.FC<BasicInputProps> = ({
                     ['--color' as string] : textColor ?? "#1f2937",
                     ["--border" as any]:(borderRadius && typeof borderRadius == 'number' ?  `${borderRadius}px` : borderRadius) ??  "8px",  
                     ["--width" as string]: (width && typeof width == 'number' ?  `${width}px` : width) ?? "252px" ,
+                    ["--height" as string]: (height && typeof height == 'number' ?  `${height}px` : height) ?? undefined ,
                     ["--padding" as string]:  (padding && typeof padding == 'number' ?  `${padding}px` : padding) ?? "10px"
                 }}
             >

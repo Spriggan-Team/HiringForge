@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'blacklisted_token')]
-#[ORM\Index(columns: ['jti'], name: 'idx_blacklisted_jti')] // Index crucial pour les performances !
+#[ORM\Index(columns: ['jti'], name: 'idx_blacklisted_jti')] // Index - performances !
 class BlacklistedTokenEntity
 {
     #[ORM\Id]

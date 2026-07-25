@@ -16,4 +16,12 @@ interface CompanyRepositoryInterface{
      * @return bool true if company already regustered
      */
     public function exists(string $companyName): bool;
+
+
+    /**
+     * @throws RessourceNotFound
+     */
+    public function get(string $companyId): Company;
+
+
 }

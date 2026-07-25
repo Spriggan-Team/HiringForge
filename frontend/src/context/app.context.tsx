@@ -32,6 +32,9 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
     const [loading, setLoading] = useState<AppLoadingState>();
     const [navbar, setNavbar] = useState<UserAppNavBarProps | null>(null);
 
+
+
+
     return ( 
         <AppContext 
             value={{

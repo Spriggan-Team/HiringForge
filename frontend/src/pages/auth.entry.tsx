@@ -8,17 +8,20 @@ interface EntryPageProps{
     children?: React.ReactNode 
 }
 
-const EntryPage: React.FC<EntryPageProps> = ({
+const AuthEntryPage: React.FC<EntryPageProps> = ({
     children
 }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(()=>{
-        redirectAccordingToSession(navigate, location)
+        redirectAccordingToSession(navigate, location);
+
+        //-- init data 
+        
     }, []);
 
     return ( <>{children}</> );
 }
  
-export default EntryPage;
+export default AuthEntryPage;

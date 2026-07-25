@@ -3,6 +3,9 @@ import { useTranslation } from "react-i18next";
 
 //-- Services
 import { useJob } from "../../../../../context/job.context";
+import type { Department } from "../../../../../features/jobs/JobOffer";
+import ContractQueries from "../../../../../api/services/contract/queries";
+import type { ContractType } from "../../../../../features/contract/contract";
 
 //-- Custom components
 import Title from "../../../../../layout/components/text/title/title";
@@ -35,12 +38,25 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = ({
     const [location, setLocation] = useState<string>("");
 
     const [skillInput, setSkillInput] = useState<string>("");
-    const [jobContratType, setJobContractType] =useState<string[]>(["CDI", "Stage"]);
+    const [jobContratType, setJobContractType] = useState<ContractType[]>([]);
+    const [departmentList, setDepartmentList] = useState<Department[]>([]);
     const [deviseCollecttion, setDeviseCollection] = useState<string[]>(["CAD", "USD", "EUR"]);
 
-    useEffect(()=>{
 
+    useEffect(()=>{
+        try{
+            const getJobContractType = async ()=> {
+                const data = await ContractQueries.getContractType();
+                console.log({data});
+                setJobContractType(data);
+            };
+            getJobContractType();
+        }
+        catch(error){
+            console.warn("Something went wrong : ", error)
+        }        
     }, [])
+    
 
     /**Render */
     return (
@@ -53,6 +69,7 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = ({
                 />
 
                 <div className={styles.inputs}>
+                    {/**TITLE */}
                     <BasicInput
                         {...globalBasicInputInput}
                         value={currentJob.title}
@@ -68,13 +85,21 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = ({
                         placeholder={t("jobs.createJob.generalInformationSection.inputs.offerTitle.placeholder")}
                     />
 
+                    {/** DEPARTMENT */}
                     <div  className={styles.drawer}>
                         <InputLabel label={t("jobs.createJob.generalInformationSection.drawers.department.label")} />
-                        <MenuDrawer>
-                            <MenuDrawerTrigger
-                            {...globalBasicInputInput}
-                            className={`${globalBasicInputInput.className} input-like-placeholder`}
+                        <MenuDrawer
+                            onChange={(value: Department)=>{
+                                setCurrentJob((prev)=>({
+                                    ...prev,
+                                    department: value
+                                }));
+                            }}
                         >
+                            <MenuDrawerTrigger
+                                {...globalBasicInputInput}
+                                className={`${globalBasicInputInput.className} input-like-placeholder`}
+                            >
                                 {(selected) => (
                                     <span className={`${selected ? styles.activate : ""}`}>
                                         {selected ?? t("jobs.createJob.generalInformationSection.drawers.department.placeholder")}
@@ -84,15 +109,25 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = ({
                             <MenuDrawerBody
                                 position="initial-absolute"
                             >
-                                <MenuDrawerItem value={"Developper"}>
-                                    Developper
-                                </MenuDrawerItem>
+                                {
+                                    departmentList.map((item, index)=>(
+                                        <MenuDrawerItem
+                                            key={index}
+                                            value={item}
+                                        >
+                                            {item.label}
+                                        </MenuDrawerItem>
+                                    ))
+                                }
                             </MenuDrawerBody>
                         </MenuDrawer>
                     </div>
 
+                    {/** INLINE INPUTS */}
                     <div className={styles.inlineInputs}>
+                        {/** LOCATION */}
                         <BasicInput
+                            height="100%"
                             value={location}
                             {...globalBasicInputInput}
                             onChange={(event)=> {
@@ -109,35 +144,54 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = ({
                             label={t("jobs.createJob.generalInformationSection.inputs.location.label")}
                             placeholder={t("jobs.createJob.generalInformationSection.inputs.location.placeholder")}
                         />
-
+                        
+                        {/** CONTRACT TYPE  */}
                         <div className={styles.drawer}>
                             <InputLabel label={t("jobs.createJob.generalInformationSection.inputs.offerType.label")} />
+                            
                             <MenuDrawer
-                                onChange={(value)=>{
-                                    if(value)
-                                        setCurrentJob((prev)=>{
-                                            return ({...prev, contract: value})
-                                        })
+                                defaultValue={currentJob?.contract?.id}
+                                onChange={(value: ContractType) => {
+                                    if (value) {
+                                        setCurrentJob((prev) => ({
+                                            ...prev,
+                                            contract: { id: value.id?.toString(), label: value.label }
+                                        }));
+                                    }
                                 }}
                             >
                                 <MenuDrawerTrigger
                                     {...globalBasicInputInput}
                                     className={`${globalBasicInputInput.className} input-like-placeholder`}
                                 >
-                                    {(selected) =>(
-                                            <span className={`${selected ? styles.activate : ""}`}>
-                                                {selected ?? t("jobs.createJob.generalInformationSection.inputs.offerType.placeholder")}
+                                    {(selected) => {
+                                        const displayText = typeof selected === "object" && selected !== null
+                                            ? selected.label 
+                                            : selected;
+
+                                        return (
+                                            <span className={displayText ? styles.activate : ""}>
+                                                {displayText ?? t("jobs.createJob.generalInformationSection.inputs.offerType.placeholder")}
                                             </span>
-                                    )}
+                                        );
+                                    }}
                                 </MenuDrawerTrigger>
+
                                 <MenuDrawerBody
+                                    left={0}
+                                    right={0}
+                                    className={styles.selectDropdown}
                                     position="initial-absolute"
                                 >
-                                    {
-                                        jobContratType.map((value, index)=>(
-                                            <MenuDrawerItem key={index} value={value}>{value}</MenuDrawerItem>
-                                        ))
-                                    }
+                                    {jobContratType.map((contract) => (
+                                        <MenuDrawerItem 
+                                            key={contract.id} 
+                                            value={contract}
+                                            className={styles.selectItem}
+                                        >
+                                            {contract.label}
+                                        </MenuDrawerItem>
+                                    ))}
                                 </MenuDrawerBody>
                             </MenuDrawer>
                         </div>

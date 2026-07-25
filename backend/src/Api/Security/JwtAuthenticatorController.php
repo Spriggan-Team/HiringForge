@@ -76,10 +76,10 @@ class JwtAuthenticatorController extends AbstractAuthenticator
         }
 
         $user = new AuthenticatedPerson(
-            $payload['id'],
-            $payload['sub'],
-            $payload['roles'],
-            $jti
+            id: $payload['id'],
+            sub: $payload['sub'],
+            roles: $payload['roles'],
+            jti: $jti
         );
 
         return new SelfValidatingPassport(new UserBadge(
@@ -97,7 +97,7 @@ class JwtAuthenticatorController extends AbstractAuthenticator
     {
 
         return ApiResponse::error(
-            message: $exception->getMessage(),
+            message: "Something went wrong",
             statusCode: 401,
             code: $exception->getCode() === 401 ?  ApplicationErrorCode::AUTH_ACCESS_EXPIRED : null
         )->toJsonResponse();

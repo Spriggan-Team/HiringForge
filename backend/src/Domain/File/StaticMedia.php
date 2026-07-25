@@ -18,13 +18,16 @@ class StaticMedia
         public string $mime,
 
         public ?string $originalName = null,
+
+        /**identifiant of the image */
+        public ?int $id = null,
     ){}
 
     public static function hydrate(
         string $name, float $size,
-        string $mime, ?string $originalName = null    
+        string $mime, ?string $originalName = null, ?int $id =null
     ){
-        return new self(name: $name, size: $size, mime: $mime, originalName: $originalName);
+        return new self(id: $id, name: $name, size: $size, mime: $mime, originalName: $originalName);
     }
 
     /**

@@ -17,6 +17,9 @@
             "required": "requis",
             "optionnal": "optionnel"
         },
+        "connexion":{
+            "logout": "Déconnexion"
+        },
         "messages":{
             "welcome": "Bonjour {{name}}",
             "secureData": "Données sécurisées",
@@ -24,7 +27,8 @@
             "save": "Sauvegarder",
             "error": "Une erreur inattendue est survenue",
             "more": "Plus",
-            "seeMore": "Voir plus"
+            "seeMore": "Voir plus",
+            "logoutSuccess": "Deconnexion réussie"
         },
 
 

@@ -242,7 +242,7 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
                                         .filter(Boolean)
                                         .join(", "),
 
-                                    currentJob?.contract,
+                                    currentJob.contract?.label,
                                 ].filter(Boolean) as string[]}
                             />
                             {currentJob.publicationStatus && (

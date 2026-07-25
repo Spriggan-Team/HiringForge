@@ -3,7 +3,10 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Company\Repositories;
 
+use App\Domain\User\Siret;
+use App\Domain\File\StaticMedia;
 use App\Domain\Company\Company as DomainEntity;
+use App\Domain\Shared\Address;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity; 
@@ -11,12 +14,12 @@ use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
 
 use Doctrine\ORM\EntityManagerInterface;
-
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 
 class CompanyEntityMapper
 {
-    public static function toDoctrineEntity(DomainEntity $company, EntityManagerInterface $em): CompanyEntity
+    public  function toDoctrineEntity(DomainEntity $company, ServiceEntityRepository $serviceEntityRepository): CompanyEntity
     {
         //-- Secure initialization of file entities (null handling
         $logoEntity = null;
@@ -56,7 +59,7 @@ class CompanyEntityMapper
 
         //-- Association of Recruiters Affiliated with the Company
         foreach ($company->recruiters() as $recruiterId) {
-            $recruiter = $em->getReference(UserEntity::class, $recruiterId);
+            $recruiter = $serviceEntityRepository->getEntityManager()->getReference(UserEntity::class, $recruiterId);
             $entity->addRecruiters($recruiter);
         }
 
@@ -73,11 +76,72 @@ class CompanyEntityMapper
         return $entity;
     }
 
+
+    //-- convert entity into domain object
+    public function toDomainEntity(CompanyEntity $entity): DomainEntity{
+
+        //-- logo
+        $logo = null;
+        if($entity->getLogo()){
+            $logoEntity = $entity->getLogo();
+            $logo = new StaticMedia(
+                id: $logoEntity->getId(),
+                name: $logoEntity->getName(),
+                size: $logoEntity->getSize(),
+                mime: $logoEntity->getMime(),
+            );
+        }
+
+        //-- address[]
+        $address = [];
+        foreach($entity->getAddresses() as $addressCompanyEntity){
+            $addressDetails = $addressCompanyEntity->getAdrdress();
+            $id = $addressDetails->getId();
+            if($id){
+                $address[] =  Address::create(
+                    id: $id,
+                    country: $addressDetails->getCountry(),
+                    street: $addressDetails->getStreet(),
+                    postalCode: $addressDetails->getPostalCode(),
+                );
+            }
+        }
+
+
+        //-- images
+        $images = [];
+        foreach($entity->getImages() as $imageEntity){
+            $id = $imageEntity->getId();
+            if($id)
+               $images[] = $id;
+        }
+
+        //-- recruiters
+        $recruiters = [];
+        foreach($entity->getRecruiters() as $recruiterEntity){
+            $id = $recruiterEntity->getId();
+            if($id)
+                $recruiters[] = $id;
+        }
+
+        return DomainEntity::hydrate(
+            id: $entity->getId(),
+            name: $entity->getName(),
+            siret: Siret::hydrate($entity->getSiret()),
+            address: $address,
+            images: $images,
+            logo: $logo,
+            recruiters: $recruiters
+        );
+
+    }
+
+
     /**
      * Responsible for synchronizing/updating the existing Doctrine entity with the domain state.
      * Useful for the update scenario in your Repository.
      */
-    public static function copy(DomainEntity $company, CompanyEntity $entity, EntityManagerInterface $em): void
+    public  function copy(DomainEntity $company, CompanyEntity $entity): void
     {
         //--  Updating master data
         $entity->setName($company->name());
@@ -104,7 +168,8 @@ class CompanyEntityMapper
 
         foreach ($company->address() as $domainAddress) {
             $alreadyExists = false;
-            foreach ($existingAddresses as $existingAddress) {
+            foreach ($existingAddresses as $existingCompanyAddress) {
+                $existingAddress = $existingCompanyAddress->getAdrdress();
                 if (
                     $existingAddress->getStreet() === $domainAddress->street &&
                     $existingAddress->getPostalCode() === $domainAddress->postalCode
@@ -124,4 +189,5 @@ class CompanyEntityMapper
             }
         }
     }
+
 }

@@ -10,7 +10,7 @@ class ViewPerformanceMetrics{
     ){}
     
     public function execute(string $userId){
-        $result = $this->query->analyseJobOfferCollection($userId);
+        $result = $this->query->analyseJobOfferCollection(userId: $userId);
         return $result;
     }
 }

@@ -13,13 +13,13 @@ use App\Application\DTO\JobOffer\ChangeJobOffferRequest;
 use App\Api\Controllers\User\JobOffer\Mapper\CreateJobOfferRequestMapper;
 
 
-use App\Application\Usecases\JobOffer\JobOfferImageRemover;
-use App\Application\Usecases\JobOffer\JobOfferImageUploader;
 use App\Application\Usecases\JobOffer\JobOfferEraser;
 use App\Application\Usecases\JobOffer\JobOfferModifier;
 use App\Application\Usecases\JobOffer\JobOfferRecorder;
 use App\Application\Usecases\JobOffer\JobOffferPublisher;
 use App\Application\Usecases\JobOffer\MarkJobOfferAsDraft;
+use App\Application\Usecases\JobOffer\JobOfferImageRemover;
+use App\Application\Usecases\JobOffer\JobOfferImageUploader;
 
 
 use Psr\Log\LoggerInterface;

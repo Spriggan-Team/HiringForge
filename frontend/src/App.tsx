@@ -1,20 +1,23 @@
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
+import {  Routes, Route, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 
 //--Services
 import RouteScheme from './route.scheme'
-import { useAppContext } from './hooks/context'
-import AppContextProvider from './context/app.context'
+import { httpContext } from './api/handler'
 
 //-- Custom Compoenents
-import { AppSpinner } from './layout/components/indicators/spinner/spinner'
-import AppPopup from './layout/components/popup/app.popup'
 import SideMenu from './layout/components/menu/sidebar/side.menu'
 import NavBar from './pages/home/components/navbar/navbar'
+
+//-- Guard
+import AuthGuardPage from './pages/auth.entry'
+import EntryPage from './pages/auth.entry'
+
 
 //-- Pages
 import Login from './pages/Login/page'
 import UserRegister from './pages/Register/user/page'
-import EntryPage from './pages/entry'
+
 import RegisterationEntry from './pages/Register/register/page'
 import CandidateRegister from './pages/Register/candidate/candidate.register'
 import DirectorRegister from './pages/Register/director/director.register'
@@ -27,53 +30,50 @@ import CandidatesPage from './pages/candidates/candidates.page'
 
 
 
+
 function App() {
-  return (
-    <AppContextProvider>
-          <AppPopup>
-            <AppSpinner>
-                <BrowserRouter>
+  const navigate = useNavigate();
   
-                  <Routes>
-                    <Route path={RouteScheme.main} element={<EntryPage />} />
+  useEffect(()=>{
+    httpContext.setNavigate(navigate)
+  },[navigate])
+  
+  return (
+      <Routes>
+          <Route path={RouteScheme.main} element={<EntryPage />} />
 
-                    {/** Authentification  */}
-                    <Route path={RouteScheme.login} element={<Login />} />
-                    <Route path={RouteScheme.register} element={<RegisterationEntry />} />
-                    <Route path={RouteScheme.userRegister} element={<UserRegister />} />
-                    <Route path={RouteScheme.candidateRegister} element={<CandidateRegister />} />
-                    <Route path={RouteScheme.directorRegister}  element={<DirectorRegister />} />
+          {/** Authentification  */}
+          <Route path={RouteScheme.login} element={<Login />} />
+          <Route path={RouteScheme.register} element={<RegisterationEntry />} />
+          <Route path={RouteScheme.userRegister} element={<UserRegister />} />
+          <Route path={RouteScheme.candidateRegister} element={<CandidateRegister />} />
+          <Route path={RouteScheme.directorRegister}  element={<DirectorRegister />} />
 
-                    {/** PROTECTED ROUTES (AUTHENTIFICATION REQUIRED) */}
-                    <Route 
-                      element={<AuthAccessGranted />}
-                    >
-                      {/** EXCLUSIVE RECRUITEUR ACCESS */}
-                      <Route element={<UserAppLayout />}>
-                          { /** Dashboard */  }
-                          <Route path={RouteScheme.userHome} element={<UserHome />} />
-                          { /** JOBS VIEWS */  }
-                          <Route path={RouteScheme.userJobs} element={<UserJobsPage />} />
-                          { /** SINGLE JOB VIEW */  }
-                          <Route path={RouteScheme.userJobView} element={<PrivateJobViewPage />}/>
-                          { /** CREATE JOB  */  }
-                          <Route path={RouteScheme.createJob} element={<CreateJobPage /> }/>
-                          {/** SCHEDULE PAGE */}
-                          <Route path={RouteScheme.userSchedule} element={<SchedulingWorkspace />} />
-                          {/** CANDIDATES */}
-                          <Route path={RouteScheme.userCandidate} element={<CandidatesPage />} />
-                      </Route>
+          {/** PROTECTED ROUTES (AUTHENTIFICATION REQUIRED) */}
+          <Route 
+            element={<AuthAccessGranted />}
+          >
+            {/** EXCLUSIVE RECRUITEUR ACCESS */}
+            <Route element={<UserAppLayout />}>
+                { /** Dashboard */  }
+                <Route path={RouteScheme.userHome} element={<UserHome />} />
+                { /** JOBS VIEWS */  }
+                <Route path={RouteScheme.userJobs} element={<UserJobsPage />} />
+                { /** SINGLE JOB VIEW */  }
+                <Route path={RouteScheme.userJobView} element={<PrivateJobViewPage />}/>
+                { /** CREATE JOB  */  }
+                <Route path={RouteScheme.createJob} element={<CreateJobPage /> }/>
+                {/** SCHEDULE PAGE */}
+                <Route path={RouteScheme.userSchedule} element={<SchedulingWorkspace />} />
+                {/** CANDIDATES */}
+                <Route path={RouteScheme.userCandidate} element={<CandidatesPage />} />
+            </Route>
 
-                      {/** PUBLIC ACCESS (AUTH) */}
-                      
+            {/** PUBLIC ACCESS (AUTH) */}
+            
 
-                    </Route>
-
-                  </Routes>
-              </BrowserRouter>
-            </AppSpinner>
-          </AppPopup>
-    </AppContextProvider>
+          </Route>
+      </Routes>
   )
 }
 
@@ -96,15 +96,15 @@ const UserAppLayout = () => {
 
 const AuthAccessGranted = ()=>{
   return (
-      <EntryPage>
+      <AuthGuardPage>
         <Outlet />
-      </EntryPage>
+      </AuthGuardPage>
   );
 }
 
 
-
 type NavigateFn = (path: string, params?: any) => void;
+
 
 
 

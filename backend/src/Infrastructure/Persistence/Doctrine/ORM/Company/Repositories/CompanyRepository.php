@@ -5,25 +5,31 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Company\Repositories;
 
 use App\Domain\Company\Company;
 use App\Domain\Company\CompanyRepositoryInterface;
+use App\Domain\Exception\RessourceNotFound;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 
-
-use Doctrine\ORM\EntityManagerInterface;
 use Override;
+use Symfony\Bridge\Doctrine\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 
-class CompanyRepository implements CompanyRepositoryInterface
+class CompanyRepository extends ServiceEntityRepository 
+    implements CompanyRepositoryInterface
 {
     public function __construct(
-        private EntityManagerInterface $em
-    ){}
+        private ManagerRegistry $registery,
+        private CompanyEntityMapper $mapper,
+
+    ){
+        parent::__constrcut($registery, CompanyEntity::class);
+    }
+
 
     #[Override]
     public function exists(string $companyName): bool
     {
-        $result = $this->em->createQueryBuilder()
+        $result = $this->createQueryBuilder('c')
             ->select('c.id')
-            ->from(CompanyEntity::class, 'c')
             ->where('c.name = :name')
             ->setParameter('name', $companyName)
             ->getQuery()
@@ -32,6 +38,7 @@ class CompanyRepository implements CompanyRepositoryInterface
         return $result !== null;
     }
 
+
     #[Override]
     public function save(Company $company): void
     {
@@ -39,13 +46,26 @@ class CompanyRepository implements CompanyRepositoryInterface
         $entity = $repository->findOneBy(['name' => $company->name()]);
 
         if (!$entity) {
-            $entity = CompanyEntityMapper::toDoctrineEntity($company, $this->em);
+            $entity = $this->mapper->toDoctrineEntity($company, $this);
             $this->em->persist($entity);
         }
         else {
-            CompanyEntityMapper::copy($company, $entity, $this->em);
+             $this->mapper->copy($company, $entity);
         }
 
         $this->em->flush();
     }
+
+
+    #[Override]
+    public function get(string $companyId): Company
+    {
+        $entity = $this->find($companyId);
+        if(!$entity){
+            throw new RessourceNotFound("Company not found");
+        }
+        $domain = $this->mapper->toDomainEntity($entity);
+        return $domain;
+    }
+
 }

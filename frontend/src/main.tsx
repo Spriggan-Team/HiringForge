@@ -1,9 +1,19 @@
-//-- React lib
+//-- React 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
+import { BrowserRouter } from 'react-router-dom'
+
+//--Services
+import AppContextProvider from './context/app.context'
+
+//-- Custom Compoenents
+import { AppSpinner } from './layout/components/indicators/spinner/spinner'
+import AppPopup from './layout/components/popup/app.popup'
+
+
 //Main component
-import App from './App.tsx'
+import AppRoutes from './App.tsx'
 
 //-- Utilities
 import './utils/i18n/index.ts'
@@ -14,6 +24,14 @@ import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+        <AppContextProvider>
+          <AppPopup>
+            <AppSpinner>
+                <BrowserRouter>
+                  <AppRoutes />
+              </BrowserRouter>
+            </AppSpinner>
+          </AppPopup>
+    </AppContextProvider>
   </StrictMode>,
 )

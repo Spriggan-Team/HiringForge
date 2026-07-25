@@ -31,8 +31,8 @@ class JobOfferQueryRepository implements JobOfferQueryRepositoryInterace
 
 
     public function fetchJobOfferViewById(
-        string $userId,
-        string $offerId
+        string $offerId,
+        ?string $userId = null,
     ): JobOfferListItem
     {
         throw new \Exception('Not implemented');

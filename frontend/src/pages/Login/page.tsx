@@ -10,7 +10,7 @@ import { useAppContext } from '../../hooks/context';
 import AuthServices from "../../api/services/auth/auth";
 
 //-- Exception
-import { AccountNotFound, InvalidOTP, InvalidCredentials } from '../../api/services/auth/exceptions';
+import { AccountNotFound, InvalidCredentials } from '../../api/services/auth/exceptions';
 
 //-- Custom - React Component
 import BasicInput from '../../layout/components/form/input/basic.input';
@@ -23,6 +23,7 @@ import PasswordSVG from "/src/assets/svg/security/password-protection-privacy-ac
 
 //-- CSS - Styles
 import styles from './style.module.css'
+import { InvalidOTP } from '../../api/services/exceptions';
 
 
 

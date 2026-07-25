@@ -121,11 +121,13 @@ export const put = <T>(
 ) => request<T>(endpoint, "PUT", data, headers);
 
 
+
 export const patch = <T>(
   endpoint: string,
   data?: RequestData,
   headers?: HeadersInit
 ) => request<T>(endpoint, "PATCH", data, headers);
+
 
 
 export const del = <T>(
@@ -135,10 +137,107 @@ export const del = <T>(
 
 
 
-export const generateAuthorizationBearerHeader = (): HeadersInit => {
+export const generateAuthorizationBearerHeader = (header?: HeadersInit): HeadersInit => {
   const token = localStorage.getItem("token");
 
   return {
+    ...(header ?? {}),
     Authorization: `Bearer ${token}`,
   };
+};
+
+
+//-- Authorization
+
+
+export const authGet = async <T>(
+  endpoint: string,
+  headers?: HeadersInit
+)=>{
+  return get<T>(endpoint, generateAuthorizationBearerHeader(headers));
+}
+
+
+
+export const authPost = async <T>(
+  endpoint: string,
+  data?: RequestData,
+  headers?: HeadersInit
+)=>{
+  return post<T>(endpoint, data, generateAuthorizationBearerHeader(headers));
+}
+
+
+
+export const  authPut = async <T>(
+  endpoint: string,
+  data?: RequestData,
+  headers?: HeadersInit
+)=>{
+  return put<T>(endpoint, data, generateAuthorizationBearerHeader(headers));
+}
+
+
+
+export const authPatch = async<T>(
+  endpoint: string,
+  data?: RequestData,
+  headers?: HeadersInit
+)=>{
+  return patch<T>(endpoint, data, headers);
+}
+
+
+
+export const authDel = async<T>(
+  endpoint: string,
+  headers?: HeadersInit
+)=>{
+  return del<T>(endpoint, generateAuthorizationBearerHeader(headers));
+}
+
+
+//--------------------
+//--- Http Context
+//---------------------
+
+import RouteScheme from "../route.scheme";
+import type { NavigateFunction } from "react-router-dom";
+import { isErrorApiResponse, type ApiResponse, type ErrorApiResponse } from "./services/response.types";
+
+
+export class HttpContext {
+  #navigate?: NavigateFunction;
+
+  token?: string;
+  locale?: string;
+  organizationId?: string;
+  
+  setNavigate(fn: NavigateFunction) {
+      this.#navigate = fn;
+  }
+
+  navigate(path: string) {
+      this.#navigate?.(path);
+  }
+}
+
+
+export const httpContext = new HttpContext();
+
+
+
+export const handleGenericApiResponseAfter =  (
+    method: string,
+    result: ApiResponse | ErrorApiResponse | Error
+) => {
+    if (isErrorApiResponse(result)) {
+        if (result.code === ApiResponseCode.AUTH_ACCESS_EXPIRED) {
+            return httpContext.navigate(RouteScheme.login);
+        }
+    }
+
+    if (result instanceof Error) {
+        console.error(`API error on ${method}`, result);
+    }
 };

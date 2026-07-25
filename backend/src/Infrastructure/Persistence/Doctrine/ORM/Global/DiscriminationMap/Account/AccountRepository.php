@@ -110,4 +110,10 @@ class AccountRepository implements AccountRepositoryInterface
     }
 
 
+    
+    #[Override]
+    public function fetchView(string $id)
+    {
+        throw new \Exception('Not implemented');
+    }
 }

@@ -14,10 +14,11 @@ use App\Domain\Exception\FileTimeExceeded;
 use App\Domain\Exception\ResourceCreationRejected;
 use App\Domain\Exception\RessourceNotFound;
 
-use App\Domain\File\MediaFactoryInterface;
-use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
+use App\Domain\File\MediaOwnerType;
+use App\Domain\File\MediaFactoryInterface;
 use App\Domain\File\MediaStorageInterface;
+use App\Domain\Department\DepartmentInitializerService;
 
 use App\Domain\OTP\Exceptions\OTPException;
 use App\Domain\OTP\OTPRepositoryInterface;
@@ -29,10 +30,13 @@ use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\PlainPassword;
 use App\Domain\Shared\TransactionManagerInterface;
+
 use App\Domain\User\Siret;
 use App\Domain\User\User;
 use App\Domain\User\UserRepositoryInterface;
 use App\Domain\User\UserRole;
+
+
 
 class UserRegisterUseCase
 {
@@ -43,7 +47,8 @@ class UserRegisterUseCase
         private CompanyRepositoryInterface $companyRepository,
         private PasswordHasherInterface $hasher,
         private OTPRepositoryInterface $OTPRepository,
-        private TransactionManagerInterface $transactionManager
+        private TransactionManagerInterface $transactionManager,
+        private DepartmentInitializerService $departmentInitializer
     ){}
     
     /**
@@ -208,8 +213,9 @@ class UserRegisterUseCase
         // -- Save elements
         try {
            $this->transactionManager->execute(function() use (&$company, &$user){
-             $this->companyRepository->save($company);
-             $this->userRepository->save($user);
+                $this->companyRepository->save($company);
+                $this->userRepository->save($user);
+                $this->departmentInitializer->initForCompany($company);
            });
         } catch (ResourceCreationRejected $e) {
             // Rollback files
@@ -226,6 +232,8 @@ class UserRegisterUseCase
 
             throw $e;
         }
+
+        //-- Returned Value
         
         return new AccountRegister(
             filesFailedGeneric: $filesFailedGeneric,

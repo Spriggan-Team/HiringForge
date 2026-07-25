@@ -11,7 +11,7 @@ class PublicJobOfferReader
 
     public function execute(string $offerId)
     {
-        $offer = $this->repository->fetchJobOfferViewById($offerId);
+        $offer = $this->repository->fetchJobOfferViewById(offerId: $offerId);
         return $offer;
     }
 }

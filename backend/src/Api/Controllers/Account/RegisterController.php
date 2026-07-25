@@ -164,6 +164,7 @@ class RegisterController extends AbstractController
                 data: $filetimeError->getPayload() ?? [],
             )->toJsonResponse();
         }
+        //-- creation rejected
         catch(ResourceCreationRejected $ressourceCreation){
             return ApiResponse::error(
                 message: "Failed to create user",

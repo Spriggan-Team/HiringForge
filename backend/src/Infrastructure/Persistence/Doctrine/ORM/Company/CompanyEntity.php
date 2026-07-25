@@ -58,6 +58,7 @@ class CompanyEntity
         cascade: ['persist', 'remove'],
         orphanRemoval: true
     )]
+    /** @var Collection<int, CompanyAddressEntity> */
     private Collection $companyAddresses;
 
 
@@ -66,6 +67,7 @@ class CompanyEntity
         targetEntity: CompanyImageEntity::class,
         cascade:['persist', 'remove']
     )]
+    /** @var Collection<int, CompanyImageEntity> */
     private ?Collection $companyImages = null;
 
 
@@ -74,6 +76,7 @@ class CompanyEntity
         cascade:['persist', 'remove'],
         targetEntity: UserEntity::class
     )]
+    /** @var Collection<int, UserEntity> */
     private Collection $recruiters;
 
     //-----------------
@@ -122,18 +125,21 @@ class CompanyEntity
 
     public function getLogo(): ?FileEntity { return $this->logo; } 
     
-    public function getAddresses(): Collection{
+    /**
+    * @return Collection<int, CompanyAddressEntity>
+    */
+    public function getAddresses(){
         return $this->companyAddresses;
     }
 
-    public function getCompanyAddress(): Collection { 
-        return $this->companyAddresses;
-    }
 
     public function getVideoPresentation(){
         return $this->videoPresentation;
     }
 
+    /**
+    * @return Collection<int, CompanyImageEntity>
+    */
     public function getImages(){
         return $this->companyImages;
     }
@@ -142,6 +148,9 @@ class CompanyEntity
         return $this->createdAt;
     }
 
+    /**
+    * @return Collection<int, UserEntity>
+    */
     public function getRecruiters(){
         return $this->recruiters;
     }

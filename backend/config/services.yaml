@@ -14,6 +14,7 @@
 parameters:
     #--- env variables
     app.jwt_key: '%env(JWT_SECRET_KEY)%'
+    app.url: '%env(APP_URL)%'
 
     smtp_host: '%env(SMTP_HOST)%'
     mail_user_name: '%env(MAIL_USER_NAME)%'
@@ -21,7 +22,6 @@ parameters:
 
     #-------Root Dir
     uploads_base_directory: '%kernel.project_dir%/public/uploads'
-
 
 #---------------------
 #   Services
@@ -74,9 +74,6 @@ services:
     App\Domain\User\UserRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories\UserRepository
     
-    App\Application\Query\Handlers\User\UserQueryRepositoryInterface:
-        alias: App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories\UserQueryRepository
-
 
     #------ Candidate ----
     App\Domain\Candidate\CandidateRepositoryInterface:

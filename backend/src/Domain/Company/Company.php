@@ -19,19 +19,19 @@ class Company{
     private Siret $siret;
     
     /**
-     * @var array<Address>
+     * @var array<int, Address>
      */
     private array $address;
 
     private ?StaticMedia $logo = null;
 
 
-    /** @var array<string> */
+    /** @var array<int, string> */
     private array $recruiters = [];
     
 
     /**
-     * @var array<StaticMedia>  $images
+     * @var array<int, StaticMedia>  $images
      */
     private array $images = [];
 
@@ -49,16 +49,15 @@ class Company{
         string $name,
         Siret $siret,
 
-        /** @var array<Address> */
+        /** @var array<int, Address> */
         array  $address,
-        /** @var @var array<StaticMedia> */
+        /** @var @var array<int, StaticMedia> */
         array $images= [],
 
         array $recruiters = [],
         ?StaticMedia $logo = null,   
     ){
         $this->id = $id;
-
         $this->address = $address;
 
         $this->images = $images;
@@ -91,6 +90,29 @@ class Company{
             siret: $siret,
         );
     }
+
+    public static function hydrate(
+        string $id,
+        string $name,
+        Siret $siret,
+        /** @var array<int, Address> */
+        array  $address,
+        /** @var @var array<int, StaticMedia> */
+        array $images,
+        array $recruiters,
+        ?StaticMedia $logo,   
+    ):self
+    {
+        return new self(
+            id: $id,
+            name: $name,
+            siret: $siret,
+            address: $address,
+            images: $images,
+            logo: $logo,
+            recruiters: $recruiters
+        );
+    }
     
     //----------------------------
     //   Business access
@@ -115,15 +137,22 @@ class Company{
 
     public function siret(): string { return $this->siret->value(); }
 
+    /**
+     * @return array<int, Address>
+     */
     public function address(): array { return $this->address; }
 
+    
     /**
-     * @return StaticMedia[]
+     * @return array<int, StaticMedia>
      */
     public function images() : array {
         return $this->images;
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function recruiters(): array {
         return $this->recruiters;
     }
@@ -204,8 +233,6 @@ class Company{
     }
 
 
-    public function hydrate(){
 
-    }
     
 }
