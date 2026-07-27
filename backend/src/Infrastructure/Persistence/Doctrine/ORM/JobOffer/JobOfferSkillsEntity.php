@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity]
-#[ORM\Table(name: "job_offer_views")]
+#[ORM\Table(name: "job_offer_skills")]
 class JobOfferSkillsEntity
 {
     #[ORM\Id]

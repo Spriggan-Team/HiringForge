@@ -49,4 +49,15 @@ final class LanguageRepository extends ServiceEntityRepository
             $this->findAll()
         );
     }
+
+    #[Override]
+    public function findByCode(string $code): ?Language
+    {
+        $entity = $this->findOneBy(["code" => $code]);
+        if(!$entity){
+            return null;
+        }
+        $domain = $this->mapper->toDomain($entity);
+        return $domain;
+    }
 }

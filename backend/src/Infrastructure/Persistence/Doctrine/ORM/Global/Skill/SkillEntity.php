@@ -2,8 +2,9 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill;
 
-
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 
 #[ORM\Entity]
@@ -11,90 +12,114 @@ use Doctrine\ORM\Mapping as ORM;
 class SkillEntity
 {
     #[ORM\Id]
-    #[ORM\Column(type: "uuid")]
-    #[ORM\GeneratedValue("CUSTOM")]
+    #[ORM\Column(type: "string", length: 36, unique: true)]
+    #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
-    private ?string  $id = null;
+    private ?string $id = null;
 
-    #[ORM\Column(length: 120)]
-    private string $name;
     
-    #[ORM\Column(length: 120)]
-    private string $slug;
+    #[ORM\Column(unique: true, nullable: true)]
+    private ?string $escoUri = null;
+
+    #[ORM\Column(unique: true, nullable: true)]
+    private ?string $onetCode = null;
+
 
     #[ORM\Column(type: "boolean")]
-    private bool $isDefault  = true;
+    private bool $isDefault = true;
 
+    //----------------------
+    //--- Relations
+    //----------------------
+
+
+    #[ORM\OneToMany(
+        mappedBy: 'skill',
+        targetEntity: SkillTranslationEntity::class,
+        cascade: ['persist'] // !!IMPORRTANT
+    )]
+    private Collection $translations;
 
     //---------------------
     //--- Construct
     //----------------------
 
     public function __construct(
-        string $name,
-        string $slug,
+        ?string $onetCode = null,
+        ?string $escoUri = null,
         bool $isDefault = true,
         ? string $id = null,
     ){
         $this->id = $id;
-        $this->slug = $slug;
-        $this->name = $name;
+        $this->escoUri = $escoUri;
+        $this->onetCode = $onetCode;
         $this->isDefault = $isDefault ;
+        $this->translations = new ArrayCollection();
     }
 
     public static function create(
-        string $name,
-        string $slug,
+        ?string $escoUri =null,
+        ?string $onetCode = null,
         bool $isDefault = true,
         ? string $id = null,
     ){
         return new self(
             id: $id,
-            slug: $slug,
-            name: $name,
+            onetCode: $onetCode,
+            escoUri: $escoUri,
             isDefault: $isDefault,
         );
     }
 
+    //------------------------
     //-- GETTERS
+    //-----------------------
+
     public function getId(){
         return $this->id;
     }
 
-    public function getName(): string
-    {
-        return $this->name;
+    public function getEscoUri(){
+        return $this->escoUri;
     }
 
-    public function getSlug(){
-        return $this->slug;
+    public function getOnetCode(){
+        return $this->onetCode;
     }
+
 
     public function isDefault()
     {
         return $this->isDefault;    
     }
 
+    /**
+     * @return array<int, SkillTranslationEntity>
+     */
+    public function getTranslations()
+    {
+        return $this->translations;
+    }
+    
     //----------------------
     //-- SETTER
     //--------------------------
 
 
-    public function setName(string $name){
-        $this->name = $name;
-        return $this;
-    }
 
-    public function setLabel(string $name): static
+    public function setEscoUri(string $esco_uri)
     {
-        $this->name = $name;
+        $this->escoUri = $esco_uri;
         return $this;
     }
 
-    public function setSlug(string $slug){
-        $this->slug = $slug;
+
+    public function setOnetCode(string $onetCode)
+    {
+        $this->onetCode = $onetCode;
         return $this;
     }
+    
 
     public function setIsDefault(bool $isDefault)
     {

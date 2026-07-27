@@ -8,21 +8,21 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
 #[ORM\Table(name: "skill_aliases")]
-class SkillAliasesEntity
+class SkillAliasEntity
 {
     #[ORM\Id]
     #[ORM\Column(type: "integer")]
     #[ORM\GeneratedValue]
     private ?int $id = null;
     
-    #[ORM\Column(length: 100, unique: true)]
+    #[ORM\Column(length: 500, unique: true)]
     private string $alias;
     
 
     //----------------
     //- RELATIONS
     //-----------------
-     #[ORM\ManyToOne(targetEntity: SkillEntity::class)]
+    #[ORM\ManyToOne(targetEntity: SkillEntity::class)]
     #[ORM\JoinColumn(
         name: "skill_id",
         referencedColumnName: "id",
@@ -37,18 +37,22 @@ class SkillAliasesEntity
 
     public function __construct(
         string $alias,
+        SkillEntity $skill,
         ?int $id = null,
     ){
         $this->id = $id;
+        $this->skill =$skill;
         $this->alias = $alias;
     }
 
     public static function create(
         string $alias,
+        SkillEntity $skill,
         ?int $id = null,
     ){
         return new self(
             id: $id,
+            skill: $skill,
             alias: $alias
         );
     }
