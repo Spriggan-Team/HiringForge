@@ -11,7 +11,7 @@ class Application{
 
     private \DateTimeImmutable $appliedAt;
 
-    public function __constrcut(
+    public function __construct(
         string $jobOffer,
         string $candidateId,
         \DateTimeImmutable $appliedAt,

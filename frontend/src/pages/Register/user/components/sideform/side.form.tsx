@@ -193,7 +193,7 @@ const SideForm: React.FC<SideFormProps> = ({
                         </div>
                     </div>
 
-                    {/* BOTTOM */}
+                    {/* BOTTOM  (ADDRESS) */}
                     <div className={styles.bottom}>
                         <h3>{t("userRegister.form.aside.addressDetails.title")}</h3>
                         <div className={styles.geoposSection}>

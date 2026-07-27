@@ -7,13 +7,13 @@ use App\Domain\User\Siret;
 use App\Domain\File\StaticMedia;
 use App\Domain\Company\Company as DomainEntity;
 use App\Domain\Shared\Address;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity; 
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
 
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 
@@ -49,6 +49,7 @@ class CompanyEntityMapper
         //-- Address Association
         foreach ($company->address() as $address) {
             $addressEntity = AddressEntity::create(
+                city: $address->city,
                 street: $address->street,
                 postalCode: $address->postalCode,
                 country: $address->country
@@ -78,12 +79,11 @@ class CompanyEntityMapper
 
 
     //-- convert entity into domain object
-    public function toDomainEntity(CompanyEntity $entity): DomainEntity{
-
+    public function toDomainEntity(CompanyEntity $entity): DomainEntity
+    {
         //-- logo
         $logo = null;
-        if($entity->getLogo()){
-            $logoEntity = $entity->getLogo();
+        if ($logoEntity = $entity->getLogo()) {
             $logo = new StaticMedia(
                 id: $logoEntity->getId(),
                 name: $logoEntity->getName(),
@@ -92,14 +92,15 @@ class CompanyEntityMapper
             );
         }
 
-        //-- address[]
-        $address = [];
-        foreach($entity->getAddresses() as $addressCompanyEntity){
-            $addressDetails = $addressCompanyEntity->getAdrdress();
-            $id = $addressDetails->getId();
-            if($id){
-                $address[] =  Address::create(
+        //-- addresses
+        $addresses = [];
+        foreach ($entity->getAddresses() as $addressCompanyEntity) {
+            $addressDetails = $addressCompanyEntity->getAddress();
+            
+            if ($addressDetails && $id = $addressDetails->getId()) {
+                $addresses[] = Address::create(
                     id: $id,
+                    city: $addressDetails->getCity(),
                     country: $addressDetails->getCountry(),
                     street: $addressDetails->getStreet(),
                     postalCode: $addressDetails->getPostalCode(),
@@ -107,34 +108,24 @@ class CompanyEntityMapper
             }
         }
 
-
-        //-- images
-        $images = [];
-        foreach($entity->getImages() as $imageEntity){
-            $id = $imageEntity->getId();
-            if($id)
-               $images[] = $id;
-        }
-
-        //-- recruiters
-        $recruiters = [];
-        foreach($entity->getRecruiters() as $recruiterEntity){
-            $id = $recruiterEntity->getId();
-            if($id)
-                $recruiters[] = $id;
-        }
+        //--- Extract IDs helper (avoids duplicating foreach loops)
+        $extractIds = fn (iterable $collection): array => array_values(
+            array_filter(
+                array_map(fn ($item) => $item->getId(), is_array($collection) ? $collection : iterator_to_array($collection))
+            )
+        );
 
         return DomainEntity::hydrate(
             id: $entity->getId(),
             name: $entity->getName(),
             siret: Siret::hydrate($entity->getSiret()),
-            address: $address,
-            images: $images,
+            address: $addresses,
+            images: $extractIds($entity->getImages()),
             logo: $logo,
-            recruiters: $recruiters
+            recruiters: $extractIds($entity->getRecruiters()),
         );
-
     }
+
 
 
     /**
@@ -169,7 +160,7 @@ class CompanyEntityMapper
         foreach ($company->address() as $domainAddress) {
             $alreadyExists = false;
             foreach ($existingAddresses as $existingCompanyAddress) {
-                $existingAddress = $existingCompanyAddress->getAdrdress();
+                $existingAddress = $existingCompanyAddress->getAddress();
                 if (
                     $existingAddress->getStreet() === $domainAddress->street &&
                     $existingAddress->getPostalCode() === $domainAddress->postalCode
@@ -182,6 +173,7 @@ class CompanyEntityMapper
             if (!$alreadyExists) {
                 $newAddressEntity = AddressEntity::create(
                     street: $domainAddress->street,
+                    city: $domainAddress->city,
                     postalCode: $domainAddress->postalCode,
                     country: $domainAddress->country
                 );

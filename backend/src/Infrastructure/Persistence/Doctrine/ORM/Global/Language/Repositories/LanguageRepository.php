@@ -5,29 +5,31 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\Repositori
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Language\Language;
 use App\Domain\Shared\Language\LanguageRepositoryInterface;
+
+use Override;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\LanguageEntity;
 
+use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Override;
 
 
-final class LanguageRepository 
+final class LanguageRepository extends ServiceEntityRepository
     implements LanguageRepositoryInterface
 {
 
     public function __construct(
-        private EntityManagerInterface $em,
+        private ManagerRegistry $registry,
         private LanguageMapper $mapper
-    ){}
+    ){
+        parent::__construct($registry, LanguageEntity::class);
+    }
+
 
     #[Override]
     public function get(int $id): Language
     {
-        $entity = $this->em
-            ->getRepository(LanguageEntity::class)
-            ->find($id);
-
+        $entity = $this->find($id);
 
         if(!$entity){
             throw new RessourceNotFound(
@@ -36,5 +38,15 @@ final class LanguageRepository
         }
 
         return $this->mapper->toDomain($entity);
+    }
+
+
+    #[Override]
+    public function getAll(): array
+    { 
+        return array_map(
+            fn (LanguageEntity $entity) => $this->mapper->toDomain($entity),
+            $this->findAll()
+        );
     }
 }

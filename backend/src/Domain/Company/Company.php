@@ -232,7 +232,5 @@ class Company{
         return $this;
     }
 
-
-
     
 }

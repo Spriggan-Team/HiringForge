@@ -55,7 +55,7 @@ class CompanyAddressEntity
     }
 
 
-    public function getAdrdress(): AddressEntity
+    public function getAddress(): AddressEntity
     {
         return $this->address;
     }

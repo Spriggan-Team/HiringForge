@@ -1,5 +1,9 @@
+
+import type {  UserContextApiResponse } from "./response";
 import type { RecruiterDashboardKpis } from "../../../features/dashboard/KpiData";
-import { generateAuthorizationBearerHeader, get } from "../../handler";
+
+import { intercept } from "../../../utils/utils";
+import { authGet, generateAuthorizationBearerHeader, get, handleGenericApiResponseAfter } from "../../handler";
 
 
 
@@ -15,13 +19,26 @@ const getKPI = async ()=>{
 }
 
 
-
-
-
-
-const UserQueriesServices = {
-    getKPI
+//-- Retreives user context data
+const getCurrentUserContext = async ()=>{
+    try{
+        const response = await authGet<UserContextApiResponse>("/users");
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
 }
+
+
+
+
+
+const UserQueriesServices = intercept(
+    { getKPI, getCurrentUserContext },
+    undefined,
+    handleGenericApiResponseAfter
+)
 
 
 export default UserQueriesServices;

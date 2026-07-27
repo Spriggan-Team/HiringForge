@@ -30,6 +30,7 @@ const LanguageSelectionWorkflow: React.FC<LanguageSelectionWorkflowProps> = ({
     placeholder = "Select language",
     enableInputSearch = false
 }) => {
+
     const displayNames = useMemo(
         () =>
             new Intl.DisplayNames(["en"], {
@@ -51,6 +52,7 @@ const LanguageSelectionWorkflow: React.FC<LanguageSelectionWorkflowProps> = ({
         <div className={styles.container}>
             {/* Language selection*/}
             <MenuDrawer
+                className={`${styles.drawer} drawer`}
                 onChange={({ code }) => {
                     setPendingCode(code);
                 }}
@@ -64,12 +66,15 @@ const LanguageSelectionWorkflow: React.FC<LanguageSelectionWorkflowProps> = ({
                     </span>
                 </MenuDrawerTrigger>
 
-                <MenuDrawerBody>
+                <MenuDrawerBody
+                    className={`${styles.selectDropdown} selectDropdown`}
+                >
                     {languages.map(code => (
 
                         <MenuDrawerItem
                             key={code}
                             value={{ code }}
+                            className={`${styles.selectItem} selectItem`}
                         >
                             {displayNames.of(code)}
                         </MenuDrawerItem>
@@ -82,6 +87,7 @@ const LanguageSelectionWorkflow: React.FC<LanguageSelectionWorkflowProps> = ({
             {/*   Level selection*/}
             <MenuDrawer
                 triggerVisibility={!!pendingCode}
+                className={`${styles.drawer} drawer`}
                 onChange={({ proficiencyLevel }) => {
 
                     if (!pendingCode) return;
@@ -97,13 +103,16 @@ const LanguageSelectionWorkflow: React.FC<LanguageSelectionWorkflowProps> = ({
                 }}
             >
 
-                <MenuDrawerBody>
+                <MenuDrawerBody
+                    className={`${styles.selectDropdown} selectDropdown`}
+                >
                     {LANGUAGES_LEVEL_VALUES.map(level => (
                         <MenuDrawerItem
                             key={level}
                             value={{
                                 proficiencyLevel: level,
                             }}
+                            className={`${styles.selectItem} selectItem`}
                         >
                             {level}
                         </MenuDrawerItem>

@@ -24,11 +24,7 @@ const request = async <T, O = unknown>(
   const response = await fetch(`${baseURL}/${clearEndpoint}`, {
     method,
     headers: {
-      ...(isFormData
-        ? {}
-        : {
-            "Content-Type": "application/json",
-          }),
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...headers,
     },
     body:
@@ -45,54 +41,63 @@ const request = async <T, O = unknown>(
 
   //-- Global Error handling
   if (!response.ok) {
-      const errorBody = await response.text();
+    const errorBody = await response.text();
 
-      let data: O | null = null;
-      let message: string = errorBody;
-      let apiCode: ApiResponseCodeType | undefined;
-      let httpCode = response.status;
+    let payload: O | null = null;
+    let message: string = errorBody;
+    let apiCode: ApiResponseCodeType | undefined;
+    let httpCode = response.status;
 
-      //-- HTML fallback (error page serveur)
-      if (contentType && contentType.includes("text/html") && DEV) {
-          message = "An HTML error page was returned";
-          Utils.openHtml(errorBody);
+    const isHtml = contentType?.includes("text/html");
+
+    //-- HTML fallback (server error dev/prod)
+    if (isHtml) {
+      message = "An HTML error page was returned";
+      if (DEV) {
+        Utils.openHtml(errorBody);
       }
-      //-- JSON API error
-      else {
-          try {
-            const errorJson = JSON.parse(errorBody);
-            message = errorJson.message ?? message;
+    }
 
-            if (errorJson.code) {
-              if(HttpBadResponse.isValidApiCode(errorJson.code)){
-                apiCode = errorJson.code;
-              }
-            }
+    //-- JSON API error
+    else {
+      try {
+        const errorJson = JSON.parse(errorBody);
+        message = errorJson.message ?? message;
 
-            if(errorJson.data){
-              data = errorJson.data as O
-            }
-            console.error("API Response (JSON) : ", errorJson);
-          }
-          catch (err) {
-              //-- keep raw message
-          }
+        if (errorJson.code && HttpBadResponse.isValidApiCode(errorJson.code)) {
+          apiCode = errorJson.code;
+        }
+
+        if (errorJson.data) {
+          payload = errorJson.data as O;
+        }
+        console.error("API Response (JSON) : ", errorJson);
       }
+      catch (err) {
+        // Keep the raw message if it is neither standard JSON nor HTML
+      }
+    }
 
-      throw new HttpBadResponse<O | null>({
-          httpCode,
-          message,
-          apiCode,
-          payload: data
-      });
+    throw new HttpBadResponse<O | null>({
+      httpCode,
+      message,
+      apiCode,
+      payload,
+    });
   }
 
+  //-- Response: No Content (ex: 204 No Content)
+  if (response.status === 204 || response.headers.get("content-length") === "0") {
+    return null as T;
+  }
 
+  //-- Fallback: JSON
   if (contentType?.includes("application/json")) {
     return response.json();
   }
 
-  return response.text() as T;
+  //-- Fallback: Text
+  return response.text() as unknown as T;
 };
 
 
@@ -139,7 +144,6 @@ export const del = <T>(
 
 export const generateAuthorizationBearerHeader = (header?: HeadersInit): HeadersInit => {
   const token = localStorage.getItem("token");
-
   return {
     ...(header ?? {}),
     Authorization: `Bearer ${token}`,
@@ -229,10 +233,10 @@ export const httpContext = new HttpContext();
 
 export const handleGenericApiResponseAfter =  (
     method: string,
-    result: ApiResponse | ErrorApiResponse | Error
+    result: ApiResponse | ErrorApiResponse | Error | HttpBadResponse
 ) => {
-    if (isErrorApiResponse(result)) {
-        if (result.code === ApiResponseCode.AUTH_ACCESS_EXPIRED) {
+    if (result instanceof HttpBadResponse) {
+        if (result.apiCode === ApiResponseCode.AUTH_ACCESS_EXPIRED) {
             return httpContext.navigate(RouteScheme.login);
         }
     }

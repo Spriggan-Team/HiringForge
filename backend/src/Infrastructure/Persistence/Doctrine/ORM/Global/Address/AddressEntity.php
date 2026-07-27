@@ -20,7 +20,10 @@ class AddressEntity
     private ?string $street = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $postalCode = null;
+    private ?string $postalCode = null;  
+    
+    #[ORM\Column(length: 255)]
+    private ?string $city = null;
 
     #[ORM\Column(length: 255)]
     private ?string $country = null;
@@ -31,6 +34,7 @@ class AddressEntity
     //-----------------
     
     public static function create(
+        string $city,
         string $street,
         string $postalCode,
         string $country,
@@ -38,6 +42,7 @@ class AddressEntity
     {
         $address = new self();
         $address->setStreet($street)
+                ->setCity($city)
                 ->setPostalCode($postalCode)
                 ->setCountry($country);
         return $address;
@@ -55,6 +60,10 @@ class AddressEntity
     public function getStreet(): string
     {
         return $this->street;
+    }
+
+    public function getCity(): string{
+        return $this->city;
     }
 
     public function getPostalCode(): string
@@ -86,6 +95,12 @@ class AddressEntity
     public function setCountry(string $country): static
     {
         $this->country = $country;
+        return $this;
+    }
+
+    public function setCity(string $city): static
+    {
+        $this->city  = $city;
         return $this;
     }
 }

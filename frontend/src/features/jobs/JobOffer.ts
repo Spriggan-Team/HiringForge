@@ -75,6 +75,7 @@ export interface Salary{
 
 
 export interface Location{
+  id?: string;
   city: string;
   street: string;
   country: string;
@@ -82,7 +83,7 @@ export interface Location{
 
 
 export interface Department{
-    id: number;
+    id?: number;
     label: string;
     description?: string;
 }

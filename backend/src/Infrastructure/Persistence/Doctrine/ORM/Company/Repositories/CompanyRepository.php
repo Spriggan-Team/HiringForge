@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Company\Repositories;
 
 use App\Domain\Company\Company;
@@ -9,7 +8,7 @@ use App\Domain\Exception\RessourceNotFound;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 
 use Override;
-use Symfony\Bridge\Doctrine\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 
@@ -21,7 +20,7 @@ class CompanyRepository extends ServiceEntityRepository
         private CompanyEntityMapper $mapper,
 
     ){
-        parent::__constrcut($registery, CompanyEntity::class);
+        parent::__construct($registery, CompanyEntity::class);
     }
 
 
@@ -66,6 +65,13 @@ class CompanyRepository extends ServiceEntityRepository
         }
         $domain = $this->mapper->toDomainEntity($entity);
         return $domain;
+    }
+
+
+    #[Override]
+    public function containsUser(string $userId, string $companyId): bool
+    {
+        throw new \Exception('Not implemented');
     }
 
 }

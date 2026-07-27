@@ -114,7 +114,7 @@ class UserQueryManagement extends AbstractController
                 'firstName' => $user->firstName(),
                 'lastName'  => $user->lastName(),
                 'email'     => $user->email(),
-                'avatar'    => $avatar,
+                'avatarUrl'    => $avatar,
             ];
 
             // Retrieval of company data, if applicable
@@ -127,6 +127,8 @@ class UserQueryManagement extends AbstractController
                     $location = [];
                     foreach ($company->address() as $address) {
                         $location[] = [
+                            "id"              => $address->id,
+                            "city"            => $address->city,
                             "street"          => $address->street,
                             "country"         => $address->country,
                             "postalCode"      => $address->postalCode,
@@ -153,7 +155,7 @@ class UserQueryManagement extends AbstractController
                         'id'       => $company->id(),
                         'name'     => $company->name(),
                         'location' => $location,
-                        'logo'     => $logoURL,
+                        'logoUrl'     => $logoURL,
                     ];
                 }
             }
@@ -166,8 +168,8 @@ class UserQueryManagement extends AbstractController
                 ],
                 message: "Context retrieved successfully"
             )->toJsonResponse();
-
-        } catch (\Exception $exception) {
+        }
+        catch (\Exception $exception) {
             return ApiResponse::error(
                 message: "Something wrong happened",
                 throwable: $exception

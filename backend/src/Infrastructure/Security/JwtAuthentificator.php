@@ -24,7 +24,7 @@ class JwtAuthentificator
     private const JWT_SECRET = "usdyoisdfhqMGHSkkd6@EZFè1+^8Z0.%dk673730ssshvV/5@";
 
     private Configuration $config;
-    public static $JWT_EXPIRATION_DURATION = "+1 hour" ;
+    public static $JWT_EXPIRATION_DURATION = "+7 hours" ;
 
     public function __construct()
     {

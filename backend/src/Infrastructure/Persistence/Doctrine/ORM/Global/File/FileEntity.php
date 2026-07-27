@@ -40,7 +40,7 @@ class FileEntity
     private \DateTimeImmutable $createdAt;
 
     //------------------------
-    //-Relations
+    //-- Relations
     //---------------------------
     
     #[ORM\OneToOne(
@@ -55,16 +55,11 @@ class FileEntity
     )]
     private ?CandidateEntity $candidateCV = null;
 
-    #[ORM\OneToOne(
-        mappedBy: 'videoPresentation',
-        targetEntity: UserEntity::class
-    )]
-    private ?UserEntity $companyVideoPresentation = null;
 
-    #[ORM\OneToOne(
-        mappedBy: 'logo',
-        targetEntity: UserEntity::class
-    )]
+    #[ORM\OneToOne(mappedBy: 'videoPresentation', targetEntity: CompanyEntity::class)]
+    private ?CompanyEntity $companyVideoPresentation = null;
+    
+    #[ORM\OneToOne(mappedBy: 'logo', targetEntity: CompanyEntity::class)]
     private ?CompanyEntity $companyLogo = null;
 
     #[ORM\OneToOne(
@@ -141,6 +136,11 @@ class FileEntity
         return $this->companyImages;
     }
     
+    public function getCompanyVideoPresentation(): ?CompanyEntity
+    {
+        return $this->companyVideoPresentation;
+    }
+
     /* =======================
      * SETTERS
      * ======================= */
@@ -172,4 +172,9 @@ class FileEntity
     }
 
 
+    public function setCompanyVideoPresentation(?CompanyEntity $companyVideoPresentation): static
+    {
+        $this->companyVideoPresentation = $companyVideoPresentation;
+        return $this;
+    }
 }

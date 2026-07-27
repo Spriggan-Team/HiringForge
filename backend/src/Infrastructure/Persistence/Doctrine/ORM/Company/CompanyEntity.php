@@ -35,7 +35,6 @@ class CompanyEntity
     //---------------------
 
     #[ORM\OneToOne(
-        inversedBy: 'companyLogo',
         targetEntity: FileEntity::class,
         cascade: ['persist', 'remove']
     )]

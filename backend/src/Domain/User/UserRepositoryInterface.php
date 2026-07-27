@@ -62,7 +62,7 @@ interface UserRepositoryInterface
     public function getOrganizationId(string $userId): string ;
 
     
+
     /** Handle user deltion (recruiter) */
     public function delete(string $id): void;
-   
 }

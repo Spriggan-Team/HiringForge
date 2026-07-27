@@ -68,3 +68,21 @@ const mapKey = (key: string, transformMap?: Record<string, string>): string => {
     return transformMap?.[key] ?? key;
 };
 
+
+
+export const formatLocation = (location?: {
+  street?: string;
+  postalCode?: string;
+  city?: string;
+  country?: string;
+}) => {
+  if (!location) return "";
+
+  const cityLine = [location.postalCode, location.city]
+    .filter(Boolean)
+    .join(" ");
+
+  return [location.street, cityLine, location.country]
+    .filter(Boolean)
+    .join(", ");
+};

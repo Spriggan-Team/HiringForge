@@ -16,7 +16,7 @@ class CandidateEntityMapper
 {
     public static function toDomain(CandidateEntity $entity): Domain
     {
-        $candidateId =  CandidateId::hydrate($entity->getId());
+        $candidateId = CandidateId::hydrate($entity->getId());
         $staticImage = null;
         
         $image = $entity->getImage() ;
@@ -40,7 +40,7 @@ class CandidateEntityMapper
         }
 
         return Domain::create(
-            id: $candidateId,
+            id: $candidateId->value(),
             firstName: $entity->getFirstName(),
             lastName: $entity->getLastName(),
             email: EmailAddress::hydrate($entity->getEmail()),

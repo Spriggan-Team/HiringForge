@@ -67,7 +67,7 @@ class JwtAuthenticatorController extends AbstractAuthenticator
             throw new CustomUserMessageAuthenticationException($e->getMessage(), code: 401, previous: $e);
         }
         catch (\Exception $e) {
-            throw new CustomUserMessageAuthenticationException("Invalid token.", previous: $e);
+            throw new CustomUserMessageAuthenticationException("Invalid token.", previous: $e, code: 400);
         }
 
         // Payload Validation
@@ -98,7 +98,7 @@ class JwtAuthenticatorController extends AbstractAuthenticator
 
         return ApiResponse::error(
             message: "Something went wrong",
-            statusCode: 401,
+            statusCode: $exception->getCode(),
             code: $exception->getCode() === 401 ?  ApplicationErrorCode::AUTH_ACCESS_EXPIRED : null
         )->toJsonResponse();
     }

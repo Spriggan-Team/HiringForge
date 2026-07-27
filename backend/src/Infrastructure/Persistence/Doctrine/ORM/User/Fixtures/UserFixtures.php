@@ -3,7 +3,6 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Fixtures;
 
 use App\Domain\Shared\CustomUUID;
-use App\Domain\User\UserId;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
@@ -44,6 +43,7 @@ class UserFixtures extends Fixture
             $address = AddressEntity::create(
                 street: '1 rue de la République',
                 postalCode: '75001',
+                city: "City",
                 country: 'France'
             );
 
@@ -53,7 +53,7 @@ class UserFixtures extends Fixture
                 lastName: "",
                 email: $email,
                 password: '$2y$10$fixtureHashPassword1234567890',
-                company: CompanyEntity::create(name: "", siret: 5254585787745)
+                company: CompanyEntity::create(id: CustomUUID::generate(),name: "", siret: 5254585787745)
             );
 
             // 👉 UN SEUL persist

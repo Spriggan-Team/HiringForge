@@ -7,11 +7,10 @@ use App\Domain\Department\DepartmentRepositoryInterface;
 use App\Domain\Exception\RessourceNotFound;
 
 
-use App\Infrastructure\Persistence\Doctrine\ORM\Department\DepartmentEntity;
 use Override;
+use App\Infrastructure\Persistence\Doctrine\ORM\Department\DepartmentEntity;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Doctrine\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 
@@ -43,7 +42,9 @@ final class DepartmentRespository extends ServiceEntityRepository
     }
 
 
-
+    /**
+     * @return array<int, DepartmentEntity>
+     */
     #[Override]
     public function findTreeByCompany(string $companyId, bool $onlyActive  = false): array
     {

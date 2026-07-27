@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer;
 
-use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 

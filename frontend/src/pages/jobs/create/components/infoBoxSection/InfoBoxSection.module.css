@@ -7,7 +7,7 @@
 .contextBox{
     gap: 5px;
     display: flex;
-    max-width: 520px;
+    max-width: 600px;
     flex-direction: column;
 }
 
@@ -29,63 +29,7 @@
 
 /* SELECT / DROPDOWN FORM OVERRIDES */
 
-.drawer {
-    width: 100%;
-    position: relative;
-}
-
-.drawer span {
-    color: #94a3b8; 
-    font-size: 0.875rem;
-    transition: color 0.15s ease;
-}
-
-.drawer .activate {
-    color: #0f172a !important;
-    font-weight: 500;
-}
-
-.selectDropdown {
-    width: 100%;
-    max-height: 240px; 
-    overflow-y: auto; 
-    margin-top: 6px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e2e8f0 !important;
-}
-
-.selectDropdown::-webkit-scrollbar {
-    width: 6px;
-}
-
-.selectDropdown::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 8px;
-}
-
-.selectDropdown::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 8px;
-}
-
-.selectDropdown::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-.selectItem {
-    font-size: 0.875rem;
-    padding: 10px 12px !important;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    transition: background-color 0.15s ease;
-}
-
-.selectItem:hover {
-    background-color: #f8fafc !important;
-    color: #2563eb !important; /* Accent bleu au survol */
-}
-
+.drawer{}
 
 /** Skill inputs **/
 .inputSkillsSection{

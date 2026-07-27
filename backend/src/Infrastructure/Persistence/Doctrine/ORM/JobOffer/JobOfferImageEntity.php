@@ -45,6 +45,14 @@ class JobOfferImageEntity
         $this->isMain = $isMain;
     }
 
+    //-------------
+    //--- GETTERS
+    //----------------------
+
+    public function getId(){
+        return $this->id;
+    }
+
     public function getIsMain(): bool
     {
         return $this->isMain;

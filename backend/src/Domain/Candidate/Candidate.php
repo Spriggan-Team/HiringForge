@@ -88,6 +88,12 @@ class Candidate extends Account
     {
         return $this->searchRadius;
     }
+
+    
+    public function address(){
+        return $this->address;
+    }
+
     //------------------------------------------
     // - Business change --
     //-----------------------------------------

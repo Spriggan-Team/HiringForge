@@ -64,6 +64,7 @@ class UserManagementController extends AbstractController
                 addImages: $request->files->get('images[add]', []),
                 deleteImages: (array) $formData->get('images[delete]', []),
                 address:  Address::create(
+                    city: $formData->get("address[city]"),
                     street: $formData->get('address[street]'),
                     postalCode: $formData->get("address[postalCode]"),
                     country: $formData->get("address[country]")

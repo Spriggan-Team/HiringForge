@@ -3,13 +3,13 @@
 
 namespace App\Api\Controllers\Department;
 
-use App\Api\Controllers\Department\Mapper\CreateDepartmentRequestMapper;
 use App\Api\Responder\ApiResponse;
-use App\Application\Usecases\Department\DepartmentGenerator;
+use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Company\CompanyRepositoryInterface;
 use App\Domain\Department\DepartmentRepositoryInterface;
-use App\Domain\Exception\RessourceNotFound;
+use App\Application\Usecases\Department\DepartmentGenerator;
 
+use App\Api\Controllers\Department\Mapper\CreateDepartmentRequestMapper;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,6 +19,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
+
+#[Route("/departments")]
 class DepartmentController extends AbstractController
 {
     public function __construct(
@@ -34,26 +36,35 @@ class DepartmentController extends AbstractController
      * Retrieves the department tree for a company
      */
     #[Route('', methods: ['GET'])]
-    public function list(Request $request): JsonResponse
-    {
-        $companyId = $request->query->get('companyId');
+    public function list(
+        Request $request,
 
-        if (!$companyId) {
-            return ApiResponse::error(
-                message: 'companyId is required',
-                statusCode: Response::HTTP_BAD_REQUEST
+    ): JsonResponse
+    {
+        try{
+            $companyId = $request->query->get('companyId');
+
+            if (!$companyId) {
+                return ApiResponse::error(
+                    message: 'companyId is required',
+                    statusCode: Response::HTTP_BAD_REQUEST
+                )->toJsonResponse();
+            }
+
+            // Only active departments are included in the selection in the forms
+            $onlyActive = $request->query->getBoolean('activeOnly', true);
+            $departments = $this->departmentRepository->findTreeByCompany((string) $companyId, $onlyActive);
+
+            return ApiResponse::success(
+                data: $departments,
+                statusCode: Response::HTTP_OK
             )->toJsonResponse();
         }
-
-        // Only active departments are included in the selection in the forms
-        $onlyActive = $request->query->getBoolean('activeOnly', true);
-        $departments = $this->departmentRepository->findTreeByCompany((string) $companyId, $onlyActive);
-
-        return ApiResponse::success(
-            data: $departments,
-            statusCode: Response::HTTP_OK
-        )->toJsonResponse();
+        catch(\Exception $e){
+            return ApiResponse::error(message: "Something went wrong", statusCode: Response::HTTP_BAD_REQUEST ,throwable: $e)->toJsonResponse();
+        }
     }
+    
 
 
     /**

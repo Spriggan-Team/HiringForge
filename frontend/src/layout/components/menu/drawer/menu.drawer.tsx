@@ -103,7 +103,7 @@ export default MenuDrawer;
 /**-- MenuDrawerTriggerProps --  */
 
 interface MenuDrawerTriggerProps {
-    className?: string;
+    className?: | string | ((selected: any)=> string);
     iconClassName?: string;
     style?: React.CSSProperties;
 
@@ -136,7 +136,10 @@ export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
             type="button"
             onClick={toggle}
             aria-expanded={isOpen}
-            className={`${applyDefaultStyle ? styles.trigger : ""} ${className}`}
+            className={`
+                ${applyDefaultStyle ? styles.trigger : ""}
+                ${typeof className === "function" ? className(selected) : className}
+            `}
         >
             <span>
                 {

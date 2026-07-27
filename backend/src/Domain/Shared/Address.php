@@ -14,6 +14,7 @@ final class Address
      *
      */
     private function __construct(
+        public readonly string $city,
         public readonly string $postalCode,
         public readonly string $country,
         public readonly ?string $street = null,
@@ -26,6 +27,7 @@ final class Address
      *  !IMPORTANT: Exception will be thrown when condition/requirement are not met
      */
     public static function create(
+        string $city,
         string $postalCode,
         string $country,
         ?string $street = null,
@@ -42,6 +44,7 @@ final class Address
         }
         return new self(
             id: $id,
+            city: $city,
             street: $street,
             postalCode: $postalCode,
             country: $country,
@@ -72,6 +75,7 @@ final class Address
         if(!$isSomethingMissing)
         {
             return  self::create(
+                city: $data["city"],
                 street: $data["street"] ?? null,
                 postalCode: $data["postalCode"],
                 country: $data['country'],
@@ -90,6 +94,7 @@ final class Address
      *          and when you are sure of the validity of your data beforehand.
      */
     public static function hydrate(
+        string $city,
         string $postalCode,
         string $country,
         ?string $street = null,
@@ -99,6 +104,7 @@ final class Address
     {
         return new self(
             id: $id,
+            city: $city,
             street: $street,
             postalCode: $postalCode,
             country: $country,

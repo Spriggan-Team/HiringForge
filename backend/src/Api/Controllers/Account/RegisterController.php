@@ -107,6 +107,7 @@ class RegisterController extends AbstractController
                 logo: $request->files->get("logo"),
                 verificationCode: trim( $inputBag->get("verificationCode", null)),
                 address:  Address::create(
+                    city: trim($inputBag->get("city")),
                     street: trim($inputBag->get("street")),
                     postalCode: trim($inputBag->get("postalCode")),
                     country: trim($inputBag->get("country")),

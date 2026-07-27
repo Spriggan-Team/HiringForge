@@ -115,7 +115,7 @@ class LoginAuthenticatorController extends AbstractAuthenticator
         $jwt = $this->jwtService->generate([
             'id'    => $user->getId(),
             'sub'   => $user->getUserIdentifier(), //-- currently the email
-            'roles' => array_merge($user->getRoles(), ["ROLE_AUTHENTIFICATED"]),
+            'roles' => array_merge($user->getRoles(), []),
         ]);
 
         return ApiResponse::success(

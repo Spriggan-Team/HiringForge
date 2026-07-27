@@ -28,6 +28,7 @@ import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg"
 
 //-- CSS Module
 import styles from "./OptionBoxSection.module.css"
+import LanguageQueries from "../../../../../api/services/Language/queries";
 
 
 interface OptionBoxSectionProps{
@@ -73,13 +74,24 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
         [],
     );
 
+    const [LanguageCodes, setLanguageCodes] = useState<string[]>([]);
     const [pubStatusColor, setPubStatusColor ] = useState<string>("");
-
     
     useEffect(()=>{
+        //-- Dynamique styles
         const color = getComputedStyle(document.documentElement)
                 .getPropertyValue(jobStatusStyles[currentJob.publicationStatus].txtColor);
         setPubStatusColor(color);
+
+        //-- Initializing data
+            //-- Languages array from bdd
+        const initializing = async ()=>{
+            const data = await LanguageQueries.getLanguages();
+            const codes = data.map((langauge)=> langauge.code);
+            console.log({codes})
+            setLanguageCodes(codes);
+        }
+        initializing();
     },[currentJob.publicationStatus]);
 
 
@@ -173,15 +185,7 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
                                 label={t("jobs.createJob.additionnalOpstions.inputs.requireLanguage.label")}
                             />
                             <LanguageSelectionWorkflow
-                                languages={[
-                                    "fr", // Français
-                                    "en", // English
-                                    "de", // Deutsch
-                                    "es", // Español
-                                    "it", // Italiano
-                                    "pt", // Português
-                                    "nl", // Nederlands
-                                ]}
+                                languages={LanguageCodes}
                                 placeholder={t("jobs.createJob.additionnalOpstions.inputs.requireLanguage.placeholder")}
                                 onAdd={(language) => {
                                     setCurrentJob(prev => ({

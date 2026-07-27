@@ -23,5 +23,10 @@ interface CompanyRepositoryInterface{
      */
     public function get(string $companyId): Company;
 
+    /**
+     * verify wether an user is related to a company or noot
+     * @return bool
+     */
+    public function containsUser(string $userId, string $companyId): bool;
 
 }

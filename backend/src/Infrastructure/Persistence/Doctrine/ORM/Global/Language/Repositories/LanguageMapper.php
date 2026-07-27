@@ -9,7 +9,11 @@ final class LanguageMapper{
 
     public function toDomain(Entity $entity): Language
     {
-        $domain = new Language(id: $entity->getId(), code: $entity->getCode());
+        $domain = new Language(
+            id: $entity->getId(),
+            code: $entity->getCode(),
+            label: $entity->getLabel()    
+        );
         return $domain;
     }
 

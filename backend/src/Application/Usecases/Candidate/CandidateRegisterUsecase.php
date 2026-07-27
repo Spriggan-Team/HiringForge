@@ -55,7 +55,7 @@ class CandidateRegisterUsecase
         $failedUploads = [];
 
         $candidate = Candidate::create(
-            id: $candidateId,
+            id: $candidateId->value(),
             firstName: $command->firstName,
             lastName: $command->lastName,
             email: $email,
@@ -66,7 +66,7 @@ class CandidateRegisterUsecase
 
         if($command->image){
             $staticImage = $this->mediaFactory->createStaticMedia($command->image);
-            $candidate->setImage($staticImage);
+            $candidate->addImage($staticImage);
 
             $this->storage->store(
                 $command->image,
