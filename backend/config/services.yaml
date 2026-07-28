@@ -123,6 +123,16 @@ services:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Contract\Repositories\ContractTypeRepository
 
 
+    #--- Ai & Embedding Service
+    App\Domain\Shared\Service\EmbeddingProviderInterface:
+        alias: App\Infrastructure\Service\EmbeddingProvider
+    
+    App\Domain\Shared\Service\AiValidatorServiceInterface:
+        alias: App\Infrastructure\Service\AiValidatorService
+    
+    App\Domain\Shared\Service\VectorServiceInterface:
+        alias: App\Infrastructure\Persistence\Service\QdrantVectorService
+
     #-------------------------------
     # FileStorage Services
     #-------------------------------

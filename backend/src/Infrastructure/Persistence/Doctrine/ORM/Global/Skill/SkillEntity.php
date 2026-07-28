@@ -17,6 +17,8 @@ class SkillEntity
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
     private ?string $id = null;
 
+    #[ORM\Column()]
+    public string $canonicalName;
     
     #[ORM\Column(unique: true, nullable: true)]
     private ?string $escoUri = null;
@@ -27,6 +29,7 @@ class SkillEntity
 
     #[ORM\Column(type: "boolean")]
     private bool $isDefault = true;
+
 
     //----------------------
     //--- Relations
@@ -45,12 +48,14 @@ class SkillEntity
     //----------------------
 
     public function __construct(
+        string $canonicalName,
         ?string $onetCode = null,
         ?string $escoUri = null,
         bool $isDefault = true,
         ? string $id = null,
     ){
         $this->id = $id;
+        $this->canonicalName = $canonicalName;
         $this->escoUri = $escoUri;
         $this->onetCode = $onetCode;
         $this->isDefault = $isDefault ;
@@ -58,6 +63,7 @@ class SkillEntity
     }
 
     public static function create(
+        string $canonicalName,
         ?string $escoUri =null,
         ?string $onetCode = null,
         bool $isDefault = true,
@@ -65,6 +71,7 @@ class SkillEntity
     ){
         return new self(
             id: $id,
+            canonicalName: $canonicalName,
             onetCode: $onetCode,
             escoUri: $escoUri,
             isDefault: $isDefault,
@@ -93,6 +100,10 @@ class SkillEntity
         return $this->isDefault;    
     }
 
+    public function getCanonicalName(){
+        return $this->canonicalName;
+    }
+
     /**
      * @return array<int, SkillTranslationEntity>
      */
@@ -100,6 +111,7 @@ class SkillEntity
     {
         return $this->translations;
     }
+
     
     //----------------------
     //-- SETTER
@@ -127,4 +139,9 @@ class SkillEntity
         return $this;
     }
 
+    public function  setCanonicalName(string $canonicalName)
+    {
+        $this->canonicalName = $canonicalName;
+        return $this;
+    }
 }

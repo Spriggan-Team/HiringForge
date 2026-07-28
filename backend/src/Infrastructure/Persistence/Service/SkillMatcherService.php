@@ -2,137 +2,203 @@
 
 namespace App\Infrastructure\Persistence\Service;
 
+use App\Domain\Shared\Service\EmbeddingProviderInterface;
+use App\Domain\Shared\Service\AiValidatorServiceInterface;
 use App\Domain\Shared\Language\LanguageRepositoryInterface;
+use App\Domain\Shared\Service\VectorServiceInterface;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\LanguageEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillAliasEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillTranslationEntity;
+
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
+
 class SkillMatcherService
 {
+    // Banned words filtered during slug normalization
+    private const STOPWORDS = [
+        'fr' => ['de', 'du', 'la', 'le', 'des', 'les', 'en', 'un', 'une', 'et', 'a', 'pour', 'par'],
+        'en' => ['of', 'the', 'and', 'in', 'for', 'a', 'an', 'to', 'with', 'by', 'on', 'at'],
+    ];
+
     public function __construct(
         private EntityManagerInterface $em,
         private SluggerInterface $slugger,
-        private LanguageRepositoryInterface $languageRepository
-    ){}
+        private LanguageRepositoryInterface $languageRepository,
+        private ?VectorServiceInterface $vectorService = null,
+        private ?EmbeddingProviderInterface $embeddingProvider = null,
+        private ?AiValidatorServiceInterface $aiValidator = null // Optional AI service for validation robustness
+    ) {}
+
 
     /**
-     * Cleans a string to facilitate semantic comparison
+     * Cleans and standardizes a string (lowercase, without stopwords, slugged)
      */
-    public function normalize(
-        string $text,
-    ): string {
-        return $this->slugger->slug(mb_strtolower($text))->toString();
+    public function normalize(string $text, string $locale = 'fr'): string
+    {
+        $cleanText = mb_strtolower(trim($text));
+
+        // Filter stopwords based on locale
+        $stopwords = self::STOPWORDS[$locale] ?? [];
+        if (!empty($stopwords)) {
+            $words = preg_split('/\s+/u', $cleanText);
+            $filteredWords = array_filter($words, fn($w) => !in_array($w, $stopwords, true));
+            $cleanText = implode(' ', $filteredWords);
+        }
+
+        return $this->slugger->slug($cleanText)->toString();
     }
 
     /**
-     *  Find an Existing Skill  by External ID or Semantic Similarity
-     * (or create one)
+     * Finds an existing skill or creates a new one following the decision tree
      */
     public function findOrCreateSkill(
         string $name,
         string $locale,
+        string $canonicalName,
         ?string $escoUri = null,
-        ?string $onetCode = null
+        ?string $onetCode = null,
+        bool $enableVectorSearch = false
     ): SkillEntity {
         $skillRepo = $this->em->getRepository(SkillEntity::class);
         $transRepo = $this->em->getRepository(SkillTranslationEntity::class);
+        $aliasRepo = $this->em->getRepository(SkillAliasEntity::class);
 
-        //-- Search with identifiant
+        // ==========================================
+        // STEP 1: Exact Match by External Code
+        // ==========================================
+
         if ($escoUri) {
             $existing = $skillRepo->findOneBy(['escoUri' => $escoUri]);
-            if ($existing) 
+            if ($existing) {
                 return $this->enrichSkill($existing, $onetCode);
+            }
         }
 
         if ($onetCode) {
             $existing = $skillRepo->findOneBy(['onetCode' => $onetCode]);
-            if ($existing) 
+            if ($existing) {
                 return $this->enrichSkill($existing, null, $escoUri);
+            }
         }
 
-        //-- Exact semantique research with normalize name
+        // Retrieve language configuration
         $language = $this->em->getRepository(LanguageEntity::class)->findOneBy(['code' => $locale]);
         if (!$language) {
-            throw new \Exception("The language '$locale' was not found in the database..");
+            throw new \Exception("The language '$locale' was not found in the database.");
         }
 
-        $slug = $this->normalize($name);
+        // ==========================================
+        // STEP 2: Exact Match on Slug (without stopwords)
+        // ==========================================
+        $slug = $this->normalize($name, $locale);
+
         $translation = $transRepo->findOneBy([
             'language' => $language,
-            'slug' => $slug
+            'slug'     => $slug,
         ]);
 
         if ($translation) {
             return $this->enrichSkill($translation->getSkill(), $onetCode, $escoUri);
         }
 
-        // -------------------------------------------------------------
-        // 3. Search by Fuzzy Similarity (Levenshtein) if no exact match
-        // -------------------------------------------------------------
-        $firstLetter = substr($slug, 0, 1);
+        // ==========================================
+        // STEP 3: Match on Aliases / Synonyms Table
+        // ==========================================
 
-        $candidates = $transRepo->createQueryBuilder('t')
-            ->join('t.language', 'l')
-            ->where('l.code = :locale')
-            ->andWhere('t.slug LIKE :prefix')
-            ->setParameter('locale', $locale)
-            ->setParameter('prefix', $firstLetter . '%')
+        $existingAlias = $aliasRepo->createQueryBuilder('a')
+            ->where('LOWER(a.alias) = :alias OR LOWER(a.alias) = :rawName')
+            ->setParameter('alias', str_replace('-', ' ', $slug))
+            ->setParameter('rawName', mb_strtolower(trim($name)))
+            ->setMaxResults(1)
             ->getQuery()
-            ->getResult();
+            ->getOneOrNullResult();
 
-        $bestMatchSkill = null;
-        $highestSimilarity = 0.0;
-        $similarityThreshold = 85.0; // Min thershold  à 85%
+        if ($existingAlias) {
+            return $this->enrichSkill($existingAlias->getSkill(), $onetCode, $escoUri);
+        }
 
-        /** @var SkillTranslationEntity $candidate */
-        foreach ($candidates as $candidate) {
-            $candidateSlug = $candidate->getSlug();
+        // ==========================================
+        // STEP 4: Embeddings / Vector Search (> 0.88)
+        // ==========================================
 
-            //-- levenshtein
-            if (strlen($slug) > 255 || strlen($candidateSlug) > 255) {
-                continue;
-            }
+        if ($enableVectorSearch && $this->embeddingProvider) {
+            $candidateSkill = $this->findSkillByVectorSearch($name, 0.88);
 
-            $similarity = $this->getSimilarityPercentage($slug, $candidateSlug);
+            if ($candidateSkill) {
+                //-- perform an additional LLM validation step to avoid false positives (e.g. Java vs JavaScript)
+                $isValidMatch = true;
+                if ($this->aiValidator) {
+                    $isValidMatch = $this->aiValidator->isSameSkillConcept($name, $candidateSkill->getCanonicalName($locale));
+                }
 
-            if ($similarity >= $similarityThreshold && $similarity > $highestSimilarity) {
-                $highestSimilarity = $similarity;
-                $bestMatchSkill = $candidate->getSkill();
+                if ($isValidMatch) {
+                    return $this->enrichSkill($candidateSkill, $onetCode, $escoUri);
+                }
             }
         }
 
-        //-- find more than > 85
-        if ($bestMatchSkill !== null) {
-            return $this->enrichSkill($bestMatchSkill, $onetCode, $escoUri);
-        }
-        
+        // ==========================================
+        // STEP 5: Fallback: Create New Skill Entity
+        // ==========================================
 
-        //-----------------------------
-        //-- Generate Entity
-        //------------------------------
+        $skill = new SkillEntity(canonicalName: $canonicalName);
 
-        $skill = new SkillEntity();
-        if ($escoUri) 
+        if ($escoUri) {
             $skill->setEscoUri($escoUri);
-        if ($onetCode) 
+        }
+        if ($onetCode) {
             $skill->setOnetCode($onetCode);
+        }
 
+        // Generate and attach vector embedding if the provider is present
+        if ($this->embeddingProvider) {
+            $vector = $this->embeddingProvider->generateEmbedding($name);
+            if ($vector && method_exists($skill, 'setEmbedding')) {
+                $skill->setEmbedding($vector);
+            }
+        }
 
         $translation = new SkillTranslationEntity(
             name: $name,
             slug: $slug,
             skill: $skill,
-            language: $language,
+            language: $language
         );
+
         $this->em->persist($translation);
 
         return $skill;
     }
 
+    /**
+     * Executes vector search against the database (compatible with pgvector extension)
+     */
+    private function findSkillByVectorSearch(string $text, float $threshold = 0.88): ?SkillEntity
+    {
+        if (!$this->vectorService) {
+            return null;
+        }
 
+        // 1. Query external vector database to retrieve target MySQL ID
+        $skillId = $this->vectorService->searchClosestSkillId($text, $threshold);
+
+        if (!$skillId) {
+            return null;
+        }
+
+        // 2. Fetch the corresponding skill directly from MariaDB by primary key
+        return $this->em->getRepository(SkillEntity::class)->find($skillId);
+    }
+
+
+    /**
+     * Enriches an existing skill with missing external source codes
+     */
     private function enrichSkill(SkillEntity $skill, ?string $onetCode = null, ?string $escoUri = null): SkillEntity
     {
         if ($onetCode && !$skill->getOnetCode()) {
@@ -144,16 +210,25 @@ class SkillMatcherService
         return $skill;
     }
 
-    public function getSimilarityPercentage(string $str1, string $str2): float
+    /**
+     * Calculates Cosine Similarity between two PHP vectors
+     */
+    public function cosineSimilarity(array $vecA, array $vecB): float
     {
-        $lev = levenshtein($str1, $str2);
-        $maxLength = max(strlen($str1), strlen($str2));
+        $dotProduct = 0.0; 
+        $normA = 0.0;  
+        $normB = 0.0;
 
-        if ($maxLength === 0) {
-            return 100.0;
+        foreach ($vecA as $i => $val) {
+            $dotProduct += $val * $vecB[$i];
+            $normA += $val * $val;
+            $normB += $vecB[$i] * $vecB[$i];
         }
 
-        // Formule : (1 - (distance / longueur_max)) * 100
-        return (1 - ($lev / $maxLength)) * 100;
+        if ($normA == 0.0 || $normB == 0.0) {
+            return 0.0;
+        }
+
+        return $dotProduct / (sqrt($normA) * sqrt($normB));
     }
 }
