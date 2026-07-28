@@ -7,16 +7,17 @@ use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
 use App\Domain\File\MediaUploadResult;
 
+use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Uid\Uuid;
+
 
 class MediaStorage implements MediaStorageInterface
 {
     /**
      * This is the project dir to the root 'src' folder
-     * @property string
+     * @property string $baseStoragePath
      */
     private string $baseStoragePath;
 

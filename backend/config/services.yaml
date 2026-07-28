@@ -12,9 +12,18 @@
 #   Parameters
 #------------------------------
 parameters:
+    #----------------------------
     #--- env variables
+    #----------------------------
+    
     app.jwt_key: '%env(JWT_SECRET_KEY)%'
     app.url: '%env(APP_URL)%'
+
+    ollama_root_url: '%env(OLLAMA_ROOT_URL)%'
+    ollama_chat_model: '%env(OLLAMA_CHAT_MODEL)%'
+    ollama_embedder_model: '%env(OLLAMA_EMBEDDER_MODEL)%'
+    qdrant_url: '%env(QDRANT_URL)%'
+    embedder_provider_root_url: '%env(EMBEDDER_PROVIDER_ROOT_URL)%'
 
     smtp_host: '%env(SMTP_HOST)%'
     mail_user_name: '%env(MAIL_USER_NAME)%'
@@ -22,6 +31,7 @@ parameters:
 
     #-------Root Dir
     uploads_base_directory: '%kernel.project_dir%/public/uploads'
+
 
 #---------------------
 #   Services
@@ -123,15 +133,38 @@ services:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Contract\Repositories\ContractTypeRepository
 
 
+    #-------------------------------------
     #--- Ai & Embedding Service
+    #------------------------------------
+
+        #--- Embeddins
+    App\Infrastructure\Service\EmbeddingProvider:
+        arguments:
+            $ollamaRootUrl: '%ollama_root_url%'
+            $ollamaEmbedderModel: '%ollama_embedder_model%'
+
     App\Domain\Shared\Service\EmbeddingProviderInterface:
         alias: App\Infrastructure\Service\EmbeddingProvider
-    
+
+        #- Chat completion
+    App\Infrastructure\Service\AiValidatorService:
+        arguments:
+            $ollamaChatModel: '%ollama_chat_model%'
+            $ollamaRootUrl: '%ollama_root_url%'
+
+
     App\Domain\Shared\Service\AiValidatorServiceInterface:
         alias: App\Infrastructure\Service\AiValidatorService
-    
+
+        #-- Vector BDD
+    App\Infrastructure\Persistence\Vector\QdrantVectorService:
+        arguments:
+            $qdrantRootUrl: '%qdrant_url%'
+
+
     App\Domain\Shared\Service\VectorServiceInterface:
-        alias: App\Infrastructure\Persistence\Service\QdrantVectorService
+        alias: App\Infrastructure\Persistence\Vector\QdrantVectorService
+
 
     #-------------------------------
     # FileStorage Services
@@ -140,9 +173,11 @@ services:
         arguments:
             $baseStoragePath: '%uploads_base_directory%'
 
+
     App\Domain\File\MediaStorageInterface:
         alias: App\Infrastructure\Storage\FileStorage\MediaStorage
     
+
     App\Domain\File\MediaFactoryInterface:
         alias: App\Infrastructure\Storage\FileStorage\MediaFactory
 
@@ -155,6 +190,7 @@ services:
             $SMTP_HOST: '%smtp_host%'
             $MAIL_USER_NAME: '%mail_user_name%'
             $MAIL_USER_PASSWORD: '%mail_user_password%'
+
 
     App\Domain\Email\EmailServicesInterface:
         alias: App\Infrastructure\Email\EmailServices
@@ -169,6 +205,7 @@ services:
 
     App\Domain\Security\TokenBlacklistRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens\TokenBlacklistRepository
+
 
     #------------------
     #   Dev Packages

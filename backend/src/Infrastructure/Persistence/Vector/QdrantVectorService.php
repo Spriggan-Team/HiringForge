@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Infrastructure\Persistence\Service;
+namespace App\Infrastructure\Persistence\Vector;
 
 use App\Domain\Shared\Service\EmbeddingProviderInterface;
 use App\Domain\Shared\Service\VectorServiceInterface;
@@ -10,13 +10,16 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class QdrantVectorService implements VectorServiceInterface
 {
-    private string $qdrantUrl = "http://localhost:8000";
+    private string $qdrantRootUrl;
 
     public function __construct(
+        string $qdrantRootUrl,
         private HttpClientInterface $httpClient,
-        private EmbeddingProviderInterface $embeddingsProvider
+        private EmbeddingProviderInterface $embeddingsProvider,
     )
-    {}
+    {
+        $this->qdrantRootUrl = $qdrantRootUrl;
+    }
 
     /** Search for the closest skill ID matching the inputs text */
     public function searchClosestSkillId(string $text, float $threshold = 0.88): ?int
@@ -27,7 +30,7 @@ class QdrantVectorService implements VectorServiceInterface
         }
 
         //-- send request to Qdrant Vector Engine
-        $response = $this->httpClient->request("POST", $this->qdrantUrl . '/collections/skills/points/search',[
+        $response = $this->httpClient->request("POST", $this->qdrantRootUrl . '/collections/skills/points/search',[
             'json' => [
                 'vector' => $vector,
                 "limit" => 1,
@@ -49,14 +52,14 @@ class QdrantVectorService implements VectorServiceInterface
     /**
      * Index or update a Skill vector in the external Vector DB
      */
-    public function indexSkill(int $skillId, string $skillName) : void
+    public function indexSkill(string $skillId, string $skillName) : void
     {
         $vector = $this->embeddingsProvider->generateEmbedding($skillName);
         if(empty($vector)){
             return;
         }    
 
-        $this->httpClient->request("PUT", $this->qdrantUrl . "/collections/skills/points", [
+        $this->httpClient->request("PUT", $this->qdrantRootUrl . "/collections/skills/points", [
             'json' => [
                 'points' => [
                     [

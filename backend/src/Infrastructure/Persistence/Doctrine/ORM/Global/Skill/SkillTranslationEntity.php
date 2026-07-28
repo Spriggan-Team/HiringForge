@@ -8,7 +8,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\LanguageEntity;
 
 
 #[ORM\Entity]
-#[ORM\Table(name: "skills_translation")]
+#[ORM\Table(name: "skill_translations")]
 class SkillTranslationEntity
 {
     #[ORM\Id]

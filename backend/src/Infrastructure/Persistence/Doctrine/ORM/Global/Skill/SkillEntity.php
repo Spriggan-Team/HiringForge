@@ -13,9 +13,7 @@ class SkillEntity
 {
     #[ORM\Id]
     #[ORM\Column(type: "string", length: 36, unique: true)]
-    #[ORM\GeneratedValue(strategy: "CUSTOM")]
-    #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
-    private ?string $id = null;
+    private string $id; //-- uuid applicatif identifiant
 
     #[ORM\Column()]
     public string $canonicalName;
@@ -48,11 +46,11 @@ class SkillEntity
     //----------------------
 
     public function __construct(
+        string $id,
         string $canonicalName,
         ?string $onetCode = null,
         ?string $escoUri = null,
         bool $isDefault = true,
-        ? string $id = null,
     ){
         $this->id = $id;
         $this->canonicalName = $canonicalName;
@@ -63,11 +61,11 @@ class SkillEntity
     }
 
     public static function create(
+        string $id,
         string $canonicalName,
         ?string $escoUri =null,
         ?string $onetCode = null,
         bool $isDefault = true,
-        ? string $id = null,
     ){
         return new self(
             id: $id,

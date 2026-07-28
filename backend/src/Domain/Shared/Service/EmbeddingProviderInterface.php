@@ -5,5 +5,5 @@ namespace App\Domain\Shared\Service;
 
 interface EmbeddingProviderInterface
 {
-    public function generateEmbedding(string $name): string;
+    public function generateEmbedding(string $prompt): array;
 }

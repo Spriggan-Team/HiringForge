@@ -2,22 +2,25 @@
 
 namespace App\Infrastructure\Persistence\Service;
 
+
 use App\Domain\Shared\Service\EmbeddingProviderInterface;
 use App\Domain\Shared\Service\AiValidatorServiceInterface;
 use App\Domain\Shared\Language\LanguageRepositoryInterface;
 use App\Domain\Shared\Service\VectorServiceInterface;
+
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\LanguageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillAliasEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillTranslationEntity;
 
 
+use Ramsey\Uuid\Uuid;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\String\Slugger\AsciiSlugger;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 
-class SkillMatcherService
+class SkillMatcherService  
 {
     // Banned words filtered during slug normalization
     private const STOPWORDS = [
@@ -37,6 +40,7 @@ class SkillMatcherService
 
     /**
      * Cleans and standardizes a string (lowercase, without stopwords, slugged)
+     * @throws \Exception
      */
     public function normalize(string $text, string $locale = 'fr'): string
     {
@@ -54,7 +58,9 @@ class SkillMatcherService
     }
 
     /**
-     * Finds an existing skill or creates a new one following the decision tree
+     * Finds an existing skill or creates a new one following the decision tree.
+     *
+     * @return array{0: SkillEntity, 1?: array<int, float>}
      */
     public function findOrCreateSkill(
         string $name,
@@ -62,8 +68,10 @@ class SkillMatcherService
         string $canonicalName,
         ?string $escoUri = null,
         ?string $onetCode = null,
+        bool $shouldFlush = true,
+        bool $shouldIndex = true,
         bool $enableVectorSearch = false
-    ): SkillEntity {
+    ): array {
         $skillRepo = $this->em->getRepository(SkillEntity::class);
         $transRepo = $this->em->getRepository(SkillTranslationEntity::class);
         $aliasRepo = $this->em->getRepository(SkillAliasEntity::class);
@@ -71,18 +79,17 @@ class SkillMatcherService
         // ==========================================
         // STEP 1: Exact Match by External Code
         // ==========================================
-
         if ($escoUri) {
             $existing = $skillRepo->findOneBy(['escoUri' => $escoUri]);
             if ($existing) {
-                return $this->enrichSkill($existing, $onetCode);
+                return [$this->enrichSkill($existing, null, $onetCode), null];
             }
         }
 
         if ($onetCode) {
             $existing = $skillRepo->findOneBy(['onetCode' => $onetCode]);
             if ($existing) {
-                return $this->enrichSkill($existing, null, $escoUri);
+                return [$this->enrichSkill($existing, $escoUri, null), null];
             }
         }
 
@@ -93,7 +100,7 @@ class SkillMatcherService
         }
 
         // ==========================================
-        // STEP 2: Exact Match on Slug (without stopwords)
+        // STEP 2: Exact Match on Slug
         // ==========================================
         $slug = $this->normalize($name, $locale);
 
@@ -103,13 +110,12 @@ class SkillMatcherService
         ]);
 
         if ($translation) {
-            return $this->enrichSkill($translation->getSkill(), $onetCode, $escoUri);
+            return [$this->enrichSkill($translation->getSkill(), $escoUri, $onetCode), null];
         }
 
         // ==========================================
-        // STEP 3: Match on Aliases / Synonyms Table
+        // STEP 3: Match on Aliases / Synonyms
         // ==========================================
-
         $existingAlias = $aliasRepo->createQueryBuilder('a')
             ->where('LOWER(a.alias) = :alias OR LOWER(a.alias) = :rawName')
             ->setParameter('alias', str_replace('-', ' ', $slug))
@@ -119,25 +125,23 @@ class SkillMatcherService
             ->getOneOrNullResult();
 
         if ($existingAlias) {
-            return $this->enrichSkill($existingAlias->getSkill(), $onetCode, $escoUri);
+            return [$this->enrichSkill($existingAlias->getSkill(), $escoUri, $onetCode), null];
         }
 
         // ==========================================
-        // STEP 4: Embeddings / Vector Search (> 0.88)
+        // STEP 4: Embeddings / Vector Search
         // ==========================================
-
         if ($enableVectorSearch && $this->embeddingProvider) {
             $candidateSkill = $this->findSkillByVectorSearch($name, 0.88);
 
             if ($candidateSkill) {
-                //-- perform an additional LLM validation step to avoid false positives (e.g. Java vs JavaScript)
                 $isValidMatch = true;
                 if ($this->aiValidator) {
-                    $isValidMatch = $this->aiValidator->isSameSkillConcept($name, $candidateSkill->getCanonicalName($locale));
+                    $isValidMatch = $this->aiValidator->isSameSkillConcept($name, $candidateSkill->getCanonicalName());
                 }
 
                 if ($isValidMatch) {
-                    return $this->enrichSkill($candidateSkill, $onetCode, $escoUri);
+                    return [$this->enrichSkill($candidateSkill, $escoUri, $onetCode), null];
                 }
             }
         }
@@ -145,22 +149,17 @@ class SkillMatcherService
         // ==========================================
         // STEP 5: Fallback: Create New Skill Entity
         // ==========================================
-
-        $skill = new SkillEntity(canonicalName: $canonicalName);
+        // Grâce aux UUIDs, l'ID est généré tout de suite !
+        $skill = new SkillEntity(
+            id: Uuid::uuid4()->toString(),
+            canonicalName: $canonicalName
+        );
 
         if ($escoUri) {
             $skill->setEscoUri($escoUri);
         }
         if ($onetCode) {
             $skill->setOnetCode($onetCode);
-        }
-
-        // Generate and attach vector embedding if the provider is present
-        if ($this->embeddingProvider) {
-            $vector = $this->embeddingProvider->generateEmbedding($name);
-            if ($vector && method_exists($skill, 'setEmbedding')) {
-                $skill->setEmbedding($vector);
-            }
         }
 
         $translation = new SkillTranslationEntity(
@@ -170,10 +169,36 @@ class SkillMatcherService
             language: $language
         );
 
+        $this->em->persist($skill);
         $this->em->persist($translation);
 
-        return $skill;
+        if ($shouldFlush) {
+            $this->em->flush();
+        }
+
+        $vector = null;
+        // Génération du vecteur si le provider est présent
+        if ($this->embeddingProvider) {
+            $vector = $this->embeddingProvider->generateEmbedding($name);
+            
+            if (!empty($vector)) {
+                if (method_exists($skill, 'setEmbedding')) {
+                    $skill->setEmbedding($vector);
+                }
+
+                if ($shouldIndex && $this->vectorService) {
+                    // Indexation directe dans Qdrant
+                    $this->vectorService->indexSkill(
+                        skillId: $skill->getId(),
+                        skillName: $canonicalName,
+                    );
+                }
+            }
+        }
+
+        return [$skill, $vector];
     }
+
 
     /**
      * Executes vector search against the database (compatible with pgvector extension)
