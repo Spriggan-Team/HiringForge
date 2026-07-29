@@ -191,6 +191,7 @@ class SkillMatcherService
                     $this->vectorService->indexSkill(
                         skillId: $skill->getId(),
                         skillName: $canonicalName,
+                        vector: $vector
                     );
                 }
             }
