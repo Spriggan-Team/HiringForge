@@ -30,9 +30,12 @@ class QdrantVectorService implements VectorServiceInterface
         }
 
         //-- send request to Qdrant Vector Engine
-        $response = $this->httpClient->request("POST", $this->qdrantRootUrl . '/collections/skills/points/search',[
+        $response = $this->httpClient->request(
+            "POST", 
+            $this->qdrantRootUrl . '/collections/skills/points/query',
+            [
             'json' => [
-                'vector' => $vector,
+                'query' => $vector,
                 "limit" => 1,
                 "score_threshold" => $threshold // Filterss similarity >= 0.88 directly
             ]
@@ -52,22 +55,24 @@ class QdrantVectorService implements VectorServiceInterface
     /**
      * Index or update a Skill vector in the external Vector DB
      */
-    public function indexSkill(string $skillId, string $skillName) : void
+    public function indexSkill(string $skillId, string $skillName, ?array $vector = null) : void
     {
-        $vector = $this->embeddingsProvider->generateEmbedding($skillName);
-        if(empty($vector)){
+        $vec = $vector ?? $this->embeddingsProvider->generateEmbedding($skillName);
+        if(empty($vec)){
             return;
         }    
 
-        $this->httpClient->request("PUT", $this->qdrantRootUrl . "/collections/skills/points", [
+        $response = $this->httpClient->request("PUT", $this->qdrantRootUrl . "/collections/skills/points", [
             'json' => [
                 'points' => [
                     [
                         'id' => $skillId,
-                        'vector' => $vector
+                        'vector' => $vec
                     ]
                 ]
             ]
         ]);
+
+        $response->getStatusCode();
     }
 }

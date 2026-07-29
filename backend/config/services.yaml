@@ -23,7 +23,6 @@ parameters:
     ollama_chat_model: '%env(OLLAMA_CHAT_MODEL)%'
     ollama_embedder_model: '%env(OLLAMA_EMBEDDER_MODEL)%'
     qdrant_url: '%env(QDRANT_URL)%'
-    embedder_provider_root_url: '%env(EMBEDDER_PROVIDER_ROOT_URL)%'
 
     smtp_host: '%env(SMTP_HOST)%'
     mail_user_name: '%env(MAIL_USER_NAME)%'

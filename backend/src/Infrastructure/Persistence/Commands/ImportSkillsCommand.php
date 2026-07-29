@@ -7,7 +7,7 @@ use App\Infrastructure\Persistence\Service\SkillMatcherService;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillAliasEntity;
 
 use Doctrine\ORM\EntityManagerInterface;
-
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -21,6 +21,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class ImportSkillsCommand extends Command
 {
     public function __construct(
+        private ManagerRegistry $doctrine,
         private EntityManagerInterface $em,
         private SluggerInterface $slugger,
         private SkillMatcherService $matcher,
@@ -128,7 +129,7 @@ class ImportSkillsCommand extends Command
 
         $processedSlugs = [];
         $rawSlugs = $this->em->getConnection()
-            ->fetchAllAssociative('SELECT slug FROM skill_translations');
+            ->fetchAllAssociative('SELECT slug FROM skills_translation');
             
         foreach ($rawSlugs as $row) {
             $processedSlugs[md5($row['slug'])] = true;
@@ -164,6 +165,9 @@ class ImportSkillsCommand extends Command
                 $skillVectors = []; // Initialize vector-array for embeddings
 
                 while (($row = @fgetcsv($handle, 4096, $config['delimiter'])) !== FALSE) {
+                    //-- Ensure doctrine is open
+                    $this->ensureEntityManagerIsOpen();
+
                     $name          = $getVal($row, $config['mapping']['name'] ?? null);
                     $altLabels     = $getVal($row, $config['mapping']['altLabels'] ?? null);
                     $externalCode  = $getVal($row, $config['mapping']['external_code'] ?? null);
@@ -214,6 +218,8 @@ class ImportSkillsCommand extends Command
                     }
                     catch (\Exception $e) {
                         $failedEntityCount++;
+                        
+                        $this->ensureEntityManagerIsOpen();
                         continue;
                     }
 
@@ -267,12 +273,15 @@ class ImportSkillsCommand extends Command
                                     $this->vectorService->indexSkill(
                                         skillId: $item['id'],
                                         skillName: $item['name'],
+                                        vector: $item['vector']
                                     );
                                 }
                             }
                         } catch (\Exception $e) {
                             $this->em->clear();
                             $failedEntityCount += count($skillVectors);
+
+                            $this->ensureEntityManagerIsOpen();
                         }
 
                         //-- free vectors container
@@ -289,6 +298,7 @@ class ImportSkillsCommand extends Command
                 // Final Flush
                 //--------------------------------
                 try {
+                    $this->ensureEntityManagerIsOpen();
                     $this->em->flush();
                     $this->em->clear();
 
@@ -297,6 +307,7 @@ class ImportSkillsCommand extends Command
                             $this->vectorService->indexSkill(
                                 skillId: $item['id'],
                                 skillName: $item['name'],
+                                vector: $item['vector']
                             );
                         }
                     }
@@ -316,5 +327,12 @@ class ImportSkillsCommand extends Command
         );
 
         return Command::SUCCESS;
+    }
+
+    private function ensureEntityManagerIsOpen(): void
+    {
+        if (!$this->em->isOpen()) {
+            $this->em = $this->doctrine->resetManager();
+        }
     }
 }

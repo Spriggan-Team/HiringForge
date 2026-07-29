@@ -21,7 +21,7 @@ class AiValidatorService implements AiValidatorServiceInterface
         string $ollamaRootUrl = 'http://localhost:11434/api',
     ){
         $this->ollamaChatModel = $ollamaChatModel;
-        $this->$ollamaRootUrl = $ollamaRootUrl;
+        $this->ollamaRootUrl = $ollamaRootUrl;
     }
 
     /**

@@ -20,30 +20,26 @@ class EmbeddingProvider implements EmbeddingProviderInterface
         $this->ollamaRootUrl = $ollamaRootUrl;
     }
 
-    /**
-     * @throws \Exception
-     */
     #[Override]
     public function generateEmbedding(string $prompt): array
     {
-        try{
-            $response = $this->httpClient->request(
-                "POST",
-                $this->ollamaRootUrl . "/api/embeddings",
-                [
-                    'json' => [
-                        "model" => $this->ollamaEmbedderModel,
-                        "prompt" => $prompt
-                    ]
-                ]
-            );
-            $data = $response->toArray();
-            
-            return $data["embedding"];
+        $response = $this->httpClient->request(
+            'POST',
+            $this->ollamaRootUrl . '/api/embed',
+            [
+                'json' => [
+                    'model' => $this->ollamaEmbedderModel,
+                    'input' => $prompt,
+                ],
+            ]
+        );
+
+        $data = $response->toArray();
+
+        if (!isset($data['embeddings'][0])) {
+            throw new \RuntimeException('No embedding returned by Ollama.');
         }
-        catch(\Exception $exception)
-        {
-            throw $exception;
-        }
+
+        return $data['embeddings'][0];
     }
 }

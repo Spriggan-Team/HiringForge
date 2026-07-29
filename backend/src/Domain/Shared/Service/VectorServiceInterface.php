@@ -9,5 +9,5 @@ interface VectorServiceInterface
 {
     public function searchClosestSkillId(string $text, float $threshold = 0.88): ?int;
     
-    public function indexSkill(string $skillId, string $skillName) : void;
+    public function indexSkill(string $skillId, string $skillName, ?array $vector = null) : void;
 }
