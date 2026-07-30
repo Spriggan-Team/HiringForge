@@ -142,4 +142,16 @@ class SkillEntity
         $this->canonicalName = $canonicalName;
         return $this;
     }
+
+    public function addTranslation(SkillTranslationEntity $translation): self
+    {
+        if (!$this->translations->contains($translation)) {
+            $this->translations->add($translation);
+            if(!$translation->getSkill()){
+                $translation->setSkill($this); 
+            }
+        }
+
+        return $this;
+    }
 }

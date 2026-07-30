@@ -8,7 +8,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\LanguageEntity;
 
 
 #[ORM\Entity]
-#[ORM\Table(name: "skill_translations")]
+#[ORM\Table(name: "skills_translation")]
 class SkillTranslationEntity
 {
     #[ORM\Id]
@@ -26,9 +26,9 @@ class SkillTranslationEntity
     //------------------
     //---- RELATIONS
     //-------------------
-
     #[ORM\ManyToOne(
         targetEntity: SkillEntity::class,
+        inversedBy: 'translations' 
     )]
     #[ORM\JoinColumn(
         name: "skill_id",

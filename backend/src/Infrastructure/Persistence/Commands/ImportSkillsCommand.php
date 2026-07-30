@@ -33,7 +33,12 @@ class ImportSkillsCommand extends Command
     protected function configure(): void
     {
         $this->addOption('source', 's', InputOption::VALUE_OPTIONAL, 'Source à importer (esco ou onet)', 'esco');
-        $this->addOption('vector-search', 'vs', InputOption::VALUE_OPTIONAL, 'Define similary detection activation', "false");
+        $this->addOption(
+            'vector-search',
+            'vs',
+            InputOption::VALUE_NONE,
+            'Enable vector search'
+        );
     }
     
 
@@ -58,10 +63,7 @@ class ImportSkillsCommand extends Command
         }
 
         $source = $input->getOption('source');
-        $enableVectorSearch = filter_var(
-            $input->getOption('vector-search'),
-            FILTER_VALIDATE_BOOLEAN
-        );
+        $enableVectorSearch = $input->getOption('vector-search');
 
         $config = match ($source) {
             'esco' => [
@@ -199,13 +201,16 @@ class ImportSkillsCommand extends Command
                     try {
                         [$skill, $vector] = $this->matcher->findOrCreateSkill(
                             name: $name,
+                            canonicalName: $canonicalName,
                             locale: $locale,
                             escoUri: $source === 'esco' ? $externalCode : null,
                             onetCode: $source === 'onet' ? $externalCode : null,
-                            canonicalName: $canonicalName,
+                            skillKey: $slugHash,
                             shouldFlush: false, 
                             shouldIndex: false, 
-                            enableVectorSearch: $enableVectorSearch
+                            iaValidation: true,
+                            enableVectorSearch: (bool)$enableVectorSearch,
+                            allowAutoBatchProcessing: true
                         );
 
                         if (!empty($vector)) {
@@ -218,10 +223,10 @@ class ImportSkillsCommand extends Command
                     }
                     catch (\Exception $e) {
                         $failedEntityCount++;
-                        
                         $this->ensureEntityManagerIsOpen();
                         continue;
                     }
+
 
                     if ($codeHash) {
                         $processedCodes[$codeHash] = true;
@@ -263,11 +268,11 @@ class ImportSkillsCommand extends Command
                     //--------------------------------
                     if ($i % $batchSize === 0) {
                         try {
-                            // Flush SQL
                             $this->em->flush();
                             $this->em->clear();
+                            
+                            $this->matcher->clearPendingBatchCache();
 
-                            //-- Indexation
                             if ($this->vectorService) {
                                 foreach ($skillVectors as $item) {
                                     $this->vectorService->indexSkill(
@@ -279,18 +284,17 @@ class ImportSkillsCommand extends Command
                             }
                         } catch (\Exception $e) {
                             $this->em->clear();
+                            $this->matcher->clearPendingBatchCache();
                             $failedEntityCount += count($skillVectors);
-
                             $this->ensureEntityManagerIsOpen();
                         }
 
-                        //-- free vectors container
                         $skillVectors = [];
                         gc_collect_cycles();
-
                         $output->writeln("[$source] Imported: $i skills...");
                     }
                 }
+
                 
                 fclose($handle);
                 
@@ -311,7 +315,8 @@ class ImportSkillsCommand extends Command
                             );
                         }
                     }
-                } catch (\Exception $e) {
+                }
+                catch (\Exception $e) {
                     $this->em->clear();
                 }
 
