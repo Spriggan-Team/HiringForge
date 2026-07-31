@@ -9,9 +9,10 @@ import { formatSalary } from "../../../../../utils/format";
 import { INITIAL_JOB_VIEW, type JobView } from "../../../../../features/jobs/JobOffer";
 import { navigateTo } from "../../../../../App";
 import { jobStatusStyles } from "../../../../../context/styles";
+import LanguageQueries from "../../../../../api/services/Language/queries";
+import SkillServices from "../../../../../api/services/shared/skill.service";
 
 //-- Custom components
-import BasicInput, { globalBasicInputInput } from "../../../../../layout/components/form/input/basic.input";
 import Title from "../../../../../layout/components/text/title/title";
 import CheckBoxInput from "../../../../../layout/components/form/input/checkbox/checkbox.input";
 import DateInput from "../../../../../layout/components/form/input/date/date.input";
@@ -21,6 +22,7 @@ import ToggleSwitch from "../../../../../layout/components/switch/toggle.switch"
 import InputLabel from "../../../../../layout/components/form/input/input.label";
 import LanguageSelectionWorkflow from "../../../../../layout/components/selectors/language/language.selection.workflow.";
 import SimpleButton from "../../../../../layout/components/buttons/simple/simple.button";
+import  { DrawerBuilder,  } from "../../../../../layout/components/menu/drawer/menu.drawer";
 
 
 //-- SVG Components
@@ -28,7 +30,7 @@ import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg"
 
 //-- CSS Module
 import styles from "./OptionBoxSection.module.css"
-import LanguageQueries from "../../../../../api/services/Language/queries";
+
 
 
 interface OptionBoxSectionProps{
@@ -39,201 +41,190 @@ interface OptionBoxSectionProps{
 
 
 
-
 const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
     onClose,
     onComplete,
-    className
+    className,
 }) => {
-    const { t } = useTranslation();
-    const navigate = useNavigate();
-
+    const { t }      = useTranslation();
+    const navigate   = useNavigate();
     const { currentJob, setCurrentJob } = useJob();
 
-    /** Memo */
-    const salaryLabel = useMemo(() => {
-        return formatSalary(currentJob.salary);
-    }, [currentJob.salary]);
-
-
-    const hasSalary = useMemo(() => {
-        const salary = currentJob.salary;
-
-        return (
-            (salary?.min ?? 0) !== 0 ||
-            (salary?.max ?? 0) !== 0
-        );
-    }, [currentJob.salary]);
-    
+    const [languageCodes,   setLanguageCodes]   = useState<string[]>([]);
+    const [expertiseValues, setExpertiseValues]  = useState<string[]>([]);
+    const [pubStatusColor,  setPubStatusColor]   = useState<string>("");
 
     const displayNames = useMemo(
-        () =>
-            new Intl.DisplayNames(["en"], {
-                type: "language",
-            }),
+        () => new Intl.DisplayNames(["en"], { type: "language" }),
         [],
     );
 
-    const [LanguageCodes, setLanguageCodes] = useState<string[]>([]);
-    const [pubStatusColor, setPubStatusColor ] = useState<string>("");
-    
-    useEffect(()=>{
-        //-- Dynamique styles
+    // -- Static data init --
+    useEffect(() => {
+        const init = async () => {
+            try {
+                const [codes, expertises] = await Promise.all([
+                    LanguageQueries.getLanguages().then(data => data.map(l => l.code)),
+                    SkillServices.getExpertiseCollection(),
+                ]);
+                setLanguageCodes(codes);
+                setExpertiseValues(expertises);
+            } catch (error) {
+                console.warn("OptionBoxSection init error:", error);
+            }
+        };
+        init();
+    }, []); 
+
+
+    // -- Publication status color --
+    useEffect(() => {
         const color = getComputedStyle(document.documentElement)
-                .getPropertyValue(jobStatusStyles[currentJob.publicationStatus].txtColor);
+            .getPropertyValue(jobStatusStyles[currentJob.publicationStatus].txtColor);
         setPubStatusColor(color);
+    }, [currentJob.publicationStatus]);
 
-        //-- Initializing data
-            //-- Languages array from bdd
-        const initializing = async ()=>{
-            const data = await LanguageQueries.getLanguages();
-            const codes = data.map((langauge)=> langauge.code);
-            console.log({codes})
-            setLanguageCodes(codes);
-        }
-        initializing();
-    },[currentJob.publicationStatus]);
 
+    const salaryLabel = useMemo(() => formatSalary(currentJob.salary), [currentJob.salary]);
+
+
+    const hasSalary = useMemo(() => {
+        const { min = 0, max = 0 } = currentJob.salary ?? {};
+        return min !== 0 || max !== 0;
+    }, [currentJob.salary]);
 
 
     return (
-        <div className={`${styles.container} ${className}`}>
-            {/** PUBLICATION SETTINGS */}
+        <div className={`${styles.container} ${className ?? ""}`}>
+
+            {/*  Publication settings  */}
             <div className={`${styles.card} card`}>
                 <Title title={t("jobs.createJob.publicationSettingsSection.title")} />
-                
-                {/** PUBLICATION STATE */}
+
+                {/* Publication state */}
                 <div className={styles.contentBox}>
                     <span className={styles.title}>{t("global.jobs.publicationState.title")}</span>
                     <div className={styles.checkboxSection}>
-                        <CheckBoxInput
-                            borderRadius="100%"
-                            checked={currentJob.publicationStatus == "published"}
-                            text={t("global.jobs.publicationState.published")}
-                            onChange={()=> ( setCurrentJob((prev)=>({...prev, publicationStatus: "published"})) )}
-                        />
-                        <CheckBoxInput
-                            borderRadius="100%"
-                            checked={currentJob.publicationStatus === "draft"}
-                            text={t("global.jobs.publicationState.draft")}
-                            onChange={()=> ( setCurrentJob((prev)=>({...prev, publicationStatus: "draft"}))  )}
-                        />
-                        <CheckBoxInput
-                            borderRadius="100%"
-                            checked={currentJob.publicationStatus === "closed"}
-                            text={t("global.jobs.publicationState.closed")}
-                            onChange={()=> ( setCurrentJob((prev)=>({...prev, publicationStatus: "closed"}))  )}
-                        />
+                        {(["published", "draft", "closed"] as const).map(status => (
+                            <CheckBoxInput
+                                key={status}
+                                borderRadius="100%"
+                                checked={currentJob.publicationStatus === status}
+                                text={t(`global.jobs.publicationState.${status}`)}
+                                onChange={() =>
+                                    setCurrentJob(prev => ({ ...prev, publicationStatus: status }))
+                                }
+                            />
+                        ))}
                     </div>
                 </div>
 
-
-                {/** VISIBILITY STATE */}
+                {/* Visibility state */}
                 <div className={styles.contentBox}>
                     <span className={styles.title}>{t("global.jobs.visibilityStatus.title")}</span>
                     <div className={styles.checkboxSection}>
-                        <CheckBoxInput
-                            borderRadius="100%"
-                            checked={currentJob.visibilityStatus === "public"}
-                            text={t("global.jobs.visibilityStatus.publish.title")}
-                            desc={t("global.jobs.visibilityStatus.publish.desc")}
-                            onChange={()=> ( setCurrentJob((prev)=>({...prev, visibilityStatus: "public" })) )}
-                        />
-
-                        <CheckBoxInput
-                            borderRadius="100%"
-                            checked={currentJob.visibilityStatus === "private"}
-                            text={t("global.jobs.visibilityStatus.private.title")}
-                            desc={t("global.jobs.visibilityStatus.private.desc")}
-                            onChange={()=> ( setCurrentJob((prev)=>({...prev, visibilityStatus: "private"})) )}
+                        {(["public", "private"] as const).map(vis => (
+                            <CheckBoxInput
+                                key={vis}
+                                borderRadius="100%"
+                                checked={currentJob.visibilityStatus === vis}
+                                text={t(`global.jobs.visibilityStatus.${vis}.title`)}
+                                desc={t(`global.jobs.visibilityStatus.${vis}.desc`)}
+                                onChange={() =>
+                                    setCurrentJob(prev => ({ ...prev, visibilityStatus: vis }))
+                                }
                             />
+                        ))}
                     </div>
                 </div>
 
-
-                {/** PUBLICATION DATE */}
+                {/* Publication date */}
                 <div className={styles.contentBox}>
                     <span className={styles.title}>
                         {t("jobs.createJob.publicationSettingsSection.inputs.publicationDate.title")}
                     </span>
                     <DateInput
                         leading={DateSVGComponent}
-                        onSelectedDate={(date)=>
-                            setCurrentJob((prev)=>({...prev, publicationDate: date}))
-                        }
                         defaultContent={t("global.dates.inputs.selectCalandarDate.placeholder")}
+                        onSelectedDate={date =>
+                            setCurrentJob(prev => ({ ...prev, publicationDate: date }))
+                        }
                     />
                 </div>
             </div>
 
-
-            {/** ADDITIONNAL OPTIONS  */}
+            {/* -- Additional options -- */}
             <div className={`${styles.card} card`}>
                 <div className={styles.contentBox}>
                     <Title title={t("jobs.createJob.additionnalOpstions.title")} />
                     <div className={styles.inputs}>
-                        {/** EXPERTISE LEVEL */}
-                        <BasicInput
-                            {...globalBasicInputInput}
-                            label={t("jobs.createJob.additionnalOpstions.inputs.expertiseLevel.label")}
-                            placeholder={t("jobs.createJob.additionnalOpstions.inputs.expertiseLevel.placeholder")}
-                            />
 
-                        {/** LANGUAGE DRAWER  */}
-                        <div className={styles.languageDrawer}>
-                            <InputLabel 
-                                label={t("jobs.createJob.additionnalOpstions.inputs.requireLanguage.label")}
+                        {/* Expertise level */}
+                        <div className={styles.drawer}>
+                            <InputLabel label={t("jobs.createJob.additionnalOpstions.inputs.expertiseLevel.label")} />
+                            <DrawerBuilder
+                                value={currentJob.expertise}
+                                placeholder={t("jobs.createJob.additionnalOpstions.inputs.expertiseLevel.placeholder")}
+                                items={expertiseValues.map((v, key) => ({ key, value: v, label: v }))}
+                                onChange={value => {
+                                    if (value)
+                                        setCurrentJob(prev => ({ ...prev, expertise: value as string }));
+                                }}
                             />
+                        </div>
+
+                        {/* Language requirement */}
+                        <div className={styles.languageDrawer}>
+                            <InputLabel label={t("jobs.createJob.additionnalOpstions.inputs.requireLanguage.label")} />
                             <LanguageSelectionWorkflow
-                                languages={LanguageCodes}
+                                languages={languageCodes}
                                 placeholder={t("jobs.createJob.additionnalOpstions.inputs.requireLanguage.placeholder")}
-                                onAdd={(language) => {
+                                onAdd={language => {
                                     setCurrentJob(prev => ({
                                         ...prev,
-                                        requireLanguages: prev.requireLanguages.some(
-                                            l => l.code === language.code
-                                        )
+                                        requireLanguages: prev.requireLanguages.some(l => l.code === language.code)
                                             ? prev.requireLanguages
                                             : [...prev.requireLanguages, language],
                                     }));
                                 }}
                             />
-
-                            <div className={styles.result}>
-                                {currentJob.requireLanguages.map(language => (
-                                    <JobSkill
-                                        onClose={()=>{
-                                            setCurrentJob(prev => ({
-                                                ...prev,
-                                                requireLanguages: prev.requireLanguages.filter((item)=> item != language),
-                                            }));
-                                        }}
-                                        content={`${displayNames.of(language.code)} · ${language.proficiencyLevel}`}
-                                    />
-                                ))}
-                            </div>
+                            {currentJob.requireLanguages.length > 0 && (
+                                <div className={styles.result}>
+                                    {currentJob.requireLanguages.map(lang => (
+                                        <JobSkill
+                                            key={lang.code}
+                                            content={`${displayNames.of(lang.code)} · ${lang.proficiencyLevel}`}
+                                            onClose={() =>
+                                                setCurrentJob(prev => ({
+                                                    ...prev,
+                                                    requireLanguages: prev.requireLanguages.filter(l => l !== lang),
+                                                }))
+                                            }
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
-                        {/**  JOB WORK MODE (remote?) */}
-                        <ToggleSwitch 
-                            onChange={(value)=>(
-                                setCurrentJob((prev)=>({...prev, jobWorkMode: value ? "remote" : "onsite" }))
-                            )}
+                        {/* Work mode */}
+                        <ToggleSwitch
                             text={t("jobs.createJob.additionnalOpstions.switchs.jobWorkMode")}
+                            onChange={value =>
+                                setCurrentJob(prev => ({
+                                    ...prev,
+                                    jobWorkMode: value ? "remote" : "onsite",
+                                }))
+                            }
                         />
                     </div>
                 </div>
             </div>
-            
 
-            {/**  OVERVIEW */}
+            {/* -- Overview -- */}
             <div className={`${styles.card} ${styles.overview} card`}>
                 <Title title={t("jobs.createJob.overview.title")} />
-                {/**  CONTENT */}
-                <div className={styles.content}>
+                <div className={styles.overviewContent}>
                     <Title title={currentJob.title ?? ""} />
-
-                    {/**  DETAILS */}
                     <div className={styles.details}>
                         <div className={styles.tags}>
                             <TagList
@@ -245,15 +236,12 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
                                     ]
                                         .filter(Boolean)
                                         .join(", "),
-
                                     currentJob.contract?.label,
                                 ].filter(Boolean) as string[]}
                             />
                             {currentJob.publicationStatus && (
                                 <div
-                                    style={{
-                                        ["--pubColor" as any]: pubStatusColor,
-                                    }}
+                                    style={{ ["--pubColor" as string]: pubStatusColor }}
                                     className={styles.pubStatus}
                                 >
                                     {t(`global.jobs.publicationState.${currentJob.publicationStatus}`)}
@@ -261,46 +249,36 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
                             )}
                         </div>
                         <div className={styles.pill}>
-                            {
-                                hasSalary && (
-                                    <JobSkill 
-                                        content={`${t("global.text.fork")}: ${salaryLabel}`}
-                                    />
-                                )
-                            }
-                            {
-                                currentJob.skills.map((item, index)=>(
-                                    <JobSkill key={index} content={item} />
-                                ))
-                            }
+                            {hasSalary && (
+                                <JobSkill content={`${t("global.text.fork")}: ${salaryLabel}`} />
+                            )}
+                            {currentJob.skills.map(item => (
+                                <JobSkill key={item.id} content={item.name} />
+                            ))}
                         </div>
                     </div>
                 </div>
             </div>
-            
 
-            {/** CLOSURE BUTTONS */}
+            {/* -- Action buttons -- */}
             <div className={styles.buttons}>
                 <SimpleButton
                     text={t("jobs.buttons.cancel")}
-                    onClick={()=>{
+                    onClick={() => {
                         setCurrentJob(INITIAL_JOB_VIEW);
-                        if(onClose)
-                            onClose();
+                        onClose?.();
                         navigateTo(navigate, RouteScheme.userJobs);
                     }}
                 />
                 <SimpleButton
-                    text={t("jobs.buttons.create")}
-                    onClick={()=> {
-                        onComplete?.(currentJob)
-                    }}
                     className={styles.complete}
+                    text={t("jobs.buttons.create")}
+                    onClick={() => onComplete?.(currentJob)}
                 />
-        
             </div>
         </div>
     );
-}
+};
+
  
 export default OptionBoxSection;

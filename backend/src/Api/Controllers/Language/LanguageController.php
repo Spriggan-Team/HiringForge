@@ -5,7 +5,7 @@ namespace App\Api\Controllers\Language;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Domain\Shared\Language\LanguageRepositoryInterface;
-
+use App\Domain\Shared\LanguageLevel;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,6 +46,29 @@ class LanguageController extends AbstractController
         }
         catch(\Exception $exception){
             return ApiResponse::error(
+                message: "Something went wrong",
+                statusCode: Response::HTTP_BAD_REQUEST
+            )->toJsonResponse();
+        }
+    }
+
+
+    #[Route("/level", methods:["GET"])]
+    public function getLanguagesExperiencesLabel(){
+        try{
+            if(!$this->getUser()){
+               return ApiResponse::error(
+                    message: "Something went wrong",
+                    statusCode: Response::HTTP_UNAUTHORIZED
+                )->toJsonResponse();
+            }
+            return ApiResponse::success(
+                data: LanguageLevel::values(),
+                statusCode: Response::HTTP_OK
+            )->toJsonResponse();
+        }
+        catch(\Exception $error){
+           return ApiResponse::error(
                 message: "Something went wrong",
                 statusCode: Response::HTTP_BAD_REQUEST
             )->toJsonResponse();

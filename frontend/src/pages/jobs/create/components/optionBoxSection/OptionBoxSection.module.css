@@ -1,130 +1,142 @@
-/* CONTAINER & CARDS */
 
+/* -- Wrapper -- */
 .container {
-    display: flex;
+    display:        flex;
     flex-direction: column;
-    gap: 20px;
-    width: 100%;
+    gap:            16px;
+    width:          100%;
 }
+
+/* -- Card -- */
 
 .card {
-    display: flex;
+    display:        flex;
     flex-direction: column;
-    gap: 24px;
-    width: 100%;
-    width: 280px;
+    gap:            20px;
+    width:          100%;
+    padding:        16px;   
 }
 
-/* CONTENT BLOCKS & INPUT LAYOUTS*/
-
+/* -- Content block -- */
 .contentBox {
-    display: flex;
+    display:        flex;
     flex-direction: column;
-    gap: 12px;   
+    gap:            10px;
 }
 
-.checkboxSection {
-    gap: 14px;
-    display: flex;
-    flex-direction: column;
-}
-
-.inputs {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-/** LANGUAGE DRAWER **/
-.languageDrawer .result{
-    gap: 5px;
-    width: 100%;
-    margin-top: 7px;
-    
-    display: flex;
-    flex-wrap: wrap;
-}
-
-
-/*JOB OVERVIEW SECTION */
-
-.overview {
-    min-height: 120px;
-}
-
-.overview .content {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.overview .details {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-/* TAGS & STATUS INDICATORS */
-
-.tags {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.pubStatus {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding-left: 14px;
-    position: relative;
-    font-size: 0.815rem;
+.title {
+    font-size:   0.8rem;
     font-weight: 600;
-    text-transform: capitalize;
-    color: var(--pubColor);
+    color:       var(--text-muted, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
 }
 
-.pubStatus::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    transform: translateY(-50%);
-    background: var(--pubColor);
+
+/* -- Checkbox group -- */
+.checkboxSection {
+    display:        flex;
+    flex-direction: column;
+    gap:            10px;
 }
 
-/* SKILLS & PILLS WRAPPER */
 
-.pill {
-    display: flex;
+/* -- Input stacks -- */
+.inputs {
+    display:        flex;
+    flex-direction: column;
+    gap:            14px;
+}
+
+.drawer { width: 100%; }
+
+/* -- Language tags --- */
+.languageDrawer {
+    display:        flex;
+    flex-direction: column;
+    gap:            8px;
+}
+
+.result {
+    display:   flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap:       6px;
+    margin-top: 4px;
+}
+
+/* -- Overview card -- */
+.overview { min-height: 100px; }
+
+
+.overviewContent {
+    display:        flex;
+    flex-direction: column;
+    gap:            10px;
 }
 
 
+.details {
+    display:        flex;
+    flex-direction: column;
+    gap:            12px;
+}
 
-/* BUTTONS */
-.buttons {
-    display: flex;
+
+/* -- Tags row -- */
+.tags {
+    display:     flex;
     align-items: center;
-    gap: 12px;
-    width: 100%;
-    margin-top: 8px;
+    flex-wrap:   wrap;
+    gap:         8px;
 }
+
+/* Publication status dot + label */
+.pubStatus {
+    display:       inline-flex;
+    align-items:   center;
+    gap:           6px;
+    padding-left:  16px;
+    position:      relative;
+    font-size:     0.8rem;
+    font-weight:   600;
+    text-transform: capitalize;
+    color:         var(--pubColor);
+}
+.pubStatus::before {
+    content:       "";
+    position:      absolute;
+    left:          0;
+    top:           50%;
+    width:         8px;
+    height:        8px;
+    border-radius: 50%;
+    transform:     translateY(-50%);
+    background:    var(--pubColor);
+}
+
+
+/* -- Skill/language pills row -- */
+.pill {
+    display:   flex;
+    flex-wrap: wrap;
+    gap:       6px;
+}
+
+
+/* -- Action buttons -- */
+.buttons {
+    display:     flex;
+    align-items: center;
+    gap:         10px;
+    margin-top:  4px;
+}
+
+
+.buttons > * { flex: 1 1 0; }  /* equal-width buttons */
 
 .complete {
     background-color: #2563eb;
-    color: #ffffff;
+    color:            #ffffff;
 }
-
-.buttons .complete:hover {
-    background-color: #1d4ed8;
-}
-
-.buttons .complete:active {
-    background-color: #1e40af;
-}
+.complete:hover  { background-color: #1d4ed8; }
+.complete:active { background-color: #1e40af; }

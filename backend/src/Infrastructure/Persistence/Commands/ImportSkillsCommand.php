@@ -71,10 +71,10 @@ class ImportSkillsCommand extends Command
                     __DIR__ . "/../../../data/csv/esco/skills_fr.csv",
                 ],
                 'mapping' => [
-                    'name'          => 5,
-                    'altLabels'     => 6,
-                    'external_code' => 2,
-                    'canonicalName' => 5,
+                    'name'          => 5, // Colonne 5 : preferredLabel
+                    'altLabels'     => 6, // Colonne 6 : altLabels
+                    'external_code' => 2, // Colonne 2 : URI / Code
+                    'canonicalName' => 5, // Colonne 5 : preferredLabel
                 ],
                 'locale'    => 'fr',
                 'delimiter' => ',',
@@ -84,10 +84,11 @@ class ImportSkillsCommand extends Command
                     __DIR__ . "/../../../data/csv/onet/onet_software_skills.csv",
                 ],
                 'mapping' => [
-                    'name'          => 3,
-                    'altLabels'     => 5,
-                    'external_code' => 1,
-                    'canonicalName' => 3,
+                    'name'          => 3,    // Colonne 3 : "Microsoft Access", "MapInfo"...
+                    'canonicalName' => 3,    // Colonne 3 :  same as name
+                    'altLabels'     => 3, // There is no dedicated altLabels column in this CSV file
+                    'external_code' => null, // ⚠️   NOT the code for Col 1! (That's the business code, not the tool.)
+                    'category'      => 5,    // Colonne 5 : "Data base user interface..."
                 ],
                 'locale'    => 'en',
                 'delimiter' => ',',
@@ -251,12 +252,15 @@ class ImportSkillsCommand extends Command
                                 continue;
                             }
 
-                            $alias = new SkillAliasEntity(
-                                alias: $aliasName,
-                                skill: $skill
-                            );   
-                            $this->em->persist($alias);
-                            $processedAliases[$aliasHash] = true;
+                            if(!$this->em->getRepository(SkillAliasEntity::class)->findOneBy([ "alias" => $aliasName ])){
+                                $alias = new SkillAliasEntity(
+                                    alias: $aliasName,
+                                    skill: $skill
+                                );   
+                                $this->em->persist($alias);
+                                $processedAliases[$aliasHash] = true;
+                            }
+
                         }
                     }
 

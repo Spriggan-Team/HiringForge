@@ -14,4 +14,10 @@ enum JobOfferExpertise: string{
     case LEAD = "lead";
     case STAFF = "staff";
     case PRINCIPAL = "principal";
+
+    public static function values(): array
+    {
+        return array_column(self::cases(), 'value');
+    }
+
 }

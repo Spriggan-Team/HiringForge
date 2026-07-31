@@ -85,7 +85,7 @@
                 "title": "Salaire",
                 "inputs":{
                     "salary":{
-                        "label": "Fourchettes de renumération",
+                        "label": "Fourchettes de renumération mensuel",
                         "minSalary": {
                             "placeholder": "Salaire minimum"
                         },

@@ -1,54 +1,63 @@
 <?php
 
+
 namespace App\Domain\Shared\Skill;
 
-use DomainException;
 
-class Skill
+final class Skill
 {
+    /**
+     * @param array<string> $aliases Liste  altLabels / synonymes
+     * @param array<int, float>|null $embedding Vector generated (ex: Qdrant)
+     */
     public function __construct(
-        public string $name,
-        public string $slug,
-        public bool $isDefault = false,
-        public array $aliases = [],
-        public ?string $id = null,
-    ){}
+        private string $name,
+        private string $slug,
+        private string $canonicalName,
+        private string $locale = 'en',
+        private bool $isDefault = false,
+        private array $aliases = [],
+        private ?string $escoUri = null,
+        private ?string $onetCode = null,
+        private ?array $embedding = null,
+        private ?string $id = null,
+    ) {}
 
+    /**
+     * Named Constructor for the Initial Creation of a Skill
+     *
+     * @param array<string> $aliases
+     */
     public static function create(
         string $name,
         string $slug,
+        string $canonicalName,
+        string $locale = 'en',
         array $aliases = [],
+        ?string $escoUri = null,
+        ?string $onetCode = null,
         bool $isDefault = false,
         ?string $id = null,
-    ){
+    ): self {
         return new self(
-            id: $id,
             name: $name,
             slug: $slug,
+            canonicalName: $canonicalName,
+            locale: $locale,
             isDefault: $isDefault,
-            aliases: $aliases
+            aliases: $aliases,
+            escoUri: $escoUri,
+            onetCode: $onetCode,
+            id: $id
         );
     }
 
-    public function hydrate(
-        string $name,
-        string $slug,
-        bool $isDefault,
-        string $id,
-    ){
-        return new self(
-            id: $id,
-            name: $name,
-            slug: $slug,
-            isDefault: $isDefault
-        );
-    }
+    //--------------------------------------------------------------------------
+    // GETTERS
+    //--------------------------------------------------------------------------
 
-    //-----------------
-    //-- GETTERS
-    //---------------------
-
-    public function id(){
+    public function id(): ?string
+    {
         return $this->id;
     }
 
@@ -57,60 +66,141 @@ class Skill
         return $this->name;
     }
 
-    public function  slug(){
+    public function slug(): string
+    {
         return $this->slug;
     }
 
-    public function aliases(){
-        return $this->aliases;
+    public function canonicalName(): string
+    {
+        return $this->canonicalName;
     }
 
-    public function  isDefault()  {
+    public function locale(): string
+    {
+        return $this->locale;
+    }
+
+    public function isDefault(): bool
+    {
         return $this->isDefault;
     }
 
-    //-------------------
-    //------ SETTERS
-    //-------------------
+    /**
+     * @return array<string>
+     */
+    public function aliases(): array
+    {
+        return $this->aliases;
+    }
 
-    public function setId(string $id)
-    { 
+    public function escoUri(): ?string
+    {
+        return $this->escoUri;
+    }
+
+    public function onetCode(): ?string
+    {
+        return $this->onetCode;
+    }
+
+    /**
+     * @return array<int, float>|null
+     */
+    public function embedding(): ?array
+    {
+        return $this->embedding;
+    }
+
+    //--------------------------------------------------------------------------
+    // SETTERS & DOMAIN BEHAVIOUR
+    //--------------------------------------------------------------------------
+
+    public function setId(string $id): self
+    {
         $this->id = $id;
         return $this;
     }
 
-    public function setName(string $name)
+    public function setName(string $name): self
     {
         $this->name = $name;
         return $this;
     }
 
-    public function setSlug(string $slug)
+    public function setSlug(string $slug): self
     {
         $this->slug = $slug;
         return $this;
     }
 
-    public function setDefault()
+    public function setCanonicalName(string $canonicalName): self
     {
-        if(!$this->isDefault)
-            $this->isDefault = true;
-        return $this->isDefault;
-    }
-
-    public function addAlias(string $alias){
-        $finded = array_find($this->aliases, fn($value) => $value === $alias);
-        if(!$finded)
-            $this->aliases[] = $alias;
+        $this->canonicalName = $canonicalName;
         return $this;
     }
 
-    public function removeAlias(string $alias){
-        $key = array_find_key($this->aliases, fn($key) => $key === $alias);
-        if($key){
-            array_splice($this->aliases ,$key, 1);
-            $this->aliases = array_values($this->aliases);
+    public function setDefault(bool $isDefault = true): self
+    {
+        $this->isDefault = $isDefault;
+        return $this;
+    }
+
+    public function setEscoUri(?string $escoUri): self
+    {
+        $this->escoUri = $escoUri;
+        return $this;
+    }
+
+    public function setOnetCode(?string $onetCode): self
+    {
+        $this->onetCode = $onetCode;
+        return $this;
+    }
+
+    /**
+     * @param array<int, float>|null $embedding
+     */
+    public function setEmbedding(?array $embedding): self
+    {
+        $this->embedding = $embedding;
+        return $this;
+    }
+
+    /**
+     * Add an alias (avoid case-insensitive duplicates)
+     */
+    public function addAlias(string $alias): self
+    {
+        $normalized = trim($alias);
+        if ($normalized === '') {
+            return $this;
         }
+
+        foreach ($this->aliases as $existingAlias) {
+            if (mb_strtolower($existingAlias) === mb_strtolower($normalized)) {
+                return $this;
+            }
+        }
+
+        $this->aliases[] = $normalized;
+        return $this;
+    }
+
+    /**
+     *Removes an alias from the list
+     */
+    public function removeAlias(string $alias): self
+    {
+        $normalized = mb_strtolower(trim($alias));
+
+        $this->aliases = array_values(
+            array_filter(
+                $this->aliases,
+                fn(string $existing) => mb_strtolower($existing) !== $normalized
+            )
+        );
+
         return $this;
     }
 }

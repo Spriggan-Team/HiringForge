@@ -22,7 +22,11 @@ class SkillAliasEntity
     //----------------
     //- RELATIONS
     //-----------------
-    #[ORM\ManyToOne(targetEntity: SkillEntity::class)]
+    
+    #[ORM\ManyToOne(
+        targetEntity: SkillEntity::class,
+        inversedBy: "skillAliases"    
+    )]
     #[ORM\JoinColumn(
         name: "skill_id",
         referencedColumnName: "id",

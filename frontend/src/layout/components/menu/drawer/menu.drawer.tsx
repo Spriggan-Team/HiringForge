@@ -13,6 +13,7 @@ import DownArrowSVG from "/src/assets/svg/arrows/down-arrow-5-svgrepo-com.svg"
 
 //-- CSS module
 import styles from "./MenuDrawer.module.css"
+import { globalBasicInputInput } from "../../form/input/basic.input";
 
 
 /**----- Drawer Context ---- */
@@ -40,6 +41,8 @@ export const useDrawer = () => {
 /**----- MenuDrawer  ---- */
 
 interface MenuDrawerProps {
+    value?: any;
+
     children: React.ReactNode;
     defaultValue?: any;
     className?: string;
@@ -51,6 +54,7 @@ interface MenuDrawerProps {
 
 
 const MenuDrawer: React.FC<MenuDrawerProps> = ({
+    value,
     children,
     defaultValue,
 
@@ -59,6 +63,7 @@ const MenuDrawer: React.FC<MenuDrawerProps> = ({
     
     style,
     className,
+
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selected, setSelectedState] = useState(defaultValue);
@@ -109,6 +114,7 @@ interface MenuDrawerTriggerProps {
 
     displayArrowDown?: boolean;
     applyDefaultStyle?: boolean;
+    disableCursorPointer?: boolean;
 
     children:
         | React.ReactNode
@@ -123,7 +129,8 @@ export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
 
     displayArrowDown = true,
     applyDefaultStyle= true,
-    
+    disableCursorPointer = false,
+
     children,
     leading: Leading,
     iconClassName,
@@ -132,7 +139,10 @@ export const MenuDrawerTrigger: React.FC<MenuDrawerTriggerProps> = ({
 
     return (
         <button
-            style={style}
+            style={{
+                ...(style ?? {}),
+                cursor: disableCursorPointer ? "default" : "pointer"
+            }}
             type="button"
             onClick={toggle}
             aria-expanded={isOpen}
@@ -330,3 +340,130 @@ export const MenuDrawerInput: React.FC<MenuDrawerInputProps> = ({
         />
     );
 };
+
+
+
+//-----------------------------
+//---- Global view on drawer (app design)
+//------------------------------
+
+type DrawerItem<T = unknown> = {
+    key?: string | number;
+    value: T;
+    label: React.ReactNode;
+};
+
+
+type DrawerBuilderProps<T = unknown> = {
+    value?: T;
+    defaultValue?: T;
+
+    items: DrawerItem<T>[];
+
+    onChange: (value: T) => void;
+
+    placeholder?: React.ReactNode;
+
+    renderValue?: (value?: T) => React.ReactNode;
+    renderItem?: (item: DrawerItem<T>) => React.ReactNode;
+
+    triggerProps?: Omit<
+        React.ComponentProps<typeof MenuDrawerTrigger>,
+        "children"
+    >;
+
+    bodyProps?: Omit<
+        React.ComponentProps<typeof MenuDrawerBody>,
+        "children"
+    >;
+
+    itemProps?: Omit<
+        React.ComponentProps<typeof MenuDrawerItem>,
+        "children"
+    >;
+};
+
+export function DrawerBuilder<T = unknown>({
+    value,
+    defaultValue,
+
+    items,
+    onChange,
+    placeholder,
+
+    renderValue,
+    renderItem,
+
+    triggerProps = {},
+    bodyProps = {},
+    itemProps = {},
+}: DrawerBuilderProps<T>) {
+
+    return (
+        <MenuDrawer
+            value={value}
+            onChange={onChange}
+            defaultValue={defaultValue}
+        >
+            <MenuDrawerTrigger
+                {...globalBasicInputInput}
+                {...triggerProps}
+                className={(selected) =>
+                    `${globalBasicInputInput.className} ${
+                        !selected ? "input-like-placeholder" : ""
+                    } ${
+                        typeof triggerProps.className === "function"
+                            ? triggerProps.className(selected)
+                            : triggerProps.className ?? ""
+                    }`
+                }
+            >
+                {(selected) => {
+
+                    if (renderValue)
+                        return renderValue(selected);
+
+                    return (
+                        <span
+                            className={
+                                selected
+                                    ? `${styles.activate} activate`
+                                    : ""
+                            }
+                        >
+                            {selected ?? placeholder}
+                        </span>
+                    );
+                }}
+            </MenuDrawerTrigger>
+
+            <MenuDrawerBody
+                left={0}
+                right={0}
+                position="initial-absolute"
+                className={`${styles.selectDropdown} selectDropdown ${
+                    bodyProps.className ?? ""
+                }`}
+                {...bodyProps}
+            >
+                {items.map((item, index) => (
+
+                    <MenuDrawerItem
+                        key={item.key ?? index}
+                        value={item.value}
+                        className={`${styles.selectItem} selectItem ${
+                            itemProps.className ?? ""
+                        }`}
+                        {...itemProps}
+                    >
+                        {renderItem
+                            ? renderItem(item)
+                            : item.label}
+                    </MenuDrawerItem>
+
+                ))}
+            </MenuDrawerBody>
+
+        </MenuDrawer>
+    );
+}

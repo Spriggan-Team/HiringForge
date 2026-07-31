@@ -79,7 +79,8 @@
         },
 
         "buttons":{
-            "add": "Ajouter"
+            "add": "Ajouter",
+            "back": "Retour"
         },
 
         "candidate": {
@@ -138,7 +139,7 @@
             },
             "visibilityStatus":{
                 "title": "Visibilité",
-                "publish":{
+                "public":{
                     "title": "Public",
                     "desc": "Visible par tout les candidats"
                 },

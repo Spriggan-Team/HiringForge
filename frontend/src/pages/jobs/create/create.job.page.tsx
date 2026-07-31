@@ -25,107 +25,82 @@ import styles from "./CreateJobPage.module.css"
 import JobServices from "../../../api/services/jobs/command";
 
 
-/** -- Page Components: CreateJobPage -- */
 
 
 interface CreateJobPageProps{}
 
+
 const CreateJobPage: React.FC<CreateJobPageProps> = () => {
     const navigate = useNavigate();
-
     const { t } = useTranslation();
-    const { setNavbar, setLoading , setPopup } = useAppContext();
+    const { setNavbar, setLoading, setPopup } = useAppContext();
 
-    useEffect(()=>{
-        //--navbar
+    //  Navbar 
+    useEffect(() => {
         const linkData = [
-                        { route: RouteScheme.userJobs, text: t("jobs.jobs"), current: false },
-                        { route: RouteScheme.createJob, text: t("jobs.buttons.create"), current: true }
-                    ];
+            { route: RouteScheme.userJobs,  text: t("jobs.jobs"),           current: false },
+            { route: RouteScheme.createJob, text: t("jobs.buttons.create"), current: true  },
+        ];
         setNavbar({
             title: t("jobs.buttons.create"),
-            description: (
-                <BreadCrumbs
-                    overlayColor="#4338CA"
-                    links={linkData} 
-                />
-            )
-        })
-        return ()=>{
-            setNavbar(null);
-        };
-    },[setNavbar])
-
+            description: <BreadCrumbs overlayColor="#4338CA" links={linkData} />,
+        });
+        return () => setNavbar(null);
+    }, [setNavbar, t]);
 
     //-- Handlers
-    const handleSave = useCallback(async (currentJob: JobView)=>{
-        try{
-            setLoading({state: true, subtitle: t('jobs.createJob.messages.creatingJob')});
-            const res = await JobServices.createJob(currentJob);
-
-            setLoading({state: false, subtitle: undefined });
-            setPopup({
-                status: "success",
-                message: t("global.messages.save")
-            });
-        }
-        catch(error){
-            setLoading({state: false, subtitle: undefined});
-            
-            //-- message error
-            if (error instanceof Error) {}
-            else {
-                setPopup({
-                    status: "success",
-                    message: t("global.messages.error")
-                });
-                console.log("Unknown error:", error);
+    const handleSave = useCallback(
+        async (currentJob: JobView) => {
+            try {
+                setLoading({ state: true, subtitle: t("jobs.createJob.messages.creatingJob") });
+                await JobServices.createJob(currentJob);
+                setLoading({ state: false, subtitle: undefined });
+                setPopup({ status: "success", message: t("global.messages.save") });
+            } catch (error) {
+                setLoading({ state: false, subtitle: undefined });
+                if (!(error instanceof Error)) {
+                    setPopup({ status: "error", message: t("global.messages.error") });
+                    console.error("Unknown error:", error);
+                }
             }
-        }
-    },[]);
+        },
+        [setLoading, setPopup, t],
+    );
 
-    
-    
-    //-- RENDER
+    // Render 
     return (
         <JobContextProvider>
             <main className={styles.container}>
-                {/**-- ASIDE (icon) -- */}
+                {/* Side rail */}
                 <aside className={styles.side}>
                     <button
                         className={`${styles.backButton} card`}
-                        onClick={()=> navigateTo(navigate, RouteScheme.userJobs)} 
+                        onClick={() => navigateTo(navigate, RouteScheme.userJobs)}
+                        aria-label={t("global.buttons.back")} 
                     >
                         <RightToLeftArrowSVG width={15} height={15} />
                     </button>
                 </aside>
 
+                {/* Content */}
                 <section className={styles.content}>
-                    {/**-- COLUMNS -- */}
                     <div className={styles.columns}>
-                        {/** MAIN INPUT COLUMN */}
                         <div className={styles.mainInfoBox}>
                             <InfoBoxSection />
                         </div>
-
-                        {/** IMAGE */}
                         <div className={`${styles.image} card`}>
-                            <InputLabel label={"Main image"}/>
+                            <InputLabel label="Main image" />
                             <ImageInput />
                         </div>
-                        
-                        {/** PARAM SETTINGS */}
-                        <div className={styles.paramBox} >
-                            <OptionBoxSection
-                                onComplete={handleSave}
-                            />
+                        <div className={styles.paramBox}>
+                            <OptionBoxSection onComplete={handleSave} />
                         </div>
                     </div>
                 </section>
             </main>
         </JobContextProvider>
     );
-}
+};
 
 
-export default CreateJobPage;
+export default CreateJobPage ;

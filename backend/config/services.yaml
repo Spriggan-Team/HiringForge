@@ -116,6 +116,8 @@ services:
     App\Domain\Shared\Skill\SkillRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\Repositories\SkillRepository
 
+    App\Domain\Shared\Skill\SkillMatcherServiceInterface:
+        alias: App\Infrastructure\Persistence\Service\SkillMatcherService
 
     #---- Language --------------
     App\Domain\Shared\Language\LanguageRepositoryInterface:
@@ -131,6 +133,7 @@ services:
     App\Domain\Shared\Contract\ContractTypeRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Contract\Repositories\ContractTypeRepository
 
+    
 
     #-------------------------------------
     #--- Ai & Embedding Service

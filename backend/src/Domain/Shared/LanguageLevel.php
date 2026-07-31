@@ -14,4 +14,10 @@ enum LanguageLevel: string
     case C2 = 'C2';
 
     case NATIVE = 'native';
+
+    public static function values(): array
+    {
+        return array_column(self::cases(), 'value');
+    }
+
 }

@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 //-- Services & types
 import { LANGUAGES_LEVEL_VALUES, type JobLanguage } from "../../../../features/jobs/JobOffer";
@@ -11,6 +11,7 @@ import { globalBasicInputInput } from "../../form/input/basic.input";
 
 //-- CSS Style
 import styles from "./LanguageSelectionWorkflow.module.css"
+import LanguageQueries from "../../../../api/services/Language/queries";
 
 
 interface LanguageSelectionWorkflowProps {
@@ -40,6 +41,7 @@ const LanguageSelectionWorkflow: React.FC<LanguageSelectionWorkflowProps> = ({
     );
 
     const [pendingCode, setPendingCode] = useState<string | null>(null);
+    const [LanguageLevel, setLanguageLevel] = useState<string[]>([]);
 
     const triggerPlaceholder =
         typeof placeholder === "string"
@@ -47,6 +49,20 @@ const LanguageSelectionWorkflow: React.FC<LanguageSelectionWorkflowProps> = ({
             : pendingCode
                 ? (placeholder.selectLevel ?? placeholder.selectLanguage)
                 : placeholder.selectLanguage;
+
+    useEffect(()=>{
+        
+        const intializeData = async () =>{
+            try{
+                const data  = await LanguageQueries.getLanguagesLevel();
+                setLanguageLevel(data);
+            }
+            catch(error){
+                console.error("Something went wrong while loading language level collection");
+            }
+        }
+        intializeData();
+    },[])
 
     return (
         <div className={styles.container}>

@@ -36,7 +36,10 @@ export interface PublicJobView {
     /** JSON content (TipTap / Editor) */
     content: Record<string, any>;
 
-    skills: string[];
+    skills: {
+        id: string;
+        name: string;
+    }[];
     categories: string[];
 
     salary?: Partial<Salary>;
@@ -102,7 +105,7 @@ export interface RecruiterJobView {
 
     views: number;
     applications: number;
-    expertise?: ExpertiseLevel;
+    expertise?: string;
     cardinal: JobCardinal;
 
     department?: Department | null;
@@ -124,15 +127,7 @@ export type JobActivityStatus = "active" | "pending";
 export type visibilityStatus = "private" | "public"
 
 
-type ExpertiseLevel =
-    | "intern"
-    | "junior"
-    | "mid"
-    | "confirmed"
-    | "senior"
-    | "lead"
-    | "staff"
-    | "principal";
+
 
 export type LanguageLevel =  
     | 'A1' 

@@ -39,7 +39,18 @@ class SkillEntity
         targetEntity: SkillTranslationEntity::class,
         cascade: ['persist'] // !!IMPORRTANT
     )]
+    /** @var Collection<int, SkillTranslationEntity> */
     private Collection $translations;
+
+
+    #[ORM\OneToMany(
+        targetEntity: SkillAliasEntity::class,
+        mappedBy: "skill",
+        orphanRemoval: true
+    )]
+    /** @var Collection<int, SkillAliasEntity> */
+    private Collection $skillAliases;
+
 
     //---------------------
     //--- Construct
@@ -109,6 +120,41 @@ class SkillEntity
     {
         return $this->translations;
     }
+
+    public function getSkillAliases(){
+        return $this->skillAliases;
+    }
+
+    /**
+     * Retrieves the translation for a given (local) language.
+     * @param string $locale
+     */
+    public function getTranslation(string $locale): ?SkillTranslationEntity
+    {
+        foreach ($this->translations as $translation) {
+            if ($translation->getLanguage()?->getCode() === $locale) {
+                return $translation;
+            }
+        }
+
+        return null;
+    }
+
+    
+    /**
+     * Retrieves the default translation (e.g., ‘en’ or ‘fr’),
+     * or, if none is available, the very first available translation.
+     */
+    public function getDefaultTranslation(string $defaultLocale = 'en'): ?SkillTranslationEntity
+    {
+        $defaultTranslation = $this->getTranslation($defaultLocale);
+        if ($defaultTranslation !== null) {
+            return $defaultTranslation;
+        }
+
+        return $this->translations->first() ?: null;
+    }
+
 
     
     //----------------------

@@ -12,6 +12,8 @@ const createJob = async(
         const data = {
             ...currentJob
         }
+        console.log({data});
+        
         const response = await post('/job_offer', data);
         return response;
     }

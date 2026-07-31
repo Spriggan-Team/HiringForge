@@ -6,6 +6,8 @@ use App\Domain\Shared\Service\EmbeddingProviderInterface;
 use App\Domain\Shared\Service\AiValidatorServiceInterface;
 use App\Domain\Shared\Language\LanguageRepositoryInterface;
 use App\Domain\Shared\Service\VectorServiceInterface;
+use App\Domain\Shared\Skill\SkillMatcherServiceInterface;
+
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\LanguageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillAliasEntity;
@@ -16,7 +18,8 @@ use Ramsey\Uuid\Uuid;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
-class SkillMatcherService  
+
+class SkillMatcherService  implements SkillMatcherServiceInterface
 {
     private const STOPWORDS = [
         'fr' => ['de', 'du', 'la', 'le', 'des', 'les', 'en', 'un', 'une', 'et', 'a', 'pour', 'par'],
