@@ -85,19 +85,33 @@ const TipTapEditor = <T extends string | JSONContent, >({
     return (
         <div
             style={{
-                width: width ?? "100%"
+                width: width ?? "100%",
+                minWidth: 0,
             }}
-            className={`${styles.container} ${className ?? ""} card-border`}
+            className={`
+                ${styles.container}
+                ${className ?? ""}
+                card-border
+            `}
         >
             <Toolbar editor={editor} />
             <div className={styles.separator} />
-            <EditorContent 
-                editor={editor} 
+            <EditorContent
+                editor={editor}
                 className={`
                     ${styles.editor}
-                    ${sizeable?.x ? styles.flexibleX : ""}
-                    ${sizeable?.y ? styles.flexibleY : ""}
-                    ${sizeable?.both ? styles.flexibleBoth : "" }
+                    ${sizeable?.y 
+                        ? styles.flexibleY 
+                        : ""
+                    }
+                    ${sizeable?.x 
+                        ? styles.flexibleX 
+                        : ""
+                    }
+                    ${sizeable?.both 
+                        ? styles.flexibleBoth 
+                        : ""
+                    }
                 `}
             />
         </div>

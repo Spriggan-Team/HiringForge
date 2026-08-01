@@ -31,8 +31,10 @@ final class CreateJobOfferRequestMapper
 
             contractTypeId: $body['contractTypeId'] ?? null,
             departmentId: $body['departmentId'] ?? null,
-            workMode: $body['workMode'] ?? null,
+            workMode: $body['workMode'] ?? null, //-- tells how the work is done
             expertise: $body['expertise'] ?? null,
+
+            location: [],
 
             salary: isset($body['salary'])
                 ? new SalaryRequest(

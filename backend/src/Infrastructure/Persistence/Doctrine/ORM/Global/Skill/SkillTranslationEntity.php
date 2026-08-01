@@ -9,6 +9,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\LanguageEntity;
 
 #[ORM\Entity]
 #[ORM\Table(name: "skills_translation")]
+#[ORM\UniqueConstraint(name: 'unique_slug_per_language', columns: ['slug', 'language_id'])]
 class SkillTranslationEntity
 {
     #[ORM\Id]
@@ -19,7 +20,7 @@ class SkillTranslationEntity
     #[ORM\Column(length: 120)]
     private string $name;   
     
-    #[ORM\Column(length: 120, unique: true)]
+    #[ORM\Column(length: 120)]
     private string $slug;
 
 

@@ -130,14 +130,6 @@ class ImportSkillsCommand extends Command
         }
         unset($rawAliases);
 
-        $processedSlugs = [];
-        $rawSlugs = $this->em->getConnection()
-            ->fetchAllAssociative('SELECT slug FROM skills_translation');
-            
-        foreach ($rawSlugs as $row) {
-            $processedSlugs[md5($row['slug'])] = true;
-        }
-        unset($rawSlugs);
 
         $processedCodes = [];
         $codeColumn = ($source === 'esco') ? 'esco_uri' : 'onet_code';
@@ -191,9 +183,6 @@ class ImportSkillsCommand extends Command
                     if ($codeHash && isset($processedCodes[$codeHash])) {
                         continue;
                     }
-                    if (isset($processedSlugs[$slugHash])) {
-                        continue;
-                    }
 
                     //--------------------------------
                     // Creating through Matcher
@@ -233,7 +222,6 @@ class ImportSkillsCommand extends Command
                         $processedCodes[$codeHash] = true;
                     }
 
-                    $processedSlugs[$slugHash] = true;
 
                     //--------------------------------
                     // Synonym/Alias Management

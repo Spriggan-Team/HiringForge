@@ -44,21 +44,22 @@ final class SkillRepository
 
     #[Override]
     /** 
-     * @param array<string, mixed> $scheme Defines the expected output structure/fields. Named constructor for the initial creation of a Skill
+     * @param array<string, mixed> $scheme Defines the expected output structure/fields.
      * @return array<int, array<string, mixed>>
      */
     public function fetchAssociativeArray(string $text, string $locale, array $scheme): array
     {
         $text = mb_strtolower(trim($text));
-        $locale = mb_strtolower(trim($locale));
+        $locale = substr(mb_strtolower(trim($locale)), 0, 2);
         if ($text === '') {
             return [];
         }
 
         $maxResults = 15;
         $searchTerm = '%' . $text . '%';
+        $slugTerm = '%' . preg_replace('/[^a-z0-9]+/', '', $text) . '%';
 
-        // 1. Priority Search in Translations
+        // -- Priority Search in Translations & Slugs
         $transRepo = $this->em->getRepository(SkillTranslationEntity::class);
         $selectedTranslationFields = $this->buildTranslationSelectFields($scheme);
 
@@ -66,16 +67,19 @@ final class SkillRepository
             ->select($selectedTranslationFields)
             ->join('st.skill', 's') 
             ->join('st.language', 'l')
-            ->where('LOWER(st.name) LIKE :search OR LOWER(st.slug) LIKE :search')
+            ->where('(LOWER(st.name) LIKE :search OR LOWER(st.slug) LIKE :slugSearch)')
             ->andWhere('l.code = :locale')
             ->setParameter('search', $searchTerm)
+            ->setParameter('slugSearch', $slugTerm)
             ->setParameter('locale', $locale)
             ->setMaxResults($maxResults)
             ->getQuery()
             ->getArrayResult();
 
-        $totalFound = count($translations);
+        //-- Priority Search in Translations & Slugs
+        $foundSkillIds = array_filter(array_column($translations, 'id'));
 
+        $totalFound = count($translations);
         if ($totalFound >= $maxResults) {
             return $translations;
         }
@@ -86,21 +90,29 @@ final class SkillRepository
         $aliasRepo = $this->em->getRepository(SkillAliasEntity::class);
         $selectedAliasFields = $this->buildAliasSelectFields($scheme);
 
-        $aliases = $aliasRepo->createQueryBuilder('al')
+        $aliasQuery = $aliasRepo->createQueryBuilder('al')
             ->select($selectedAliasFields)
             ->join('al.skill', 's')
             ->leftJoin('s.translations', 'st')
-            ->leftJoin('st.language', 'l')
-            ->where('LOWER(al.alias) LIKE :search')
-            ->andWhere('l.code = :locale')
+            ->leftJoin('st.language', 'l', 'WITH', 'l.code = :locale')
+            ->where('(LOWER(al.alias) LIKE :search OR LOWER(st.slug) LIKE :slugSearch)')
             ->setParameter('search', $searchTerm)
-            ->setParameter('locale', $locale)
-            ->setMaxResults($remainingLimit)
+            ->setParameter('slugSearch', $slugTerm)
+            ->setParameter('locale', $locale);
+
+        // Exclude skills already found in the first step
+        if (!empty($foundSkillIds)) {
+            $aliasQuery->andWhere('s.id NOT IN (:excludedIds)')
+                    ->setParameter('excludedIds', $foundSkillIds);
+        }
+
+        $aliases = $aliasQuery->setMaxResults($remainingLimit)
             ->getQuery()
             ->getArrayResult();
 
         return array_merge($translations, $aliases);
     }
+    
 
     /**
      * Builds the SELECT clause for SkillTranslationEntity

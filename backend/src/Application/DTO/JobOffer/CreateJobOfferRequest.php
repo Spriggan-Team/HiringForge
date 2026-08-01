@@ -70,6 +70,18 @@ final class CreateJobOfferRequest
 
 
         /**
+         * describe the place where the work
+         * is located at
+         * exemple: [
+         *      "id" => string,
+         *      "city" => ?city,
+         *      "street" => ?street,
+         *      "country" => ?country
+         * ]
+        */
+        public array $location = [],
+
+        /**
          * Expertise 
          */
         #[Assert\Uuid]

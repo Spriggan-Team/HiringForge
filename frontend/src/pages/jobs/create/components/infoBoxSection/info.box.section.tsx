@@ -10,6 +10,7 @@ import type { Location } from "../../../../../features/shared/global";
 import { formatLocation } from "../../../../../utils/convertor";
 import ContractQueries from "../../../../../api/services/contract/queries";
 import DepartmentQueries from "../../../../../api/services/department/queries";
+import SkillServices from "../../../../../api/services/shared/skill.service";
 
 //-- Custom components
 import Title from "../../../../../layout/components/text/title/title";
@@ -22,7 +23,6 @@ import JobSkill from "../../../components/skills/job.skill";
 
 //--CSS Module
 import styles from "./InfoBoxSection.module.css"
-import SkillServices from "../../../../../api/services/shared/skill.service";
 
 
 
@@ -74,6 +74,7 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
 
         // Serve from cache immediately if available
         if (skillCacheRef.current.has(trimmed)) {
+            console.log({skill: skillCacheRef.current.get(trimmed)})
             setSearchSkills(skillCacheRef.current.get(trimmed)!);
             lastQueryRef.current = trimmed;
             return;
@@ -82,6 +83,7 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
         const timeout = setTimeout(async () => {
             try {
                 const data = await SkillServices.search(trimmed);
+                console.log({skill: data});
                 skillCacheRef.current.set(trimmed, data);
                 lastQueryRef.current = trimmed;
                 setSearchSkills(data);
@@ -147,9 +149,26 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                         <DrawerBuilder
                             value={currentJob.department ?? undefined}
                             placeholder={t("jobs.createJob.generalInformationSection.drawers.department.placeholder")}
-                            items={departmentList.map((d, key) => ({ key, value: d, label: d.label }))}
+                            items={departmentList.map((d, key) => ({
+                                key,
+                                value: d,
+                                label: d.label
+                            }))}
+                            renderValue={(selected) => (
+                                <span>
+                                    {selected
+                                        ? (selected as Department).label
+                                        : t("jobs.createJob.generalInformationSection.drawers.department.placeholder")
+                                    }
+                                </span>
+                            )}
                             onChange={(value: Department) => {
-                                if (value) setCurrentJob(prev => ({ ...prev, department: value }));
+                                if (value) {
+                                    setCurrentJob(prev => ({
+                                        ...prev,
+                                        department: value
+                                    }));
+                                }
                             }}
                         />
                     </div>
@@ -162,13 +181,30 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                             <DrawerBuilder
                                 value={currentUser.company.location[0]}
                                 placeholder={formatLocation(currentUser.company.location[0])}
+                                renderValue={(selected) => (
+                                    <span>
+                                        {selected
+                                            ? formatLocation(selected as Location)
+                                            : "Select location"}
+                                    </span>
+                                )}
                                 items={(currentUser.company?.location ?? []).map((loc, key) => ({
                                     key,
                                     value: loc,
                                     label: formatLocation(loc),
                                 }))}
+                                renderItem={(item) => (
+                                    <span>
+                                        {item.label}
+                                    </span>
+                                )}
                                 onChange={(value: Location) => {
-                                    if (value) setCurrentJob(prev => ({ ...prev, location: value }));
+                                    if (value) {
+                                        setCurrentJob(prev => ({
+                                            ...prev,
+                                            location: value
+                                        }));
+                                    }
                                 }}
                             />
                         </div>
@@ -211,6 +247,7 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                     <TipTapEditor
                         width="100%"
                         className={styles.editor}
+                        sizeable={{y: true}}
                         value={currentJob.content ?? {}}
                         placeholder={t("jobs.createJob.postDescriptionSection.inputs.description.placeholder")}
                         setValue={value => setCurrentJob(prev => ({ ...prev, content: value }))}

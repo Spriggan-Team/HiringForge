@@ -56,7 +56,8 @@ const CreateJobPage: React.FC<CreateJobPageProps> = () => {
                 await JobServices.createJob(currentJob);
                 setLoading({ state: false, subtitle: undefined });
                 setPopup({ status: "success", message: t("global.messages.save") });
-            } catch (error) {
+            }
+            catch (error) {
                 setLoading({ state: false, subtitle: undefined });
                 if (!(error instanceof Error)) {
                     setPopup({ status: "error", message: t("global.messages.error") });

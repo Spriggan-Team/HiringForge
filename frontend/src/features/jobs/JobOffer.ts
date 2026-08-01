@@ -63,6 +63,7 @@ export interface PublicJobView {
 
 
 export interface JobLanguage {
+    id: string;
     code: string; //-- Code iso
     nativeLabel: string;
     proficiencyLevel: LanguageLevel;

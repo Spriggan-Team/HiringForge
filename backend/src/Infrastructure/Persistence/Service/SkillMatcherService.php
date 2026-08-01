@@ -106,9 +106,20 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
         // STEP 2: Match on Slug
         $slug = $this->normalize($name, $locale);
         $translation = $transRepo->findOneBy([
-            'language' => $language,
-            'slug'     => $slug,
+            'slug' => $slug,
         ]);
+
+        if ($translation) {
+            $skill = $translation->getSkill();
+            $this->enrichSkill($skill, $escoUri, $onetCode);
+            $this->ensureTranslationExists($skill, $name, $locale);
+            
+            if (mb_strtolower($translation->getName()) !== mb_strtolower($name)) {
+                $this->ensureAliasExists($skill, $name);
+            }
+
+            return [$skill, null];
+        }
 
         if ($translation) {
             return [$this->enrichSkill($translation->getSkill(), $escoUri, $onetCode), null];
@@ -223,6 +234,28 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
 
 
 
+    private function ensureAliasExists(SkillEntity $skill, string $aliasName): void
+    {
+        $aliasRepo = $this->em->getRepository(SkillAliasEntity::class);
+        
+        $existing = $aliasRepo->createQueryBuilder('a')
+            ->where('a.skill = :skill')
+            ->andWhere('LOWER(a.alias) = :alias')
+            ->setParameter('skill', $skill)
+            ->setParameter('alias', mb_strtolower(trim($aliasName)))
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if (!$existing) {
+            $alias = new SkillAliasEntity(
+                alias: trim($aliasName),
+                skill: $skill
+            );
+            $this->em->persist($alias);
+        }
+    }
+
+
     private function ensureTranslationExists(SkillEntity $skill, string $name, string $locale): void
     {
         $language = $this->languageCache[$locale] ?? $this->em->getRepository(LanguageEntity::class)->findOneBy(['code' => $locale]);
@@ -330,8 +363,6 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
 
         return $translation;
     }
-
-
 
 
 
