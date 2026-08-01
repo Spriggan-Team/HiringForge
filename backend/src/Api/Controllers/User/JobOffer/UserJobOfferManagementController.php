@@ -36,7 +36,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * user exitence control (check in bdd)
  */
 #[Route('/job_offer')]
-#[IsGranted(AccountRole::USER->value)]
 class UserJobOfferManagementController extends AbstractController
 {
 
@@ -48,7 +47,7 @@ class UserJobOfferManagementController extends AbstractController
     }
 
 
-    #[Route("/", methods: ["POST"], name: "create_job_offer" )]
+    #[Route("", methods: ["POST"], name: "create_job_offer" )]
     public function createJobOffer(
         Request $request,
         JobOfferRecorder $handler,

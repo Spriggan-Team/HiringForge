@@ -14,7 +14,7 @@ export interface Location{
 
 
 export interface Language {
-    id: string;
+    id: number;
     code: string;
     label?: string;
 }

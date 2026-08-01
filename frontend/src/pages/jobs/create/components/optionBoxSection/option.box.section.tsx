@@ -50,7 +50,7 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
     const navigate   = useNavigate();
     const { currentJob, setCurrentJob } = useJob();
 
-    const [languageCodes,   setLanguageCodes]   = useState<string[]>([]);
+    const [languageCodes,   setLanguageCodes]   = useState<{id: number; code: string}[]>([]);
     const [expertiseValues, setExpertiseValues]  = useState<string[]>([]);
     const [pubStatusColor,  setPubStatusColor]   = useState<string>("");
 
@@ -64,7 +64,7 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
         const init = async () => {
             try {
                 const [codes, expertises] = await Promise.all([
-                    LanguageQueries.getLanguages().then(data => data.map(l => l.code)),
+                    LanguageQueries.getLanguages().then(data => data.map(l => ({ id: l.id, code:  l.code}))),
                     SkillServices.getExpertiseCollection(),
                 ]);
                 setLanguageCodes(codes);

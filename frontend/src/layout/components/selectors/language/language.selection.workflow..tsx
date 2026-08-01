@@ -15,7 +15,7 @@ import LanguageQueries from "../../../../api/services/Language/queries";
 
 
 interface LanguageSelectionWorkflowProps {
-    languages: string[];
+    languages: { id: number, code: string }[];
     onAdd: (language: JobLanguage) => void;
     placeholder?: {
         selectLanguage: string;
@@ -40,7 +40,7 @@ const LanguageSelectionWorkflow: React.FC<LanguageSelectionWorkflowProps> = ({
         [],
     );
 
-    const [pendingCode, setPendingCode] = useState<string | null>(null);
+    const [pendingCode, setPendingCode] = useState<{id: number, code: string} | null>(null);
     const [LanguageLevel, setLanguageLevel] = useState<string[]>([]);
 
     const triggerPlaceholder =
@@ -85,14 +85,14 @@ const LanguageSelectionWorkflow: React.FC<LanguageSelectionWorkflowProps> = ({
                 <MenuDrawerBody
                     className={`${styles.selectDropdown} selectDropdown`}
                 >
-                    {languages.map(code => (
+                    {languages.map(lang => (
 
                         <MenuDrawerItem
-                            key={code}
-                            value={{ code }}
+                            key={lang.code}
+                            value={lang}
                             className={`${styles.selectItem} selectItem`}
                         >
-                            {displayNames.of(code)}
+                            {displayNames.of(lang.code)}
                         </MenuDrawerItem>
 
                     ))}
@@ -104,14 +104,15 @@ const LanguageSelectionWorkflow: React.FC<LanguageSelectionWorkflowProps> = ({
             <MenuDrawer
                 triggerVisibility={!!pendingCode}
                 className={`${styles.drawer} drawer`}
-                onChange={({ proficiencyLevel }) => {
+                onChange={({ proficiencyLevel,  }) => {
 
                     if (!pendingCode) return;
 
                     onAdd({
-                        code: pendingCode,
+                        id:  pendingCode.id,
+                        code: pendingCode.code,
                         proficiencyLevel,
-                        nativeLabel: displayNames.of(pendingCode) ?? ""
+                        nativeLabel: displayNames.of(pendingCode.code) ?? ""
                     });
 
                     setPendingCode(null);
