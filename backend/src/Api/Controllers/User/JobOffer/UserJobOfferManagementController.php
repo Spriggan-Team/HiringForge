@@ -27,7 +27,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 
 
@@ -69,14 +68,15 @@ class UserJobOfferManagementController extends AbstractController
 
             return ApiResponse::success(["offerId" => $offerId],"Everything went smoothly")->toJsonResponse();
         }
-        catch(Exception $ex){
+        catch(Exception $e){
+            dump($e->getMessage());
+            dump($e->getTraceAsString());
             return ApiResponse::error(
                 message: "Something wrong happenned",
-                throwable: $ex
+                throwable: $e
             )->toJsonResponse();
         }
     }
-
 
 
 
@@ -89,77 +89,94 @@ class UserJobOfferManagementController extends AbstractController
         Request $request,
         string $offerId,
         JobOfferImageUploader $jobOfferImageUploader
-    ): JsonResponse
-    {
-        try
-        {
-            /** @var AuthenticatedPerson **/
+    ): JsonResponse {
+        try {
+            /** @var AuthenticatedPerson $user */
             $user = $this->getUser();
 
-            $files = $request->files->get("images", []);
-            $mainImageIndex = $request->request->get('mainIndex', null);
+            $files = $request->files->get('images', []);
+            $rawMainIndex = $request->request->get('mainIndex');
 
-            if($mainImageIndex && !is_int($mainImageIndex))
-            {
-                return ApiResponse::error("Your mainIndex must be a integer")->toJsonResponse();
+            $mainImageIndex = null;
+            if ($rawMainIndex !== null && $rawMainIndex !== '') {
+                if (!ctype_digit((string) $rawMainIndex)) {
+                    return ApiResponse::error('Your mainIndex must be a valid integer')->toJsonResponse();
+                }
+                $mainImageIndex = (int) $rawMainIndex;
             }
 
-            if(!is_array($files))
-            {
-                return ApiResponse::error("You must send an array of files object for this to function")->toJsonResponse();
+            if (!is_array($files)) {
+                $files = [$files]; // Enclose as a table if only one file was sent
             }
 
-            $filesInfo = $jobOfferImageUploader->execute(
-                files: $files, 
-                offerId: $offerId, 
+            if (empty($files)) {
+                return ApiResponse::error('No image files provided in the "images" key')->toJsonResponse();
+            }
+
+            $uploadResult = $jobOfferImageUploader->execute(
+                offerId: $offerId,
                 userId: $user->getId(),
+                files: $files,
                 mainImageIndex: $mainImageIndex
             );
 
-            return ApiResponse::success(
-                        data: ["failed" => $filesInfo]
-                   )->toJsonResponse();
+            return ApiResponse::success(data: [
+                'success_count' => count($uploadResult['success']),
+                'failed_count' => count($uploadResult['failed']),
+                'failed' => $uploadResult['failed'],
+            ])->toJsonResponse();
+
         }
-        catch(DomainException $domainException)
-        {
+        catch (DomainException $domainException) {
             return ApiResponse::error(
-                        message: $domainException->getMessage() ?? "Something went wrong",
-                        throwable: $domainException
-                    )->toJsonResponse();
-        }
-        catch(Exception $exception)
-        {
-            return ApiResponse::error("Something went wrong")->toJsonResponse();
+                message: $domainException->getMessage() ?: 'Something went wrong',
+                throwable: $domainException
+            )->toJsonResponse();
+        } catch (Exception $e) {
+
+            return ApiResponse::error('Something went wrong', throwable: $e)->toJsonResponse();
         }
     }
+
+
 
 
     #[Route('/offers/{offerId}/assets/remove', methods: ['POST'])]
     public function removeJobOfferAssets(
         Request $request,
         string $offerId,
-        JobOfferImageRemover $assetsRemover
-    )
-    {
-        try
-        {
-            /** @var AuthenticatedPerson */
+        JobOfferImageRemover $assetsRemover,
+        LoggerInterface $logger
+    ) {
+        try {
+            /** @var AuthenticatedPerson $user */
             $user = $this->getUser();
 
-            $body = json_decode($request->getContent(), true);
+            $body = json_decode($request->getContent(), true) ?? [];
+            $fileNames = is_array($body['fileNames'] ?? null) ? $body['fileNames'] : [];
+
+            if (empty($fileNames)) {
+                return ApiResponse::error("No file names provided", statusCode: 400)->toJsonResponse();
+            }
+
             $filesInfo = $assetsRemover->execute(
-                offerId: $offerId,
                 accountId: $user->getId(),
-                fileNames: $body["fileNames"] ?? []
+                offerId: $offerId,
+                fileNames: $fileNames
             );
+
             return ApiResponse::success(
-                        data: $filesInfo,
-                        message: "Everything went smoothly"
-                    )->toJsonResponse();
-        }
-        catch(Exception $exception)
-        {
-            return ApiResponse::error("Something went wrong")->toJsonResponse();
+                data: $filesInfo,
+                message: "Assets removal process completed"
+            )->toJsonResponse();
+
+        } catch (\Throwable $exception) {
+            $logger->error("Error removing job offer assets: " . $exception->getMessage(), [
+                'exception' => $exception,
+                'offerId' => $offerId,
+            ]);
+
+            return ApiResponse::error("Something went wrong", statusCode: 500)->toJsonResponse();
         }
     }
 
@@ -195,7 +212,7 @@ class UserJobOfferManagementController extends AbstractController
         string $offerId
     )
     {
-
+        
     }
 
 

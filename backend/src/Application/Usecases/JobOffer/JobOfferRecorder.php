@@ -14,12 +14,14 @@ use App\Domain\Shared\LanguageLevel;
 use App\Domain\JobOffer\JobWorkMode;
 use App\Domain\JobOffer\JobOfferExpertise;
 use App\Domain\JobOffer\JobOfferVisibilityStatus;
+use App\Domain\JobOffer\JobPublicationStatus;
 
 
 //-- Repositories
-use App\Domain\JobOffer\JobOfferRepositioryInterface;
+use App\Domain\JobOffer\JobOfferRepositoryInterface;
 use App\Domain\Shared\Skill\SkillRepositoryInterface ;
 use App\Domain\Category\Repositories\CategoryRepositoryInterface;
+use App\Domain\Company\CompanyRepositoryInterface;
 use App\Domain\Department\DepartmentRepositoryInterface;
 use App\Domain\Shared\Contract\ContractTypeRepositoryInterface;
 use App\Domain\Shared\Language\LanguageRepositoryInterface;
@@ -32,7 +34,8 @@ use DomainException;
 final class JobOfferRecorder
 {
     public function __construct(
-        private JobOfferRepositioryInterface $repository,
+        private JobOfferRepositoryInterface $repository,
+        private CompanyRepositoryInterface $companyRepository,
         private CategoryRepositoryInterface $categoryRepository,
         private SkillRepositoryInterface $skillRepository,
         private LanguageRepositoryInterface $languageRepository,
@@ -51,11 +54,7 @@ final class JobOfferRecorder
 
 
         /*** Validate categories existence  */
-        $categories = 
-            $this->categoryRepository
-                ->getExistingByIds(
-                    $command->categories
-                );
+        $categories = $this->categoryRepository->getExistingByIds($command->categories);
 
         /*** Create base offer */
         $offer = JobOffer::create(
@@ -68,10 +67,14 @@ final class JobOfferRecorder
         );
 
         /*** Skills */
-        foreach($command->skills as $skillId)
-        {
-            $skill = $this->skillRepository->get($skillId);
-            $offer->addSkill($skill);
+        $validSkillIds = $this->skillRepository->findExistingIds(
+            $command->skills
+        );
+        if(empty(array_diff($command->skills, $validSkillIds))){
+            foreach($command->skills as $skillId)
+            {
+                $offer->addSkill($skillId);
+            }
         }
 
 
@@ -82,8 +85,7 @@ final class JobOfferRecorder
                 $languageRequest->languageId
             );
 
-
-            $offer->addRequiredLanguage(
+            $offer->addLanguage(
                 new RequiredLanguage(
                     language: $language,
                     level: LanguageLevel::from(
@@ -98,8 +100,9 @@ final class JobOfferRecorder
         /*** Department */
         if($command->departmentId)
         {
-            $department = $this->departmentRepository->get($command->departmentId);
-            $offer->changeDepartment($department);
+            if($this->departmentRepository->exists($command->departmentId)){
+                $offer->changeDepartment($command->departmentId);
+            }
         }
 
         /*** Work mode */
@@ -123,8 +126,10 @@ final class JobOfferRecorder
         /*** Contract type */
         if($command->contractTypeId)
         {
-            $contract =  $this->contractTypeRepository->get($command->contractTypeId);
-            $offer->changeContractType($contract);
+            $doesContractTypeExist =  $this->contractTypeRepository->exists($command->contractTypeId);
+            if($doesContractTypeExist){
+                $offer->changeContractType($command->contractTypeId);
+            }
         }
 
         
@@ -151,6 +156,21 @@ final class JobOfferRecorder
         if($command->publicationDate)
         {
             $offer->schedulePublication($command->publicationDate);
+        }
+
+        /** Location */
+        if($command->location && $this->companyRepository->isAddressOwnedByUserCompany(
+            addressId: $command->location["id"], userId: $accountId->value())
+        ){
+            $offer->changeLocation($command->location["id"]);
+        }
+
+        /**  Publication */
+        if($command->publicationStatus){
+            $visibilityStatus = JobPublicationStatus::tryFrom($command->publicationStatus);
+            if($visibilityStatus == JobPublicationStatus::PUBLISHED){
+                $offer->publish();
+            }
         }
 
         /*** Persist **/

@@ -41,6 +41,19 @@ final class DepartmentRespository extends ServiceEntityRepository
         return $this->mapper->toDomain($entity);
     }
 
+    #[Override]
+    public function exists(int $id): bool
+    {
+        $result = $this->createQueryBuilder("d")
+                       ->select("1")
+                       ->where('d.id = :id')
+                       ->setParameter('id', $id)
+                       ->setMaxResults(1)
+                       ->getQuery()
+                       ->getOneOrNullResult();
+        return $result !== null;
+    }
+
 
     /**
      * @return array<int, DepartmentEntity>
@@ -64,6 +77,7 @@ final class DepartmentRespository extends ServiceEntityRepository
     }
 
 
+    
     public function save(Department $domain, bool $flush = true): void
     {
         if ($domain->id() === null) {
@@ -95,6 +109,8 @@ final class DepartmentRespository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+
 
 
     public function remove(Department $domain, bool $flush = true): void

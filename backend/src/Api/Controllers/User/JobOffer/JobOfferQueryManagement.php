@@ -1,15 +1,15 @@
 <?php
 
-
 namespace App\Api\Controllers\User\JobOffer;
 
 
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
+use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
 use App\Domain\JobOffer\JobPublicationStatus;
-use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferQueryRepository;
-use Psr\Log\LoggerInterface;
 
+
+use Psr\Log\LoggerInterface;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
@@ -18,11 +18,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
 
-#[Route('/users/jobs')]
+#[Route('/users/job_offer')]
 class JobOfferQueryManagement extends AbstractController{
     public function __construct(
         private LoggerInterface $logger,
-        private JobOfferQueryRepository $queryRepository,
+        private JobOfferQueryRepositoryInterace $queryRepository,
     ){
         ApiResponse::init($logger);
     }
@@ -38,11 +38,11 @@ class JobOfferQueryManagement extends AbstractController{
 
             $limit = $request->query->get("limit");
             $skip = $request->query->get("skip");
-            $category = $request->query->get("category") ?? JobPublicationStatus::PUBLISHED;
+            $jobPublicationStatus = $request->query->get("publicationStatus") ?? JobPublicationStatus::PUBLISHED;
             
             $data = $this->queryRepository->fetchJobOfferViewCollection(
                 userId: $user->getId(), limit: $limit, 
-                skip: $skip, category: $category
+                skip: $skip, jobPublicationStatus: $jobPublicationStatus
             );
             return ApiResponse::success(
                         data: $data, message: "Everything went successfully"
@@ -55,6 +55,7 @@ class JobOfferQueryManagement extends AbstractController{
                 )->toJsonResponse();
         }
     }
+
 
 
     #[Route('/{jobId}')]

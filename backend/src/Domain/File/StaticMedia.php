@@ -25,7 +25,9 @@ class StaticMedia
 
     public static function hydrate(
         string $name, float $size,
-        string $mime, ?string $originalName = null, ?int $id =null
+        string $mime, 
+        ?string $originalName = null,
+        ?int $id =null
     ){
         return new self(id: $id, name: $name, size: $size, mime: $mime, originalName: $originalName);
     }

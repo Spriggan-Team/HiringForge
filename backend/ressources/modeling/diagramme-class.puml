@@ -130,7 +130,7 @@ class JobOffer{
     updatedAt: Datetime
 }
 
-interface JobOfferRepositioryInterface{
+interface JobOfferRepositoryInterface{
     + save(offer)
     + update(offer)
     + publish(id)
@@ -318,7 +318,7 @@ class DashboardAggregator {
 }
 
 DashboardAggregator --> UserRepository
-DashboardAggregator --> JobOfferRepositioryInterface
+DashboardAggregator --> JobOfferRepositoryInterface
 DashboardAggregator --> ApplicationRepository
 DashboardAggregator --> InterviewRepositoryInterface
 

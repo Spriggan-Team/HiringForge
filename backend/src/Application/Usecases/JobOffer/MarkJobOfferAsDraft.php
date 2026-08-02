@@ -2,12 +2,12 @@
 
 namespace App\Application\Usecases\JobOffer;
 
-use App\Domain\JobOffer\JobOfferRepositioryInterface;
+use App\Domain\JobOffer\JobOfferRepositoryInterface;
 
 class MarkJobOfferAsDraft
 {
     public function __construct(
-        private JobOfferRepositioryInterface $jobOfferRepositoryInterface
+        private JobOfferRepositoryInterface $jobOfferRepositoryInterface
     ){}
 
     /**

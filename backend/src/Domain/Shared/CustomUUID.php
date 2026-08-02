@@ -6,7 +6,7 @@ namespace App\Domain\Shared;
 
 class CustomUUID{
     public static function generate(): string {
-       return \Ramsey\Uuid\Uuid::uuid4();
+       return \Ramsey\Uuid\Uuid::uuid4()->toString();
     }
 
     public static function isValid(string $id): bool{

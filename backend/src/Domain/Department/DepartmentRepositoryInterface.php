@@ -17,4 +17,6 @@ interface DepartmentRepositoryInterface{
     public function save(Department $domain, bool $flush = true): void;
 
     public function remove(Department $entity, bool $flush = true): void;
+
+    public function exists(int $id): bool;
 }

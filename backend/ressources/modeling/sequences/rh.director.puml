@@ -9,7 +9,7 @@ participant AccountRepository
 participant DashboardAggregator
 participant UserRepository
 participant ApplicationRepository
-participant JobOfferRepositioryInterface
+participant JobOfferRepositoryInterface
 participant InterviewRepositoryInterface
 database Database
 
@@ -51,14 +51,14 @@ UserRepository --> DashboardAggregator : recruiters
 deactivate UserRepository
 
 
-DashboardAggregator -> JobOfferRepositioryInterface : getOffersByRecruiters()
-activate JobOfferRepositioryInterface
-JobOfferRepositioryInterface -> Database : SELECT
+DashboardAggregator -> JobOfferRepositoryInterface : getOffersByRecruiters()
+activate JobOfferRepositoryInterface
+JobOfferRepositoryInterface -> Database : SELECT
 activate Database
-Database --> JobOfferRepositioryInterface
+Database --> JobOfferRepositoryInterface
 deactivate Database
-JobOfferRepositioryInterface --> DashboardAggregator
-deactivate JobOfferRepositioryInterface
+JobOfferRepositoryInterface --> DashboardAggregator
+deactivate JobOfferRepositoryInterface
 
 
 DashboardAggregator -> ApplicationRepository : getApplications()

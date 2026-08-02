@@ -42,6 +42,21 @@ final class ContractTypeRepository
         return $this->mapper->toDomain($entity);
     }
 
+    #[Override]
+    public function exists(int $id): bool
+    {
+        $result = $this->em
+                       ->createQueryBuilder()
+                       ->select("1")
+                       ->from(ContractTypeEntity::class, "c")
+                       ->where("c.id = :id")
+                       ->setParameter('id', $id)
+                       ->setMaxResults(1)
+                       ->getQuery()
+                       ->getOneOrNullResult();
+        return $result !== null;
+    }
+
     
     #[Override]
     public function getAll(string $country, ?string $organizationId): array

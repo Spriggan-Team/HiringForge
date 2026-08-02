@@ -11,4 +11,11 @@ class JobOfferImage
         public bool $isMain = false,       // Important: indicates if an image of a job offer is main 
     )
     {}
+
+    public static function create(
+        StaticMedia $media,
+        bool $isMain = false,
+    ){
+        return new self(media: $media, isMain: $isMain);
+    }
 }

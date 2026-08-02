@@ -4,12 +4,12 @@ namespace App\Application\Usecases\JobOffer;
 
 
 use App\Application\DTO\JobOffer\ChangeJobOffferRequest;
-use App\Domain\JobOffer\JobOfferRepositioryInterface;
+use App\Domain\JobOffer\JobOfferRepositoryInterface;
 
 
 class JobOfferModifier
 {
-    public function __construct(private JobOfferRepositioryInterface $repository){}
+    public function __construct(private JobOfferRepositoryInterface $repository){}
 
     /**
      * This function is a usecase that allow any user to change information about a job stored in the bdd

@@ -12,7 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
 class JobOfferSkillsEntity
 {
     #[ORM\Id]
-    #[ORM\ManyToOne(targetEntity: JobOfferEntity::class)]
+    #[ORM\ManyToOne(
+        targetEntity: JobOfferEntity::class,
+        inversedBy: "skills"
+    )]
     #[ORM\JoinColumn(
         name: "job_offer_id",
         referencedColumnName: "id",
@@ -21,16 +24,20 @@ class JobOfferSkillsEntity
     private JobOfferEntity $jobOffer;
 
     #[ORM\Id]
-    #[ORM\ManyToOne(targetEntity: SkillEntity::class)]
+    #[ORM\ManyToOne(
+        targetEntity: SkillEntity::class
+    )]
     #[ORM\JoinColumn(
         name: "skill_id",
         referencedColumnName: "id", 
-        nullable: false, onDelete: "CASCADE"
+        nullable: false,
     )]
     private SkillEntity $skill;
 
+
     #[ORM\Column(length: 20)]
     private bool $isRequired  = true;
+
 
     //------------------------
     //-----CONSTRUCTOR/BUILDING

@@ -32,8 +32,7 @@ final class CreateJobOfferRequest
 
         /**
          * Skill identifiers
-         *
-         * @var string[]
+         * @var array<int, string>
          */
         #[Assert\Type(type: 'array')]
         public array $skills = [],
@@ -84,7 +83,6 @@ final class CreateJobOfferRequest
         /**
          * Expertise 
          */
-        #[Assert\Uuid]
         public ?string $expertise = null,
 
 
@@ -107,6 +105,8 @@ final class CreateJobOfferRequest
          */
         public mixed $image = null,
 
+        /** indique wether it is published or not */
+        public ?string $publicationStatus = null,
 
         /**
          * Visibility at creation

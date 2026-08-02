@@ -13,4 +13,10 @@ interface SkillRepositoryInterface{
     * @return array<int, array<string, mixed>>
     */
    public function fetchAssociativeArray(string $text, string $locale, array $scheme): array;
+
+   /** check existence */
+   public function exists(string $skillId): bool;
+
+      
+   public function findExistingIds(array $ids): array;
 }

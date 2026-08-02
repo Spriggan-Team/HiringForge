@@ -2,6 +2,9 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill;
 
+
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JoOffferSkillEntity;
+
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -50,6 +53,8 @@ class SkillEntity
     )]
     /** @var Collection<int, SkillAliasEntity> */
     private Collection $skillAliases;
+
+
 
 
     //---------------------
@@ -113,8 +118,9 @@ class SkillEntity
         return $this->canonicalName;
     }
 
+
     /**
-     * @return array<int, SkillTranslationEntity>
+     * @return array<int, JoOffferSkillEntity>
      */
     public function getTranslations()
     {

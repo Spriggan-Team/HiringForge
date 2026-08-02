@@ -43,6 +43,38 @@ final class SkillRepository
 
 
     #[Override]
+    public function exists(string $skillId): bool
+    {
+        $result = $this->em
+                        ->createQueryBuilder()
+                        ->select('1')
+                        ->from(SkillEntity::class, 's')
+                        ->where('s.id = :id')
+                        ->setParameter('id', $skillId)
+                        ->setMaxResults(1)
+                        ->getQuery()
+                        ->getOneOrNullResult();
+        
+        return $result != null;
+    }
+
+
+
+    public function findExistingIds(array $ids): array
+    {
+        return $this->em
+            ->createQueryBuilder()
+            ->select('s.id')
+            ->from(SkillEntity::class, 's')
+            ->where('s.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
+
+    
+
+    #[Override]
     /** 
      * @param array<string, mixed> $scheme Defines the expected output structure/fields.
      * @return array<int, array<string, mixed>>

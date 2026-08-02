@@ -20,6 +20,37 @@ class LanguageEntity
     #[ORM\Column(length: 99)]
     private ?string $label;
 
+    //---------------------------
+    // Constructing
+    //------------------------
+    
+    public function __construct(){}
+
+    public static function create(
+        string $code,
+        ?string $label = null
+    ): self {
+        $entity = new self();
+
+        $entity->code = $code;
+        $entity->label = $label;
+
+        return $entity;
+    }
+
+    public static function reconstitute(
+        int $id,
+        string $code,
+        ?string $label = null
+    ): self {
+        $entity = new self();
+
+        $entity->id = $id;
+        $entity->code = $code;
+        $entity->label = $label;
+
+        return $entity;
+    }
 
     //---------
     //--- GETTERS

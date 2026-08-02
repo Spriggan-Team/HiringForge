@@ -11,7 +11,7 @@ participant AccountRepository
 
 participant ApplicationRepository
 participant InterviewRepositoryInterface
-participant JobOfferRepositioryInterface
+participant JobOfferRepositoryInterface
 database Database
 
 === Application Status (Accepted/Refused/Waiting) ==

@@ -93,6 +93,17 @@ class FileEntity
         $this->companyImages = new ArrayCollection();
     }
     
+    public static function create(
+        string $name,
+        string $mime,
+        float $size
+    ){
+        return new self()
+                    ->setName($name)
+                    ->setMime($mime)
+                    ->setSize($size);
+    }
+
     /* =======================
      * GETTERS
      * ======================= */

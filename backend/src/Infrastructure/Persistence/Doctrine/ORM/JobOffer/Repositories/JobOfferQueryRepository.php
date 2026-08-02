@@ -5,6 +5,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories;
 use App\Application\Query\JobOffer\DTO\JobOfferStatistics;
 use App\Application\Query\JobOffer\DTO\JobOfferListItem;
 use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
+
 use App\Domain\JobOffer\JobActivityStatus;
 use App\Domain\JobOffer\JobPublicationStatus;
 
@@ -43,7 +44,7 @@ class JobOfferQueryRepository implements JobOfferQueryRepositoryInterace
         ?string $userId = null,
         ?int $limit = null,
         ?int $skip = null,
-        ?JobPublicationStatus $category = JobPublicationStatus::PUBLISHED
+        ?JobPublicationStatus $jobPublicationStatus = JobPublicationStatus::PUBLISHED
     ): array
     {
         throw new \Exception('Not implemented');

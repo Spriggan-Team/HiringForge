@@ -12,7 +12,7 @@ participant JobOfferModifier
 participant JobOffferPublisher
 participant MarkJobOfferAsDraft
 participant JobOfferEraser
-participant JobOfferRepositioryInterface
+participant JobOfferRepositoryInterface
 participant MediaStorageInterface
 participant CategoryRepositoryInterace
 database Database
@@ -82,17 +82,17 @@ CategoryRepositoryInterace --> JobOfferRecorder : success
 deactivate CategoryRepositoryInterace
 
 'Create Offer
-JobOfferRecorder -> JobOfferRepositioryInterface : save(offerDto)
-activate JobOfferRepositioryInterface
+JobOfferRecorder -> JobOfferRepositoryInterface : save(offerDto)
+activate JobOfferRepositoryInterface
 
-JobOfferRepositioryInterface -> Database : INSERT
+JobOfferRepositoryInterface -> Database : INSERT
 activate Database
-Database --> JobOfferRepositioryInterface: response
+Database --> JobOfferRepositoryInterface: response
 deactivate Database
 
 'User response
-JobOfferRepositioryInterface --> JobOfferRecorder : response
-deactivate JobOfferRepositioryInterface
+JobOfferRepositoryInterface --> JobOfferRecorder : response
+deactivate JobOfferRepositoryInterface
 
 JobOfferRecorder --> User : response
 deactivate JobOfferRecorder
@@ -143,17 +143,17 @@ MediaFactoryInterface --> JobOfferImageUploader : mediaObject
 deactivate MediaFactoryInterface
 
 'Associate to offer
-JobOfferImageUploader -> JobOfferRepositioryInterface : associateJobWithImages(offerId, images)
-activate JobOfferRepositioryInterface
+JobOfferImageUploader -> JobOfferRepositoryInterface : associateJobWithImages(offerId, images)
+activate JobOfferRepositoryInterface
 
-JobOfferRepositioryInterface -> Database : INSERT
+JobOfferRepositoryInterface -> Database : INSERT
 activate Database
-Database --> JobOfferRepositioryInterface : response
+Database --> JobOfferRepositoryInterface : response
 deactivate Database
 
 'User response
-JobOfferRepositioryInterface --> JobOfferImageUploader : response
-deactivate JobOfferRepositioryInterface
+JobOfferRepositoryInterface --> JobOfferImageUploader : response
+deactivate JobOfferRepositoryInterface
 
 JobOfferImageUploader --> User : response
 deactivate JobOfferImageUploader
@@ -179,16 +179,16 @@ deactivate AuthChecker
 activate JobOfferModifier
 
 'Assert existence
-JobOfferModifier -> JobOfferRepositioryInterface : findById(offerId)
-activate JobOfferRepositioryInterface
+JobOfferModifier -> JobOfferRepositoryInterface : findById(offerId)
+activate JobOfferRepositoryInterface
 
-JobOfferRepositioryInterface -> Database: SELECT
+JobOfferRepositoryInterface -> Database: SELECT
 activate Database
-Database  --> JobOfferRepositioryInterface : response
+Database  --> JobOfferRepositoryInterface : response
 deactivate Database
 
-JobOfferRepositioryInterface --> JobOfferModifier: jobOffer
-deactivate JobOfferRepositioryInterface
+JobOfferRepositoryInterface --> JobOfferModifier: jobOffer
+deactivate JobOfferRepositoryInterface
 
 note right
     Apply modifications
@@ -196,17 +196,17 @@ note right
 end note
 
 'Save modification
-JobOfferModifier -> JobOfferRepositioryInterface : update(jobOffer)
-activate JobOfferRepositioryInterface
+JobOfferModifier -> JobOfferRepositoryInterface : update(jobOffer)
+activate JobOfferRepositoryInterface
 
-JobOfferRepositioryInterface -> Database : UPDATE
+JobOfferRepositoryInterface -> Database : UPDATE
 activate Database
-Database --> JobOfferRepositioryInterface: response
+Database --> JobOfferRepositoryInterface: response
 deactivate Database
 
 'User Response
-JobOfferRepositioryInterface --> JobOfferModifier: response
-deactivate JobOfferRepositioryInterface
+JobOfferRepositoryInterface --> JobOfferModifier: response
+deactivate JobOfferRepositoryInterface
 
 JobOfferModifier --> User: response
 deactivate JobOfferModifier
@@ -231,18 +231,18 @@ AuthChecker -> JobOffferPublisher : publish(offerId, actorId)
 deactivate AuthChecker
 activate JobOffferPublisher
 
-JobOffferPublisher -> JobOfferRepositioryInterface : publish(offerId, actorId)
-activate JobOfferRepositioryInterface
+JobOffferPublisher -> JobOfferRepositoryInterface : publish(offerId, actorId)
+activate JobOfferRepositoryInterface
 
 'Database update
-JobOfferRepositioryInterface -> Database : UPDATE
+JobOfferRepositoryInterface -> Database : UPDATE
 activate Database
-Database --> JobOfferRepositioryInterface : response
+Database --> JobOfferRepositoryInterface : response
 deactivate Database
 
 'User response
-JobOfferRepositioryInterface --> JobOffferPublisher : response
-deactivate JobOfferRepositioryInterface
+JobOfferRepositoryInterface --> JobOffferPublisher : response
+deactivate JobOfferRepositoryInterface
 
 JobOffferPublisher --> User : response
 deactivate JobOffferPublisher
@@ -267,22 +267,22 @@ AuthChecker -> MarkJobOfferAsDraft: changeOfferStatus(offerId)
 deactivate AuthChecker
 activate MarkJobOfferAsDraft
 
-MarkJobOfferAsDraft -> JobOfferRepositioryInterface : setAsDraft(offerId)
-activate JobOfferRepositioryInterface
+MarkJobOfferAsDraft -> JobOfferRepositoryInterface : setAsDraft(offerId)
+activate JobOfferRepositoryInterface
 
 'Update database
-JobOfferRepositioryInterface -> Database : UPDATE
+JobOfferRepositoryInterface -> Database : UPDATE
 note right
    Only if no applications linked
 end note
 
 activate Database
-Database --> JobOfferRepositioryInterface : response
+Database --> JobOfferRepositoryInterface : response
 deactivate Database
 
 'User response 
-JobOfferRepositioryInterface --> MarkJobOfferAsDraft : response
-deactivate JobOfferRepositioryInterface
+JobOfferRepositoryInterface --> MarkJobOfferAsDraft : response
+deactivate JobOfferRepositoryInterface
 
 MarkJobOfferAsDraft --> User : response
 deactivate MarkJobOfferAsDraft
@@ -307,21 +307,21 @@ AuthChecker -> JobOfferEraser : erase(offerId)
 activate JobOfferEraser
 deactivate AuthChecker
 
-JobOfferEraser -> JobOfferRepositioryInterface : erase(offerId)
+JobOfferEraser -> JobOfferRepositoryInterface : erase(offerId)
 note right
     Ensure applications handled before deletion
 end note
-activate JobOfferRepositioryInterface
+activate JobOfferRepositoryInterface
 
 'Delete from database
-JobOfferRepositioryInterface -> Database : DELETE
+JobOfferRepositoryInterface -> Database : DELETE
 activate Database
 
-Database --> JobOfferRepositioryInterface : response
+Database --> JobOfferRepositoryInterface : response
 deactivate Database
 
-JobOfferRepositioryInterface --> JobOfferEraser : response
-deactivate JobOfferRepositioryInterface
+JobOfferRepositoryInterface --> JobOfferEraser : response
+deactivate JobOfferRepositoryInterface
 
 JobOfferEraser --> User : response
 deactivate JobOfferEraser

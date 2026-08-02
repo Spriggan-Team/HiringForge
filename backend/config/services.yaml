@@ -100,7 +100,7 @@ services:
 
 
     #----- JobOffer ------
-    App\Domain\JobOffer\JobOfferRepositioryInterface:
+    App\Domain\JobOffer\JobOfferRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferRepository
     
     App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace:

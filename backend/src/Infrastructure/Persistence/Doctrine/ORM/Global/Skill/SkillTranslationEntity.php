@@ -27,6 +27,7 @@ class SkillTranslationEntity
     //------------------
     //---- RELATIONS
     //-------------------
+    
     #[ORM\ManyToOne(
         targetEntity: SkillEntity::class,
         inversedBy: 'translations' 

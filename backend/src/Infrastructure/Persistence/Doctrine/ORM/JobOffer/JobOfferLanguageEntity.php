@@ -28,6 +28,45 @@ class JobOfferLanguageEntity
     #[ORM\Column(enumType: LanguageLevel::class)]
     private LanguageLevel $level = LanguageLevel::B2;
 
+ 
+    public function __construct()
+    {}
+
+    public static function create(
+        JobOfferEntity $jobOffer,
+        LanguageEntity $language,
+        LanguageLevel $level
+    ): self {
+        $entity = new self();
+
+        $entity->jobOffer = $jobOffer;
+        $entity->language = $language;
+        $entity->level = $level;
+
+        return $entity;
+    }
+
+    public static function reconstitute(
+        int $id,
+        JobOfferEntity $jobOffer,
+        LanguageEntity $language,
+        LanguageLevel $level
+    ): self {
+        $entity = new self();
+
+        $entity->id = $id;
+        $entity->jobOffer = $jobOffer;
+        $entity->language = $language;
+        $entity->level = $level;
+
+        return $entity;
+    }
+
+
+    //-----------------
+    //-- GETTERS
+    //---------------
+
     public function getId(): ?int
     {
         return $this->id;
@@ -49,6 +88,12 @@ class JobOfferLanguageEntity
     {
         return $this->language;
     }
+
+
+    
+    //-----------------
+    //-- SETTERS
+    //---------------
 
     public function setLanguage(?LanguageEntity $language): static
     {

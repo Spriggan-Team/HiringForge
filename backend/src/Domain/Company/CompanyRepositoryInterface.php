@@ -23,10 +23,43 @@ interface CompanyRepositoryInterface{
      */
     public function get(string $companyId): Company;
 
+
     /**
      * verify wether an user is related to a company or noot
      * @return bool
      */
     public function containsUser(string $userId, string $companyId): bool;
+
+
+    public function isAddressOwnedByUserCompany(
+        string $addressId,
+        string $userId
+    ): bool;
+
+
+    /**
+     * @param array $scheme returned data porjection
+     *                      ex: [
+     *                              'id'? => bool
+     *                              'name'? => bool
+     *                              'siret'? => bool
+     *                              'address[id]'?=> bool
+     *                              'address[city]'? => bool
+     *                              'address[country]'? => bool
+     *                              'address[postalCode]'? => bool
+     *                              'address[address][limit:1]'? => bool (ex : ici limit le result qu'au premier)
+     *                          ]
+     * @return array<string, mixed>|null
+     *  eample of returned value
+     *                 [
+     *                     'name' => 'Tech Solutions SAS',
+     *                     'address' => [
+     *                         'city' => 'Paris',
+     *                         'postalCode' => '75008',
+     *                         'country' => 'France',
+     *                      ]
+     *                  ]
+     */
+    public function fetchUserCompanyProjection(string $userId, array $scheme = ["id" => true]): array | null;
 
 }

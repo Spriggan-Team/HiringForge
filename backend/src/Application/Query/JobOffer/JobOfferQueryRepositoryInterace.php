@@ -4,6 +4,7 @@ namespace App\Application\Query\JobOffer;
 
 use App\Application\Query\JobOffer\DTO\JobOfferStatistics;
 use App\Application\Query\JobOffer\DTO\JobOfferListItem;
+use App\Application\Query\JobOffer\DTO\JobSummaryItem;
 use App\Domain\JobOffer\JobPublicationStatus;
 
 interface JobOfferQueryRepositoryInterace
@@ -49,19 +50,19 @@ interface JobOfferQueryRepositoryInterace
      * @param int|null $skip
      *     Number of job offers to skip from the beginning of the result set.
      *
-     * @param JobPublicationStatus|null $category
+     * @param JobPublicationStatus|null $jobPublicationStatus
      *     Status used to filter job offers.
      *     Defaults to JobPublicationStatus::PUBLISHED. When a different status is specified,
      *     the $userId parameter must be provided.
      *
-     * @return JobOfferListItem[]
+     * @return JobSummaryItem[]
      *     Collection of serializable job offer view models.
  */
     public function fetchJobOfferViewCollection(
         ?string $userId = null,
         ?int $limit = null,
         ?int $skip = null,
-        ?JobPublicationStatus $category = JobPublicationStatus::PUBLISHED    
+        ?JobPublicationStatus $jobPublicationStatus = JobPublicationStatus::PUBLISHED    
     ): array;
 
 
@@ -69,5 +70,5 @@ interface JobOfferQueryRepositoryInterace
      * Analyzes and counts the job offers associated with a user.
      * Returns statistics such as active, open, and pending-review offers.
      */
-    public function analyseJobOfferCollection(string $userId): JobOfferStatistics;
+    public function analyseJobOfferCollection(string $userId):  JobOfferStatistics;
 }

@@ -13,7 +13,7 @@ final class CreateJobOfferRequestMapper
     public function fromArray(array $body): CreateJobOfferRequest
     {
         return new CreateJobOfferRequest(
-            title: $body['title'],
+            title: trim( $body['title']),
             content: $body['content'],
 
             categories: $body['categories'] ?? [],
@@ -44,8 +44,9 @@ final class CreateJobOfferRequestMapper
                 )
                 : null,
 
+            publicationStatus: $body['publicationStatus'], 
             visibilityStatus: $body['visibilityStatus'] ?? null,
-            publicationDate: null
+            publicationDate: null,
         );
     }
 }

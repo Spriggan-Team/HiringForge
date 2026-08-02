@@ -20,12 +20,14 @@ final class JobOffer
     private string $title;
     private array  $content;
 
-    /** @var JobOfferImage[] - Images */
+    /** @var array<int, JobOfferImage> - Images */
     private array $images = [];
+    private ?int $locationId = null;
 
     //-- Categorization
-    private  array  $categories;
-    private ?Department $department = null;
+    /** @var array */
+    private  array  $categories; 
+    private ?int $departmentId = null;
     private ?JobWorkMode $jobWorkMode = null;
 
     //-- status & visibility
@@ -35,13 +37,13 @@ final class JobOffer
 
 
     //-- Constraint
-        /** @var Skill[]  */
-    private array $requiredSkills = [];
+        /** @var array<int, string>  */
+    private array $skillsId = [];
 
-        /**  @var RequiredLanguage[] */
-    private array $requiredLanguages = [];
+        /**  @var array<int, RequiredLanguage> */
+    private array $languages = [];
     private ?JobOfferExpertise $expertise = null;
-    private ?ContractType $contract = null;
+    private ?int $contractId = null;
 
 
     //-- Salary
@@ -95,6 +97,7 @@ final class JobOffer
 
         array $categories = [],
         array $images = [],
+        ?int $locationId = null,
 
         ?JobActivityStatus $activityStatus = null,
         JobPublicationStatus $publicationStatus = JobPublicationStatus::DRAFT,
@@ -133,6 +136,7 @@ final class JobOffer
 
             createdAt: $now,
             updatedAt: $now,
+            
 
             visibilityStatus: $visibilityStatus,
             activityStatus: $activityStatus,
@@ -153,19 +157,22 @@ final class JobOffer
 
     public function getActivityStatus() { return $this->activityStatus; }
 
+    /** @return array<int, JobOfferImage> */
     public function images(): array
     {
         return $this->images;
     }
 
-    public function requireSkills(): array
+    /** @return array<int, Skill> */
+    public function skillsId(): array
     {
-        return $this->requiredSkills;
+        return $this->skillsId;
     }
 
-    public function requiredLanguages(): array
+    /** @return array<int, RequiredLanguage> */
+    public function languages(): array
     {
-        return $this->requiredLanguages;
+        return $this->languages;
     }
 
     public function expertise(): ?JobOfferExpertise
@@ -173,14 +180,14 @@ final class JobOffer
         return $this->expertise;
     }
 
-    public function contract(): ?ContractType
+    public function contractId(): ?int
     {
-        return $this->contract;
+        return $this->contractId;
     }
 
-    public function department(): ?Department
+    public function departmentId(): ?int
     {
-        return $this->department;
+        return $this->departmentId;
     }
 
     public function jobWorkMode(): ?JobWorkMode
@@ -221,6 +228,10 @@ final class JobOffer
     public function publicationDate(){
         return $this->publicationDate;
     }
+
+    public function locationId(){
+        return $this->locationId;
+    }
     
     // -------------------- Business behaviors --------------------
 
@@ -235,6 +246,13 @@ final class JobOffer
         $this->touch();
     }
 
+    public function changeLocation(int $lacationId){
+        if ($this->publicationStatus == JobPublicationStatus::PUBLISHED) {
+            throw new DomainException("Published Job offer cannot change location");
+        }
+        $this->locationId = $lacationId;
+        return $this;
+    }
 
     public function rename(string $newTitle): void
     {
@@ -302,13 +320,13 @@ final class JobOffer
     public function isPublished(): bool { return $this->publicationStatus === JobPublicationStatus::PUBLISHED; }
     
 
-    public function changeDepartment(?Department $department): void
+    public function changeDepartment(?int $departmentId): void
     {
         if ($this->isPublished()) {
             throw new DomainException("Published job offers cannot be edited");
         }
 
-        $this->department = $department;
+        $this->departmentId = $departmentId;
         $this->touch();
     }
 
@@ -337,13 +355,13 @@ final class JobOffer
 
 
 
-    public function changeContractType(?ContractType $contract): void
+    public function changeContractType(?int $contractId): void
     {
         if ($this->isPublished()) {
             throw new DomainException("Published job offers cannot be edited");
         }
 
-        $this->contract = $contract;
+        $this->contractId = $contractId;
         $this->touch();
     }
 
@@ -366,6 +384,7 @@ final class JobOffer
             throw new DomainException("Minimum salary cannot exceed maximum salary");
         }
 
+  
         $this->minSalary = $minSalary;
         $this->maxSalary = $maxSalary;
         $this->currency = $currency;
@@ -395,35 +414,36 @@ final class JobOffer
         $this->activityStatus = JobActivityStatus::INACTIVE;
         $this->touch();
     }
+    
 
-    public function addSkill(Skill $skill): void
+    public function addSkill(string $skillsId): void
     {
         if ($this->isPublished()) {
             throw new DomainException("Published job offers cannot be edited");
         }
 
-        foreach ($this->requiredSkills as $existingSkill) {
-            if ($existingSkill->id() === $skill->id()) {
+        foreach ($this->skillsId as $existingSkill) {
+            if ($existingSkill === $skillsId) {
                 return;
             }
         }
 
-        $this->requiredSkills[] = $skill;
+        $this->skillsId[] = $skillsId;
         $this->touch();
     }
 
 
 
-    public function removeSkill(Skill $skill): void
+    public function removeSkill(Skill $skillsId): void
     {
         if ($this->isPublished()) {
             throw new DomainException("Published job offers cannot be edited");
         }
 
-        $this->requiredSkills = array_values(
+        $this->skillsId = array_values(
             array_filter(
-                $this->requiredSkills,
-                fn (Skill $item) => $item->id() !== $skill->id()
+                $this->skillsId,
+                fn (Skill $id) => $id !== $skillsId
             )
         );
 
@@ -432,13 +452,13 @@ final class JobOffer
 
 
 
-    public function addRequiredLanguage(RequiredLanguage  $reqLanguage): void
+    public function addLanguage(RequiredLanguage  $reqLanguage): void
     {
         if ($this->isPublished()) {
             throw new DomainException("Published job offers cannot be edited");
         }
 
-        foreach($this->requiredLanguages as $requiredLanguage){
+        foreach($this->languages as $requiredLanguage){
 
             if(
                 $requiredLanguage
@@ -452,7 +472,7 @@ final class JobOffer
         }
 
 
-        $this->requiredLanguages[] = $reqLanguage;
+        $this->languages[] = $reqLanguage;
 
 
         $this->touch();
@@ -460,15 +480,15 @@ final class JobOffer
     
 
 
-    public function removeRequiredLanguage(Language $language): void
+    public function removeLanguage(Language $language): void
     {
         if ($this->isPublished()) {
             throw new DomainException("Published job offers cannot be edited");
         }
 
-        $this->requiredLanguages = array_values(
+        $this->languages = array_values(
             array_filter(
-                $this->requiredLanguages,
+                $this->languages,
                 fn (Language $item) => $item->id() !== $language->id()
             )
         );
@@ -486,6 +506,7 @@ final class JobOffer
         $this->categories = $categories;
         $this->touch();
     }
+
 
     public function schedulePublication(?DateTimeImmutable $publicationDate=null){
         if ($this->isPublished()) {

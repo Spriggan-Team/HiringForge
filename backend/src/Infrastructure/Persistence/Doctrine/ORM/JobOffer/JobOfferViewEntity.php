@@ -21,7 +21,10 @@ class JobOfferViewEntity
     #[ORM\JoinColumn(nullable: false)]
     private CandidateEntity $candidate;
 
-    #[ORM\ManyToOne(targetEntity: JobOfferEntity::class)]
+    #[ORM\ManyToOne(
+        targetEntity: JobOfferEntity::class,
+        inversedBy: "views"
+    )]
     #[ORM\JoinColumn(nullable: false)]
     private JobOfferEntity $jobOffer;
 

@@ -11,6 +11,7 @@ use App\Domain\JobOffer\JobWorkMode;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Department\DepartmentEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Contract\ContractTypeEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
@@ -31,7 +32,7 @@ class JobOfferEntity
 {
     #[ORM\Id]
     #[ORM\Column(type: 'guid', unique: true)]
-    private string $id;
+    private string $id ;
 
     #[ORM\Column(length: 255, nullable: false)]
     private string $title;
@@ -62,12 +63,7 @@ class JobOfferEntity
     private JobOfferVisibilityStatus $visibilityStatus = JobOfferVisibilityStatus::PUBLIC; //-- control visibility
 
     
-    #[ORM\OneToMany(
-        mappedBy: "jobOffer",
-        targetEntity: ContractTypeEntity::class,
-        cascade: ["persist", "remove"],
-        orphanRemoval: true
-    )]
+    #[ORM\ManyToOne(targetEntity: ContractTypeEntity::class)]
     #[ORM\JoinColumn(nullable: true)]
     private ?ContractTypeEntity $contractType = null;
 
@@ -75,18 +71,7 @@ class JobOfferEntity
         targetEntity: DepartmentEntity::class,
         inversedBy: "jobOffers"
     )]
-    #[ORM\JoinColumn(nullable: true)]
     private ?DepartmentEntity $department = null;
-    
-
-    #[ORM\OneToMany(
-        mappedBy: "jobOffer",
-        targetEntity: JobOfferLanguageEntity::class,
-        cascade: ["persist", "remove"],
-        orphanRemoval: true
-    )]
-    #[ORM\JoinColumn(nullable: true)]
-    private Collection $languages;
 
 
     #[ORM\Column(nullable: false, enumType: JobPublicationStatus::class )]
@@ -94,7 +79,17 @@ class JobOfferEntity
 
 
     #[ORM\Column(nullable: true, enumType: JobActivityStatus::class)]
-    private ?JobActivityStatus $activityStatus = null;
+    private ?JobActivityStatus $activityStatus = JobActivityStatus::INACTIVE;
+
+
+    #[ORM\OneToMany(
+        targetEntity: JobOfferSkillsEntity::class,
+        mappedBy: "jobOffer",
+        orphanRemoval: true,
+        cascade: ['persist'],
+    )]
+    /** @var array<int, JobOfferSkillsEntity> */
+    private Collection $skills;
 
     #[ORM\Column(nullable: false)]
     private \DateTimeImmutable $createdAt;
@@ -102,6 +97,29 @@ class JobOfferEntity
 
     #[ORM\Column]
     private \DateTimeImmutable $updatedAt;
+
+
+    
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $publicationDate = null;
+
+    //-----------------------------
+    //----- RELATIONS
+    //----------------------------------
+
+    #[ORM\ManyToOne(
+        targetEntity: AddressEntity::class,
+        cascade: ['persist'],
+    )]
+    private AddressEntity $address;
+
+    #[ORM\OneToMany(
+        mappedBy: "jobOffer",
+        targetEntity: JobOfferLanguageEntity::class,
+        cascade: ["persist", "remove"],
+        orphanRemoval: true
+    )]
+    private Collection $languages;
 
 
     #[ORM\OneToMany(
@@ -112,15 +130,6 @@ class JobOfferEntity
     )]
     private Collection $categories;
 
-
-    #[ORM\OneToMany(
-        mappedBy: 'skill',
-        orphanRemoval: true,
-        cascade: ['persist'],
-        targetEntity: SkillEntity::class,
-    )]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?Collection $requireSkills = null;
 
 
     #[ORM\ManyToOne(inversedBy: "jobOffers", targetEntity: UserEntity::class )]
@@ -134,7 +143,7 @@ class JobOfferEntity
         orphanRemoval: true
     )]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Collection $applications = null;
+    private Collection $applications;
     
     #[ORM\OneToMany(
         mappedBy: "jobOffer",
@@ -143,7 +152,7 @@ class JobOfferEntity
         orphanRemoval: true
     )]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Collection $interviews = null;
+    private Collection $interviews;
     
     
     #[OneToMany(
@@ -153,7 +162,7 @@ class JobOfferEntity
         orphanRemoval: true
     )]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Collection $images = null;
+    private Collection $images;
 
 
     #[ORM\OneToMany(
@@ -165,40 +174,111 @@ class JobOfferEntity
     private Collection $views;
 
 
+    //-----------------------------
+    //----- Constructing/Building
+    //------------------------------
+
     public function __construct()
     {
-        $this->interviews  = new ArrayCollection();
-        $this->categories = new ArrayCollection();
-        $this->applications =  new ArrayCollection();
-        $this->images = new ArrayCollection();
-        $this->views = new ArrayCollection();
-        $this->requireSkills = new ArrayCollection();
+        $this->categories   = new ArrayCollection();
+        $this->skills       = new ArrayCollection();
+        $this->languages    = new ArrayCollection();
+
+        $this->applications = new ArrayCollection();
+        $this->interviews   = new ArrayCollection();
+        $this->images       = new ArrayCollection();
+        $this->views        = new ArrayCollection();
+
+        $this->activityStatus = JobActivityStatus::INACTIVE;
+
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
-    public static function reconstitue(
+
+    public static function create(
         string $id,
         string $title,
-        array  $content,
+        array $content,
         UserEntity $user,
-        JobPublicationStatus $status,
-        \DateTimeImmutable $createdAt,
-        \DateTimeImmutable $updatedAt
-    ): JobOfferEntity
-    {
+        ?float $minSalary=null,
+        ?string $currency = null,
+        ?float $maxSalary = null,
+        JobOfferVisibilityStatus $visibilityStatus = JobOfferVisibilityStatus::PUBLIC,
+    ): self {
         $entity = new self();
         $entity->setId($id);
-        $entity->setTitle($title);
-        $entity->setContent($content);
-        $entity->setCreatedAt($createdAt);
-        $entity->setUpdatedAt($updatedAt);
-        $entity->setPublicationStatus($status);
-        $entity->setUser($user);
+        $entity->title = $title;
+        $entity->content = $content;
+        $entity->user = $user;
+        $entity->publicationStatus = JobPublicationStatus::DRAFT;
+        $entity->visibilityStatus = $visibilityStatus;
+
+        $entity->setCurrency($currency);
+        $entity->setMaxSalary($maxSalary);
+        $entity->setMinSalary($minSalary);
+
         return $entity;
     }
+
+
+    public static function reconstitute(
+        string $id,
+        string $title,
+        array $content,
+
+        UserEntity $user,
+
+        ?float $minSalary,
+        ?float $maxSalary,
+        ?string $currency,
+
+        ?JobWorkMode $jobWorkMode,
+        ?JobOfferExpertise $expertise,
+
+        ?DepartmentEntity $department,
+        ?ContractTypeEntity $contractType,
+
+        JobPublicationStatus $publicationStatus,
+        JobOfferVisibilityStatus $visibilityStatus,
+        ?JobActivityStatus $activityStatus,
+
+        \DateTimeImmutable $createdAt,
+        \DateTimeImmutable $updatedAt
+    ): self {
+        $entity = new self();
+
+        $entity->id = $id;
+        $entity->title = $title;
+        $entity->content = $content;
+
+        $entity->user = $user;
+
+        $entity->minSalary = $minSalary;
+        $entity->maxSalary = $maxSalary;
+        $entity->currency = $currency;
+
+        $entity->jobWorkMode = $jobWorkMode;
+        $entity->expertise = $expertise;
+
+        $entity->department = $department;
+        $entity->contractType = $contractType;
+
+        $entity->publicationStatus = $publicationStatus;
+        $entity->visibilityStatus = $visibilityStatus;
+        $entity->activityStatus = $activityStatus;
+
+        $entity->createdAt = $createdAt;
+        $entity->updatedAt = $updatedAt;
+
+        return $entity;
+    }
+
 
     /* =======================
      * GETTERS
      * ======================= */
+
 
     public function getId(): string { return $this->id; }
     public function getTitle(): string { return $this->title; }
@@ -213,12 +293,22 @@ class JobOfferEntity
 
     public function getUser(): UserEntity { return $this->user; }
     public function getApplications(): Collection { return $this->applications; }
+
+    /** @return Collection<int,JobCategoryEntity>  */
     public function getJobCategories(): Collection { return $this->categories; }
+    
     public function getInterviews() : Collection { return $this->interviews; }
+
+    /** @return Collection<int, JobOfferImageEntity>  */
     public function getImages() : Collection { return $this->images; }
 
     public function getViewers(): ?Collection{
         return $this->views;
+    }
+
+    /** @return  AddressEntity  */
+    public function getAddress(){
+        return $this->address;
     }
 
     /**
@@ -228,6 +318,12 @@ class JobOfferEntity
     {
         return $this->languages;
     }
+
+    /** @return Collection<int, JobOfferSkillsEntity> */
+    public function getSkills(){
+        return $this->skills;
+    }
+
 
     public function getDepartment(): ?DepartmentEntity
     {
@@ -269,6 +365,9 @@ class JobOfferEntity
         return $this->visibilityStatus;
     }
 
+    public function getPublicationDate(){
+        return $this->publicationDate;
+    }
 
     /* =======================
      * SETTERS
@@ -316,12 +415,15 @@ class JobOfferEntity
 
     public function setCurrency(?string $currency): static
     {
+        if(!$currency){
+            return $this;
+        }
         $this->currency = $currency;
         return $this;
     }
 
         //-- Contract types
-    public function setContractType(?string $contractType): static
+    public function setContractType(?ContractTypeEntity $contractType): static
     {
         $this->contractType = $contractType;
         return $this;
@@ -410,6 +512,37 @@ class JobOfferEntity
             }
         }
 
+        return $this;
+    }
+
+    //--- Skills
+    public function addSkill(JobOfferSkillsEntity $skill){
+        if(!$this->skills->contains($skill)){
+            $this->skills->add($skill);
+        }
+        return $this;
+    }
+
+    //-- image
+    public function addImage(JobOfferImageEntity $image){
+        if(!$this->images->contains($image)){
+            $this->images->add($image);
+        }
+        return $this;
+    }
+
+    //-- Publication date
+    public function setPublicationDate(\DateTimeImmutable $publicationDate)
+    {
+        if(new \DateTimeImmutable() < $publicationDate){
+            $this->publicationDate = $publicationDate;
+            return $this;
+        }
+        return $this;
+    }
+
+    public function setAddress(AddressEntity $address){
+        $this->address = $address;
         return $this;
     }
 
