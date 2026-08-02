@@ -1,13 +1,12 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 //-- Services
 import { navigateTo } from "../../App";
 import RouteScheme from "../../route.scheme";
-import { jobsData, jobsViewData } from "../../core/mock/job.data";
-import type { JobView } from "../../features/jobs/JobOffer";
+import type { JobSummary, JobView } from "../../features/jobs/JobOffer";
 
 
 //-- Custom Components
@@ -25,6 +24,7 @@ import AddSVGComponent from "/src/assets/svg/add/add-svgrepo-com.svg"
 
 //-- CSS styles 
 import styles from "./UserJobPage.module.css"
+import JobQueries from "../../api/services/jobs/queries";
 
 
 
@@ -37,7 +37,22 @@ const UserJobsPage: React.FC<UserJobsPageProps> = ({}) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
 
-    const [currentJobId, setCurrentJobId] = useState<string>("1");
+    const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+    const [jobDataSummary, setJobDataSummary ] = useState<JobSummary[]>([]);
+    const [jobsViewData, setjobsViewData] = useState<{ [key: string]: JobView }>();
+
+    useEffect(()=>{
+        try{
+            const  initializeData = async ()=>{
+                const data = JobQueries;
+            }
+
+            initializeData();
+        }
+        catch(error){
+            console.warn("Something went wrong")
+        }
+    }, [])
 
     return (
         <main className={styles.container}>
@@ -75,18 +90,22 @@ const UserJobsPage: React.FC<UserJobsPageProps> = ({}) => {
 
                 <div className={styles.jobs}>
                     <JobsSection
-                        data={jobsData}
+                        data={jobDataSummary}
                         onClick={(id)=> setCurrentJobId(id)}
                     />
                 </div>
 
                 <div className={styles.selectedJob}>
-                    <CurrentJob 
-                        onClick={(id)=> 
-                            navigateTo(navigate, RouteScheme.userJobView, { params: { id }})
-                        }
-                        job={(jobsViewData[currentJobId]  as unknown as JobView)}
-                    />
+                    {
+                        jobsViewData && currentJobId && (
+                            <CurrentJob 
+                                onClick={(id)=> {
+                                        navigateTo(navigate, RouteScheme.userJobView, { params: { id }})
+                                }}
+                                job={jobsViewData[currentJobId]}
+                            />
+                        )
+                    }
                 </div>
             </div>
             

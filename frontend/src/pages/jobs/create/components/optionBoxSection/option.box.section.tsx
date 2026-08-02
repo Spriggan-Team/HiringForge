@@ -147,7 +147,7 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
                         leading={DateSVGComponent}
                         defaultContent={t("global.dates.inputs.selectCalandarDate.placeholder")}
                         onSelectedDate={date =>
-                            setCurrentJob(prev => ({ ...prev, publicationDate: date }))
+                            setCurrentJob(prev => ({ ...prev, publicationDate: date ?? null }))
                         }
                     />
                 </div>

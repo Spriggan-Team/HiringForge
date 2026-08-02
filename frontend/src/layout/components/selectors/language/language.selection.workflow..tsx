@@ -2,20 +2,22 @@
 import { useEffect, useMemo, useState } from "react";
 
 //-- Services & types
-import { LANGUAGES_LEVEL_VALUES, type JobLanguage } from "../../../../features/jobs/JobOffer";
+import { LANGUAGES_LEVEL_VALUES, type JobLanguage, type LanguageLevel } from "../../../../features/jobs/JobOffer";
+import LanguageQueries from "../../../../api/services/Language/queries";
 
 //-- Custom components
-import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../menu/drawer/menu.drawer";
+import {  MultiStepDrawer } from "../../menu/drawer/menu.drawer";
 import { globalBasicInputInput } from "../../form/input/basic.input";
 
 
 //-- CSS Style
 import styles from "./LanguageSelectionWorkflow.module.css"
-import LanguageQueries from "../../../../api/services/Language/queries";
+
+
 
 
 interface LanguageSelectionWorkflowProps {
-    languages: { id: number, code: string }[];
+    languages: { id: number; code: string }[];
     onAdd: (language: JobLanguage) => void;
     placeholder?: {
         selectLanguage: string;
@@ -25,118 +27,82 @@ interface LanguageSelectionWorkflowProps {
 }
 
 
+
 const LanguageSelectionWorkflow: React.FC<LanguageSelectionWorkflowProps> = ({
     languages,
     onAdd,
     placeholder = "Select language",
     enableInputSearch = false
 }) => {
+    const [languageLevels, setLanguageLevels] = useState<string[]>([]);
 
     const displayNames = useMemo(
-        () =>
-            new Intl.DisplayNames(["en"], {
-                type: "language",
-            }),
-        [],
+        () => new Intl.DisplayNames(["en"], { type: "language" }),
+        []
     );
 
-    const [pendingCode, setPendingCode] = useState<{id: number, code: string} | null>(null);
-    const [LanguageLevel, setLanguageLevel] = useState<string[]>([]);
-
-    const triggerPlaceholder =
-        typeof placeholder === "string"
-            ? placeholder
-            : pendingCode
-                ? (placeholder.selectLevel ?? placeholder.selectLanguage)
-                : placeholder.selectLanguage;
-
-    useEffect(()=>{
-        
-        const intializeData = async () =>{
-            try{
-                const data  = await LanguageQueries.getLanguagesLevel();
-                setLanguageLevel(data);
+    useEffect(() => {
+        const initializeData = async () => {
+            try {
+                const data = await LanguageQueries.getLanguagesLevel();
+                setLanguageLevels(data);
+            } catch (error) {
+                console.error("Something went wrong while loading language level collection", error);
             }
-            catch(error){
-                console.error("Something went wrong while loading language level collection");
-            }
-        }
-        intializeData();
-    },[])
+        };
+        initializeData();
+    }, []);
+
+
+    //-- Langages step 1 
+    const step1Items = useMemo(() => {
+        return languages.map((lang) => ({
+            label: displayNames.of(lang.code) ?? lang.code,
+            value: lang
+        }));
+    }, [languages, displayNames]);
+
+
+    //-- Steps 2 items
+    const step2Items = useMemo(() => {
+        const levels: LanguageLevel[] = languageLevels.length > 0 ? 
+                languageLevels as LanguageLevel[]
+                : (LANGUAGES_LEVEL_VALUES as LanguageLevel[]);
+        return levels.map((level) => ({
+            label: level,
+            value: level 
+        }));
+    }, [languageLevels]);
+
+
+    const handleComplete = (
+        selectedLang: { id: number; code: string },
+        selectedLevel: LanguageLevel
+    ) => {
+        onAdd({
+            id: selectedLang.id,
+            code: selectedLang.code,
+            proficiencyLevel: selectedLevel,
+            nativeLabel: displayNames.of(selectedLang.code) ?? ""
+        });
+    };
+
 
     return (
-        <div className={styles.container}>
-            {/* Language selection*/}
-            <MenuDrawer
-                className={`${styles.drawer} drawer`}
-                onChange={({ code }) => {
-                    setPendingCode(code);
-                }}
-            >
-                <MenuDrawerTrigger
-                    {...globalBasicInputInput}
-                    className={`${globalBasicInputInput.className} input-like-placeholder`}
-                >
-                    <span>
-                        {triggerPlaceholder}
-                    </span>
-                </MenuDrawerTrigger>
-
-                <MenuDrawerBody
-                    className={`${styles.selectDropdown} selectDropdown`}
-                >
-                    {languages.map(lang => (
-
-                        <MenuDrawerItem
-                            key={lang.code}
-                            value={lang}
-                            className={`${styles.selectItem} selectItem`}
-                        >
-                            {displayNames.of(lang.code)}
-                        </MenuDrawerItem>
-
-                    ))}
-                </MenuDrawerBody>
-            </MenuDrawer>
-
-
-            {/*   Level selection*/}
-            <MenuDrawer
-                triggerVisibility={!!pendingCode}
-                className={`${styles.drawer} drawer`}
-                onChange={({ proficiencyLevel,  }) => {
-
-                    if (!pendingCode) return;
-
-                    onAdd({
-                        id:  pendingCode.id,
-                        code: pendingCode.code,
-                        proficiencyLevel,
-                        nativeLabel: displayNames.of(pendingCode.code) ?? ""
-                    });
-
-                    setPendingCode(null);
-
-                }}
-            >
-
-                <MenuDrawerBody
-                    className={`${styles.selectDropdown} selectDropdown`}
-                >
-                    {LANGUAGES_LEVEL_VALUES.map(level => (
-                        <MenuDrawerItem
-                            key={level}
-                            value={{
-                                proficiencyLevel: level,
-                            }}
-                            className={`${styles.selectItem} selectItem`}
-                        >
-                            {level}
-                        </MenuDrawerItem>
-                    ))}
-                </MenuDrawerBody>
-            </MenuDrawer>
-        </div>
+        <MultiStepDrawer<{ id: number; code: string }, LanguageLevel>
+            className={styles.container}
+            drawerClassName={`${styles.drawer} drawer`}
+            dropdownClassName={`${styles.selectDropdown} selectDropdown`}
+            itemClassName={`${styles.selectItem} selectItem`}
+            step1Items={step1Items}
+            step2Items={step2Items}
+            onComplete={handleComplete}
+            placeholder={placeholder}
+            triggerProps={{
+                ...globalBasicInputInput,
+                className: `${globalBasicInputInput?.className ?? ""} input-like-placeholder`
+            }}
+        />
     );
 };
 

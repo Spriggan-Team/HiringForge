@@ -11,6 +11,7 @@
     max-width:      1360px;
     margin-inline:  auto;
     padding:        var(--space-page, 28px);
+
     padding-bottom: 80px;
     box-sizing:     border-box;
 }
@@ -54,7 +55,7 @@
 .columns {
     display: grid;
     grid-template-columns:
-        1fr
+        minmax(0, 1fr)
         clamp(240px, 22%, 320px)
         clamp(260px, 22%, 300px);
     grid-template-areas: "form image inspector";
@@ -82,17 +83,13 @@
 
 .paramBox {
     grid-area: inspector;
-    height:    fit-content;
-
+    height: fit-content;
+    min-height: 0;
+    
     position: sticky;
-    top:      var(--space-page, 28px);
+    top: var(--space-page, 28px);
 
-    max-height:          calc(100vh - 2 * var(--space-page, 28px) - 16px);
-    overflow-y:          auto;
-    overscroll-behavior: contain;
-
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-subtle) transparent;
+    overflow: visible; 
 }
 
 

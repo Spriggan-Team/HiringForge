@@ -4,7 +4,7 @@
 //--------------------
 
 //-- Popup
-export type AppPopUpSettings = { status: "error" |  "success" | "warning", message: string } | null
+export type AppPopUpSettings = { status: "error" |  "success" | "warning", message: string; title?: string } | null
 
 //-- Loading
 export interface AppLoadingState { state: boolean, subtitle?: string }

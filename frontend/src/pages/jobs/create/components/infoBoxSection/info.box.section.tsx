@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useJob } from "../../../../../context/job.context";
 import type { Department } from "../../../../../features/jobs/JobOffer";
 import type { ContractType } from "../../../../../features/contract/contract";
-import { useCurrentUser } from "../../../../../hooks/context";
+import { useAppContext, useCurrentUser } from "../../../../../hooks/context";
 import type { Location } from "../../../../../features/shared/global";
 import { formatLocation } from "../../../../../utils/convertor";
 import ContractQueries from "../../../../../api/services/contract/queries";
@@ -33,6 +33,7 @@ interface InfoBoxSectionProps{
 const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
     const { t } = useTranslation();
     const currentUser = useCurrentUser();
+    const { setPopup } = useAppContext();
     const { currentJob, setCurrentJob } = useJob();
 
     const [skillInput,    setSkillInput]    = useState<string>("");
@@ -95,6 +96,7 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
         return () => clearTimeout(timeout);
     }, [skillInput]);
 
+    
     // -- Add skill 
     const handleAddSkill = useCallback(() => {
         if (!selectedSkill) return;
@@ -344,12 +346,17 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                             {...globalBasicInputInput}
                             value={currentJob?.salary?.min}
                             placeholder={t("jobs.createJob.salarySection.inputs.salary.minSalary.placeholder")}
-                            onChange={e =>
+                            onChange={(e) => {
+                                const min = Number(e.target.value);
+
                                 setCurrentJob(prev => ({
                                     ...prev,
-                                    salary: { ...prev.salary, min: Number(e.target.value) },
-                                }))
-                            }
+                                    salary: {
+                                        ...prev.salary,
+                                        min,
+                                    },
+                                }));
+                            }}
                         />
                         <Separator className={styles.separator} width="15px" height="2px" />
                         <BasicInput
@@ -357,12 +364,17 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                             {...globalBasicInputInput}
                             value={currentJob?.salary?.max}
                             placeholder={t("jobs.createJob.salarySection.inputs.salary.maxSalary.placeholder")}
-                            onChange={e =>
+                            onChange={(e) => {
+                                const max = Number(e.target.value);
+
                                 setCurrentJob(prev => ({
                                     ...prev,
-                                    salary: { ...prev.salary, max: Number(e.target.value) },
-                                }))
-                            }
+                                    salary: {
+                                        ...prev.salary,
+                                        max,
+                                    },
+                                }));
+                            }}
                         />
                         <DrawerBuilder
                             defaultValue={"EUR"}

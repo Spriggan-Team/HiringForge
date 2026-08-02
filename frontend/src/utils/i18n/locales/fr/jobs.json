@@ -34,7 +34,21 @@
 
         "createJob":{
             "messages":{
-                "creatingJob": "Création de l'offre d'emploi"
+                "creatingJob": "Création de l'offre d'emploi",
+                "uploadingImage": "Envoi de l'image en cours...",
+                "jobCreate": "L'offre a été crée avec succès",
+                "failToCreateJob": "La crétion de l'offre à échoué",
+                "failedUploadMainImage": "L'image de l'offre à échoué sa sauvegarde"
+            },
+            "constraints":{
+                "minSalary":{
+                    "title": "Salaire invalide",
+                    "minSalaryConstraint": "Le salaire minimum ne peut pas être supérieur au salaire maximum"
+                },
+                "maxSalary":{
+                    "title": "Salaire invalide",
+                    "maxSalaryConstraint": "Le salaire maximum ne peut pas être inférieur au salaire minimum actuellement défini"
+                }
             },
             "generalInformationSection":{
                 "title": "Information générales",
@@ -125,6 +139,7 @@
             "overview":{
                 "title": "Aperçu"
             }
+
 
         }
 

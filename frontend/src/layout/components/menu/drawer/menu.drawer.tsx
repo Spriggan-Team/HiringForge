@@ -347,6 +347,8 @@ export const MenuDrawerInput: React.FC<MenuDrawerInputProps> = ({
 //---- Global view on drawer (app design)
 //------------------------------
 
+//---- Drawer Builder
+
 type DrawerItem<T = unknown> = {
     key?: string | number;
     value: T;
@@ -465,5 +467,107 @@ export function DrawerBuilder<T = unknown>({
             </MenuDrawerBody>
 
         </MenuDrawer>
+    );
+}
+
+//---------- MultiStepDrawer
+
+export interface MultiStepStepItem<T> {
+    label: string;
+    value: T;
+}
+
+interface MultiStepDrawerProps<TStep1, TStep2> {
+    step1Items: MultiStepStepItem<TStep1>[];
+    step2Items: MultiStepStepItem<TStep2>[];
+    onComplete: (step1Value: TStep1, step2Value: TStep2) => void;
+    placeholder?: {
+        selectLanguage: string;
+        selectLevel?: string;
+    } | string;
+    className?: string;
+    drawerClassName?: string;
+    dropdownClassName?: string;
+    itemClassName?: string;
+    triggerProps?: Omit<React.ComponentProps<typeof MenuDrawerTrigger>, "children">;
+}
+
+export function MultiStepDrawer<TStep1, TStep2>({
+    step1Items,
+    step2Items,
+    onComplete,
+    placeholder = "Select option",
+    className,
+    drawerClassName,
+    dropdownClassName,
+    itemClassName,
+    triggerProps
+}: MultiStepDrawerProps<TStep1, TStep2>) {
+    const [selectedStep1, setSelectedStep1] = useState<TStep1 | null>(null);
+
+    const triggerPlaceholder =
+        typeof placeholder === "string"
+            ? placeholder
+            : selectedStep1
+                ? (placeholder.selectLevel ?? placeholder.selectLanguage)
+                : placeholder.selectLanguage;
+
+    const handleStep1Select = (selectedValue: TStep1) => {
+        setSelectedStep1(selectedValue);
+    };
+
+    const handleStep2Select = (selectedValue: TStep2) => {
+        if (!selectedStep1) return;
+        
+        //-- final callback
+        onComplete(selectedStep1, selectedValue);
+        
+        //-- renitialization step
+        setSelectedStep1(null);
+    };
+
+    return (
+        <div className={className}>
+            {/* Step 1 : Language */}
+            <MenuDrawer
+                className={drawerClassName}
+                onChange={(selectedValue: TStep1) => handleStep1Select(selectedValue)}
+            >
+                <MenuDrawerTrigger {...triggerProps}>
+                    <span>{triggerPlaceholder}</span>
+                </MenuDrawerTrigger>
+
+                <MenuDrawerBody className={dropdownClassName}>
+                    {step1Items.map((item, index) => (
+                        <MenuDrawerItem
+                            key={index}
+                            value={item.value}
+                            className={itemClassName}
+                        >
+                            {item.label}
+                        </MenuDrawerItem>
+                    ))}
+                </MenuDrawerBody>
+            </MenuDrawer>
+
+            {/* Step 2 : Niveau */}
+            <MenuDrawer
+                triggerVisibility={!!selectedStep1}
+                className={drawerClassName}
+                onChange={(selectedValue: TStep2) => handleStep2Select(selectedValue)}
+            >
+                <MenuDrawerBody className={dropdownClassName}>
+                    {step2Items.map((item, index) => (
+                        <MenuDrawerItem
+                            key={index}
+                            value={item.value}
+                            className={itemClassName}
+                        >
+                            {item.label}
+                        </MenuDrawerItem>
+                    ))}
+                </MenuDrawerBody>
+            </MenuDrawer>
+        </div>
     );
 }
