@@ -2,6 +2,7 @@
 
 namespace App\Domain\JobOfferApplication\Repositories;
 
+use App\Domain\Candidate\Application\ApplicationStatus;
 
 interface JobOfferApplicationRepositoryInterface
 {
@@ -13,5 +14,16 @@ interface JobOfferApplicationRepositoryInterface
      */
     public function assertExists(string $id): void;
 
+
+    /** 
+     * count all related application of an user to a job
+     * @param array $criteria
+     *          ex: [
+     *              'companyId' => string,
+     *              'jobOfferId' => string,
+     *              'status'? => JobApplicationStatus
+     *          ]
+    */
+    public function count(array $criteria): int;
 
 }

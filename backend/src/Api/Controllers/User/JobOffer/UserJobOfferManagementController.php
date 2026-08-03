@@ -66,6 +66,7 @@ class UserJobOfferManagementController extends AbstractController
                 command: $command
             );
 
+
             return ApiResponse::success(["offerId" => $offerId],"Everything went smoothly")->toJsonResponse();
         }
         catch(Exception $e){

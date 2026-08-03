@@ -44,6 +44,9 @@ final class JobOfferRecorder
     ){}
 
 
+    /**
+     * @throws \Exception | \DomainException
+     */
     public function execute(
         string $accountId,
         CreateJobOfferRequest $command
@@ -56,11 +59,17 @@ final class JobOfferRecorder
         /*** Validate categories existence  */
         $categories = $this->categoryRepository->getExistingByIds($command->categories);
 
+        $company = $this->companyRepository->fetchUserCompanyProjection($accountId->value());
+        if(!$company['id']){
+            throw new \DomainException("No company related to the current account was found");
+        }
+        
+
         /*** Create base offer */
         $offer = JobOffer::create(
             id: Uuid::uuid4()->toString(),
             title: $command->title,
-
+            companyId: $company['id'],
             content: $command->content,
             categories: $categories,
 

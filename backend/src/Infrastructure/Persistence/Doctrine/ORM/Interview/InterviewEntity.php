@@ -23,6 +23,9 @@ class InterviewEntity
     #[ORM\Column(nullable: false)]
     private ?int $minutes = null;
 
+    #[ORM\Column]
+    private ?string $description = null;
+
     #[ORM\Column(enumType: InterviewStatus::class)]
     #[ORM\JoinColumn(nullable: false)]
     private InterviewStatus $status = InterviewStatus::SCHEDULED;
@@ -34,12 +37,68 @@ class InterviewEntity
     #[ORM\ManyToOne(targetEntity: JobOfferEntity::class, inversedBy: "interviews")]
     private JobOfferEntity $jobOffer;
 
+    //-------------------------
+    //------- Constructing
+    //-------------------
+
+    private function __construct()
+    {}
+
+    public static function create(
+        string $id,
+        \DateTimeImmutable $startDate,
+        int $minutes,
+        string $description,
+        CandidateEntity $candidate,
+        JobOfferEntity $jobOffer,
+        InterviewStatus $status = InterviewStatus::SCHEDULED,
+    ): self {
+        $entity = new self();
+
+        $entity->id = $id;
+        $entity->startDate = $startDate;
+        $entity->minutes = $minutes;
+        $entity->description = $description;
+        $entity->candidate = $candidate;
+        $entity->jobOffer = $jobOffer;
+        $entity->status = $status;
+
+        return $entity;
+    }
+
+
+    public static function reconstitute(
+        string $id,
+        \DateTimeImmutable $startDate,
+        int $minutes,
+        string $description,
+        CandidateEntity $candidate,
+        JobOfferEntity $jobOffer,
+        InterviewStatus $status,
+    ): self {
+        $entity = new self();
+
+        $entity->id = $id;
+        $entity->startDate = $startDate;
+        $entity->minutes = $minutes;
+        $entity->description = $description;
+        $entity->candidate = $candidate;
+        $entity->jobOffer = $jobOffer;
+        $entity->status = $status;
+
+        return $entity;
+    }
+
     //======================
     //  GETTERS
     //======================
 
     public function getId(): string{
         return $this->id;
+    }
+
+    public function getDescription(){
+        return $this->description;
     }
 
     public function getStartDate(): \DateTimeImmutable
@@ -73,6 +132,12 @@ class InterviewEntity
     public function setId(string $id): static
     {
         $this->id = $id;
+        return $this;
+    }
+
+
+    public function setdescription(string $description){
+        $this->description = $description;
         return $this;
     }
 

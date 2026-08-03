@@ -2,11 +2,12 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories;
 
-use App\Domain\Company\CompanyRepositoryInterface;
 use App\Domain\File\StaticMedia;
-use App\Domain\JobOffer\JobOffer as DomainEntity;
-use App\Domain\JobOffer\JobOfferImage;
 use App\Domain\Shared\CustomUUID;
+use App\Domain\JobOffer\JobOfferImage;
+use App\Domain\JobOffer\JobOffer as DomainEntity;
+use App\Domain\Company\CompanyRepositoryInterface;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Department\DepartmentEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
@@ -20,7 +21,6 @@ use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferImageEntity;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\LanguageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferAddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferLanguageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferSkillsEntity;
 
@@ -71,6 +71,7 @@ class JobOfferEntityMapper
             content: $entity->getContent(),
             categories: $categories,
             images: $images,
+            companyId: $entity->getCompany()->getId(),
             activityStatus: $entity->getActivityStatus(),
             visibilityStatus: $entity->getVisibilityStatus(),
             publicationStatus: $entity->getPublicationStatus()
@@ -81,10 +82,12 @@ class JobOfferEntityMapper
     public  function toDoctrine(DomainEntity $offer, UserEntity $user): JobOfferEntity
     {
         $user = $this->em->getReference(UserEntity::class, $user->getId());
+        $company = $this->em->getReference(CompanyEntity::class, $offer->companyId());
 
         $job = JobOfferEntity::create(
             id: $offer->id(),
             user: $user,
+            company: $company,
             title: $offer->title(),
             content: $offer->content(),
             minSalary: $offer->minSalary(),

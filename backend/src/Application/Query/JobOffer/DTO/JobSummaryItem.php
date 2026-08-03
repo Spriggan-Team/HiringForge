@@ -4,6 +4,7 @@ namespace App\Application\Query\JobOffer\DTO;
 
 use App\Domain\JobOffer\JobActivityStatus;
 use App\Domain\JobOffer\JobOffer;
+use App\Domain\JobOffer\JobPublicationStatus;
 
 class JobSummaryItem
 {
@@ -11,18 +12,25 @@ class JobSummaryItem
     public string $title;
     public string $address;
 
-    public JobOffer $publicationStatus;
-    public ?JobActivityStatus $activityStatus = null;
+    public string $publicationStatus;
+    public ?string $activityStatus = null;
 
-    /** @var array<mixed> */
+    /**
+     * @var array{
+     *     candidates: int,
+     *     interviews: int,
+     *     offers: int,
+     *     hired: int
+     * }
+     */
     public array $cardinal;
 
     public function __construct(
         string $id,
         string $title,
         string $address,
-        JobOffer $publicationStatus,
-        ?JobActivityStatus $activityStatus = null,
+        string $publicationStatus,
+        ?string $activityStatus = null,
         array $cardinal = []
     ) {
         $this->id = $id;

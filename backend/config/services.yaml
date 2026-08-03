@@ -89,6 +89,14 @@ services:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\CandidateRepository
 
 
+    #--- Application
+    App\Domain\JobOfferApplication\Repositories\JobOfferApplicationRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\JobOfferApplicationRepository
+
+    #-- Interviews
+    App\Domain\Interviews\InterviewsRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Interview\Repositories\InterviewsRepository
+
     #------ Email -------
     App\Domain\Email\EmailRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Email\EmailRepository

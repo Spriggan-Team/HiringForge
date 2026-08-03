@@ -10,6 +10,7 @@ use App\Domain\JobOffer\JobWorkMode;
 
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Department\DepartmentEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Contract\ContractTypeEntity;
@@ -22,7 +23,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-
 
 
 
@@ -62,16 +62,6 @@ class JobOfferEntity
     )]
     private JobOfferVisibilityStatus $visibilityStatus = JobOfferVisibilityStatus::PUBLIC; //-- control visibility
 
-    
-    #[ORM\ManyToOne(targetEntity: ContractTypeEntity::class)]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?ContractTypeEntity $contractType = null;
-
-    #[ORM\ManyToOne(
-        targetEntity: DepartmentEntity::class,
-        inversedBy: "jobOffers"
-    )]
-    private ?DepartmentEntity $department = null;
 
 
     #[ORM\Column(nullable: false, enumType: JobPublicationStatus::class )]
@@ -80,6 +70,36 @@ class JobOfferEntity
 
     #[ORM\Column(nullable: true, enumType: JobActivityStatus::class)]
     private ?JobActivityStatus $activityStatus = JobActivityStatus::INACTIVE;
+
+
+    #[ORM\Column(nullable: false)]
+    private \DateTimeImmutable $createdAt;
+
+
+    #[ORM\Column]
+    private \DateTimeImmutable $updatedAt;
+
+    
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $publicationDate = null;
+
+    //-----------------------------
+    //----- RELATIONS
+    //----------------------------------
+
+    #[ORM\ManyToOne(targetEntity: CompanyEntity::class)]
+    private CompanyEntity $company;
+
+    #[ORM\ManyToOne(targetEntity: ContractTypeEntity::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?ContractTypeEntity $contractType = null;
+
+
+    #[ORM\ManyToOne(
+        targetEntity: DepartmentEntity::class,
+        inversedBy: "jobOffers"
+    )]
+    private ?DepartmentEntity $department = null;
 
 
     #[ORM\OneToMany(
@@ -91,27 +111,13 @@ class JobOfferEntity
     /** @var array<int, JobOfferSkillsEntity> */
     private Collection $skills;
 
-    #[ORM\Column(nullable: false)]
-    private \DateTimeImmutable $createdAt;
-
-
-    #[ORM\Column]
-    private \DateTimeImmutable $updatedAt;
-
-
-    
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $publicationDate = null;
-
-    //-----------------------------
-    //----- RELATIONS
-    //----------------------------------
 
     #[ORM\ManyToOne(
         targetEntity: AddressEntity::class,
         cascade: ['persist'],
     )]
     private AddressEntity $address;
+
 
     #[ORM\OneToMany(
         mappedBy: "jobOffer",
@@ -145,6 +151,7 @@ class JobOfferEntity
     #[ORM\JoinColumn(nullable: false)]
     private Collection $applications;
     
+
     #[ORM\OneToMany(
         mappedBy: "jobOffer",
         targetEntity: InterviewEntity::class,
@@ -201,6 +208,7 @@ class JobOfferEntity
         string $title,
         array $content,
         UserEntity $user,
+        CompanyEntity $company,
         ?float $minSalary=null,
         ?string $currency = null,
         ?float $maxSalary = null,
@@ -213,6 +221,7 @@ class JobOfferEntity
         $entity->user = $user;
         $entity->publicationStatus = JobPublicationStatus::DRAFT;
         $entity->visibilityStatus = $visibilityStatus;
+        $entity->company= $company;
 
         $entity->setCurrency($currency);
         $entity->setMaxSalary($maxSalary);
@@ -232,6 +241,7 @@ class JobOfferEntity
         ?float $minSalary,
         ?float $maxSalary,
         ?string $currency,
+        CompanyEntity $company,
 
         ?JobWorkMode $jobWorkMode,
         ?JobOfferExpertise $expertise,
@@ -253,6 +263,7 @@ class JobOfferEntity
         $entity->content = $content;
 
         $entity->user = $user;
+        $entity->company = $company;
 
         $entity->minSalary = $minSalary;
         $entity->maxSalary = $maxSalary;
@@ -367,6 +378,11 @@ class JobOfferEntity
 
     public function getPublicationDate(){
         return $this->publicationDate;
+    }
+
+    public function getCompany()
+    {
+        return $this->company;
     }
 
     /* =======================
@@ -546,4 +562,9 @@ class JobOfferEntity
         return $this;
     }
 
+    public function setCompany(CompanyEntity $company)
+    {
+        $this->company = $company;
+        return $this;
+    }
 }

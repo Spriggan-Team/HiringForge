@@ -50,19 +50,24 @@ interface JobOfferQueryRepositoryInterace
      * @param int|null $skip
      *     Number of job offers to skip from the beginning of the result set.
      *
-     * @param JobPublicationStatus|null $jobPublicationStatus
-     *     Status used to filter job offers.
-     *     Defaults to JobPublicationStatus::PUBLISHED. When a different status is specified,
-     *     the $userId parameter must be provided.
      *
+     * @param array $criteria this is used for filter the reponse thta should be returned 
+     *         ex: [
+     *              'publishedState' => JobPublicationStatus,
+     *              'salary' => number, (between minSalry or maxSlary),
+     *              'candidateCount' => number,
+     *              'searchText' => string,
+     *              'searchAddress' => string
+     *          ]
+     * 
      * @return JobSummaryItem[]
      *     Collection of serializable job offer view models.
- */
+     */
     public function fetchJobOfferViewCollection(
         ?string $userId = null,
         ?int $limit = null,
         ?int $skip = null,
-        ?JobPublicationStatus $jobPublicationStatus = JobPublicationStatus::PUBLISHED    
+        array $criteria = []
     ): array;
 
 
@@ -71,4 +76,20 @@ interface JobOfferQueryRepositoryInterace
      * Returns statistics such as active, open, and pending-review offers.
      */
     public function analyseJobOfferCollection(string $userId):  JobOfferStatistics;
+
+
+    /** 
+     * count all job offer related to the specified user.
+     * @param $userId the id (uniq identifier) of an user
+     * @param $criteria the filters for count retreival
+     *          ex: [
+     *              'publishedState' => JobPublicationStatus,
+     *              'salary' => number, (between minSalry or maxSlary),
+     *              'candidateCount' => number,
+     *              'searchText' => string,
+     *              'searchAddress' => string
+     *          ]
+     * @return int
+     */
+    public function count(string $userId, array $criteria = []): int;
 }

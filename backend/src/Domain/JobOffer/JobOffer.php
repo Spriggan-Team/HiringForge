@@ -3,10 +3,11 @@
 namespace App\Domain\JobOffer;
 
 use App\Domain\Department\Department;
-use App\Domain\Shared\Contract\ContractType;
-use App\Domain\Shared\Language\Language;
 use App\Domain\Shared\LanguageLevel;
+use App\Domain\Shared\Contract\ContractType;
+
 use App\Domain\Shared\Skill\Skill;
+use App\Domain\Shared\Language\Language;
 
 use DateTimeImmutable;
 use DomainException;
@@ -15,6 +16,7 @@ use DomainException;
 final class JobOffer
 {
     private string $id;
+    private string $companyId;
 
     //-- Text content
     private string $title;
@@ -59,6 +61,8 @@ final class JobOffer
 
     private function __construct(
         string $id,
+        string $companyId,
+
         string $title,
         array $content,
         array $categories,
@@ -74,6 +78,7 @@ final class JobOffer
 
     ) {
         $this->id = $id;
+        $this->companyId = $companyId;
 
         $this->title = $title;
         $this->content = $content;
@@ -89,9 +94,12 @@ final class JobOffer
         $this->updatedAt = $updatedAt;
     }
 
+
     // Create an offer
     public static function create(
         string $id,
+        string $companyId,
+
         string $title,
         array $content,
 
@@ -127,6 +135,7 @@ final class JobOffer
 
         return new self(
             id: $id,
+            companyId: $companyId,
 
             title: $title,
             content: $content,
@@ -136,7 +145,6 @@ final class JobOffer
 
             createdAt: $now,
             updatedAt: $now,
-            
 
             visibilityStatus: $visibilityStatus,
             activityStatus: $activityStatus,
@@ -148,6 +156,11 @@ final class JobOffer
     // -------------------- Getters --------------------
 
     public function id(): string { return $this->id; }
+
+    public function companyId(){
+        return $this->companyId;
+    }
+
     public function title(): string { return $this->title; }
     public function content(): array { return $this->content; }
     public function status():    JobPublicationStatus {return $this->publicationStatus;}
@@ -235,6 +248,10 @@ final class JobOffer
     
     // -------------------- Business behaviors --------------------
 
+
+    public function setId(){
+        return $this->id;
+    }
 
     public function publish(): void
     {

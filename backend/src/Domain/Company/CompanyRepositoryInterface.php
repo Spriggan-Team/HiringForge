@@ -31,6 +31,10 @@ interface CompanyRepositoryInterface{
     public function containsUser(string $userId, string $companyId): bool;
 
 
+    /**
+     * Check if an addressed is link to a company
+     * through the user
+     */
     public function isAddressOwnedByUserCompany(
         string $addressId,
         string $userId
