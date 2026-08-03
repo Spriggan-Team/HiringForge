@@ -33,8 +33,7 @@ interface InfoBoxSectionProps{
 const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
     const { t } = useTranslation();
     const currentUser = useCurrentUser();
-    const { setPopup } = useAppContext();
-    const { currentJob, setCurrentJob } = useJob();
+    const { setPopup,  currentJob, setCurrentJob } = useAppContext();
 
     const [skillInput,    setSkillInput]    = useState<string>("");
     const [searchSkills,  setSearchSkills]  = useState<{ id: string; name: string }[]>([]);

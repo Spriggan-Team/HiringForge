@@ -8,6 +8,8 @@
         "requireLanguage": "Langue requise",
         "remoteWorkEnable":"Télétravail possible",
 
+        "empty": "vide",
+
         "buttons":{
             "create": "Créer une offre",
             "cancel": "Annuler"

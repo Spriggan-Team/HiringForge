@@ -1,0 +1,53 @@
+import type { JobActivityStatus, JobPublicationStatus, JobSummary, JobView, JobWorkMode, LanguageLevel, VisibilityStatus } from "../../../features/jobs/JobOffer";
+import type { ApiResponse } from "../response.types";
+
+
+export type JobSummaryItem  = JobSummary;
+
+export type ApiJobSummaryResponse  = ApiResponse<JobSummaryItem[]>;
+
+
+export type JobOfferViewDataResponse = {
+  id: string;
+  title: string;
+  content: Record<string, any>;
+  jobWorkMode?: JobWorkMode;
+  mainImage?: string | null;
+  viewsCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  activityStatus: JobActivityStatus, // Valeur par défaut / calculée si absente de la projection
+  publicationStatus: JobPublicationStatus,
+  visibilityStatus: VisibilityStatus
+  
+  salary?: {
+    devise?: string;
+    min?: number;
+    max?: number;
+  };
+  location?: {
+    id?: string;
+    street?: string;
+    city?: string;
+    country?: string;
+  };
+  department?: {
+    id?: number | string;
+    label?: string;
+  };
+  contract?: {
+    id?: string;
+    label?: string;
+  };
+  skills?: {
+    id: string;
+    name: string;
+    isRequired?: boolean;
+  }[];
+  languages?: {
+    label: string;
+    level: LanguageLevel;
+  }[];
+};
+
+export type JobViewApiResponse = ApiResponse<JobOfferViewDataResponse>;

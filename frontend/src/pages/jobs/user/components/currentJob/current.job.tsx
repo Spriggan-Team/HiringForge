@@ -5,17 +5,17 @@ import { useTranslation } from "react-i18next";
 import type { JobView } from "../../../../../features/jobs/JobOffer";
 
 //--Custom Components
-import QuillRenderer from "../../../../../layout/components/editors/quill/quill.renderer";
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../../layout/components/menu/drawer/menu.drawer";
 import SectionHeader from "../../../../../layout/components/sections/sectionHeader/section.header";
 import InfoPill from "../../../../../layout/components/badges/pill/info.pill";
+import JobSkill from "../../../components/skills/job.skill";
+import TipTapRenderer from "../../../../../layout/components/editors/tiptap/tiptap.renderer";
 
 //-- Custom SVG Component
 import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-svgrepo-com.svg"
 
 //-- Styles CSS
 import styles from "./CurrentJob.module.css"
-import JobSkill from "../../../components/skills/job.skill";
 
 
 interface CurrentJobProps{
@@ -30,6 +30,9 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
     onClick
 }) => {
     const {t} = useTranslation();
+    // useEffect(()=>{
+    //     console.log({job})
+    // },[job])
 
     return (
         <div 
@@ -103,7 +106,7 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
                         job.contract && (
                             <div className={styles.metaItem}>
                                 <span className={styles.metaLabel}>{t("global.contract.title")}</span>
-                                <span className={styles.metaValue}>{job.contract}</span>
+                                <span className={styles.metaValue}>{job.contract.label}</span>
                             </div>
                         )
                     }
@@ -112,7 +115,7 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
                 {/* CATEGORIES */}
                 <div className={styles.skills}>
                     {job.skills?.map((skill, index) => (
-                        <JobSkill key={index} content={skill} />
+                        <JobSkill key={index} content={skill.name} />
                     ))}
                 </div>
             </div>
@@ -120,7 +123,7 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
             {/* CONTENT SCROLLABLE */}
             <div className={styles.contentWrapper}>
                 <div className={`${styles.content} scrollbar`}>
-                    <QuillRenderer content={job.content} />
+                    <TipTapRenderer content={job.content} />
                 </div>
                 <div className={`${styles.fadeBottom} fadeBottom`} />
             </div>

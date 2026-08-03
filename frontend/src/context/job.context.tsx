@@ -17,15 +17,7 @@ export interface JobOverview
 
 
 interface JobContextValue {
-    /**
-     * Current job overview used across the application
-     * (AI generation, preview, creation, edition, ...).
-     */
-    overview: JobOverview | null;
-    setOverview: React.Dispatch<React.SetStateAction<JobOverview | null>>;
 
-    currentJob: JobView;
-    setCurrentJob: React.Dispatch<React.SetStateAction<JobView>>;
 }
 
 
@@ -51,15 +43,10 @@ interface JobContextProviderProps{
 const JobContextProvider: React.FC<JobContextProviderProps> = ({
     children
 }) => {
-    const [jobOverview, setJobOverview ] = useState<JobOverview | null>(null);
-    const [currentJob, setCurrentJob] = useState<JobView>(INITIAL_JOB_VIEW);
+
 
     return (
-        <JobContext.Provider value={{
-            overview: jobOverview,
-            setOverview: setJobOverview,
-            currentJob, setCurrentJob
-        }}>
+        <JobContext.Provider value={null}>
             {children}
         </JobContext.Provider>
     );

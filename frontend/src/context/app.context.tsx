@@ -5,6 +5,8 @@ import {
 } from "react";
 import type { AppLoadingState, AppPopUpSettings, UserAppNavBarProps } from "./context.type";
 import type { CurrentActor } from "../features/shared/account";
+import type { JobOverview } from "./job.context";
+import { INITIAL_JOB_VIEW, type JobView } from "../features/jobs/JobOffer";
 
 
 interface AppContextProps{
@@ -23,6 +25,17 @@ interface AppContextProps{
     //-- Current Actor
     currentActor: CurrentActor | null;
     setCurrentActor: (param: CurrentActor | null) => void;
+
+    //------ Job
+    /**
+     * Current job overview used across the application
+     * (AI generation, preview, creation, edition, ...).
+     */
+    jobOverview: JobOverview | null;
+    setJobOverview: React.Dispatch<React.SetStateAction<JobOverview | null>>;
+
+    currentJob: JobView;
+    setCurrentJob: React.Dispatch<React.SetStateAction<JobView>>;
 }
 
 export const AppContext = createContext<AppContextProps | null>(null);
@@ -49,6 +62,9 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
 
     const [currentActor, setCurrentActor] = useState<CurrentActor | null>(null);
 
+    const [jobOverview, setJobOverview ] = useState<JobOverview | null>(null);
+    const [currentJob, setCurrentJob] = useState<JobView>(INITIAL_JOB_VIEW);
+
     // Context value
     const contextValue = useMemo(
         () => ({
@@ -56,6 +72,9 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
             loading, setLoading,
             navbar, setNavbar,
             currentActor, setCurrentActor,
+
+            jobOverview, setJobOverview,
+            currentJob, setCurrentJob
         }),
         [popup, loading, navbar, currentActor]
     );

@@ -4,13 +4,13 @@ import { useTranslation } from "react-i18next";
 
 //-- Services
 import RouteScheme from "../../../../../route.scheme";
-import {  useJob } from "../../../../../context/job.context";
 import { formatSalary } from "../../../../../utils/format";
 import { INITIAL_JOB_VIEW, type JobView } from "../../../../../features/jobs/JobOffer";
 import { navigateTo } from "../../../../../App";
 import { jobStatusStyles } from "../../../../../context/styles";
 import LanguageQueries from "../../../../../api/services/Language/queries";
 import SkillServices from "../../../../../api/services/shared/skill.service";
+import { useAppContext } from "../../../../../hooks/context";
 
 //-- Custom components
 import Title from "../../../../../layout/components/text/title/title";
@@ -48,7 +48,7 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
 }) => {
     const { t }      = useTranslation();
     const navigate   = useNavigate();
-    const { currentJob, setCurrentJob } = useJob();
+    const { currentJob, setCurrentJob } = useAppContext();
 
     const [languageCodes,   setLanguageCodes]   = useState<{id: number; code: string}[]>([]);
     const [expertiseValues, setExpertiseValues]  = useState<string[]>([]);

@@ -46,7 +46,7 @@ type ViewModeTypes =
 
 const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
     const { t } = useTranslation()
-    const { setNavbar } = useAppContext();
+    const { setNavbar,  } = useAppContext();
 
     /** States */
     const [action, setAction] = useState<EntityAction>(null);

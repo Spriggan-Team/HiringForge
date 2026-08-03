@@ -77,6 +77,7 @@ class JobOfferQueryManagement extends AbstractController
         }
     }
 
+
     #[Route('/count', methods: ['GET'])]
     public function countJobOffer(Request $request): JsonResponse
     {
@@ -104,29 +105,88 @@ class JobOfferQueryManagement extends AbstractController
     }
 
     #[Route('/{jobId}', methods: ['GET'])]
-    public function retreiveSingleJobOffer(string $jobId): JsonResponse
+    public function retrieveSingleJobOffer(string $jobId, Request $request): JsonResponse
     {
         try {
             /** @var AuthenticatedPerson $user */
             $user = $this->getUser();
 
-            $data = $this->queryRepository->fetchJobOfferViewById(
+            //-- Retreive local parameter
+            $locale = $request->getLocale() ?: 'fr';
+
+            // Projection schema tailored to the requirements of the JobView interface
+            $scheme = [
+                'id' => true,
+                'title' => true,
+                'content' => true,
+                'jobWorkMode' => true,
+                'mainImage' => true,
+                'viewsCount' => true,
+                'createdAt' => true,
+                'updatedAt' => true,
+                'publicationStatus' => true,
+                'activityStatus' => true,
+                'visibilityStatus' => true,
+                'salary' => [
+                    'devise' => true,
+                    'min' => true,
+                    'max' => true,
+                ],
+                'location' => [
+                    'id' => true,
+                    'street' => true,
+                    'city' => true,
+                    'country' => true,
+                ],
+                'department' => [
+                    'id' => true,
+                    'label' => true,
+                ],
+                'contract' => [
+                    'id' => true,
+                    'label' => true,
+                ],
+                'skills' => [
+                    'locale' => $locale,
+                    'id' => true,
+                    'name' => true,
+                    'isRequired' => true,
+                ],
+                'languages' => [
+                    'label' => true,
+                    'level' => true,
+                ],
+            ];
+
+            $data = $this->queryRepository->fetchJobOfferProjection(
+                jobOfferId: $jobId,
                 userId: $user->getId(),
-                offerId: $jobId
+                scheme: $scheme
             );
+
+            if (empty($data)) {
+                return ApiResponse::error(
+                    message: "Job offer not found",
+                    statusCode: 404
+                )->toJsonResponse();
+            }
+
 
             return ApiResponse::success(
                 data: $data,
                 message: "Everything went successfully"
             )->toJsonResponse();
 
-        } catch (\Throwable $exception) {
+        }
+        catch (\Throwable $exception) {
             return ApiResponse::error(
                 message: "Something went wrong",
                 throwable: $exception
             )->toJsonResponse();
         }
     }
+
+
 
     public function getViewAnalytics()
     {

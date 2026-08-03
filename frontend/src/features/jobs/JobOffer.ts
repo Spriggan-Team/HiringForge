@@ -102,7 +102,7 @@ export interface RecruiterJobView {
     activityStatus: JobActivityStatus;
     publicationStatus: JobPublicationStatus;
 
-    visibilityStatus: visibilityStatus;
+    visibilityStatus: VisibilityStatus;
 
     views: number;
     applications: number;
@@ -125,7 +125,7 @@ export type JobWorkMode = "remote" | "onsite" | "hybrid";
 export type JobStatus = JobPublicationStatus | JobActivityStatus;
 export type JobPublicationStatus = "draft" | "closed" | "published";
 export type JobActivityStatus = "active" | "pending";
-export type visibilityStatus = "private" | "public"
+export type VisibilityStatus = "private" | "public"
 
 
 

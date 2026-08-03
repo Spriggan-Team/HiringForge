@@ -10,16 +10,24 @@
                 "number": "Contient un chiffre"
             }
         },
+
         "logo":{
             "text": "Logo"
         },
+        
+        "pagination": {
+            "meta": "{{from}}–{{to}} of {{total}} results"
+        },
+
         "validation":{
             "required": "requis",
             "optionnal": "optionnel"
         },
+        
         "connexion":{
             "logout": "Déconnexion"
         },
+
         "messages":{
             "welcome": "Bonjour {{name}}",
             "secureData": "Données sécurisées",
@@ -135,7 +143,8 @@
             "offerStatus":{
                 "title": "Statut de l'offre",
                 "active": "Active",
-                "pending": "En cours"
+                "pending": "En cours",
+                "inactive": "Inactive"
             },
             "visibilityStatus":{
                 "title": "Visibilité",

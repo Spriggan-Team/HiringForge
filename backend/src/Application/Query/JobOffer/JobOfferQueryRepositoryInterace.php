@@ -92,4 +92,58 @@ interface JobOfferQueryRepositoryInterace
      * @return int
      */
     public function count(string $userId, array $criteria = []): int;
+
+
+
+    /**
+     * This function is a very powerful/flexible one that helps a user retrieve 
+     * dynamically targeted data fields about a specific job offer.
+     *
+     * @param string $jobOfferId The target job offer ID
+     * @param string $userId The ID of the related user (recruiter) 
+     * @param array  $scheme An array that describes the output data shape
+     *   ex: [
+     *       'id'? => bool,
+     *       'title'? => bool,
+     *       'content'? => bool,
+     *       'jobWorkMode'? => bool,
+     *       'viewsCount'? => bool,       // Returns the total number of views
+     *       'mainImage'? => bool,        // Returns the image name
+     *       'createdAt'? => bool,
+     *       'updatedAt'? => bool,
+     *       'salary'? => [
+     *           'devise'? => bool,
+     *           'min'? => bool,
+     *           'max'? => bool,
+     *       ],
+     *       'location'? => [
+     *           'id'? => bool,
+     *           'street'? => bool,
+     *           'city'? => bool,
+     *           'country'? => bool,
+     *       ],
+     *       'department'? => [
+     *           'id'? => bool,
+     *           'label'? => bool,
+     *       ],
+     *       'contract'? => [
+     *           'id'? => bool,
+     *           'label'? => bool,
+     *       ],
+     *       'skills'? => [               // Produces an array of skills
+     *           'id'? => bool,
+     *           'name'? => bool,
+     *           'local'? => string,
+     *       ],
+     *       'languages'? => [            // Produces an array of languages
+     *           'label'? => bool,
+     *           'level'? => bool,
+     *       ],
+     *      'publicationStatus'? => bool,
+     *      'activityStatus'? => bool,
+     *      'visibilityStatus' =>bool
+     *   ]
+     * @return array
+     */
+    public function fetchJobOfferProjection(string $jobOfferId, string $userId, array $scheme = []): array;
 }
