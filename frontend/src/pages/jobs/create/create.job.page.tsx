@@ -15,7 +15,7 @@ import { navigateTo } from "../../../App";
 import RouteScheme from "../../../route.scheme";
 import { useAppContext } from "../../../hooks/context";
 import JobContextProvider  from "../../../context/job.context";
-import type { JobView } from "../../../features/jobs/JobOffer";
+import { INITIAL_JOB_VIEW, type JobView } from "../../../features/jobs/JobOffer";
 import JobServices from "../../../api/services/jobs/command";
 import { FailedJobAssetsUpload } from "../../../api/services/jobs/exceptions";
 
@@ -35,7 +35,7 @@ interface CreateJobPageProps{}
 const CreateJobPage: React.FC<CreateJobPageProps> = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const { setNavbar, setLoading, setPopup } = useAppContext();
+    const { setNavbar, setLoading, setPopup, setCurrentJob } = useAppContext();
 
     const [image, setImage] = useState<File | null>(null);
     const savedJobOffer = useRef<{offerId?: string} | null>(null);
@@ -46,10 +46,14 @@ const CreateJobPage: React.FC<CreateJobPageProps> = () => {
             { route: RouteScheme.userJobs,  text: t("jobs.jobs"),           current: false },
             { route: RouteScheme.createJob, text: t("jobs.buttons.create"), current: true  },
         ];
+        
         setNavbar({
             title: t("jobs.buttons.create"),
             description: <BreadCrumbs overlayColor="#4338CA" links={linkData} />,
         });
+
+        setCurrentJob(INITIAL_JOB_VIEW);
+
         return () => setNavbar(null);
     }, [setNavbar, t]);
 

@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 //-- Services
 import RouteScheme from "../../route.scheme";
-import { useCurrentUser } from "../../hooks/context";
+import { useAppContext, useCurrentUser } from "../../hooks/context";
 import JobQueries from "../../api/services/jobs/queries";
 import type {  JobSummary, JobView } from "../../features/jobs/JobOffer";
 
@@ -232,10 +232,10 @@ const UserJobsPage: React.FC<{}> = () => {
                     ) : (
                         currentJobView && (
                             <CurrentJob
+                                job={currentJobView}
                                 onClick={(id) => {
                                     navigate(RouteScheme.userJobView.replace(':id', id));
                                 }}
-                                job={currentJobView}
                             />
                         )
                     )}

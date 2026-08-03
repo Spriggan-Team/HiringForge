@@ -188,9 +188,11 @@ class JobOfferQueryManagement extends AbstractController
 
 
 
+
     public function getViewAnalytics()
     {
     }
+    
 
     #[Route('/kanban', methods: ['GET'])]
     public function getKanbanResult()

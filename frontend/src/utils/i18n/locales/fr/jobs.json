@@ -33,6 +33,10 @@
             "seeAllCandidates": "Voir tout les candidats"
         },
 
+        "messages":{
+            "failedToLoadJob": "Impossible de charger l'offre d'emploi."
+        },
+
 
         "createJob":{
             "messages":{

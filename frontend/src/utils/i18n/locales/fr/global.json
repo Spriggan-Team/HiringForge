@@ -41,6 +41,8 @@
 
 
         "text":{
+            "yes": "Oui",
+            "no": "Non",
             "fork": "Fourchette",
             "place": "Lieu",
             "unknown": "Unknow",

@@ -1,5 +1,6 @@
 
-import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 //-- Services
@@ -10,6 +11,7 @@ import { jobStatusStyles } from "../../../context/styles";
 import {  jobsViewData } from "../../../core/mock/job.data";
 import type { JobView } from "../../../features/jobs/JobOffer";
 import type { EntityAction } from "../../../features/shared/global";
+import JobQueries from "../../../api/services/jobs/queries";
 
 //-- Custom components
 import Title from "../../../layout/components/text/title/title";
@@ -19,6 +21,7 @@ import SimpleButton from "../../../layout/components/buttons/simple/simple.butto
 import TopBarNavigation from "../../../layout/components/navigation/topbar/topbar.navigation";
 import InfoPill, { type InfoPillProps } from "../../../layout/components/badges/pill/info.pill";
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/drawer/menu.drawer";
+import CandidatesViewSection from "./components/candidates/candidates.view.section";
 
 //-- SVG Components
 import EditSVG from "/src/assets/svg/menu/edit-2-svgrepo-com.svg"
@@ -26,7 +29,6 @@ import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-s
 
 //-- CSS styles
 import styles from "./PrivateJobViewPage.module.css"
-import CandidatesViewSection from "./components/candidates/candidates.view.section";
 
 
 
@@ -46,67 +48,109 @@ type ViewModeTypes =
 
 const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
     const { t } = useTranslation()
-    const { setNavbar,  } = useAppContext();
+    const { setNavbar } = useAppContext();
 
-    /** States */
+    const { id } = useParams(); 
+    const [currentJob, setCurrentJob] = useState<JobView | null>(null);
+
+
+    /** -- Initialize data --- */
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const loadJobOffer = useCallback(async (jobId: string) => {
+        if (!jobId) {
+            console.warn('Job ID is required for handling this route');
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            const data = await JobQueries.getJobView(jobId);
+            setCurrentJob(data);
+        }
+        catch (err) {
+            console.error('Something went wrong while retrieving job:', err);
+            setError(t('jobs.messages.failedToLoadJob'));
+        }
+        finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+
+    useEffect(() => {
+        if (id) {
+            loadJobOffer(id);
+        }
+    }, [id, loadJobOffer]);
+
+
+    /** -- States -- */
     const [action, setAction] = useState<EntityAction>(null);
     const [viewMenu, setViewMenu] = useState<ViewModeTypes>("overview");
 
-    /** States (function) */
-    const [jobView, setJobView] = useState(jobsViewData["1"] as unknown as JobView);
 
-    //-- Top Nav options
-    const options = useMemo(() => [
-        {
-            mode: "overview" as ViewModeTypes,
-            text: t("jobs.overview.title"),
-            current: viewMenu === "overview",
-            onClick: () => setViewMenu("overview"),
-        },
-        {
-            mode: "candidates" as ViewModeTypes,
-            current: viewMenu === "candidates",
-            count: jobView.cardinal?.candidates ?? 0,
-            onClick: () => setViewMenu("candidates"),
-            text: t("global.candidate.candidateLabel", {
-                count: jobView.cardinal?.candidates ?? 0,
-            }),
-        },
-        {
-            mode: "interviews" as ViewModeTypes,
-            current: viewMenu === "interviews",
-            count: jobView.cardinal?.interviews ?? 0,
-            onClick: () => setViewMenu("interviews"),
-            text: t("global.interview.interviewLabel", {
-                count: jobView.cardinal?.interviews ?? 0,
-            }),
-        },
-        {
-            mode: "offers" as ViewModeTypes,
-            current: viewMenu === "offers",
-            count: jobView.cardinal?.offers ?? 0,
-            onClick: () => setViewMenu("offers"),
-            text: t("global.offer.offerLabel", {
-                count: jobView.cardinal?.offers ?? 0,
-            }),
-        },
-        {
-            mode: "statistics" as ViewModeTypes,
-            current: viewMenu === "statistics",
-            onClick: () => setViewMenu("statistics"),
-            text: t("global.statistics.statistics_other"),
-        },
-    ], [viewMenu, jobView.cardinal, t]);
+    //-- Top Nav options --
+    const options = useMemo(() => {
+        if(!currentJob)
+            return [];
+        return([
+            {
+                mode: "overview" as ViewModeTypes,
+                text: t("jobs.overview.title"),
+                current: viewMenu === "overview",
+                onClick: () => setViewMenu("overview"),
+            },
+            {
+                mode: "candidates" as ViewModeTypes,
+                current: viewMenu === "candidates",
+                count: currentJob.cardinal?.candidates ?? 0,
+                onClick: () => setViewMenu("candidates"),
+                text: t("global.candidate.candidateLabel", {
+                    count: currentJob.cardinal?.candidates ?? 0,
+                }),
+            },
+            {
+                mode: "interviews" as ViewModeTypes,
+                current: viewMenu === "interviews",
+                count: currentJob.cardinal?.interviews ?? 0,
+                onClick: () => setViewMenu("interviews"),
+                text: t("global.interview.interviewLabel", {
+                    count: currentJob.cardinal?.interviews ?? 0,
+                }),
+            },
+            {
+                mode: "offers" as ViewModeTypes,
+                current: viewMenu === "offers",
+                count: currentJob.cardinal?.offers ?? 0,
+                onClick: () => setViewMenu("offers"),
+                text: t("global.offer.offerLabel", {
+                    count: currentJob.cardinal?.offers ?? 0,
+                }),
+            },
+            {
+                mode: "statistics" as ViewModeTypes,
+                current: viewMenu === "statistics",
+                onClick: () => setViewMenu("statistics"),
+                text: t("global.statistics.statistics_other"),
+            },
+        ]);
+    }, [viewMenu, currentJob?.cardinal, t]);
 
 
-    /** Styles & design */
+    /**-- Styles & design --- */
     const [infoPillSettings, setInfoPillSettings] = useState<InfoPillProps>({ text: "" });
 
 
     useEffect(()=>{
+        if(!currentJob)
+            return;
         const computed = getComputedStyle(document.documentElement);
 
-        const status = jobView.activityStatus ?? jobView.publicationStatus;
+        const status = currentJob?.activityStatus ?? currentJob?.publicationStatus;
         const text = renderStatus(t, status);
 
         const txtColor = computed.getPropertyValue(jobStatusStyles[status]?.txtColor);
@@ -119,17 +163,19 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
             borderRadius: 10
         })
 
-    },[jobsViewData])
+    },[jobsViewData, currentJob])
 
 
     /** Global Side effects */
     useEffect(()=>{
-        console.log({jobView})
+        if(!currentJob)
+            return;
+        console.log({currentJob})
         
         //--Navbar
         const linkData = [
             { route: RouteScheme.userJobs, text: t("jobs.jobs"), current: false },
-            { route: RouteScheme.createJob, text: jobView.title, current: true }
+            { route: RouteScheme.createJob, text: currentJob?.title, current: true }
         ];
 
         setNavbar({
@@ -145,10 +191,14 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
         return ()=>{
             setNavbar(null);
         };
-    },[setNavbar, jobView])
+    },[setNavbar, currentJob])
 
 
     /** -- RENDER --- */
+
+    if (isLoading) return <div>Chargement de l'offre...</div>;
+    if (error) return <div>{error}</div>;
+    if (!currentJob) return <div>Aucune offre trouvée.</div>;
 
     return (
         <main className={styles.main}>
@@ -156,7 +206,7 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
             <div className={styles.pannel}>
                 {/** LEFT */}
                 <div className={styles.left}>
-                    <Title title={jobView.title} fontSize="25px"/>
+                    <Title title={currentJob.title} fontSize="25px"/>
                     <InfoPill  {...infoPillSettings} />
                 </div>
                 
@@ -202,7 +252,7 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
             <div className={styles.widget}>
                 {
                     viewMenu === "overview" ? 
-                        (<JobOverviewSection jobView={jobView} />)
+                        (<JobOverviewSection jobView={currentJob} />)
                     : viewMenu === "candidates" ? 
                         (<CandidatesViewSection />)
                     : null

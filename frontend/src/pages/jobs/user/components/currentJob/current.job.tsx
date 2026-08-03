@@ -56,7 +56,7 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
             <div className={styles.header}>
                 <div className={styles.headerTop}>
                     <SectionHeader
-                        title="Développeur Frontend React"
+                        title={job.title}
                         action={
                             <MenuDrawer>
                                 <MenuDrawerTrigger displayArrowDown={false}>

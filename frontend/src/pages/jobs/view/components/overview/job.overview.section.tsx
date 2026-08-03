@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { useState, type SVGProps } from "react";
+import { useEffect, useMemo, useState, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 
 //-- Services & types
@@ -9,7 +9,7 @@ import type { PersonActionType  } from "../../../../../features/shared/account";
 
 //-- Custom components
 import Title from "../../../../../layout/components/text/title/title";
-import DonutChart from "../../../../../layout/components/charts/donutChart/donus.chart";
+import DonutChart, { type DonutChartData } from "../../../../../layout/components/charts/donutChart/donus.chart";
 
 
 //-- SVG Components
@@ -25,6 +25,7 @@ import RecentAction from "../../../../components/recentAction/recent.action";
 
 //-- CSS styles 
 import styles from "./JobOverviewSection.module.css"
+import JobQueries from "../../../../../api/services/jobs/queries";
 
 
 
@@ -63,15 +64,16 @@ const mockData = [
 
 
 
-const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
+
+const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({ 
     jobView
 }) => {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
 
-    const [keyInformationData, setKeyInformationData ] = useState([
+    const keyInformationData = useMemo(() => [
         {
             label: t("jobs.department"),
-            value: "Senior"
+            value: jobView.department?.label
         },
         {
             label: t('jobs.expertiseLevel'),
@@ -79,40 +81,45 @@ const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
         },
         {
             label: t('jobs.requireLanguage'),
-            value: jobView.requireLanguages.map((item) => (
-                `${new Intl.DisplayNames(["en"], { type: 'language'}).of(item.code)} - ${item.proficiencyLevel}`
-            )).join( " , ")
+            value: (jobView.requireLanguages ?? []).map((item) => (
+                `${new Intl.DisplayNames(["en"], { type: 'language' }).of(item.code)} - ${item.proficiencyLevel}`
+            )).join(", ")
         },
         {
             label: t('jobs.remoteWorkEnable'),
-            value: jobView.jobWorkMode === "remote"
+            value: jobView.jobWorkMode === "remote" ? t("global.text.yes") : t("global.text.no")
         },
         {
             label: t("global.text.status"),
             value: jobView.activityStatus ?? jobView.publicationStatus
         }
-    ])
+    ], [jobView, t]);
 
-    const [pieData, setPieData] = useState([
+
+    const pieData: DonutChartData[] = useMemo(() => [
         {
-            value: 80,
-            count: 147,
+            value: jobView.cardinal?.candidates ?? 0,
             label: "Candidates",
             color: "#2563EB",
         },
         {
-            value: 25,
-            count: 75,
+            value: jobView.cardinal?.interviews ?? 0,
             label: "Interview",
             color: "#7C3AED",
         },
         {
-            count: 25,
             value: 15,
             label: "Rejected",
             color: "#EF4444",
         },
-    ]);
+    ], [jobView]);
+
+
+    useEffect(() => {
+        console.log("Job Details", jobView);
+        console.log("Job Salary", formatSalary(jobView.salary));
+    }, [jobView]);
+
 
     return (
         <div className={styles.container}>
@@ -120,36 +127,36 @@ const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
                 <div className={`${styles.view} card`}>
                     {/** Header */}
                     <div className={styles.metaItems}>
-                        <MetaInfoCard 
+                        <MetaInfoCard
                             icon={LocationSVGComponent}
-                            text={[
+                            text={t("global.text.place")}
+                            desc={[
                                     jobView.location?.country,
                                     jobView.location?.city,
                                     jobView.location?.street
-                                ].filter(Boolean).join(" , ") ??  t("global.text.notSpecify")
+                                ].filter(Boolean).join(", ") || t("global.text.notSpecify")
                             }
-                            desc={t("global.text.place")}
                         />
                         <MetaInfoCard 
                             icon={ContractSVG}
-                            desc={t("global.contract.title")}
-                            text={jobView.contract ?? t("global.text.unknown")}
+                            text={t("global.contract.title")}
+                            desc={jobView.contract?.label || t("global.text.unknown")}
                         />
                         <MetaInfoCard 
                             icon={MoneySVG}
-                            desc={t("global.salary.title")}
-                            text={formatSalary(jobView.salary)}
+                            text={t("global.salary.title")}
+                            desc={formatSalary(jobView.salary) || t('global.text.unknown')}
                         />
                         <MetaInfoCard 
                             icon={DateSVGComponent}
-                            desc={t("jobs.publicationDate")}
-                            text={jobView.publicationDate ? format(jobView.publicationDate, "MMMM, d"): t("global.text.unknown")}
+                            text={t("jobs.publicationDate")}
+                            desc={jobView.publicationDate ? format(new Date(jobView.publicationDate), "MMMM, d") : t("global.text.unknown")}
                         />
                     </div>
 
                     {/** TEXT CONTENT (BODY) */}
                     <div className={styles.content}>
-                        <QuillRenderer content={jobView.content}/>
+                        <TipTapRenderer content={jobView.content}/>
                     </div>
                 </div>
 
@@ -157,20 +164,19 @@ const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
                 <div className={`${styles.skillSection} card`}>
                     <Title title={t("jobs.createJob.skillSection.title")} />
                     <div className={styles.skills}>
-                        {
-                            jobView.skills.map((item, key)=>(
-                                <JobSkill key={key} content={item} />
-                            ))
-                        }    
+                        {(jobView.skills ?? []).map((item) => (
+                            <JobSkill key={item.id ?? item.name} content={item.name} />
+                        ))}    
                     </div>
                 </div>
 
                 {/** RECENT ACTIVITY */}
                 <div className={`${styles.recentActivitySection} card`}>
-                    <Title  title={t("global.text.recentAction")}/>
+                    <Title title={t("global.text.recentAction")}/>
                     <div className={styles.actions}>
-                        {mockData.map((item)=>(
+                        {mockData.map((item, index) => (
                             <RecentAction 
+                                key={ index} 
                                 title={item.title}
                                 person={item.person}
                                 type={item.type}
@@ -182,14 +188,12 @@ const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
                 </div>
             </div>
 
-
             {/** ASIDE */}
             <div className={`${styles.aside} card`}>
-                {/**PIPELINE */}
+                {/** PIPELINE */}
                 <div className={styles.pipeline}>
                     <Title title={t("jobs.pipeline.candidates")} />
 
-                    {/** DONUTS - CHARTS */}
                     <DonutChart
                         data={pieData}
                         innerRadius={65}
@@ -200,44 +204,39 @@ const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
 
                     {/** LEGENDS */}
                     <div className={styles.legend}>
-                        {
-                            pieData.map((item, key)=>(
-                                <div 
-                                    key={key} className={styles.item}
-                                    style={{ ["--bg-color" as string]: item.color }}
-                                >
-                                    <div className={styles.left}>
-                                        <div className={styles.circle}/>
-                                        {item.label}
-                                    </div>
-                                    <span className={styles.right}>{`${item.count} (${item.value}%)`}</span>
+                        {pieData.map((item, index) => (
+                            <div 
+                                key={index} 
+                                className={styles.item}
+                                style={{ ["--bg-color" as string]: item.color }}
+                            >
+                                <div className={styles.left}>
+                                    <div className={styles.circle}/>
+                                    {item.label}
                                 </div>
-                            ))
-                        }
+                                <span className={styles.right}>{`${item.value}%`}</span>
+                            </div>
+                        ))}
                         <button className={styles.button}>{t("jobs.pipeline.seeAllCandidates")}</button>
                     </div>
                 </div>
 
                 {/** INFORMATION CLES */}
                 <div className={`${styles.keyInfoSection} card`}>
-                    {
-                        keyInformationData.map((item, key)=>(
-                            <div 
-                                key={key}
-                                className={styles.keyInfo}
-                            >
-                                <span className={styles.label}>{item.label}</span>
-                                <span className={styles.value}>{item.value}</span>
-                            </div>
-                        ))
-                    }
+                    {keyInformationData.map((item, index) => (
+                        <div key={index} className={styles.keyInfo}>
+                            <span className={styles.label}>{item.label}</span>
+                            {item.value && <span className={styles.value}>{String(item.value)}</span>}
+                        </div>
+                    ))}
                 </div>
-
             </div>
         </div>
     );
-}
- 
+};
+
+
+
 export default JobOverviewSection;
 
 

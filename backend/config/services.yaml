@@ -141,6 +141,10 @@ services:
     App\Domain\Shared\Contract\ContractTypeRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Contract\Repositories\ContractTypeRepository
 
+
+    #---- Notification
+    App\Domain\Notification\NotificationRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Notification\Repositories\NotificationRepository
     
 
     #-------------------------------------
