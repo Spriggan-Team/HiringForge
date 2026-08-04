@@ -1,61 +1,63 @@
-import React, { useState } from "react";
-import styles from "./ApplicationTableSection.module.css";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+
 import MatchScoreCircle from "../../../../../layout/components/progress/circle/match.circle";
+import { JOB_APPLICATION_STATUSES, type Application, type ApplicationStatusValue,   } from "../../../../../features/application/application";
+import ApplicationQueries from "../../../../../api/services/application/queries";
 
-export type ApplicationStatus = "Pending" | "Interview" | "Accepted" | "Rejected";
+import styles from "./ApplicationTableSection.module.css";
+import { formatDate } from "date-fns";
 
-export interface Application {
-    id: string;
-    candidate: string;
-    email: string;
-    appliedAt: string;
-    status: ApplicationStatus;
-    avatarUrl?: string;
-    matchScore: number;
+
+
+
+const STATUS_OPTIONS = JOB_APPLICATION_STATUSES;
+
+interface ApplicationsTablePros{
+    jobId: string;
+    companyId?: string;
+    userId?: string;
 }
 
-const mockApplications: Application[] = [
-    {
-        id: "1",
-        candidate: "Alice Martin",
-        email: "alice.martin@email.com",
-        appliedAt: "2026-08-01",
-        status: "Pending",
-        matchScore: 92, // <-- AJOUT
-    },
-    {
-        id: "2",
-        candidate: "Thomas Bernard",
-        email: "thomas@email.com",
-        appliedAt: "2026-08-02",
-        status: "Interview",
-        matchScore: 78, // <-- AJOUT
-    },
-    {
-        id: "3",
-        candidate: "Sarah Dupont",
-        email: "sarah@email.com",
-        appliedAt: "2026-08-03",
-        status: "Accepted",
-        matchScore: 65, // <-- AJOUT
-    },
-    {
-        id: "4",
-        candidate: "Lucas Moreau",
-        email: "lucas@email.com",
-        appliedAt: "2026-08-03",
-        status: "Rejected",
-        matchScore: 40, // <-- AJOUT
-    },
-];
 
-const STATUS_OPTIONS: ApplicationStatus[] = ["Pending", "Interview", "Accepted", "Rejected"];
-
-export default function ApplicationsTable() {
+export default function ApplicationsTable({
+    jobId,
+    userId,
+    companyId
+}: ApplicationsTablePros){
     const {t} = useTranslation();
-    const [applications, setApplications] = useState<Application[]>(mockApplications);
+
+    const [applications, setApplications] = useState<Application[]>([]);
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
+
+    //-- Hot loading (load application by list)
+    const [count, setCount] = useState(0);
+    const [skip, setSkip] = useState(0);
+
+    useEffect(()=>{
+        try{
+            const initializingData = async ()=>{
+                const data = await ApplicationQueries.getApplicationsForJob(jobId, { companyId }) ?? [];
+                const applications: Application[] = data.map((value)=>({
+                    id: value.id,
+                    candidate: `${value.candidate.firstName} ${value.candidate.lastName}`,
+                    matchScore: value.matchScore ?? 0,
+                    status: value.status,
+                    email: value.candidate.email,
+                    avatarUrl: value.candidate.imageUrl,
+                    appliedAt: formatDate(value.appliedAt, 'd MM yyyy')
+                })); 
+
+                setApplications((prev)=>({...prev,...applications}));
+            }
+
+            initializingData();
+        }
+        catch(error){
+            console.warn('Something went wrong', error)
+        }
+    }, [])
 
     //-- Generates the initiales
     const getInitials = (name: string) => {
@@ -68,7 +70,7 @@ export default function ApplicationsTable() {
     };
 
     //-- Update Status
-    const handleStatusChange = async (id: string, newStatus: ApplicationStatus) => {
+    const handleStatusChange = async (id: string, newStatus: ApplicationStatusValue) => {
         setIsUpdating(id);
         try {
             // TODO: API call -> await api.updateStatus(id, newStatus);
@@ -96,6 +98,7 @@ export default function ApplicationsTable() {
             setIsUpdating(null);
         }
     };
+
 
     return (
         <div className={styles.tableCard}>
@@ -177,7 +180,7 @@ export default function ApplicationsTable() {
                                             <select
                                                 value={application.status}
                                                 onChange={(e) =>
-                                                    handleStatusChange(application.id, e.target.value as ApplicationStatus)
+                                                    handleStatusChange(application.id, e.target.value as ApplicationStatusValue)
                                                 }
                                                 className={styles.statusSelect}
                                                 disabled={isUpdating === application.id}

@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate;
 
 use App\Domain\Candidate\Application\JobApplicationStatus;
+use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
@@ -46,6 +47,10 @@ class ApplicationEntity
     #[ORM\ManyToOne(inversedBy: 'applications')]
     #[ORM\JoinColumn(nullable: false, name: "job_offer_id")]
     private JobOfferEntity $jobOffer;
+    
+    #[ORM\ManyToOne()]
+    #[ORM\JoinColumn(nullable: false, name: "company_id")]
+    private CompanyEntity $company;
    
     //----------------------------
     //----- Constructing
@@ -56,12 +61,14 @@ class ApplicationEntity
         string $id,
         CandidateEntity $candidate,
         JobOfferEntity $jobOffer,
-        ?float $correlation = null
+        CompanyEntity $company,
+        ?float $matchScore = null
     ) {
         $this->id = $id;
         $this->candidate = $candidate;
         $this->jobOffer = $jobOffer;
-        $this->matchScore = $correlation;
+        $this->matchScore = $matchScore;
+        $this->company = $company;
         $this->status = JobApplicationStatus::APPLIED;
         $this->appliedAt = new \DateTimeImmutable();
     }
@@ -70,13 +77,15 @@ class ApplicationEntity
         string $id,
         CandidateEntity $candidate,
         JobOfferEntity $jobOffer,
-        ?float $correlation = null
+        CompanyEntity $company,
+        ?float $matchScore = null
     ): self {
         return new self(
             id: $id,
             candidate: $candidate,
             jobOffer: $jobOffer,
-            correlation: $correlation
+            matchScore: $matchScore,
+            company: $company
         );
     }
 
@@ -107,6 +116,10 @@ class ApplicationEntity
 
     public function getMatchScore(){
         return $this->matchScore;
+    }
+
+    public function getCompany(){
+        return $this->company;
     }
 
     //==========================

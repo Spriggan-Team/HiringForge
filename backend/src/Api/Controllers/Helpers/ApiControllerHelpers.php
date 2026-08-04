@@ -6,6 +6,7 @@ namespace App\Api\Controllers\Helpers;
 use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
+
 use Symfony\Component\HttpFoundation\Request;
 
 
@@ -22,7 +23,8 @@ trait ApiControllerHelpers
         mixed $ownerId,
         MediaPurpose $purpose,
         MediaOwnerType $ownerType,
-        string $projectDir
+        string $projectDir,
+        string $scope = 'public'
     ): ?string {
         $directoryPath = $mediaStorage->resolveTargetDirectory(
             mimeType: $mimeType,

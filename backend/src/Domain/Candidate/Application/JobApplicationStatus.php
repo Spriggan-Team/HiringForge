@@ -26,4 +26,33 @@ enum JobApplicationStatus: string
     // --- Pipeline Outputs / Archiving ---
     case REJECTED = 'rejected';                 // Application rejected by the company
     case WITHDRAWN = 'withdrawn';               //  Candidate who withdrew from the process
+
+
+    public function canTransitionTo(self $newStatus): bool
+    {
+        if ($this === $newStatus) {
+            return true;
+        }
+
+        // Defining the Matrix of Allowed Transitions in PHP
+        $allowedTransitions = [
+            self::APPLIED->value => [self::RECEIVED, self::REJECTED, self::WITHDRAWN],
+            self::RECEIVED->value => [self::SHORTLISTED, self::SCREENING, self::REJECTED, self::WITHDRAWN],
+            self::SHORTLISTED->value => [self::SCREENING, self::INTERVIEW_SCHEDULED, self::REJECTED, self::WITHDRAWN],
+            self::SCREENING->value => [self::INTERVIEW_SCHEDULED, self::ASSESSMENT, self::REJECTED, self::WITHDRAWN],
+            self::INTERVIEW_SCHEDULED->value => [self::IN_INTERVIEW, self::REJECTED, self::WITHDRAWN],
+            self::IN_INTERVIEW->value => [self::ASSESSMENT, self::INTERVIEW_SCHEDULED, self::OFFER_PENDING, self::REJECTED, self::WITHDRAWN],
+            self::ASSESSMENT->value => [self::INTERVIEW_SCHEDULED, self::OFFER_PENDING, self::REJECTED, self::WITHDRAWN],
+            self::OFFER_PENDING->value => [self::OFFER_ACCEPTED, self::OFFER_DECLINED, self::REJECTED, self::WITHDRAWN],
+            self::OFFER_ACCEPTED->value => [self::HIRED, self::WITHDRAWN],
+            
+            // Statuts terminaux
+            self::OFFER_DECLINED->value => [],
+            self::HIRED->value => [],
+            self::REJECTED->value => [],
+            self::WITHDRAWN->value => [],
+        ];
+
+        return in_array($newStatus, $allowedTransitions[$this->value] ?? [], true);
+    }
 }
