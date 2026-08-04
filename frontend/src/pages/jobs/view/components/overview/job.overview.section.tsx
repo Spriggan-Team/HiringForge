@@ -1,11 +1,15 @@
 import { format } from "date-fns";
+import { useParams } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 
 //-- Services & types
 import type { JobView,  } from "../../../../../features/jobs/JobOffer";
-import { formatSalary } from "../../../../../utils/format";
+import { formatRemainingTime, formatSalary } from "../../../../../utils/format";
 import type { PersonActionType  } from "../../../../../features/shared/account";
+import NotificationQueries from "../../../../../api/services/notification/queries";
+import type { JobOfferNotification } from "../../../../../api/services/notification/response";
+import RouteScheme from "../../../../../route.scheme";
 import JobQueries from "../../../../../api/services/jobs/queries";
 
 //-- Custom components
@@ -27,10 +31,6 @@ import RecentAction from "../../../../components/recentAction/recent.action";
 import styles from "./JobOverviewSection.module.css"
 
 
-
-interface JobOverviewSectionProps{
-    jobView: JobView;
-}
 
 
 const mockData = [
@@ -60,74 +60,101 @@ const mockData = [
     }
 ]
 
-
+interface JobOverviewSectionProps{
+    jobView?: JobView
+}
 
 
 const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({ 
-    jobView
+    jobView: defaultJobView = null
 }) => {
     const { t } = useTranslation();
+    const [jobView, setJobView] = useState<JobView | null>(defaultJobView);
 
-    const keyInformationData = useMemo(() => [
-        {
-            label: t("jobs.department"),
-            value: jobView.department?.label
-        },
-        {
-            label: t('jobs.expertiseLevel'),
-            value: jobView.expertise
-        },
-        {
-            label: t('jobs.requireLanguage'),
-            value: (jobView.requireLanguages ?? []).map((item) => (
-                `${new Intl.DisplayNames(["en"], { type: 'language' }).of(item.code)} - ${item.proficiencyLevel}`
-            )).join(", ")
-        },
-        {
-            label: t('jobs.remoteWorkEnable'),
-            value: jobView.jobWorkMode === "remote" ? t("global.text.yes") : t("global.text.no")
-        },
-        {
-            label: t("global.text.status"),
-            value: jobView.activityStatus ?? jobView.publicationStatus
-        }
-    ], [jobView, t]);
+    const { id } = useParams<{ id: string }>();
+    const [notifications, setNotifications] = useState<JobOfferNotification[]>([]);
 
-
-    const pieData: DonutChartData[] = useMemo(() => [
-        {
-            value: jobView.cardinal?.candidates ?? 0,
-            label: "Candidates",
-            color: "#2563EB",
-        },
-        {
-            value: jobView.cardinal?.interviews ?? 0,
-            label: "Interview",
-            color: "#7C3AED",
-        },
-        {
-            value: 15,
-            label: "Rejected",
-            color: "#EF4444",
-        },
-    ], [jobView]);
+    const keyInformationData = useMemo(() =>{
+        if(!jobView)
+            return [];
+        return ( [
+                {
+                    label: t("jobs.department"),
+                    value: jobView.department?.label
+                },
+                {
+                    label: t('jobs.expertiseLevel'),
+                    value: jobView.expertise
+                },
+                {
+                    label: t('jobs.requireLanguage'),
+                    value: (jobView.requireLanguages ?? []).map((item) => (
+                        `${new Intl.DisplayNames(["en"], { type: 'language' }).of(item.code)} - ${item.proficiencyLevel}`
+                    )).join(", ")
+                },
+                {
+                    label: t('jobs.remoteWorkEnable'),
+                    value: jobView.jobWorkMode === "remote" ? t("global.text.yes") : t("global.text.no")
+                },
+                {
+                    label: t("global.text.status"),
+                    value: jobView.activityStatus ?? jobView.publicationStatus
+                }
+            ]
+        )
+    }, [jobView, t]);
 
 
-    const [notification, setNotification] = useState();
+    const pieData: DonutChartData[] = useMemo(() =>{
+        if(!jobView)
+            return [];
+        return( [
+                {
+                    value: jobView.cardinal?.candidates ?? 0,
+                    label: "Candidates",
+                    color: "#2563EB",
+                },
+                {
+                    value: jobView.cardinal?.interviews ?? 0,
+                    label: "Interview",
+                    color: "#7C3AED",
+                },
+                {
+                    value: 15,
+                    label: "Rejected",
+                    color: "#EF4444",
+                },
+            ]
+        )
+    }, [jobView]);
 
-    const initializingData = useCallback(()=>{
+
+
+    const initializingData = useCallback(async ()=>{
         try{
+            if(!id)
+                return;
 
+            const data = await JobQueries.getJobView(id);
+            setJobView(data);
+        
+            const notifications = await NotificationQueries.getJobNotfication(id);
+            setNotifications(notifications ?? []);
         }
         catch(error){
             console.log('Something went wrong', error)
         }
     }, []);
+    
 
     useEffect(() => {
         initializingData();
     }, []);
 
+
+    if(!jobView){
+        return <p>{t('global.messages.loading')}</p>
+    }
 
     return (
         <div className={styles.container}>
@@ -182,13 +209,13 @@ const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
                 <div className={`${styles.recentActivitySection} card`}>
                     <Title title={t("global.text.recentAction")}/>
                     <div className={styles.actions}>
-                        {mockData.map((item, index) => (
+                        {notifications.map((item, index) => (
                             <RecentAction 
                                 key={ index} 
-                                title={item.title}
-                                person={item.person}
+                                title={item.data.jobTitle}
+                                person={`${item.account?.firstName} ${item.account?.lastName}`}
                                 type={item.type}
-                                delay={item.delay}
+                                delay={formatRemainingTime(item.createdAt)}
                             />
                         ))}
                     </div>

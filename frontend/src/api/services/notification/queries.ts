@@ -1,11 +1,14 @@
 import { intercept } from "../../../utils/utils";
 import { authGet, handleGenericApiResponseAfter } from "../../handler";
+import type { GetJobOfferNotificationsResponse } from "./response";
 
 
 
-const getRecentActivityAbout = async(offerId: string) =>{
+
+const getJobNotfication = async (jobId: string, limit: number = 5)=>{
     try{
-        const response = authGet("");
+        const response = await authGet<GetJobOfferNotificationsResponse>(`notification/user/jobs/${jobId}?limit=${limit}`);
+        return response.data;
     }
     catch(error){
         throw error;
@@ -14,10 +17,10 @@ const getRecentActivityAbout = async(offerId: string) =>{
 
 
 
-const NotificationService = intercept(
-    { getRecentActivityAbout },
+const NotificationQueries = intercept(
+    { getJobNotfication },
     undefined,
     handleGenericApiResponseAfter
 )
 
-export default NotificationService;
+export default NotificationQueries;

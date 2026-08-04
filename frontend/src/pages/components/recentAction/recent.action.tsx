@@ -5,6 +5,7 @@ import type { PersonActionType } from "../../../features/shared/account";
 
 //-- CSS Module
 import styles from "./RecentAction.module.css"
+import type { AppNotificationType } from "../../../features/notfication/notification";
 
 
 /**-- Item -- */
@@ -14,17 +15,15 @@ interface ActionItemProps{
     person?: string|null;
     title: string;
     delay: string;
-    type: PersonActionType;
+    type: AppNotificationType;
     className?:string;
     onClick?: React.MouseEventHandler<HTMLDivElement>
 }
 
 
-const actionConfigs: Record<PersonActionType, { icon: string; className: string }> = {
-    "postulate": { icon: "👤", className: styles.postulate },
-    "create-interview": { icon: "↗️", className: styles.createInterview },
-    "publish-offer": { icon: "📄", className: styles.publishOffer },
-    "confirm-interview": { icon: "✅", className: styles.confirmInterview },
+const actionConfigs: Partial<Record<AppNotificationType, { icon: string; className: string }>> = {
+  JOB_APPLIED: { icon: "👤", className: styles.postulate },
+  INTERVIEW_SCHEDULED: { icon: "↗️", className: styles.createInterview },
 };
 
 
@@ -42,14 +41,10 @@ const RecentAction: React.FC<ActionItemProps> = ({
     //-- Get title
     const renderTitle = () => {
         switch (type) {
-            case "postulate":
+            case 'JOB_APPLIED':
                 return t("notification.postulate", { person, offer: title });
-            case "create-interview":
+            case 'INTERVIEW_SCHEDULED':
                 return t("notification.createInterview", { person, interview: title });
-            case "publish-offer":
-                return t("notification.publishOffer", { title });
-            case "confirm-interview":
-                return t("notification.confirmInterview", { person });
             default:
                 return "";
         }

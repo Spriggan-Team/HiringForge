@@ -1,55 +1,94 @@
+// ==========================================
+//  Notification Data Types
+// ==========================================
 
 
-
-export type NotificationType = 
-  | 'JOB_APPLIED' 
-  | 'INTERVIEW_SCHEDULED' 
-  | 'CANDIDATE_REJECTED' 
-  | 'SYSTEM_ALERT';
-
-
-export type Notification<T = Record<string, unknown>> = {
-  id: string;
-  userId: string;
-  type: NotificationType;
-  targetUrl?: string;
-  data?: T; 
-  isRead: boolean;
-  readAt?: string; // ISO Date String
-  createdAt: string; // ISO Date String
-}
-
-
-//------------------------------------
-//--- Notification Data Scheme
-//--------------------------------------
-
-//-- Job Application
-export interface JobAppliedData {
+/** Interfaces for notification lined to an offer */
+export interface BaseJobNotificationData {
   jobId: string;
   jobTitle: string;
-  candidateId: string;
-  candidateName: string;
-  companyId?: string;
 }
 
+export interface JobAppliedData extends BaseJobNotificationData {
+  candidateId: string;
+  candidateName: string;
+}
 
-//-- Interview
-export type InterviewScheduledData = {
-  jobTitle: string;
-  scheduledAt: string; // ISO 
+export interface InterviewScheduledData extends BaseJobNotificationData {
+  scheduledAt: string; // ISO 8601 String
   locationOrLink?: string;
   recruiterName?: string;
-};
+}
 
-
-//-- Alert Sys
+export interface CandidateRejectedData extends BaseJobNotificationData {
+  companyName: string;
+  reason?: string;
+}
 
 export type SystemAlertLevel = 'info' | 'warning' | 'danger';
 
-export type SystemAlertData = {
+export interface SystemAlertData {
   title: string;
   message: string;
   level: SystemAlertLevel;
   metadata?: Record<string, unknown>;
+}
+
+// ==========================================
+//  Discriminated Notification Unions
+// ==========================================
+
+export type NotificationType =
+  | 'JOB_APPLIED'
+  | 'INTERVIEW_SCHEDULED'
+  | 'CANDIDATE_REJECTED'
+  | 'SYSTEM_ALERT';
+
+interface BaseNotification {
+  id: string;
+  isRead: boolean;
+  account?:{
+    id?: string;
+    firstName: string;
+    lastName: string;
+  },
+  targetUrl?: string | null;
+  readAt?: string | null;
+  createdAt: string;
+}
+
+export type AppNotificationType = 
+  | 'JOB_APPLIED' | 'INTERVIEW_SCHEDULED' 
+  | 'CANDIDATE_REJECTED' | 'SYSTEM_ALERT';
+
+export type JobAppliedNotification = BaseNotification & {
+  type: 'JOB_APPLIED';
+  data: JobAppliedData;
 };
+
+export type InterviewScheduledNotification = BaseNotification & {
+  type: 'INTERVIEW_SCHEDULED';
+  data: InterviewScheduledData;
+};
+
+export type CandidateRejectedNotification = BaseNotification & {
+  type: 'CANDIDATE_REJECTED';
+  data: CandidateRejectedData;
+};
+
+export type SystemAlertNotification = BaseNotification & {
+  type: 'SYSTEM_ALERT';
+  data: SystemAlertData;
+};
+
+/** Type Global for any notfication  */
+
+export type Notification =
+  | JobAppliedNotification
+  | InterviewScheduledNotification
+  | CandidateRejectedNotification
+  | SystemAlertNotification;
+
+
+
+

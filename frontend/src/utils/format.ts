@@ -1,14 +1,24 @@
 import type { Time } from "../features/shared/global";
 
 
-//format minutes to hours - min ...
-export function formatRemainingTime(minutes: number): string {
-    if(Number.isNaN(minutes)) return "";
+/**
+ * Format date
+ */
+export function formatRemainingTime(
+    input: number | string | Date, 
+    isCountdown: boolean = false
+): string {
+    const minutes = typeof input === "number" 
+        ? input 
+        : getMinutesFromDate(input, isCountdown);
+
+    if (Number.isNaN(minutes)) return "";
 
     if (minutes <= 0) {
         return "Completed";
     }
 
+    // 3. Calculs des jours, heures et minutes
     const days = Math.floor(minutes / (24 * 60));
     const hours = Math.floor((minutes % (24 * 60)) / 60);
     const mins = minutes % 60;
@@ -33,6 +43,7 @@ export function formatRemainingTime(minutes: number): string {
 
     return `${mins} min`;
 }
+
 
 
 export const formatSalary = (salary?: {
@@ -85,6 +96,20 @@ export const getElapsedTime = (start: Time, end: Time): string => {
 export const toSeconds = ({ hours, minutes }: Time) =>
     hours * 3600 + minutes * 60;
 
+
 export const getDeltaSecondeTime = (start: Time, end: Time): number => {
     return Math.max(0, toSeconds(end) - toSeconds(start));
 };
+
+//-----------
+//-- Helpers
+//-----------
+export function getMinutesFromDate(date: string | Date, isCountdown: boolean = false): number {
+    const targetTime = new Date(date).getTime();
+    if (Number.isNaN(targetTime)) return NaN;
+
+    const now = Date.now();
+    const diffMs = isCountdown ? targetTime - now : now - targetTime;
+
+    return Math.floor(diffMs / (1000 * 60));
+}

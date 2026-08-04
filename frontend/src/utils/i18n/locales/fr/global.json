@@ -36,7 +36,8 @@
             "error": "Une erreur inattendue est survenue",
             "more": "Plus",
             "seeMore": "Voir plus",
-            "logoutSuccess": "Deconnexion réussie"
+            "logoutSuccess": "Deconnexion réussie",
+            "loading": "Chargement"
         },
 
 

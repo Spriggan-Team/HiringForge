@@ -255,16 +255,49 @@ class NotificationQueryController extends AbstractController
     }
 
 
-    public function getRecentActionOnJobOffer()
-    {
+    /**
+     * Route:  /user/jobs/{offerId}?limit=number
+     */
+    #[Route('/user/jobs/{offerId}')]
+    public function getRecentActionOnJobOffer(
+        Request $request,
+        string $offerId
+    ): JsonResponse {
         try {
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
 
-        }
-        catch(\Exception $error){
+            if (!$user) {
+                return ApiResponse::error(
+                    message: 'Unauthorized action',
+                    statusCode: 401
+                )->toJsonResponse();
+            }
+
+            $limitParam = $request->query->get('limit');
+            $limit = is_numeric($limitParam) ? (int) $limitParam : 7;
+            $limit = max(1, min($limit, 50));
+
+            $result = $this->notificationRepository->getJobOfferNotification(
+                userId: $user->getId(),
+                jobId: $offerId,
+                limit: $limit
+            );
+
+            return ApiResponse::success(
+                data: $result,
+                statusCode: 200
+            )->toJsonResponse();
+
+        } catch (\Throwable $error) {
+            $this->logger->error('Error fetching job offer notifications', [
+                'exception' => $error->getMessage(),
+                'offerId' => $offerId,
+            ]);
+
             return ApiResponse::error(
-                message: 'Something went wrong',
-                throwable: $error,
-                statusCode:400
+                message: 'An unexpected error occurred',
+                statusCode: 500 // <-- Corrigé (500 au lieu de 400)
             )->toJsonResponse();
         }
     }

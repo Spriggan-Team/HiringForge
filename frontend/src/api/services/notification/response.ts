@@ -1,7 +1,11 @@
-import type { Notification } from "../../../features/notfication/notification";
+import type { CandidateRejectedNotification, InterviewScheduledNotification, JobAppliedNotification, Notification } from "../../../features/notfication/notification";
 import type { ApiResponse } from "../response.types";
 
 
-export type JobNotificationApiResponse = ApiResponse<JobNotification> ;
+export type GetJobOfferNotificationsResponse = ApiResponse<JobOfferNotification[]>;
 
-export type JobNotification = Notification
+/** Type for /user/jobs/{offerId} */
+export type JobOfferNotification = 
+  | JobAppliedNotification
+  | InterviewScheduledNotification
+  | CandidateRejectedNotification;

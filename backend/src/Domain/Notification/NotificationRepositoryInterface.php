@@ -20,6 +20,31 @@ interface NotificationRepositoryInterface
     ): int;
 
     /**
+     * Retrieves all notifications related to a specified recruiter (user) for a given job.
+     * Checks whether the notification belongs to the user and is related to the specific jobId.
+     *
+     * @param string $userId The recruiter (recipient) account UUID.
+     * @param string $jobId The job offer identifier.
+     * @param int $limit Maximum number of notifications to return.
+     *
+     * @return array<int, array{
+     *     id: string,
+     *     targetUrl: string|null,
+     *     isRead: bool,
+     *     data: array,
+     *     account: array{
+     *         id: string|null,
+     *         firstName: string,
+     *         lastName: string
+     *     }|null,
+     *     type: NotificationType,
+     *     readAt: \DateTimeImmutable|null,
+     *     createdAt: \DateTimeImmutable
+     * }>
+     */
+    public function getJobOfferNotification(string $userId, string $jobId, int $limit = 7): array;
+
+    /**
      * Retrieves recent notifications for a given recipient (Account or Company).
      *
      * @param string $recipientId Identifier of the recipient (Account UUID or Company UUID).

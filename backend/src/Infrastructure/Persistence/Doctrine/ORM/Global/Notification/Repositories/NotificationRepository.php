@@ -24,6 +24,71 @@ class NotificationRepository extends ServiceEntityRepository
         parent::__construct($registry, NotificationEntity::class);
     }
 
+   /**
+     * @return array<int, array{
+     *     id: string,
+     *     targetUrl: string|null,
+     *     isRead: bool,
+     *     data: array,
+     *     account: array{
+     *         id: string|null,
+     *         firstName: string,
+     *         lastName: string
+     *     }|null,
+     *     type: NotificationType,
+     *     readAt: \DateTimeImmutable|null,
+     *     createdAt: \DateTimeImmutable
+     * }>
+     */
+    public function getJobOfferNotification(string $userId, string $jobId, int $limit = 7): array
+    {
+        $qb = $this->createQueryBuilder('n')
+            ->select(
+                'n.id',
+                'n.targetUrl',
+                'n.isRead',
+                'n.data',
+                'n.type',
+                'n.readAt',
+                'n.createdAt',
+                'sender.id AS senderId',
+                'sender.firstName AS senderFirstName',
+                'sender.lastName AS senderLastName'
+            )
+            ->leftJoin('n.account', 'sender')
+            ->where('n.recipientAccount = :userId')
+            ->setParameter('userId', $userId);
+
+        $qb->andWhere('JSON_UNQUOTE(JSON_EXTRACT(n.data, \'$.jobId\')) = :jobId')
+           ->setParameter('jobId', $jobId);
+
+        $qb->orderBy('n.createdAt', 'DESC');
+
+        if ($limit > 0) {
+            $qb->setMaxResults($limit);
+        }
+
+        $results = $qb->getQuery()->getArrayResult();
+
+        return array_map(static function (array $item) {
+            //-- Ignore
+            unset($item['data']['companyId']);
+
+            //-- Emmtter
+            $item['account'] = $item['senderId'] !== null ? [
+                'id' => $item['senderId'],
+                'firstName' => $item['senderFirstName'],
+                'lastName' => $item['senderLastName'],
+            ] : null;
+
+            //-- Key suppression
+            unset($item['senderId'], $item['senderFirstName'], $item['senderLastName']);
+
+            return $item;
+        }, $results);
+    }
+    
+
     /**
      * Counts the number of unread notifications for a given target (Account or Company).
      *

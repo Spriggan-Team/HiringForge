@@ -2,15 +2,17 @@
 
 namespace App\Domain\Notification;
 
-final readonly class JobAppliedData implements NotificationDataInterface
+final class JobAppliedData extends BaseJobNotificationData implements NotificationDataInterface
 {
     public function __construct(
-        public string $jobId,
-        public string $jobTitle,
+        string $jobId,
+        string $jobTitle,
         public string $candidateId,
         public string $candidateName,
         public ?string $companyId = null,
-    ) {}
+    ) {
+        parent::__construct($jobId, $jobTitle);
+    }
 
     public function toArray(): array
     {
@@ -22,4 +24,7 @@ final readonly class JobAppliedData implements NotificationDataInterface
             'companyId' => $this->companyId,
         ], static fn ($value) => $value !== null);
     }
+
+    public function getJobId(): string { return $this->jobId; }
+    public function getJobTitle(): string { return $this->jobTitle; }
 }
