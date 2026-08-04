@@ -2,23 +2,22 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories;
 
-use App\Api\Responder\ApiResponse;
 use App\Application\Query\JobOffer\DTO\JobOfferStatistics;
+
 use App\Application\Query\JobOffer\DTO\JobOfferListItem;
 use App\Application\Query\JobOffer\DTO\JobSummaryItem;
 use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
 use App\Domain\Candidate\Application\JobApplicationStatus;
+use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 
 use App\Domain\JobOffer\JobActivityStatus;
 use App\Domain\JobOffer\JobPublicationStatus;
 use App\Domain\Company\CompanyRepositoryInterface;
 use App\Domain\Interviews\InterviewsRepositoryInterface;
-use App\Infrastructure\Persistence\Doctrine\Helpers\AddressSearchHelper;
-use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
+
 
 
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
-use App\Domain\JobOfferApplication\Repositories\JobOfferApplicationRepositoryInterface;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillTranslationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferLanguageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferSkillsEntity;
@@ -44,7 +43,7 @@ class JobOfferQueryRepository implements JobOfferQueryRepositoryInterace
 {
     public function __construct(
         private EntityManagerInterface $manager,
-        private JobOfferApplicationRepositoryInterface $applicationRepository,
+        private ApplicationRepositoryInterface $applicationRepository,
         private InterviewsRepositoryInterface $interviewsRepository,
         private CompanyRepositoryInterface $companyRepositoryInterface
     ){}

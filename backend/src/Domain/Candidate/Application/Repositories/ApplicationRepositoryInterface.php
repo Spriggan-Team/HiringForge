@@ -1,10 +1,8 @@
 <?php
 
-namespace App\Domain\JobOfferApplication\Repositories;
+namespace App\Domain\Candidate\Application\Repositories;
 
-use App\Domain\Candidate\Application\ApplicationStatus;
-
-interface JobOfferApplicationRepositoryInterface
+interface ApplicationRepositoryInterface
 {
     /**
      * Checks whether a job application exists in the system.

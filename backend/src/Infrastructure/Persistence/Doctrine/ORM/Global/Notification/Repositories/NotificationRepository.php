@@ -4,24 +4,20 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Notification\Reposi
 
 use App\Domain\Notification\NotificationRepositoryInterface;
 use App\Domain\Notification\NotificationType;
+use App\Domain\Notification\RecipientType;
+use Override;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Notification\NotificationEntity;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Override;
 
-<?php
 
-namespace App\Repository;
-
-use App\Entity\NotificationEntity;
-use App\Enum\NotificationType;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<NotificationEntity>
  */
 class NotificationRepository extends ServiceEntityRepository
+    implements NotificationRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)
     {
@@ -29,44 +25,55 @@ class NotificationRepository extends ServiceEntityRepository
     }
 
     /**
+     * Counts the number of unread notifications for a given target (Account or Company).
+     *
+     * @param string $recipientId Identifier of the target (Account UUID or Company UUID).
+     * @param RecipientType $recipientType 'ACCOUNT' or 'COMPANY'
+     *
+     * @return int Number of unread notifications.
+     */
+    public function countUnreadForTarget(
+        string $recipientId,
+        RecipientType $recipientType = RecipientType::ACCOUNT
+    ): int {
+        $qb = $this->createQueryBuilder('n')
+            ->select('COUNT(n.id)')
+            ->where('n.isRead = :isRead')
+            ->setParameter('isRead', false);
+
+        if (strtoupper($recipientType->value) === 'COMPANY') {
+            $qb->andWhere('n.recipientCompany = :recipientId');
+        } else {
+            $qb->andWhere('n.recipientAccount = :recipientId');
+        }
+
+        $qb->setParameter('recipientId', $recipientId);
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+
+    /**
      * Retrieves recent notifications for a given recipient (Account or Company).
      *
      * @param string $recipientId Identifier of the recipient (Account UUID or Company UUID).
-     * @param string $recipientType 'ACCOUNT' or 'COMPANY'
+     * @param RecipientType $recipientType 'ACCOUNT' or 'COMPANY'
      * @param NotificationType|null $type Notification type to retrieve.
      * @param int|null $limit Maximum number of notifications to return.
-     * @param array{
-     *     id?: bool,
-     *     type?: bool,
-     *     targetUrl?: bool,
-     *     data?: bool,
-     *     account?: array{
-     *         id?: bool,
-     *         firstName?: bool,
-     *         lastName?: bool
-     *     },
-     *     recipient?: array{
-     *         id?: bool,
-     *         name?: bool,       // Enriched for Company
-     *         firstName?: bool,  // Enriched for Account
-     *         lastName?: bool    // Enriched for Account
-     *     },
-     *     readAt?: bool,
-     *     isRead?: bool,
-     *     createdAt?: bool
-     * } $scheme Fields to fetch from persistence.
+     * @param array $scheme Fields to fetch from persistence.
      *
      * @return array<int, array<string, mixed>>
      */
+    #[Override]
     public function getRecentForTarget(
         string $recipientId,
-        string $recipientType = 'ACCOUNT',
+        RecipientType $recipientType = RecipientType::ACCOUNT,
         ?NotificationType $type = null,
         ?int $limit = 7,
         array $scheme = ['id' => true],
     ): array {
         $qb = $this->createQueryBuilder('n');
-        $isCompanyRecipient = strtoupper($recipientType) === 'COMPANY';
+        $isCompanyRecipient = strtoupper($recipientType->value) === RecipientType::COMPANY ;
 
         $selects = [];
 

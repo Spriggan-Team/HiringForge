@@ -2,16 +2,17 @@
 
 namespace App\Application\Usecases\Candidate;
 
+use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 use App\Domain\Candidate\CandidateRepositoryInterface;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
-use App\Domain\JobOfferApplication\Repositories\JobOfferApplicationRepositoryInterface;
+
 
 class ApplyToJobOffer
 {
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
         private CandidateRepositoryInterface $candidateRepository,
-        private JobOfferApplicationRepositoryInterface $applicationRepository
+        private ApplicationRepositoryInterface $applicationRepository
     ){}
 
     /**

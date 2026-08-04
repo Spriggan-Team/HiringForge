@@ -90,7 +90,7 @@ services:
 
 
     #--- Application
-    App\Domain\JobOfferApplication\Repositories\JobOfferApplicationRepositoryInterface:
+    App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\JobOfferApplicationRepository
 
     #-- Interviews

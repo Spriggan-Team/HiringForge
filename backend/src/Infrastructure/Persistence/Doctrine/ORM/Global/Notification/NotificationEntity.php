@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Notification;
 
+use App\Domain\Notification\NotificationDataInterface;
 use App\Domain\Notification\NotificationType;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
@@ -67,30 +68,29 @@ class NotificationEntity
     private function __construct()
     {}
 
+    
     public static function create(
         string $id,
         NotificationType $type,
+        NotificationDataInterface $data,
         ?AccountEntity $account = null,
-        ?AccountEntity $recipientCompany = null,
         ?AccountEntity $recipientAccount = null,
+        ?CompanyEntity $recipientCompany = null,
         ?string $targetUrl = null,
-        array $data = [],
     ): self {
         $notification = new self();
-
         $notification->id = $id;
-        $notification->account = $account;
         $notification->type = $type;
-        $notification->targetUrl = $targetUrl;
-        $notification->data = $data;
-        $notification->isRead = false;
-        $notification->readAt = null;
-        $notification->recipientCompany = $recipientCompany;
+        $notification->data = $data->toArray();
+        $notification->account = $account;
         $notification->recipientAccount = $recipientAccount;
-        $notification->createdAt = new DateTimeImmutable();
+        $notification->recipientCompany = $recipientCompany;
+        $notification->targetUrl = $targetUrl;
+        $notification->createdAt = new \DateTimeImmutable();
 
         return $notification;
     }
+
 
     public static function reconstitute(
         string $id,

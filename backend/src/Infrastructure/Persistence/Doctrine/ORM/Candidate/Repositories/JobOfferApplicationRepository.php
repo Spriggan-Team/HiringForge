@@ -2,19 +2,21 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories;
 
+use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 use App\Domain\Exception\ApplicationNotFoundException;
-use App\Domain\Candidate\Application\ApplicationStatus;
-use App\Domain\JobOfferApplication\Repositories\JobOfferApplicationRepositoryInterface;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
+
+
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+
 
 use Override;
 
 
 class JobOfferApplicationRepository
     extends ServiceEntityRepository
-    implements JobOfferApplicationRepositoryInterface
+    implements ApplicationRepositoryInterface
 {
 
     public function __construct(

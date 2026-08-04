@@ -1,11 +1,12 @@
 import { format } from "date-fns";
-import { useEffect, useMemo, useState, type SVGProps } from "react";
+import { useCallback, useEffect, useMemo, useState, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 
 //-- Services & types
 import type { JobView,  } from "../../../../../features/jobs/JobOffer";
 import { formatSalary } from "../../../../../utils/format";
 import type { PersonActionType  } from "../../../../../features/shared/account";
+import JobQueries from "../../../../../api/services/jobs/queries";
 
 //-- Custom components
 import Title from "../../../../../layout/components/text/title/title";
@@ -19,13 +20,11 @@ import MoneySVG  from "/src/assets/svg/person/money-bag-svgrepo-com.svg"
 import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg"
 import TipTapRenderer from "../../../../../layout/components/editors/tiptap/tiptap.renderer";
 import JobSkill from "../../../components/skills/job.skill";
-import QuillRenderer from "../../../../../layout/components/editors/quill/quill.renderer";
 import RecentAction from "../../../../components/recentAction/recent.action";
 
 
 //-- CSS styles 
 import styles from "./JobOverviewSection.module.css"
-import JobQueries from "../../../../../api/services/jobs/queries";
 
 
 
@@ -60,7 +59,6 @@ const mockData = [
         type: "confirm-interview" as PersonActionType,
     }
 ]
-
 
 
 
@@ -115,10 +113,20 @@ const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
     ], [jobView]);
 
 
+    const [notification, setNotification] = useState();
+
+    const initializingData = useCallback(()=>{
+        try{
+
+        }
+        catch(error){
+            console.log('Something went wrong', error)
+        }
+    }, []);
+
     useEffect(() => {
-        console.log("Job Details", jobView);
-        console.log("Job Salary", formatSalary(jobView.salary));
-    }, [jobView]);
+        initializingData();
+    }, []);
 
 
     return (

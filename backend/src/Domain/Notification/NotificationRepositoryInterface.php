@@ -5,15 +5,27 @@ namespace App\Domain\Notification;
 
 interface NotificationRepositoryInterface
 {
+
     /**
-     * Retrieves the most recent notifications for a user.
+     * Counts the number of unread notifications for a given target (Account or Company).
      *
-     * Results can be filtered by notification type and limited in number.
-     * The returned fields are controlled by the provided projection scheme.
+     * @param string $recipientId Identifier of the target (Account UUID or Company UUID).
+     * @param RecipientType $recipientType 'ACCOUNT' or 'COMPANY'
      *
-     * @param string $userId User identifier.
-     * @param NotificationType $type Notification type to retrieve.
-     * @param int $limit Maximum number of notifications to return.
+     * @return int Number of unread notifications.
+     */
+    public function countUnreadForTarget(
+        string $recipientId,
+        RecipientType $recipientType = RecipientType::ACCOUNT
+    ): int;
+
+    /**
+     * Retrieves recent notifications for a given recipient (Account or Company).
+     *
+     * @param string $recipientId Identifier of the recipient (Account UUID or Company UUID).
+     * @param string $recipientType 'ACCOUNT' or 'COMPANY'
+     * @param NotificationType|null $type Notification type to retrieve.
+     * @param int|null $limit Maximum number of notifications to return.
      * @param array{
      *     id?: bool,
      *     type?: bool,
@@ -24,6 +36,12 @@ interface NotificationRepositoryInterface
      *         firstName?: bool,
      *         lastName?: bool
      *     },
+     *     recipient?: array{
+     *         id?: bool,
+     *         name?: bool,       // Enriched for Company
+     *         firstName?: bool,  // Enriched for Account
+     *         lastName?: bool    // Enriched for Account
+     *     },
      *     readAt?: bool,
      *     isRead?: bool,
      *     createdAt?: bool
@@ -31,10 +49,11 @@ interface NotificationRepositoryInterface
      *
      * @return array<int, array<string, mixed>>
      */
-    public function getRecent(
-        string $userId,
-        NotificationType $type,
+    public function getRecentForTarget(
+        string $recipientId,
+        RecipientType $recipientType = RecipientType::ACCOUNT,
+        ?NotificationType $type = null,
         ?int $limit = 7,
         array $scheme = ['id' => true],
-    ): array;
+    ): array ;
 }

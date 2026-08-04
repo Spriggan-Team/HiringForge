@@ -19,7 +19,7 @@ security:
 
         # API SECURISE 
         api:
-            pattern: ^/api/(candidates|agents|users|contract|departments|skills|job_offer)
+            pattern: ^/api/(candidates|agents|users|notification|contract|departments|skills|job_offer)
             stateless: true
             user_checker: App\Api\Security\AccountChecker
             custom_authenticators:
@@ -36,13 +36,14 @@ security:
         - { path: ^/api/(candidate|agent|user)/otp,      roles: PUBLIC_ACCESS }
 
         # -- ROUTES PRIVEES 
-        - { path: ^/api/skills,      roles: [IS_AUTHENTICATED_FULLY] }
-        - { path: ^/api/agents,      roles: ROLE_AGENT }
-        - { path: ^/api/candidates,  roles: ROLE_CANDIDATE }
-        - { path: ^/api/users,       roles: [ROLE_USER, ROLE_COMPANY_ADMIN] }
-        - { path: ^/api/contract,    roles: [IS_AUTHENTICATED_FULLY] }
-        - { path: ^/api/departments, roles: [ROLE_USER, ROLE_AGENT] }
-        - { path: ^/api/job_offer,   roles: [ROLE_USER, ROLE_AGENT, ROLE_COMPANY_ADMIN] }
+        - { path: ^/api/skills,         roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: ^/api/agents,         roles: ROLE_AGENT }
+        - { path: ^/api/candidates,     roles: ROLE_CANDIDATE }
+        - { path: ^/api/users,          roles: [ROLE_USER, ROLE_COMPANY_ADMIN] }
+        - { path: ^/api/contract,       roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: ^/api/departments,    roles: [ROLE_USER, ROLE_AGENT] }
+        - { path: ^/api/job_offer,      roles: [ROLE_USER, ROLE_AGENT, ROLE_COMPANY_ADMIN] }
+        - { path: ^/api/notification,   roles: [IS_AUTHENTICATED_FULLY] }
 
 
 
