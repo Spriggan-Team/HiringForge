@@ -92,6 +92,7 @@ const KpiCard: React.FC<KpiCardPrps> = ({
             {displayCurve && (
                 <div className={styles.chartWrapper}>
                     <LineChart
+                        animate
                         className={styles.chart}
                         margin={{
                             top: 5,

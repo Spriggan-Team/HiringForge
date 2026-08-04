@@ -42,8 +42,11 @@
 
 
         "text":{
-            "yes": "Oui",
             "no": "Non",
+            "yes": "Oui",
+            "email": "Email",
+            "actions": "Actions",
+            "postulationDate": "Date de postulation",
             "fork": "Fourchette",
             "place": "Lieu",
             "unknown": "Unknow",

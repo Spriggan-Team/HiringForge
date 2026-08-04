@@ -30,6 +30,7 @@ import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-s
 //-- CSS styles
 import styles from "./PrivateJobViewPage.module.css"
 import InterviewsSection from "./components/interviews/interviews.section";
+import OffersSection from "./components/offer/offer.section";
 
 
 
@@ -258,6 +259,8 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
                         (<CandidatesViewSection />)
                     : viewMenu == "interviews" ?
                         (<InterviewsSection />)
+                    : viewMenu == "offers" ?
+                        (<OffersSection />)
                     : null
                 }
             </div>

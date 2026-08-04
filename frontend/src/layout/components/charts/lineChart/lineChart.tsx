@@ -2,9 +2,9 @@ import * as d3 from "d3";
 import { useRef, useState, useEffect } from "react";
 import styles from "./LineChart.module.css";
 
-// ─────────────────────────────────────────────────────────────
+// -------------------------------------
 // Types
-// ─────────────────────────────────────────────────────────────
+//----------------------------------
 
 export interface LineChartProps {
     onChartReady?: (props: OnChartReadyFuncProps) => void;
@@ -52,6 +52,12 @@ export interface LineChartProps {
         xAxisVisibility?: boolean;
         yAxisVisibility?: boolean;
     };
+
+    /**
+     * Controls path animation from first point to last point.
+     * Pass `true` for defaults (1000ms, easeCubicOut) or pass custom options.
+     */
+    animate?: boolean | { duration?: number; ease?: string };
 }
 
 export interface GraphDatum {
@@ -110,9 +116,9 @@ export interface OnChartReadyFuncProps {
     xAxisGroup:   d3.Selection<SVGGElement,   unknown, null, undefined>;
 }
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 // Helpers
-// ─────────────────────────────────────────────────────────────
+// --------------------------
 
 
 /**
@@ -123,7 +129,7 @@ export interface OnChartReadyFuncProps {
  *   - span  > 14 days → one tick per month, label = "Jan", "Feb" …
  */
 function resolveXFormat(
-    dates:       Date[],
+    dates:      Date[],
     axisFormat?: "month" | "day" | "auto",
 ): { mode: "month" | "day" } {
     const mode = axisFormat ?? "auto";
@@ -169,9 +175,9 @@ function buildXFormatter(mode: "month" | "day"): (d: Date | d3.NumberValue) => s
 
 
 
-// ─────────────────────────────────────────────────────────────
+// -------------------------------
 // Component
-// ─────────────────────────────────────────────────────────────
+// ---------------------
 
 export const LineChart = ({
     dataset,
@@ -179,13 +185,14 @@ export const LineChart = ({
     appTheme,
     tickSettings,
     axisSettings,
+    animate,
     onChartReady,
     className,
 }: LineChartProps) => {
     const divContainer = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-    // ── Responsive sizing ─────────────────────────────────────
+    // ----------------- Responsive sizing -----------------
     useEffect(() => {
         if (!divContainer.current) return;
         const ro = new ResizeObserver(entries => {
@@ -197,7 +204,8 @@ export const LineChart = ({
         return () => ro.disconnect();
     }, []);
 
-    // ── Draw ──────────────────────────────────────────────────
+
+    // ------------ Draw ----------
     useEffect(() => {
         if (!divContainer.current || dimensions.width === 0 || dimensions.height === 0) return;
         if (!dataset.dates?.length || !dataset.data?.length) return;
@@ -217,10 +225,16 @@ export const LineChart = ({
         const axesStroke      = appTheme?.CURVE?.axes?.stroke      ?? "#475569";
         const axesStrokeWidth = appTheme?.CURVE?.axes?.strokeWidth ?? 1;
 
-        // ── Clear previous render ─────────────────────────────
+        // Animation config
+        const isAnimated = Boolean(animate);
+        const animDuration = typeof animate === "object" ? animate.duration ?? 1000 : 1000;
+        const animEaseStr = typeof animate === "object" ? animate.ease ?? "easeCubicOut" : "easeCubicOut";
+        const animEase = d3[animEaseStr as keyof typeof d3] as (normalizedTime: number) => number || d3.easeCubicOut;
+
+        // ----- Clear previous render ---------------
         d3.select(divContainer.current).selectAll("*").remove();
 
-        // ── SVG ───────────────────────────────────────────────
+        // ------ SVG --------------
         const svg = d3
             .select(divContainer.current)
             .append("svg")
@@ -230,7 +244,7 @@ export const LineChart = ({
             .style("display",  "block")
             .style("overflow", "visible");
 
-        // ── Scales ────────────────────────────────────────────
+        // ----- Scales ---------
         const sortedDates = [...dataset.dates].sort((a, b) => +a - +b);
         const [dateMin, dateMax] = d3.extent(sortedDates) as [Date, Date];
 
@@ -251,7 +265,7 @@ export const LineChart = ({
             .nice()
             .range([height - mg.bottom, mg.top]);
 
-        // ── Y Axis ────────────────────────────────────────────
+        // ---- Y Axis -----
         const showYAxis  = axisSettings?.axisVisibility !== false && axisSettings?.yAxisVisibility !== false;
         const showYTicks = tickSettings?.tickVisibility  !== false && tickSettings?.yTickVisibility  !== false;
 
@@ -287,7 +301,7 @@ export const LineChart = ({
             .style("font-size",   "11px")
             .style("display",  () => showYTicks  ? null : "none");
 
-        // ── X Axis ────────────────────────────────────────────
+        // ---- X Axis ---------------------
         const showXAxis  = axisSettings?.axisVisibility !== false && axisSettings?.xAxisVisibility !== false;
         const showXTicks = tickSettings?.tickVisibility  !== false && tickSettings?.xTickVisibility  !== false;
 
@@ -329,7 +343,7 @@ export const LineChart = ({
             .style("display",   () => showXTicks ? null : "none");
 
 
-        // ── Data preparation ──────────────────────────────────
+        // ------- Data preparation ----------------------
         const graphData: GraphDatum[] = dataset.data.map(mark => {
             const type = mark.type ?? "line";
             const settings: GraphDatum["settings"] = {
@@ -370,7 +384,7 @@ export const LineChart = ({
             return { coords, settings };
         });
 
-        // ── Draw curves ───────────────────────────────────────
+        // ------ Draw curves -------------------
         const curveFn = d3.curveCatmullRom.alpha(0.5);
 
         graphData.forEach((gd, i) => {
@@ -378,7 +392,8 @@ export const LineChart = ({
 
             if (gd.settings.type === "area") {
                 const mul = gd.settings.areaMultiplier ?? 1;
-                chartsGridX
+                
+                const areaPath = chartsGridX
                     .append("path")
                     .datum(gd.coords)
                     .attr("fill",         (gd.settings.area?.fill   as string) ?? "transparent")
@@ -391,6 +406,27 @@ export const LineChart = ({
                             .y1(d => yScale(d.y * mul))
                             .curve(curveFn)
                     );
+
+                // Animate area by using a reveal clip-path mask from left to right
+                if (isAnimated) {
+                    const clipId = `area-clip-${i}-${Math.random().toString(36).substr(2, 9)}`;
+                    const clipRect = svg.append("defs")
+                        .append("clipPath")
+                        .attr("id", clipId)
+                        .append("rect")
+                        .attr("x", mg.left)
+                        .attr("y", 0)
+                        .attr("width", 0)
+                        .attr("height", height);
+
+                    areaPath.attr("clip-path", `url(#${clipId})`);
+
+                    clipRect
+                        .transition()
+                        .duration(animDuration)
+                        .ease(animEase)
+                        .attr("width", width - mg.left);
+                }
             }
 
             if (gd.settings.type === "line") {
@@ -403,7 +439,7 @@ export const LineChart = ({
                 const mul = areaMatch?.settings?.areaMultiplier ?? 1;
                 const transformed = gd.coords.map(d => ({ ...d, y: d.y * mul }));
 
-                chartsGridX
+                const linePath = chartsGridX
                     .append("path")
                     .datum(transformed)
                     .attr("fill",         "none")
@@ -421,10 +457,22 @@ export const LineChart = ({
                             .y(d => yScale(d.y))
                             .curve(curveFn)
                     );
+
+                // Animate path line using stroke-dashoffset trick
+                if (isAnimated) {
+                    const totalLength = (linePath.node() as SVGPathElement).getTotalLength();
+                    linePath
+                        .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
+                        .attr("stroke-dashoffset", totalLength)
+                        .transition()
+                        .duration(animDuration)
+                        .ease(animEase)
+                        .attr("stroke-dashoffset", 0);
+                }
             }
 
             if (dot) {
-                chartsGridX
+                const dotsSelection = chartsGridX
                     .selectAll(`.dot-${i}`)
                     .data(gd.coords)
                     .enter()
@@ -443,13 +491,35 @@ export const LineChart = ({
                     .on("mouseout", function () {
                         d3.select(this).transition().duration(120).attr("r", dot.r ?? 5);
                     });
+
+                // Fade/scale in dots sequentially as the line reaches them
+                if (isAnimated) {
+                    const targetR = dot.r ?? 5;
+                    const minX = xScale(xDomainStart);
+                    const maxX = xScale(xDomainEnd);
+                    const totalXDist = maxX - minX;
+
+                    dotsSelection
+                        .attr("r", 0)
+                        .style("opacity", 0)
+                        .transition()
+                        .delay(d => {
+                            const pointX = xScale(d.x);
+                            const progress = Math.max(0, Math.min(1, (pointX - minX) / totalXDist));
+                            return progress * animDuration * 0.85; // slight offset for smooth feeling
+                        })
+                        .duration(200)
+                        .ease(d3.easeBackOut)
+                        .attr("r", targetR)
+                        .style("opacity", 1);
+                }
             }
         });
 
-        // ── Callback ──────────────────────────────────────────
+        // ----- Callback ---------
         onChartReady?.({ svg, chartsGridX, divContainer: divContainer.current!, xAxisGroup, yAxisGroup });
 
-    }, [dimensions, appTheme, margin, dataset, tickSettings, axisSettings, onChartReady]);
+    }, [dimensions, appTheme, margin, dataset, tickSettings, axisSettings, animate, onChartReady]);
 
     return (
         <div

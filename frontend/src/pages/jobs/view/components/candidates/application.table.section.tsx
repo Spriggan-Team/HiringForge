@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styles from "./ApplicationTableSection.module.css";
+import { useTranslation } from "react-i18next";
 
 export type ApplicationStatus = "Pending" | "Interview" | "Accepted" | "Rejected";
 
@@ -46,6 +47,7 @@ const mockApplications: Application[] = [
 const STATUS_OPTIONS: ApplicationStatus[] = ["Pending", "Interview", "Accepted", "Rejected"];
 
 export default function ApplicationsTable() {
+    const {t} = useTranslation();
     const [applications, setApplications] = useState<Application[]>(mockApplications);
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
@@ -100,11 +102,11 @@ export default function ApplicationsTable() {
                 <table className={styles.applicationsTable}>
                     <thead>
                         <tr>
-                            <th>Candidat</th>
-                            <th>Email</th>
-                            <th>Date de postulation</th>
-                            <th>Statut</th>
-                            <th className={styles.textRight}>Actions</th>
+                            <th>{t('global.candidate.candidateLabel_one')}</th>
+                            <th>{t('global.text.email')}</th>
+                            <th>{t('global.text.postulationDate')}</th>
+                            <th>{t('global.text.status')}</th>
+                            <th className={styles.textRight}>{t("global.text.actions")}</th>
                         </tr>
                     </thead>
 
