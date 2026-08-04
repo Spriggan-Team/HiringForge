@@ -1,0 +1,228 @@
+/*Conteneur */
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.subtitle strong {
+    color: #2563eb;
+    font-weight: 600;
+}
+
+/* Group filter (per weeks / per months) */
+.filterGroup {
+    display: flex;
+    background-color: #f1f5f9;
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.filterBtn {
+    border: none;
+    background: transparent;
+    padding: 0.4rem 0.875rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #64748b;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filterBtn:hover {
+    color: #1e293b;
+}
+
+.filterBtn.active {
+    background-color: #ffffff;
+    color: #2563eb;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/*  KPI Grid (Indicator Card) */
+.kpiGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.kpiCard {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    box-shadow: 0 4px 20px -2px rgba(59, 130, 246, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpiCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px -2px rgba(59, 130, 246, 0.08);
+}
+
+.kpiLabel {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.kpiValue {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.kpiBadge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+.kpiBadge.positive {
+    background-color: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #dbeafe;
+}
+
+.kpiSubtext {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+/* Graphics & Card */
+.chartsGrid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.25rem;
+}
+
+@media (max-width: 1024px) {
+    .chartsGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chartCard {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px -2px rgba(59, 130, 246, 0.04);
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.cardHeader h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.cardBadge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #3b82f6;
+    background-color: #eff6ff;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    border: 1px solid #dbeafe;
+}
+
+.lineChartWrapper {
+    width: 100%;
+    min-height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/*   Donut Chart & Legend */
+.donutContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+}
+
+.legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    width: 100%;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8125rem;
+}
+
+.legendColor {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+.legendLabel {
+    color: #475569;
+    font-weight: 500;
+    flex-grow: 1;
+}
+
+.legendValue {
+    color: #0f172a;
+    font-weight: 700;
+}

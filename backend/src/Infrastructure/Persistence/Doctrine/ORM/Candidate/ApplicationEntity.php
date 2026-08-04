@@ -6,6 +6,7 @@ use App\Domain\Candidate\Application\JobApplicationStatus;
 use Doctrine\ORM\Mapping as ORM;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity]
 #[ORM\Table(
@@ -24,7 +25,8 @@ class ApplicationEntity
     #[ORM\Column(type: 'guid', unique: true)]
     private ?string $id = null;
 
-    private ?float $correlation = null;
+    #[ORM\Column(type: Types::FLOAT)]
+    private ?float $matchScore = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $appliedAt;
@@ -59,7 +61,7 @@ class ApplicationEntity
         $this->id = $id;
         $this->candidate = $candidate;
         $this->jobOffer = $jobOffer;
-        $this->correlation = $correlation;
+        $this->matchScore = $correlation;
         $this->status = JobApplicationStatus::APPLIED;
         $this->appliedAt = new \DateTimeImmutable();
     }
@@ -103,8 +105,8 @@ class ApplicationEntity
         return $this->status;
     }
 
-    public function getCorrelation(){
-        return $this->correlation;
+    public function getMatchScore(){
+        return $this->matchScore;
     }
 
     //==========================

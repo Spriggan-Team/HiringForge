@@ -8,6 +8,7 @@ import type { GetJobOfferNotificationsResponse } from "./response";
 const getJobNotfication = async (jobId: string, limit: number = 5)=>{
     try{
         const response = await authGet<GetJobOfferNotificationsResponse>(`notification/user/jobs/${jobId}?limit=${limit}`);
+        // console.log("Job Notification : ", response.data)
         return response.data;
     }
     catch(error){

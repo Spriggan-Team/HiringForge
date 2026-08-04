@@ -40,6 +40,22 @@ class NotificationRepository extends ServiceEntityRepository
      *     createdAt: \DateTimeImmutable
      * }>
      */
+/**
+     * @return array<int, array{
+     *     id: string,
+     *     targetUrl: string|null,
+     *     isRead: bool,
+     *     data: array,
+     *     account: array{
+     *         id: string|null,
+     *         firstName: string,
+     *         lastName: string
+     *     }|null,
+     *     type: NotificationType,
+     *     readAt: \DateTimeImmutable|null,
+     *     createdAt: \DateTimeImmutable
+     * }>
+     */
     public function getJobOfferNotification(string $userId, string $jobId, int $limit = 7): array
     {
         $qb = $this->createQueryBuilder('n')
@@ -57,37 +73,44 @@ class NotificationRepository extends ServiceEntityRepository
             )
             ->leftJoin('n.account', 'sender')
             ->where('n.recipientAccount = :userId')
-            ->setParameter('userId', $userId);
-
-        $qb->andWhere('JSON_UNQUOTE(JSON_EXTRACT(n.data, \'$.jobId\')) = :jobId')
-           ->setParameter('jobId', $jobId);
-
-        $qb->orderBy('n.createdAt', 'DESC');
-
-        if ($limit > 0) {
-            $qb->setMaxResults($limit);
-        }
+            ->andWhere('n.type = :type')
+            ->setParameter('userId', $userId)
+            ->setParameter('type', NotificationType::JOB_APPLIED)
+            ->orderBy('n.createdAt', 'DESC');
 
         $results = $qb->getQuery()->getArrayResult();
+        $filtered = [];
 
-        return array_map(static function (array $item) {
-            //-- Ignore
+        foreach ($results as $item) {
+            // Secure verification of the jobId in the data for the JOB_APPLIED type
+            if (!isset($item['data']['jobId']) || $item['data']['jobId'] !== $jobId) {
+                continue;
+            }
+
+            // Removing Unwanted Keys from the “data” Table
             unset($item['data']['companyId']);
 
-            //-- Emmtter
+            // Structuring the ‘account’ key in accordance with the output schema
             $item['account'] = $item['senderId'] !== null ? [
                 'id' => $item['senderId'],
-                'firstName' => $item['senderFirstName'],
-                'lastName' => $item['senderLastName'],
+                'firstName' => $item['senderFirstName'] ?? '',
+                'lastName' => $item['senderLastName'] ?? '',
             ] : null;
 
-            //-- Key suppression
+            // Clearing the temporary fields in the SELECT statement
             unset($item['senderId'], $item['senderFirstName'], $item['senderLastName']);
 
-            return $item;
-        }, $results);
+            $filtered[] = $item;
+
+            // Applying the limit after filtering
+            if ($limit > 0 && count($filtered) >= $limit) {
+                break;
+            }
+        }
+
+        return $filtered;
     }
-    
+
 
     /**
      * Counts the number of unread notifications for a given target (Account or Company).

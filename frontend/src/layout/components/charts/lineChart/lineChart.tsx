@@ -88,7 +88,7 @@ export interface CurveData {
         fill?:        string;
         class?:       string;
         cursor?:      string;
-        stroke?:      number;
+        stroke?:      string;
         rPulse?:      number;
         strokeWidth?: number;
     };

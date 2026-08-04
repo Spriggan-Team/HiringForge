@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import styles from "./ApplicationTableSection.module.css";
 import { useTranslation } from "react-i18next";
+import MatchScoreCircle from "../../../../../layout/components/progress/circle/match.circle";
 
 export type ApplicationStatus = "Pending" | "Interview" | "Accepted" | "Rejected";
 
@@ -11,6 +12,7 @@ export interface Application {
     appliedAt: string;
     status: ApplicationStatus;
     avatarUrl?: string;
+    matchScore: number;
 }
 
 const mockApplications: Application[] = [
@@ -20,6 +22,7 @@ const mockApplications: Application[] = [
         email: "alice.martin@email.com",
         appliedAt: "2026-08-01",
         status: "Pending",
+        matchScore: 92, // <-- AJOUT
     },
     {
         id: "2",
@@ -27,6 +30,7 @@ const mockApplications: Application[] = [
         email: "thomas@email.com",
         appliedAt: "2026-08-02",
         status: "Interview",
+        matchScore: 78, // <-- AJOUT
     },
     {
         id: "3",
@@ -34,6 +38,7 @@ const mockApplications: Application[] = [
         email: "sarah@email.com",
         appliedAt: "2026-08-03",
         status: "Accepted",
+        matchScore: 65, // <-- AJOUT
     },
     {
         id: "4",
@@ -41,6 +46,7 @@ const mockApplications: Application[] = [
         email: "lucas@email.com",
         appliedAt: "2026-08-03",
         status: "Rejected",
+        matchScore: 40, // <-- AJOUT
     },
 ];
 
@@ -104,6 +110,7 @@ export default function ApplicationsTable() {
                         <tr>
                             <th>{t('global.candidate.candidateLabel_one')}</th>
                             <th>{t('global.text.email')}</th>
+                            <th>Score</th>
                             <th>{t('global.text.postulationDate')}</th>
                             <th>{t('global.text.status')}</th>
                             <th className={styles.textRight}>{t("global.text.actions")}</th>
@@ -141,6 +148,11 @@ export default function ApplicationsTable() {
                                     {/* Email */}
                                     <td data-label="Email">
                                         <span className={styles.emailText}>{application.email}</span>
+                                    </td>
+                            
+                                    {/** Match Score */}
+                                    <td data-label="Score">
+                                        <MatchScoreCircle score={application.matchScore} />
                                     </td>
 
                                     {/* Date */}
@@ -189,6 +201,7 @@ export default function ApplicationsTable() {
                                         </div>
                                     </td>
                                 </tr>
+                                
                             ))
                         )}
                     </tbody>
