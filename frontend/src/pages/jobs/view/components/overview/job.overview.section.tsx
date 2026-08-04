@@ -206,21 +206,25 @@ const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
                 </div>
 
                 {/** RECENT ACTIVITY */}
-                <div className={`${styles.recentActivitySection} card`}>
-                    <Title title={t("global.text.recentAction")}/>
-                    <div className={styles.actions}>
-                        {notifications.map((item, index) => (
-                            <RecentAction 
-                                key={ index} 
-                                title={item.data.jobTitle}
-                                person={`${item.account?.firstName} ${item.account?.lastName}`}
-                                type={item.type}
-                                delay={formatRemainingTime(item.createdAt)}
-                            />
-                        ))}
-                    </div>
-                    <button className={styles.button}>{t('global.messages.seeMore')}</button>
-                </div>
+                {
+                    notifications.length > 0 && (
+                        <div className={`${styles.recentActivitySection} card`}>
+                            <Title title={t("global.text.recentAction")}/>
+                            <div className={styles.actions}>
+                                {notifications.map((item, index) => (
+                                    <RecentAction 
+                                        key={ index} 
+                                        title={item.data.jobTitle}
+                                        person={`${item.account?.firstName} ${item.account?.lastName}`}
+                                        type={item.type}
+                                        delay={formatRemainingTime(item.createdAt)}
+                                    />
+                                ))}
+                            </div>
+                            <button className={styles.button}>{t('global.messages.seeMore')}</button>
+                        </div>
+                    )
+                }
             </div>
 
             {/** ASIDE */}

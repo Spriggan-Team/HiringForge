@@ -21,7 +21,7 @@ import SimpleButton from "../../../layout/components/buttons/simple/simple.butto
 import TopBarNavigation from "../../../layout/components/navigation/topbar/topbar.navigation";
 import InfoPill, { type InfoPillProps } from "../../../layout/components/badges/pill/info.pill";
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/drawer/menu.drawer";
-import CandidatesViewSection from "./components/candidates/candidates.view.section";
+import CandidatesViewSection from "./components/candidates/application.table.section";
 
 //-- SVG Components
 import EditSVG from "/src/assets/svg/menu/edit-2-svgrepo-com.svg"
@@ -29,6 +29,7 @@ import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-s
 
 //-- CSS styles
 import styles from "./PrivateJobViewPage.module.css"
+import InterviewsSection from "./components/interviews/interviews.section";
 
 
 
@@ -255,6 +256,8 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
                         (<JobOverviewSection jobView={currentJob} />)
                     : viewMenu === "candidates" ? 
                         (<CandidatesViewSection />)
+                    : viewMenu == "interviews" ?
+                        (<InterviewsSection />)
                     : null
                 }
             </div>
