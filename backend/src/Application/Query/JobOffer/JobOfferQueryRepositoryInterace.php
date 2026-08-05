@@ -146,4 +146,7 @@ interface JobOfferQueryRepositoryInterace
      * @return array
      */
     public function fetchJobOfferProjection(string $jobOfferId, string $userId, array $scheme = []): array;
+
+
+
 }

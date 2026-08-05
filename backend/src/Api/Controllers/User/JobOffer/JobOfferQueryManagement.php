@@ -8,8 +8,7 @@ use App\Domain\JobOffer\JobPublicationStatus;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Application\Query\JobOffer\DTO\JobSummaryItem;
 use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
-
-
+use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -26,6 +25,7 @@ class JobOfferQueryManagement extends AbstractController
     public function __construct(
         private LoggerInterface $logger,
         private JobOfferQueryRepositoryInterace $queryRepository,
+        private ApplicationRepositoryInterface $applicationRepository
     ) {
         ApiResponse::init($logger);
     }
@@ -189,10 +189,40 @@ class JobOfferQueryManagement extends AbstractController
 
 
 
-    public function getViewAnalytics()
+    #[Route('/{jobId}/candidates/stats', methods: ['GET'])]
+    public function getCandidateStats( //count, cardinal...
+        string $jobId
+    )
     {
+        try{
+            $candidateMetrics = $this->applicationRepository->getUserStats(jobId: $jobId);
+            return ApiResponse::success(
+                data: $candidateMetrics,
+                statusCode: 200,
+                message: 'Everythin is fine'
+            )->toJsonResponse();
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: 'Something went wrong'
+            )->toJsonResponse();
+        }
     }
     
+
+    #[Route('/{jobId}/postulation/metrics', methods: ['GET'])]
+    public function getPostulationMetrics()
+    {
+        try{
+            
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: 'Something went wrong',
+                statusCode: 400
+            )->toJsonResponse();
+        }
+    }
 
     #[Route('/kanban', methods: ['GET'])]
     public function getKanbanResult()

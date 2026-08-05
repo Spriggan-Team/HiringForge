@@ -15,7 +15,7 @@ trait ApiControllerHelpers
     /**
      * Resolves the public URL for a given media file relative to the project public directory.
      */
-    protected function resolvePublicUrl(
+    protected function resolveUrl(
         MediaStorageInterface $mediaStorage,
         Request $request,
         string $mimeType,

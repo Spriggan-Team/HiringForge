@@ -13,6 +13,7 @@ enum JobApplicationStatus: string
 
     // --- Evaluation Phase ---
     case SCREENING = 'screening';               // Initial Screening / Telephone Prequalification
+    case PRESELECTED = 'preselected';
     case INTERVIEW_SCHEDULED = 'interview_scheduled'; // Scheduled Maintenance
     case IN_INTERVIEW = 'in_interview';         // Interview phase currently underway (HR, Technical, etc.)
     case ASSESSMENT = 'assessment';             // Undergoing technical testing / case study

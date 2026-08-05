@@ -3,7 +3,7 @@ import { authGet, handleGenericApiResponseAfter } from "../../handler";
 import type { RecruiterJobInterviewsResponse } from "./response";
 
 
-const getJobOfferInterviws = async (
+const getRecruiterJobOfferInterviws = async (
   jobId: string,
   {
     companyId,
@@ -36,7 +36,7 @@ const getJobOfferInterviws = async (
 
 
 const InterviewsQueries = intercept(
-    { getJobOfferInterviws },
+    { getRecruiterJobOfferInterviws },
     undefined,
     handleGenericApiResponseAfter
 );

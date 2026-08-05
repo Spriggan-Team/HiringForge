@@ -1,18 +1,11 @@
 import React, { useEffect, useState } from "react";
+
+import InterviewsQueries from "../../../../../api/services/interviews/queries";
+import { INTERVIEW_STATUSES, type Interview, type InterviewStatus } from "../../../../../features/interviews/interviws";
+
 import styles from "./InterviewsSection.module.css";
+import { format } from "date-fns";
 
-export type InterviewStatus = "Scheduled" | "Completed" | "Cancelled";
-
-export interface Interview {
-    id: string;
-    candidate: string;
-    email: string;
-    jobTitle: string;
-    scheduledAt: string; // ISO
-    locationOrLink?: string;
-    status: InterviewStatus;
-    avatarUrl?: string;
-}
 
 const mockInterviews: Interview[] = [
     {
@@ -22,7 +15,7 @@ const mockInterviews: Interview[] = [
         jobTitle: "Développeur Fullstack PHP",
         scheduledAt: "2026-08-10T10:00:00",
         locationOrLink: "https://meet.google.com/abc-defg-hij",
-        status: "Scheduled",
+        status: "scheduled",
     },
     {
         id: "2",
@@ -31,7 +24,7 @@ const mockInterviews: Interview[] = [
         jobTitle: "UX/UI Designer",
         scheduledAt: "2026-08-03T14:30:00",
         locationOrLink: "Salle de Réunion B",
-        status: "Completed",
+        status: "completed",
     },
     {
         id: "3",
@@ -40,25 +33,30 @@ const mockInterviews: Interview[] = [
         jobTitle: "DevOps Engineer",
         scheduledAt: "2026-08-12T11:00:00",
         locationOrLink: "https://zoom.us/j/123456789",
-        status: "Cancelled",
+        status: "cancel",
     },
 ];
 
-const STATUS_OPTIONS: InterviewStatus[] = ["Scheduled", "Completed", "Cancelled"];
+const STATUS_OPTIONS= INTERVIEW_STATUSES;
 
 
 interface InterviewsSectionProps{
-    jobId: string;
+    job: {
+        id: string;
+        title: string;
+    };
     companyId?: string;
     userId?: string;
 }
 
 export default function InterviewsSection({
-    jobId,
+    job: {
+        id, title
+    },
     companyId,
     userId
 }: InterviewsSectionProps) {
-    const [interviews, setInterviews] = useState<Interview[]>(mockInterviews);
+    const [interviews, setInterviews] = useState<Interview[]>([]);
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
     const getInitials = (name: string) => {
@@ -72,7 +70,25 @@ export default function InterviewsSection({
 
     useEffect(()=>{
         try{
-
+            const intializeData = async () => {
+                try{
+                    const data = await InterviewsQueries.getRecruiterJobOfferInterviws(id);
+                    const interviews: Interview[] = data.map((value)=>({
+                        id: value.id,
+                        jobTitle: title,
+                        candidate: `${value.candidate.firstName} ${value}`,
+                        email: value.candidate.email,
+                        scheduledAt: format(value.startDate, "dd MMMM yyyy"),
+                        locationOrLink: value.url,
+                        status: value.status
+                    }))
+                    setInterviews((prev)=>([...prev, ...(interviews ?? [])]))
+                }
+                catch(error){
+                    throw error;
+                }
+            }
+            intializeData();
         }
         catch(error){
             console.log("Something went wrong")
@@ -102,7 +118,7 @@ export default function InterviewsSection({
         try {
             // TODO: API call -> await api.cancelInterview(id);
             setInterviews((prev) =>
-                prev.map((item) => (item.id === id ? { ...item, status: "Cancelled" } : item))
+                prev.map((item) => (item.id === id ? { ...item, status: "cancel" } : item))
             );
         }
         catch (error) {
@@ -158,7 +174,7 @@ export default function InterviewsSection({
                                                 />
                                             ) : (
                                                 <div className={styles.avatarFallback}>
-                                                    {getInitials(interview.candidate)}
+                                                    {getInitials(interview?.candidate ?? "")}
                                                 </div>
                                             )}
                                             <div>
@@ -241,7 +257,7 @@ export default function InterviewsSection({
                                                 ))}
                                             </select>
 
-                                            {interview.status !== "Cancelled" && (
+                                            {interview.status !== "cancel" && (
                                                 <button
                                                     type="button"
                                                     onClick={() => handleCancel(interview.id)}

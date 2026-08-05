@@ -63,19 +63,17 @@ const uploadJobAssets = async (
     let mainFound = false;
 
     images.forEach((img, index) => {
-      // 1. Ajouter tous les fichiers sous le nom 'images' (ou 'images[]' selon ton parser)
       body.append('images', img.file);
 
-      // 2. Seule la PREMIÈRE image marquée isMain définit l'index principal
       if (img.isMain && !mainFound) {
-        body.append('mainIndex', String(index)); // Doit correspondre à la clé lue dans le Controller PHP
+        body.append('mainIndex', String(index)); 
         mainFound = true;
       }
     });
 
-    // Remplace par la route exacte (ex: `/job_offer/${jobId}/assets/uploads` ou `/${jobId}/assets/uploads`)
     await authPost(`/job_offer/${jobId}/assets/uploads`, body);
-  } catch (error) {
+  }
+  catch (error) {
     if (error instanceof HttpBadResponse) {
       throw new FailedJobAssetsUpload();
     }

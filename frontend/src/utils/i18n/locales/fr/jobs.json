@@ -36,6 +36,12 @@
         "messages":{
             "failedToLoadJob": "Impossible de charger l'offre d'emploi."
         },
+        "candidateStatuses":{
+            "preselected" : "Préselectionné",
+            "inInterviews":"En Entretien",
+            "generatedOffer": "Offre Générées",
+            "rejected": "Rejetés"
+        },
 
 
         "createJob":{

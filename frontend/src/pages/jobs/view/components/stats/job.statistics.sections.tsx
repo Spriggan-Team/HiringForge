@@ -1,23 +1,24 @@
-import React, { useState } from "react";
-import styles from "./JobStatisticsSection.module.css";
+import { useTranslation } from "react-i18next";
+import React, { useEffect, useState, useTransition } from "react";
 
+import ApplicationQueries from "../../../../../api/services/application/queries";
+import JobServices from "../../../../../api/services/jobs/command";
+import JobQueries from "../../../../../api/services/jobs/queries";
+import { currentMonth } from '../../../../../utils/dates'
 
 import { LineChart, type Dataset } from "../../../../../layout/components/charts/lineChart/lineChart";
 import type { DonutChartData } from "../../../../../layout/components/charts/donutChart/donus.chart";
 import DonutChart from "../../../../../layout/components/charts/donutChart/donus.chart";
 
 
+import styles from "./JobStatisticsSection.module.css";
+
+
+
 
 // postulation by weeks
-const applicationsOverTimeData: Dataset = {
-    dates: [
-        new Date("2026-07-01"),
-        new Date("2026-07-08"),
-        new Date("2026-07-15"),
-        new Date("2026-07-22"),
-        new Date("2026-07-29"),
-        new Date("2026-08-04"),
-    ],
+const applicationsOverTimeData: Partial<Dataset> = {
+    dates: currentMonth,
     maximum: 120,
     data: [
         {
@@ -63,7 +64,7 @@ const applicationsOverTimeData: Dataset = {
     ],
 };
 // Breakdown of candidates based on the structure of your DonutChartData
-const candidateStatusData: DonutChartData[] = [
+const candidateStatusDataMock: DonutChartData[] = [
     { label: "Présélectionnés", value: 140, color: "#3b82f6" },
     { label: "En Entretien",    value: 45,  color: "#8b5cf6" },
     { label: "Offres Générées", value: 12,  color: "#10b981" },
@@ -71,6 +72,7 @@ const candidateStatusData: DonutChartData[] = [
 ];
 
 export interface JobStatisticsSectionProps {
+    jobId: string;
     jobTitle?: string;
     totalApplications?: number;
     rejectionRate?: number;
@@ -82,13 +84,43 @@ export interface JobStatisticsSectionProps {
 
 
 export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
+    jobId,
     jobTitle = "Développeur Fullstack Senior",
     totalApplications = 365,
     rejectionRate = 46,
     offersGenerated = 12,
     avgTimeToHireDays = 18,
 }) => {
+    const {t} = useTranslation();
     const [timeframe, setTimeframe] = useState<"week" | "month">("week");
+    const [candidateStatusData, setCandidateStatusData] = useState<DonutChartData[]>([]);
+
+    //-- init state
+    useEffect(()=>{
+        try{
+            const intializeData = async ()=>{
+                const data = await JobQueries.getUserStats(jobId) ?? [];
+                const candidatesStatus: DonutChartData[]  = [
+                    { label : t('jobs.candidateStatuses.preselected') , value: data.preselect ,color:  "#3b82f6" },
+                    { label: t('jobs.candidateStatuses.inInterviews'), value: data.interviews, color: "#8b5cf6" },
+                    { label: t('jobs.candidateStatuses.generatedOffer'), value: data.offer, color: "#10b981" },
+                    { label: t('jobs.candidateStatuses.rejected'), value: data.rejected, color: "#ef4444" }
+                ];
+
+                const postulationMetrics = await JobQueries.getPostulationMetrics({ jobId, frequency: timeframe });
+                
+                setCandidateStatusData(candidatesStatus);
+            }
+
+            intializeData();
+        }
+        catch(error){
+            console.log("Something went wrong :", error);
+        }
+    }, [])
+
+    //--- 
+
 
     return (
         <section className={styles.container}>

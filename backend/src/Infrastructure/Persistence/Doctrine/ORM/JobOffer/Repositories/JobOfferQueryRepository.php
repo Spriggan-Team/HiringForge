@@ -14,9 +14,7 @@ use App\Domain\JobOffer\JobActivityStatus;
 use App\Domain\JobOffer\JobPublicationStatus;
 use App\Domain\Company\CompanyRepositoryInterface;
 use App\Domain\Interviews\InterviewsRepositoryInterface;
-
-
-
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillTranslationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferLanguageEntity;

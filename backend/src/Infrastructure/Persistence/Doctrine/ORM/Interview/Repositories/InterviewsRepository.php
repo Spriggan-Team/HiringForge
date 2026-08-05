@@ -23,6 +23,7 @@ class InterviewsRepository extends ServiceEntityRepository
         parent::__construct($registry, InterviewEntity::class);
     }
     
+    
     /**
      * Retrieve interviews related to a specific job linked to a recruiter (user),
      * a company, or a specific candidate.
@@ -36,6 +37,7 @@ class InterviewsRepository extends ServiceEntityRepository
      *      minutes?: bool,
      *      description?: bool,
      *      status?: bool,
+     *      url?: bool,
      *      candidate?: array{
      *          id?: bool,
      *          firstName?: bool,
@@ -68,7 +70,7 @@ class InterviewsRepository extends ServiceEntityRepository
         $selectedFields = [];
 
         //  Dynamic selection for Interview entity fields
-        $allowedInterviewFields = ['id', 'startDate', 'minutes', 'description', 'status'];
+        $allowedInterviewFields = ['id', 'startDate', 'minutes', 'description', 'status', 'url'];
         foreach ($allowedInterviewFields as $field) {
             if (!empty($scheme[$field])) {
                 $selectedFields[] = 'i.' . $field;

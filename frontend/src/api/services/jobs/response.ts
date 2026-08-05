@@ -1,6 +1,9 @@
 import type { JobActivityStatus, JobPublicationStatus, JobSummary, JobView, JobWorkMode, LanguageLevel, VisibilityStatus } from "../../../features/jobs/JobOffer";
 import type { ApiResponse } from "../response.types";
 
+//------------------
+//-- Job
+//------------------
 
 export type JobSummaryItem  = JobSummary;
 
@@ -51,3 +54,18 @@ export type JobOfferViewDataResponse = {
 };
 
 export type JobViewApiResponse = ApiResponse<JobOfferViewDataResponse>;
+
+//------------------------
+//----- Statistics
+//------------------------
+
+
+export type RecruitmentPipelineStats = {
+    preselect: number;
+    interviews: number;
+    rejected: number;
+    offer: number;
+};
+
+export type RecruitmentPipelineStatsResponse =
+    ApiResponse<RecruitmentPipelineStats>;

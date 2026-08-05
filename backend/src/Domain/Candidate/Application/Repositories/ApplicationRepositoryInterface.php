@@ -63,4 +63,29 @@ interface ApplicationRepositoryInterface
      * Change job satus
      */
     public function changeStatus(string $applicationId, JobApplicationStatus $newStatus): void;
+
+    
+    /**
+     * Retrieves aggregated candidate/application statistics for a given job offer.
+     *
+     * @param string $jobId
+     * @return array{
+     *      preselect: int,
+     *      interviews: int,
+     *      rejected: int,
+     *      offer: int
+     * }
+     */
+    public function getUserStats(string $userId, string $jobId): array;
+
+
+    /**
+     * retreive the number of postaltion made by candidate in a timeframe
+     * @param string $userId the idntifiant of an user! it is used to check the relation between the user (recruiter) & the related job
+     * @param string $jobId the uniq identifier of a kob
+     * @param string $timeframe determine wether the results are sort by 'month' (12 items) or by 'week' (7 items)
+     * @return array<int, float>
+     */
+    public function getPostulationMetrics(string $userId ,string $jobId, string $timeframe = 'month'): array;
+
 }

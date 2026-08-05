@@ -105,7 +105,7 @@ class ApplicationQueryController extends AbstractController
             $data = array_map(function (array $value) use ($request) {
                 // Check if candidate and image data exist before resolving public URL
                 if (isset($value['candidate']['image']['name'], $value['candidate']['image']['mime'])) {
-                    $value['candidate']['image'] = $this->resolvePublicUrl(
+                    $value['candidate']['image'] = $this->resolveUrl(
                         request: $request,
                         ownerId: $value['candidate']['id'],
                         projectDir: '...',

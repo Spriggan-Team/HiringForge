@@ -7,6 +7,7 @@ use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Domain\Company\CompanyRepositoryInterface;
 use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
+
 use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
@@ -16,6 +17,7 @@ use App\Domain\User\UserRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -97,7 +99,7 @@ class UserQueryManagement extends AbstractController
             // Building the Avatar URL
             $avatar = null;
             if ($user->image()) {
-                $avatar = $this->resolvePublicUrl(
+                $avatar = $this->resolveUrl(
                     mediaStorage: $mediaStorage,
                     request: $request,
                     mimeType: $user->image()->mime,
@@ -139,7 +141,7 @@ class UserQueryManagement extends AbstractController
                     //-- Logo URL Structure 
                     $logoURL = null;
                     if ($company->logo()) {
-                        $logoURL = $this->resolvePublicUrl(
+                        $logoURL = $this->resolveUrl(
                             mediaStorage: $mediaStorage,
                             request: $request,
                             mimeType: $company->logo()->mime,

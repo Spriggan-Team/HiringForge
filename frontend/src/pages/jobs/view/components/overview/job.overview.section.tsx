@@ -196,14 +196,18 @@ const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
                 </div>
 
                 {/** SKILLS */}
-                <div className={`${styles.skillSection} card`}>
-                    <Title title={t("jobs.createJob.skillSection.title")} />
-                    <div className={styles.skills}>
-                        {(jobView.skills ?? []).map((item) => (
-                            <JobSkill key={item.id ?? item.name} content={item.name} />
-                        ))}    
-                    </div>
-                </div>
+                {
+                    jobView.skills && jobView.skills.length > 0 && (
+                        <div className={`${styles.skillSection} card`}>
+                            <Title title={t("jobs.createJob.skillSection.title")} />
+                            <div className={styles.skills}>
+                                {(jobView.skills ?? []).map((item) => (
+                                    <JobSkill key={item.id ?? item.name} content={item.name} />
+                                ))}    
+                            </div>
+                        </div>
+                    )
+                }
 
                 {/** RECENT ACTIVITY */}
                 {

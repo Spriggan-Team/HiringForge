@@ -3,6 +3,7 @@ import { authGet, handleGenericApiResponseAfter } from "../../handler"
 import type { JobApplicationApiResponse } from "./response";
 
 
+//-- Recruiter
 const getApplicationsForJob = async (
   jobId: string,
   {
@@ -33,6 +34,9 @@ const getApplicationsForJob = async (
     throw error;
   }
 };
+
+
+//-- User
 
 
 

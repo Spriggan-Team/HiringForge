@@ -2,16 +2,20 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories;
 
+use App\Domain\JobOffer\JobOfferRepositoryInterface;
+use App\Domain\Exception\ApplicationNotFoundException;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
-use App\Domain\Exception\ApplicationNotFoundException;
-use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
 
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use DomainException;
 use Override;
+
+
 
 class JobOfferApplicationRepository
     extends ServiceEntityRepository
@@ -19,7 +23,8 @@ class JobOfferApplicationRepository
 {
 
     public function __construct(
-        ManagerRegistry $registry
+        ManagerRegistry $registry,
+        JobOfferRepositoryInterface $jobRepository
     )
     {
         return parent::__construct($registry, ApplicationEntity::class);
@@ -72,6 +77,59 @@ class JobOfferApplicationRepository
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
+
+    #[Override]
+    public function getPostulationMetrics(string $userId, string $jobId, string $timeframe = 'month'): array
+    {
+        throw new \Exception('Not implemented');
+    }
+
+    
+    /**
+     * Retrieves aggregated candidate/application statistics for a given job offer.
+     *
+     * @param string $jobId
+     * @return array{
+     *      preselect: int,
+     *      interviews: int,
+     *      rejected: int,
+     *      offer: int
+     * }
+     */
+    public function getUserStats(string $userId ,string $jobId): array
+    {
+        // 1. Décompte optimisé des applications par statut
+        $stats = $this->createQueryBuilder('a')
+            ->select('
+                SUM(CASE WHEN a.status = :preselect THEN 1 ELSE 0 END) AS preselect,
+                SUM(CASE WHEN a.status = :rejected THEN 1 ELSE 0 END) AS rejected,
+                SUM(CASE WHEN a.status = :offer THEN 1 ELSE 0 END) AS offer
+            ')
+            ->where('a.jobOffer = :jobId')
+            ->setParameter('jobId', $jobId)
+            ->setParameter('preselect', JobApplicationStatus::PRESELECTED)
+            ->setParameter('rejected', JobApplicationStatus::REJECTED)
+            ->setParameter('offer', JobApplicationStatus::OFFER_PENDING)
+            ->getQuery()
+            ->getSingleResult();
+
+        // 2. Décompte des entretiens liés au JobOffer
+        $interviewCount = (int) $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('COUNT(i.id)')
+            ->from(InterviewEntity::class, 'i')
+            ->where('i.jobOffer = :jobId')
+            ->setParameter('jobId', $jobId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return [
+            'preselect'  => (int) ($stats['preselect'] ?? 0),
+            'interviews' => $interviewCount,
+            'rejected'   => (int) ($stats['rejected'] ?? 0),
+            'offer'      => (int) ($stats['offer'] ?? 0),
+        ];
+    }
 
 
     /**

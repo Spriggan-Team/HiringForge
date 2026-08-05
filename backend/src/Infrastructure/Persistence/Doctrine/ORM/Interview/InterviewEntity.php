@@ -5,7 +5,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Interview;
 use App\Domain\Interviews\InterviewStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
-
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 
@@ -26,6 +26,9 @@ class InterviewEntity
     #[ORM\Column]
     private ?string $description = null;
 
+    #[ORM\Column(type: Types::STRING)]
+    private ?string $url;
+
     #[ORM\Column(enumType: InterviewStatus::class)]
     #[ORM\JoinColumn(nullable: false)]
     private InterviewStatus $status = InterviewStatus::SCHEDULED;
@@ -36,6 +39,7 @@ class InterviewEntity
 
     #[ORM\ManyToOne(targetEntity: JobOfferEntity::class, inversedBy: "interviews")]
     private JobOfferEntity $jobOffer;
+
 
     //-------------------------
     //------- Constructing
@@ -51,6 +55,7 @@ class InterviewEntity
         string $description,
         CandidateEntity $candidate,
         JobOfferEntity $jobOffer,
+        ?string $url = null,
         InterviewStatus $status = InterviewStatus::SCHEDULED,
     ): self {
         $entity = new self();
@@ -62,6 +67,7 @@ class InterviewEntity
         $entity->candidate = $candidate;
         $entity->jobOffer = $jobOffer;
         $entity->status = $status;
+        $entity->url = $url;
 
         return $entity;
     }
@@ -72,6 +78,7 @@ class InterviewEntity
         \DateTimeImmutable $startDate,
         int $minutes,
         string $description,
+        ?string $url ,
         CandidateEntity $candidate,
         JobOfferEntity $jobOffer,
         InterviewStatus $status,
@@ -85,6 +92,7 @@ class InterviewEntity
         $entity->candidate = $candidate;
         $entity->jobOffer = $jobOffer;
         $entity->status = $status;
+        $entity->url = $url;
 
         return $entity;
     }
@@ -123,6 +131,11 @@ class InterviewEntity
     public function getJobOffer() : JobOfferEntity
     {
         return $this->jobOffer;
+    }
+
+    public function getURL()
+    {
+        return $this->url;
     }
 
     //======================
@@ -167,6 +180,12 @@ class InterviewEntity
 
     public function setJobOffer(JobOfferEntity $jobOffer): static{
         $this->jobOffer = $jobOffer;
+        return $this;
+    }
+
+    public function setUrl(?string $url): static
+    {
+        $this->url = $url;
         return $this;
     }
 }
