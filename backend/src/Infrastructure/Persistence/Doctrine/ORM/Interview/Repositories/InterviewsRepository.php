@@ -23,9 +23,9 @@ class InterviewsRepository extends ServiceEntityRepository
         parent::__construct($registry, InterviewEntity::class);
     }
     
-/**
-     * Retrieve interviews related to a specific job linked to a user (recruiter)
-     * or directly to the company (globally).
+    /**
+     * Retrieve interviews related to a specific job linked to a recruiter (user),
+     * a company, or a specific candidate.
      *
      * @param string $jobId
      * @param int $limit
@@ -51,6 +51,7 @@ class InterviewsRepository extends ServiceEntityRepository
      * } $scheme
      * @param string|null $userId
      * @param string|null $companyId
+     * @param string|null $candidateId
      * @return array
      */
     #[Override]
@@ -60,12 +61,13 @@ class InterviewsRepository extends ServiceEntityRepository
         int $skip = 0,
         array $scheme = ['id' => true],
         ?string $userId = null,
-        ?string $companyId = null
+        ?string $companyId = null,
+        ?string $candidateId = null
     ): array {
         $qb = $this->createQueryBuilder('i');
         $selectedFields = [];
 
-        // 1. Dynamic selection for Interview entity fields
+        //  Dynamic selection for Interview entity fields
         $allowedInterviewFields = ['id', 'startDate', 'minutes', 'description', 'status'];
         foreach ($allowedInterviewFields as $field) {
             if (!empty($scheme[$field])) {
@@ -78,7 +80,7 @@ class InterviewsRepository extends ServiceEntityRepository
             $selectedFields[] = 'i.id';
         }
 
-        // 2. Sub-Projection for Candidate relationship
+        //  Sub-Projection for Candidate relationship
         if (!empty($scheme['candidate']) && is_array($scheme['candidate'])) {
             $qb->leftJoin('i.candidate', 'c');
             $allowedCandidateFields = ['id', 'firstName', 'lastName', 'email'];
@@ -111,8 +113,11 @@ class InterviewsRepository extends ServiceEntityRepository
            ->where('i.jobOffer = :jobId')
            ->setParameter('jobId', $jobId);
 
-        // 3. Filtering by Company or Recruiter User
-        if ($companyId) {
+        //  Filtering by Candidate, Company or Recruiter User (Exclusive execution)
+        if ($candidateId) {
+            $qb->andWhere('i.candidate = :candidateId')
+               ->setParameter('candidateId', $candidateId);
+        } elseif ($companyId) {
             $qb->andWhere('i.company = :companyId')
                ->setParameter('companyId', $companyId);
         } elseif ($userId) {
@@ -121,7 +126,7 @@ class InterviewsRepository extends ServiceEntityRepository
                ->setParameter('userId', $userId);
         }
 
-        // 4. Pagination
+        //  Pagination
         if ($limit > 0) {
             $qb->setMaxResults($limit);
         }
@@ -131,7 +136,7 @@ class InterviewsRepository extends ServiceEntityRepository
 
         $results = $qb->getQuery()->getArrayResult();
 
-        // 5. Restructuring data tree for candidate and nested image
+        //  Restructuring data tree for candidate and nested image
         if (!empty($scheme['candidate'])) {
             return array_map(static function (array $row) {
                 $candidateData = [];

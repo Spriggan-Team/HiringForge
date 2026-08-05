@@ -15,8 +15,8 @@ interface InterviewsRepositoryInterface
 
 
     /**
-     * Retrieve interviews related to a specific job linked to a user (recruiter)
-     * or directly to the company (globally).
+     * Retrieve interviews related to a specific job linked to a recruiter (user),
+     * a company, or a specific candidate.
      *
      * @param string $jobId
      * @param int $limit
@@ -42,6 +42,7 @@ interface InterviewsRepositoryInterface
      * } $scheme
      * @param string|null $userId
      * @param string|null $companyId
+     * @param string|null $candidateId
      * @return array
      */
     public function fetchJobInterviewsProjection(
@@ -50,6 +51,7 @@ interface InterviewsRepositoryInterface
         int $skip = 0,
         array $scheme = ['id' => true],
         ?string $userId = null,
-        ?string $companyId = null
-    ): array;
+        ?string $companyId = null,
+        ?string $candidateId = null
+    ): array ;
 }
