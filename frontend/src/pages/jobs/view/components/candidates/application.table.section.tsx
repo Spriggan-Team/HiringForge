@@ -14,6 +14,7 @@ import { formatDate } from "date-fns";
 
 const STATUS_OPTIONS = JOB_APPLICATION_STATUSES;
 
+
 interface ApplicationsTablePros{
     jobId: string;
     companyId?: string;
@@ -49,7 +50,7 @@ export default function ApplicationsTable({
                     appliedAt: formatDate(value.appliedAt, 'd MM yyyy')
                 })); 
 
-                setApplications((prev)=>({...prev,...applications}));
+                setApplications((prev)=>([...prev,...applications]));
             }
 
             initializingData();
@@ -121,14 +122,14 @@ export default function ApplicationsTable({
                     </thead>
 
                     <tbody>
-                        {applications.length === 0 ? (
+                        {(applications ?? []).length === 0 ? (
                             <tr>
                                 <td colSpan={5} className={styles.emptyState}>
                                     Aucune candidature trouvée.
                                 </td>
                             </tr>
                         ) : (
-                            applications.map((application) => (
+                            (applications ?? []).map((application) => (
                                 <tr key={application.id} className={isUpdating === application.id ? styles.rowDisabled : ""}>
                                     {/* Candidat */}
                                     <td data-label="Candidat">

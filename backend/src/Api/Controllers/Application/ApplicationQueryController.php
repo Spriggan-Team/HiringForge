@@ -60,7 +60,7 @@ class ApplicationQueryController extends AbstractController
     }
 
 
-/**
+    /**
      * Route /job_offer/{jobOfferId}?limit=number&skip=number
      */
     #[IsGranted(AccountRole::USER->value)]

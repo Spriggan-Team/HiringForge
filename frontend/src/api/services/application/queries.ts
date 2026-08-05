@@ -22,13 +22,14 @@ const getApplicationsForJob = async (
     if (skip !== undefined) params.set('skip', String(skip));
     if (limit !== undefined) params.set('limit', String(limit));
 
-    const url = `/job_offer/${jobId}/applications${
+    const url = `/applications/job_offer/${jobId}${
       params.toString() ? `?${params.toString()}` : ''
     }`;
 
     const response = await authGet<JobApplicationApiResponse>(url);
     return response.data;
-  } catch (error) {
+  }
+  catch (error) {
     throw error;
   }
 };

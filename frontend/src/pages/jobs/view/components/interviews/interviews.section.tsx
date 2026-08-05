@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./InterviewsSection.module.css";
 
 export type InterviewStatus = "Scheduled" | "Completed" | "Cancelled";
@@ -47,9 +47,17 @@ const mockInterviews: Interview[] = [
 const STATUS_OPTIONS: InterviewStatus[] = ["Scheduled", "Completed", "Cancelled"];
 
 
+interface InterviewsSectionProps{
+    jobId: string;
+    companyId?: string;
+    userId?: string;
+}
 
-
-export default function InterviewsSection() {
+export default function InterviewsSection({
+    jobId,
+    companyId,
+    userId
+}: InterviewsSectionProps) {
     const [interviews, setInterviews] = useState<Interview[]>(mockInterviews);
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
@@ -61,6 +69,15 @@ export default function InterviewsSection() {
             .toUpperCase()
             .slice(0, 2);
     };
+
+    useEffect(()=>{
+        try{
+
+        }
+        catch(error){
+            console.log("Something went wrong")
+        }
+    },[])
 
     // Update Status
     const handleStatusChange = async (id: string, newStatus: InterviewStatus) => {
