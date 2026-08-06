@@ -118,8 +118,9 @@ class OfferEntity
         return $this->salary;
     }
 
-    public function setSalary()
+    public function setSalary(float $salary)
     {
+        $this->salary = $salary;
         return $this->salary;
     }
 

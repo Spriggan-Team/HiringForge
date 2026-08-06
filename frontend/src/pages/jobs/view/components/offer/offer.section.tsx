@@ -1,10 +1,11 @@
 
-
+import { format } from "date-fns";
 import React, { useCallback, useEffect, useState } from "react";
 
-/** Public Services */
+/**  Services */
 import { useAppContext } from "../../../../../hooks/context";
 import type { OfferStatus } from "../../../../../features/offer/offer";
+import OffersQueries from "../../../../../api/services/offer/queries";
 
 //-- Custom Components
 import { CreateOfferForm } from "../../../../components/createOfferForm/create.offer.form";
@@ -31,12 +32,39 @@ export interface Offer {
 }
 
 
+interface OffersSectionProps{
+    jobId: string
+}
 
-export default function OffersSection() {
+export default function OffersSection({
+    jobId
+}: OffersSectionProps) {
     const { setModal } = useAppContext();
     const [offers, setOffers] = useState<Offer[]>([]);
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
+    //-- Fetching data
+    useEffect(()=>{
+            const initializingOffers = async()=>{
+                try{
+                    const data = await OffersQueries.getOffersForUser(jobId);
+                    const mapping: Offer = {
+                        id: data.id,
+                        candidate: `${data.candidate.firstName} ${data.candidate.lastName}`,
+                        email: data.candidate.email,
+                        jobTitle: data.jobOffer.title,
+                        salary: data.salary,
+                        expiresAt: format(data.expiredAt, 'dd MMMM yyyy'),
+                        status: data.status
+                    }
+                    setOffers(mapping)
+                }
+                catch(error){
+                    console.log("Something went wrong ",error)
+                }
+            }
+            initializingOffers();
+    },[])
 
     //-- Handle Status
     const handleStatusChange = async (id: string, newStatus: OfferStatus) => {
@@ -73,7 +101,6 @@ export default function OffersSection() {
 
     const handleCancel = useCallback(async (id: string)=>{
         try{
-
         }
         catch(error){
 
@@ -101,24 +128,14 @@ export default function OffersSection() {
 
     const handleConsult = useCallback((offer: Offer)=>{
         try{
-            const initializingOffers = async()=>{
-                try{
 
-                }
-                catch(error){
-                    console.log("Something went wrong ",error)
-                }
-            }
         }
         catch(error){
 
         }
     },[])
 
-    //-- Fetch applications
-    useEffect(()=>{
 
-    },[])
 
 
     return (

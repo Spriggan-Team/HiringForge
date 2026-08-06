@@ -19,7 +19,7 @@ security:
 
         # API SECURISE 
         api:
-            pattern: ^/api/(candidates|agents|users|notification|contract|departments|skills|job_offer|applications|interviews)
+            pattern: ^/api/(candidates|agents|users|notification|contract|departments|skills|job_offer|applications|interviews|offers)
             stateless: true
             user_checker: App\Api\Security\AccountChecker
             custom_authenticators:
@@ -46,6 +46,7 @@ security:
         - { path: ^/api/notification,           roles: [IS_AUTHENTICATED_FULLY] }
         - { path: ^/api/applications,           roles: [IS_AUTHENTICATED_FULLY] }
         - { path: ^/api/interviews/users,       roles: [ROLE_USER] }
+        - { path: ^/api/offers/user,            roles: [ROLE_USER] }
 
 
 

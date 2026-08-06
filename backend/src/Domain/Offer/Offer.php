@@ -5,7 +5,6 @@ namespace  App\Domain\Offer;
 class Offer{
     private ?string $id = null;
     private ?string $title = null;
-
     private ?string $message = null;
     private ?float $salary = null;
     
@@ -14,36 +13,41 @@ class Offer{
 
     private OfferStatus $status = OfferStatus::SENT;
 
-    private \DateTimeImmutable $sentAt;  // same as createdAt
+    private \DateTimeImmutable $sentAt;
     private \DateTimeImmutable $expiredAt;
+
 
     public function __construct(
         string $candidateId,
         string $applicationId
-    ){
+    ) {
         $this->candidateId = $candidateId;
         $this->applicationId = $applicationId;
         $this->sentAt = new \DateTimeImmutable();
     }
 
+
     public static function create(
         string $candidateId,
         string $applicationId,
         \DateTimeImmutable $expiredAt,
-        ?float $title = null,
-        ?string $salary = null,
-        ?string $message = null,
-    )
-    {
+        ?string $title = null,
+        ?float $salary = null,
+        ?string $message = null
+    ): self {
         $domain = new self(
             candidateId: $candidateId,
             applicationId: $applicationId
         );
+        
         $domain->setTitle($title)
                ->setSalary($salary)
                ->setMessage($message)
                ->setExpiredAt($expiredAt);
+
+        return $domain;
     }
+
 
     public static function hydrate(
         string $id,
@@ -67,6 +71,7 @@ class Offer{
         $domain->expiredAt = $expiredAt;
     }
 
+    
     //----------------------
     //--- Getters
     //----------------------

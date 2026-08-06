@@ -114,6 +114,9 @@ services:
     App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferQueryRepository
     
+    #-- Offers
+    App\Domain\Offer\OfferRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Offer\Repositories\OfferRepository
 
     #----Category -------------------
     App\Domain\Category\Repositories\CategoryRepositoryInterace:
