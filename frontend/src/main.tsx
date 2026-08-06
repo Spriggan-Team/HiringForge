@@ -20,18 +20,23 @@ import './utils/i18n/index.ts'
 
 //-- Styles
 import './index.css'
+import AppModal from './layout/components/modal/app.modal.tsx'
 
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-        <AppContextProvider>
+    <div>
+            <AppContextProvider>
           <AppPopup>
             <AppSpinner>
                 <BrowserRouter>
                   <AppRoutes />
               </BrowserRouter>
+
             </AppSpinner>
+          <AppModal />
           </AppPopup>
-    </AppContextProvider>
+      </AppContextProvider>
+    </div>
   </StrictMode>,
 )

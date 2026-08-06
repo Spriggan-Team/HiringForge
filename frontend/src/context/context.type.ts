@@ -14,3 +14,13 @@ export interface UserAppNavBarProps {
     title: string | null;
     description?: string | null | React.ReactNode;
 }
+
+
+export interface AppModalProps{
+    isOpen: boolean;
+    title?: string;
+    /** Jsx component to display */
+    content: React.ReactNode; 
+    /** run on closing*/
+    onClose?: () => void;
+}

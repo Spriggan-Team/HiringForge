@@ -1,262 +1,236 @@
-/* Container Carte */
+/* Card  Container */
 .tableCard {
-    background: #ffffff;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-    overflow: hidden;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
+/* Header */
 .tableHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.headerTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .tableHeader h2 {
-    margin: 0;
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #0f172a;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
 }
 
 .badgeCount {
-    background-color: #f1f5f9;
-    color: #475569;
-    padding: 0.25rem 0.625rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
+  background-color: #f1f5f9;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 9999px;
 }
 
-/* Table Structure */
-.tableContainer {
-    width: 100%;
-    overflow-x: auto;
+/* Boutons */
+.btnPrimary {
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
-.offersTable {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    font-size: 0.875rem;
-}
-
-.offersTable th {
-    background: #f8fafc;
-    color: #64748b;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    padding: 0.875rem 1.25rem;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.offersTable td {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid #f1f5f9;
-    color: #334155;
-    vertical-align: middle;
-}
-
-.offersTable tbody tr {
-    transition: background-color 0.2s ease;
-}
-
-.offersTable tbody tr:hover {
-    background-color: #f8fafc;
-}
-
-.rowDisabled {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-/* Candidate & Job Details */
-.candidateCell {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.avatar,
-.avatarFallback {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.avatarFallback {
-    background: #e0e7ff;
-    color: #4338ca;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8125rem;
-    font-weight: 600;
-}
-
-.candidateName {
-    display: block;
-    font-weight: 500;
-    color: #0f172a;
-}
-
-.emailText {
-    display: block;
-    font-size: 0.75rem;
-    color: #64748b;
-}
-
-.jobTitle {
-    font-weight: 500;
-    color: #1e293b;
-}
-
-.salaryText {
-    font-weight: 600;
-    color: #0f172a;
-}
-
-/* Badges de Statut */
-.status {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.625rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.statusDraft {
-    background: #f1f5f9;
-    color: #475569;
-}
-
-.statusSent {
-    background: #dbeafe;
-    color: #1e40af;
-}
-
-.statusAccepted {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.statusDeclined {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.statusExpired {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-/* Actions & Buttons */
-.textRight {
-    text-align: right;
-}
-
-.actionsCell {
-    text-align: right;
-}
-
-.actionGroup {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.statusSelect {
-    padding: 0.375rem 0.625rem;
-    border-radius: 6px;
-    border: 1px solid #cbd5e1;
-    background-color: #ffffff;
-    font-size: 0.8125rem;
-    color: #334155;
-    cursor: pointer;
-    outline: none;
-    transition: border-color 0.2s ease;
-}
-
-.statusSelect:focus {
-    border-color: #6366f1;
+.btnPrimary:hover {
+  background-color: #1d4ed8;
 }
 
 .btnDanger {
-    padding: 0.375rem 0.625rem;
-    border-radius: 6px;
-    border: 1px solid #fca5a5;
-    background: #fff;
-    color: #dc2626;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  background-color: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.btnDanger:hover {
-    background: #fef2f2;
+.btnDanger:hover:not(:disabled) {
+  background-color: #ffe4e6;
+  color: #be123c;
+}
+
+.btnDanger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Board */
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.offersTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.offersTable th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.offersTable td {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.offersTable tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.textRight {
+  text-align: right;
+}
+
+.rowDisabled {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .emptyState {
-    text-align: center;
-    color: #94a3b8;
-    padding: 2rem !important;
+  text-align: center;
+  color: #94a3b8;
+  padding: 32px !important;
 }
 
-/* Responsive Mobile */
-@media (max-width: 768px) {
-    .offersTable,
-    .offersTable thead,
-    .offersTable tbody,
-    .offersTable th,
-    .offersTable td,
-    .offersTable tr {
-        display: block;
-    }
+/* Candidate Cell & Avatar */
+.candidateCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-    .offersTable thead {
-        display: none;
-    }
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
 
-    .offersTable tr {
-        margin: 0.75rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        background: #ffffff;
-    }
+.avatarFallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-    .offersTable td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid #f1f5f9;
-        text-align: right;
-    }
+.candidateName {
+  display: block;
+  font-weight: 600;
+  color: #0f172a;
+}
 
-    .offersTable td:last-child {
-        border-bottom: none;
-    }
+.emailText {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+}
 
-    .offersTable td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #64748b;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        margin-right: 0.5rem;
-    }
+.jobTitle {
+  font-weight: 500;
+}
 
-    .actionGroup {
-        width: 100%;
-        justify-content: flex-end;
-    }
+.salaryText {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* Dynamic Badge */
+.status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* Status state value */
+.statusPending,
+.statusEnAttente {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.statusAccepted,
+.statusAcceptee {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.statusRejected,
+.statusRefusee {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.statusExpired,
+.statusExpiree {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+/* Actions cell */
+.actionsCell {
+  text-align: right;
+}
+
+.actionGroup {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.statusSelect {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #334155;
+  outline: none;
+  cursor: pointer;
+}
+
+.statusSelect:focus {
+  border-color: #2563eb;
 }

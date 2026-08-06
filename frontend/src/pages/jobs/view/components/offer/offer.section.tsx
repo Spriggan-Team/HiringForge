@@ -1,7 +1,10 @@
 
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./OffersSection.module.css";
+import { CreateOfferForm } from "../../../../components/createOfferForm/create.offer.form";
+import { useAppContext } from "../../../../../hooks/context";
+import OffersServices from "../../../../../api/services/offer/command";
 
 export type OfferStatus = "Draft" | "Sent" | "Accepted" | "Declined" | "Expired";
 
@@ -55,6 +58,7 @@ const STATUS_OPTIONS: OfferStatus[] = ["Draft", "Sent", "Accepted", "Declined", 
 
 
 export default function OffersSection() {
+    const { setModal } = useAppContext();
     const [offers, setOffers] = useState<Offer[]>(mockOffers);
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
@@ -76,6 +80,7 @@ export default function OffersSection() {
         }).format(amount);
     };
 
+
     //-- Handle Status
     const handleStatusChange = async (id: string, newStatus: OfferStatus) => {
         setIsUpdating(id);
@@ -84,12 +89,15 @@ export default function OffersSection() {
             setOffers((prev) =>
                 prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
             );
-        } catch (error) {
+        }
+        catch (error) {
             console.error("Erreur lors de la mise à jour de l'offre", error);
-        } finally {
+        }
+        finally {
             setIsUpdating(null);
         }
     };
+
 
     // Handle Delete/Cancel offer
     const handleDelete = async (id: string) => {
@@ -97,18 +105,51 @@ export default function OffersSection() {
         try {
             // TODO: API call -> await api.deleteOffer(id);
             setOffers((prev) => prev.filter((item) => item.id !== id));
-        } catch (error) {
+        }
+        catch (error) {
             console.error("Erreur lors de la suppression de l'offre", error);
-        } finally {
+        }
+        finally {
             setIsUpdating(null);
         }
     };
 
+
+    //-- Open Modal for creating offer
+    const handleOpenCreateModal = () => {
+        console.log("Open modal")
+        setModal({
+            isOpen: true,
+            title: "Créer une offre d'embauche",
+            content: (
+                <CreateOfferForm
+                    applications={[]}
+                    onSubmit={async (payload) => {
+                        await OffersServices.create(payload);
+                    }}
+                />
+            ),
+        });
+    };
+
+
+    //-- Fetch applications
+    useEffect(()=>{
+
+    },[])
+
+
     return (
         <div className={styles.tableCard}>
+            
             <div className={styles.tableHeader}>
-                <h2>Propositions d'embauche (Offres)</h2>
-                <span className={styles.badgeCount}>{offers.length} au total</span>
+                <div className={styles.headerTitleGroup}>
+                    <h2>Propositions d'embauche (Offres)</h2>
+                    <span className={styles.badgeCount}>{offers.length} au total</span>
+                </div>
+                <button onClick={handleOpenCreateModal} className={styles.btnPrimary}>
+                    + Générer une offre
+                </button>
             </div>
 
             <div className={styles.tableContainer}>
@@ -175,10 +216,10 @@ export default function OffersSection() {
                                     <td data-label="Date d'envoi">
                                         {offer.sentAt
                                             ? new Date(offer.sentAt).toLocaleDateString("fr-FR", {
-                                                  day: "numeric",
-                                                  month: "short",
-                                                  year: "numeric",
-                                              })
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric",
+                                            })
                                             : "—"}
                                     </td>
 
@@ -186,10 +227,10 @@ export default function OffersSection() {
                                     <td data-label="Expiration">
                                         {offer.expiresAt
                                             ? new Date(offer.expiresAt).toLocaleDateString("fr-FR", {
-                                                  day: "numeric",
-                                                  month: "short",
-                                                  year: "numeric",
-                                              })
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric",
+                                            })
                                             : "—"}
                                     </td>
 
@@ -229,6 +270,7 @@ export default function OffersSection() {
                                             </button>
                                         </div>
                                     </td>
+                                    
                                 </tr>
                             ))
                         )}

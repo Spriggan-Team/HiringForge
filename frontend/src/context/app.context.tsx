@@ -3,7 +3,7 @@ import {
     createContext,
     useMemo,
 } from "react";
-import type { AppLoadingState, AppPopUpSettings, UserAppNavBarProps } from "./context.type";
+import type { AppLoadingState, AppModalProps, AppPopUpSettings, UserAppNavBarProps } from "./context.type";
 import type { CurrentActor } from "../features/shared/account";
 import type { JobOverview } from "./job.context";
 import { INITIAL_JOB_VIEW, type JobView } from "../features/jobs/JobOffer";
@@ -17,6 +17,10 @@ interface AppContextProps{
     //-- Popup
     popup: AppPopUpSettings;
     setPopup: (param: AppPopUpSettings)=>void;
+
+    //-- Modal
+    modal: AppModalProps | null;
+    setModal: (param: AppModalProps | null)=>void;
 
     //-- Navbar
     navbar?: UserAppNavBarProps | null;
@@ -56,9 +60,10 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
     const [popup, setPopup] = useState<AppPopUpSettings>(null)
     const [loading, setLoading] = useState<AppLoadingState>();
 
+    const [modal, setModal] = useState<AppModalProps | null>(null);
+
     // navbar
     const [navbar, setNavbar] = useState<UserAppNavBarProps | null>(null);
-
 
     const [currentActor, setCurrentActor] = useState<CurrentActor | null>(null);
 
@@ -69,6 +74,8 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
     const contextValue = useMemo(
         () => ({
             popup, setPopup,
+            modal, setModal,
+            
             loading, setLoading,
             navbar, setNavbar,
             currentActor, setCurrentActor,
@@ -76,7 +83,7 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
             jobOverview, setJobOverview,
             currentJob, setCurrentJob
         }),
-        [popup, loading, navbar, currentActor]
+        [popup, loading, navbar, currentActor, jobOverview, currentJob, modal]
     );
 
     return (

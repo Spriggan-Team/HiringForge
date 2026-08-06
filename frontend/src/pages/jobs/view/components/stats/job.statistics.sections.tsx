@@ -95,6 +95,9 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
         rejectionRate: 0,
         offersGenerated: 0,
         avgTimeToHireDays: 0,
+        avgTimeToHireDiffDays: 0,
+        rejectedCandidatesCount: 0,
+        offersAccepted: 0
     });
 
     useEffect(() => {
@@ -120,6 +123,9 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
                         rejectionRate: jobKpi.rejectionRate ?? 0,
                         offersGenerated: jobKpi.offersGenerated ?? 0,
                         avgTimeToHireDays: jobKpi.avgTimeToHireDays ?? 0,
+                        avgTimeToHireDiffDays: jobKpi.avgTimeToHireDiffDays,
+                        rejectedCandidatesCount: jobKpi.rejectedCandidatesCount,
+                        offersAccepted: jobKpi.offersAccepted
                     });
                 }
 
@@ -208,12 +214,12 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
                 <div className={styles.kpiCard}>
                     <span className={styles.kpiLabel}>Taux de Rejet</span>
                     <span className={styles.kpiValue}>{jobKpisData.rejectionRate}%</span>
-                    <span className={styles.kpiSubtext}>168 candidats écartés</span>
+                    <span className={styles.kpiSubtext}>{jobKpisData.rejectedCandidatesCount} candidats écartés</span>
                 </div>
                 <div className={styles.kpiCard}>
                     <span className={styles.kpiLabel}>Temps Moyen d'Embauche</span>
                     <span className={styles.kpiValue}>{jobKpisData.avgTimeToHireDays} jours</span>
-                    <span className={`${styles.kpiBadge} ${styles.positive}`}>-2 jours vs moyenne</span>
+                    <span className={`${styles.kpiBadge} ${styles.positive}`}>{-2} jours vs moyenne</span>
                 </div>
             </div>
 
