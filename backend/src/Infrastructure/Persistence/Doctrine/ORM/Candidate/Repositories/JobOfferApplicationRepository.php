@@ -49,39 +49,117 @@ class JobOfferApplicationRepository
         }
     }
 
+    //--------------------------------------
+    //---------- Count & Stats
+    //---------------------------------------
+
+    /** 
+     * Counts applications matching criteria. If no status is provided, all applications are counted.
+     *
+     * @param array{
+     *     companyId?: string,
+     *     jobOfferId?: string,
+     *     userId?: string,
+     *     status?: mixed
+     * } $criteria
+     */
     #[Override]
-    public function count(array $criteria): int 
+    public function count(array $criteria = []): int 
     {
         $qb = $this->createQueryBuilder('a')
             ->select('COUNT(DISTINCT a.id)');
 
-        //  Filter by Job Posting
-        if (isset($criteria['jobOfferId'])) {
+        $hasJobOfferJoin = false;
+
+        if (!empty($criteria['jobOfferId'])) {
             $qb->andWhere('a.jobOffer = :jobOfferId')
-            ->setParameter('jobOfferId', $criteria['jobOfferId']);
+               ->setParameter('jobOfferId', $criteria['jobOfferId']);
         }
 
-        // Filter by application status (Enum or String)
-        if (isset($criteria['status'])) {
+        if (!empty($criteria['status'])) {
             $qb->andWhere('a.status = :status')
-            ->setParameter('status', $criteria['status']);
+               ->setParameter('status', $criteria['status']);
         }
 
-        //  Filter by company (using the JobOffer -> Company relationship)
-        if (isset($criteria['companyId'])) {
-            $qb->join('a.jobOffer', 'j')
-                ->andWhere('j.company = :companyId') 
-                ->setParameter('companyId', $criteria['companyId']);
+        if (!empty($criteria['companyId'])) {
+            if (!$hasJobOfferJoin) {
+                $qb->innerJoin('a.jobOffer', 'j');
+                $hasJobOfferJoin = true;
+            }
+            $qb->andWhere('j.company = :companyId') 
+               ->setParameter('companyId', $criteria['companyId']);
+        }
+
+        if (!empty($criteria['userId'])) {
+            if (!$hasJobOfferJoin) {
+                $qb->innerJoin('a.jobOffer', 'j');
+                $hasJobOfferJoin = true;
+            }
+            $qb->andWhere('j.user = :userId')
+               ->setParameter('userId', $criteria['userId']);
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
 
-    #[Override]
-    public function getPostulationMetrics(string $userId, string $jobId, string $timeframe = 'month'): array
+    
+    /**
+     * Counts applications created within a specific date range.
+     */
+    public function countApplicationsInPeriod(string $jobOfferId, \DateTimeInterface $start, \DateTimeInterface $end): int
     {
-        throw new \Exception('Not implemented');
+        return (int) $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.jobOffer = :jobOfferId')
+            ->andWhere('a.createdAt >= :start')
+            ->andWhere('a.createdAt <= :end')
+            ->setParameter('jobOfferId', $jobOfferId)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+
+
+    /**
+     * Calculates average time to hire in days for a specific job offer and user.
+     */
+    public function getAvgTimeToHireDays(string $jobOfferId, string $userId): int
+    {
+        $result = $this->createQueryBuilder('a')
+            ->select('AVG(DATE_DIFF(a.updatedAt, a.createdAt))')
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('j.id = :jobOfferId')
+            ->andWhere('j.user = :userId')
+            ->andWhere('a.status = :status')
+            ->setParameter('jobOfferId', $jobOfferId)
+            ->setParameter('userId', $userId)
+            ->setParameter('status', JobApplicationStatus::HIRED)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $result !== null ? (int) round((float) $result) : 0;
+    }
+
+    /**
+     * Calculates baseline average time to hire across ALL job offers owned by the user
+     * to compute the relative difference (+/- days vs user average).
+     */
+    public function getUserAvgTimeToHireDays(string $userId): int
+    {
+        $result = $this->createQueryBuilder('a')
+            ->select('AVG(DATE_DIFF(a.updatedAt, a.createdAt))')
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('j.user = :userId')
+            ->andWhere('a.status = :status')
+            ->setParameter('userId', $userId)
+            ->setParameter('status', JobApplicationStatus::HIRED)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $result !== null ? (int) round((float) $result) : 0;
     }
 
     
@@ -98,7 +176,7 @@ class JobOfferApplicationRepository
      */
     public function getUserStats(string $userId ,string $jobId): array
     {
-        // 1. Décompte optimisé des applications par statut
+        //  Optimized Breakdown of Applications by Status
         $stats = $this->createQueryBuilder('a')
             ->select('
                 SUM(CASE WHEN a.status = :preselect THEN 1 ELSE 0 END) AS preselect,
@@ -113,7 +191,7 @@ class JobOfferApplicationRepository
             ->getQuery()
             ->getSingleResult();
 
-        // 2. Décompte des entretiens liés au JobOffer
+        //  Breakdown of Interviews Related to the JobOffer
         $interviewCount = (int) $this->getEntityManager()
             ->createQueryBuilder()
             ->select('COUNT(i.id)')
@@ -131,6 +209,105 @@ class JobOfferApplicationRepository
         ];
     }
 
+
+    /**
+     * Retrieves the number of applications made by candidates for a specific job offer within a timeframe.
+     *
+     * @param string $userId The recruiter ID (verifies ownership/relation)
+     * @param string $jobId  The unique job offer ID
+     * @param string $timeframe 'month' (12 items) or 'week' (7 items)
+     * @return float[] List of postulation counts ordered chronologically
+     */
+    public function getPostulationMetrics(string $userId, string $jobId, string $timeframe = 'month'): array
+    {
+        $now = new \DateTimeImmutable();
+
+        if ($timeframe === 'week') {
+            return $this->getWeeklyMetrics($userId, $jobId, $now);
+        }
+
+        return $this->getMonthlyMetrics($userId, $jobId, $now);
+    }
+
+    /**
+     * Generates 12 elements for the current year (Jan to Dec).
+     * 
+     * @return float[]
+     */
+    public function getMonthlyMetrics(string $userId, string $jobId, \DateTimeImmutable $now): array
+    {
+        // Set the 12 months to 0.0 (indexed from 1 to 12)
+        $metrics = array_fill(1, 12, 0.0);
+
+        $startOfYear = $now->setDate((int) $now->format('Y'), 1, 1)->setTime(0, 0, 0);
+        $endOfYear   = $now->setDate((int) $now->format('Y'), 12, 31)->setTime(23, 59, 59);
+
+        // Monthly Aggregation Requests
+        $qb = $this->createQueryBuilder('a')
+            ->select('MONTH(a.createdAt) as period', 'COUNT(a.id) as count')
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('j.id = :jobId')
+            ->andWhere('j.user = :userId') // Vérifie que l'offre appartient bien au recruteur
+            ->andWhere('a.createdAt BETWEEN :start AND :end')
+            ->setParameter('jobId', $jobId)
+            ->setParameter('userId', $userId)
+            ->setParameter('start', $startOfYear)
+            ->setParameter('end', $endOfYear)
+            ->groupBy('period');
+
+        $results = $qb->getQuery()->getResult();
+
+        //  Enter the actual results
+        foreach ($results as $row) {
+            $monthIndex = (int) $row['period'];
+            $metrics[$monthIndex] = (float) $row['count'];
+        }
+
+        return array_values($metrics); // return array of items (0-11)
+    }
+
+
+    /**
+     * Generates 7 elements for the current week (Mon to Sun).
+     * 
+     * @return float[]
+     */
+    public function getWeeklyMetrics(string $userId, string $jobId, \DateTimeImmutable $now): array
+    {
+        //  Set the 7 days to 0.0 (Monday through Sunday)
+        $metrics = array_fill(1, 7, 0.0);
+
+        $startOfWeek = $now->modify('monday this week')->setTime(0, 0, 0);
+        $endOfWeek   = $now->modify('sunday this week')->setTime(23, 59, 59);
+
+        // Aggregation query by day of the week
+        // In MySQL, WEEKDAY() returns 0 for Monday and 6 for Sunday. We adjust this by adding 1.
+        $qb = $this->createQueryBuilder('a')
+            ->select('WEEKDAY(a.createdAt) + 1 as period', 'COUNT(a.id) as count')
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('j.id = :jobId')
+            ->andWhere('j.user = :userId')
+            ->andWhere('a.createdAt BETWEEN :start AND :end')
+            ->setParameter('jobId', $jobId)
+            ->setParameter('userId', $userId)
+            ->setParameter('start', $startOfWeek)
+            ->setParameter('end', $endOfWeek)
+            ->groupBy('period');
+
+        $results = $qb->getQuery()->getResult();
+
+        // Enter the actual results
+        foreach ($results as $row) {
+            $dayIndex = (int) $row['period'];
+            $metrics[$dayIndex] = (float) $row['count'];
+        }
+
+        return array_values($metrics); //r teurn an array (index 0-6)
+    }
+
+    //-------------------------------------
+    //--------- Entity & Collection fetch 
+    //------------------------------------
 
     /**
      * Retrieve all applications/postulation related to a specific job

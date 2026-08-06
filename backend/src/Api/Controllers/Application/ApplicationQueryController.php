@@ -6,6 +6,7 @@ namespace App\Api\Controllers\Application;
 use App\Api\Controllers\Helpers\ApiControllerHelpers;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
+use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
@@ -36,6 +37,7 @@ class ApplicationQueryController extends AbstractController
     }
     
 
+    #[IsGranted(AccountRole::USER->value)]
     #[Route('/{jobOfferId}/rejected', methods: ['GET'])]
     public function getRejected(
         string $jobOfferId
@@ -50,6 +52,16 @@ class ApplicationQueryController extends AbstractController
                 )->toJsonResponse();
             }
 
+            $rejectedCount = $this->applicationRepository->count(criteria: [
+                'userId' => $user->getId(),
+                'jobOfferId' => $jobOfferId,
+                'status' => JobApplicationStatus::REJECTED
+            ]);
+
+            return ApiResponse::success(
+                data: $rejectedCount,
+                message: 'Everything is fine'
+            )->toJsonResponse();
         }
         catch(\Exception $error){
             return ApiResponse::error(
@@ -58,6 +70,7 @@ class ApplicationQueryController extends AbstractController
             )->toJsonResponse();
         }
     }
+
 
 
     /**
@@ -137,5 +150,107 @@ class ApplicationQueryController extends AbstractController
             )->toJsonResponse();
         }
     }
+
+
+
+    #[Route('/{jobOfferId}/kpis', methods: ['GET'])]
+    public function getJobKpis(string $jobOfferId): JsonResponse
+    {
+        try {
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
+
+            if (!$user) {
+                return ApiResponse::error(
+                    message: 'Unauthorized action',
+                    statusCode: 401
+                )->toJsonResponse();
+            }
+
+            $userId = $user->getId();
+
+            //  Total number of applications associated with this job posting and this user
+            $totalApplications = $this->applicationRepository->count([
+                'jobOfferId' => $jobOfferId,
+                'userId'     => $userId,
+            ]);
+
+            // Candidates Not Selected for This Position
+            $rejectedCandidatesCount = $this->applicationRepository->count([
+                'jobOfferId' => $jobOfferId,
+                'userId'     => $userId,
+                'status'     => JobApplicationStatus::REJECTED,
+            ]);
+
+            $rejectionRate = $totalApplications > 0
+                ? (int) round(($rejectedCandidatesCount / $totalApplications) * 100)
+                : 0;
+
+            //  Bids generated and accepted for this specific bid
+            $offersGenerated = $this->applicationRepository->count([
+                'jobOfferId' => $jobOfferId,
+                'userId'     => $userId,
+                'status'     => JobApplicationStatus::OFFER_DECLINED,
+            ]);
+
+            $offersAccepted = $this->applicationRepository->count([
+                'jobOfferId' => $jobOfferId,
+                'userId'     => $userId,
+                'status'     => JobApplicationStatus::HIRED,
+            ]);
+
+            //  Average time to hire for a specific job posting vs. the recruiter's overall average
+            $avgTimeToHireDays = $this->applicationRepository->getAvgTimeToHireDays($jobOfferId, $userId);
+            $userAvgTimeToHireDays = $this->applicationRepository->getUserAvgTimeToHireDays($userId);
+
+            // Difference in days compared to the recruiter's overall average (e.g., -2)
+            $avgTimeToHireDiffDays = $avgTimeToHireDays - $userAvgTimeToHireDays;
+
+            // Weekly increase specific to this offer
+            $now = new \DateTimeImmutable();
+            $startOfThisWeek = $now->modify('monday this week 00:00:00');
+            $startOfLastWeek = $startOfThisWeek->modify('-7 days');
+            $endOfLastWeek   = $startOfThisWeek->modify('-1 second');
+
+            $thisWeekCount = $this->applicationRepository->countApplicationsInPeriod(
+                $jobOfferId,
+                $startOfThisWeek,
+                $now
+            );
+
+            $lastWeekCount = $this->applicationRepository->countApplicationsInPeriod(
+                $jobOfferId,
+                $startOfLastWeek,
+                $endOfLastWeek
+            );
+
+            $applicationIncreaseThisWeek = $lastWeekCount > 0
+                ? (int) round((($thisWeekCount - $lastWeekCount) / $lastWeekCount) * 100)
+                : ($thisWeekCount > 0 ? 100 : 0);
+
+            return ApiResponse::success(
+                data: [
+                    'totalApplications'           => $totalApplications,
+                    'applicationIncreaseThisWeek' => $applicationIncreaseThisWeek,
+                    'rejectionRate'               => $rejectionRate,
+                    'rejectedCandidatesCount'     => $rejectedCandidatesCount,
+                    'offersGenerated'             => $offersGenerated,
+                    'offersAccepted'              => $offersAccepted,
+                    'avgTimeToHireDays'           => $avgTimeToHireDays,
+                    'avgTimeToHireDiffDays'       => $avgTimeToHireDiffDays,
+                ],
+                message: 'Job KPIs retrieved successfully'
+            )->toJsonResponse();
+
+        }
+        catch (\Exception $error) {
+            return ApiResponse::error(
+                message: 'Failed to fetch job KPIs: ' . $error->getMessage(),
+                statusCode: 500
+            )->toJsonResponse();
+        }
+    }
+
+
 
 }

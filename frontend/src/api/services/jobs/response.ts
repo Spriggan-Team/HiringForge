@@ -69,3 +69,18 @@ export type RecruitmentPipelineStats = {
 
 export type RecruitmentPipelineStatsResponse =
     ApiResponse<RecruitmentPipelineStats>;
+
+
+
+export type RecruitmentMetricsResponse = ApiResponse<RecruitmentMetrics>;
+
+interface RecruitmentMetrics {
+  totalApplications: number;
+  applicationIncreaseThisWeek: number;
+  rejectionRate: number;
+  rejectedCandidatesCount: number;
+  offersGenerated: number;
+  offersAccepted: number;
+  avgTimeToHireDays: number;
+  avgTimeToHireDiffDays: number;
+}

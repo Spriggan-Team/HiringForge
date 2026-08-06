@@ -263,7 +263,9 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
                     : viewMenu == "offers" ?
                         (<OffersSection />)
                     : viewMenu === "statistics" ?
-                        (<JobStatisticsSection jobId={currentJob.id} />)
+                        (<JobStatisticsSection 
+                            jobId={currentJob.id}
+                        />)
                     : null
                 }
             </div>

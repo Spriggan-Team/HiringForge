@@ -60,6 +60,7 @@ export interface LineChartProps {
     animate?: boolean | { duration?: number; ease?: string };
 }
 
+
 export interface GraphDatum {
     coords:   Point[];
     settings: {
@@ -70,6 +71,7 @@ export interface GraphDatum {
         area?: Partial<React.SVGAttributes<SVGPathElement>>;
     };
 }
+
 
 export interface CurveData {
     x:              number[];
@@ -97,16 +99,19 @@ export interface CurveData {
     type?:           "line" | "area";
 }
 
+
 export interface Dataset {
     dates:   Date[];
     data:    CurveData[];
     maximum: number;
 }
 
+
 interface Point {
     x: Date;
     y: number;
 }
+
 
 export interface OnChartReadyFuncProps {
     divContainer: HTMLDivElement;

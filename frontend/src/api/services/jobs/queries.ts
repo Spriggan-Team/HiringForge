@@ -2,17 +2,19 @@ import { intercept } from "../../../utils/utils";
 
 import { type ApiResponse } from "../response.types";
 import { authGet, handleGenericApiResponseAfter } from "../../handler";
-import type { ApiJobSummaryResponse, JobViewApiResponse, RecruitmentPipelineStatsResponse } from "./response";
-import type { UserJobFiltersRequets } from "./request";
+import type { ApiJobSummaryResponse, JobViewApiResponse, RecruitmentMetricsResponse, RecruitmentPipelineStatsResponse } from "./response";
+
 import { buildFilterQueryParams } from "./helpers";
-import type { JobView } from "../../../features/jobs/JobOffer";
 import { mapJobOfferViewToJobView } from "./mapper";
+import type { UserJobFiltersRequets } from "./request";
+import type { JobView } from "../../../features/jobs/JobOffer";
 
 
+//----------------------------
 //-- Recruiter
+//----------------------------
 
-
-export const getJobsSummary = async (
+const getJobsSummary = async (
     limit: number = 7,
     skip: number = 0,
     filters?: UserJobFiltersRequets
@@ -30,7 +32,7 @@ export const getJobsSummary = async (
 
 
 
-export const getJobView = async (jobOfferId: string): Promise<JobView> => {
+const getJobView = async (jobOfferId: string): Promise<JobView> => {
   try {
     const response = await authGet<JobViewApiResponse>(`/users/job_offer/${jobOfferId}`);
     
@@ -47,15 +49,15 @@ export const getJobView = async (jobOfferId: string): Promise<JobView> => {
 };
 
 
-export const getPostulationMetrics = async({
+const getPostulationMetrics = async({
     jobId,
-    frequency = 'month'
+    timeframe = 'month'
 }:{
     jobId?: string;
-    frequency?: 'week' | 'month'
+    timeframe?: 'week' | 'month'
 })=>{
     try{
-        const response = await authGet('/users/job_offer');
+        const response = await authGet<ApiResponse<number[]>>(`/users/job_offer/${jobId}/candidates/stats?timeframe=${timeframe}`);
         return response.data;
     }
     catch(error){
@@ -64,7 +66,7 @@ export const getPostulationMetrics = async({
 }
 
 
-export const getUserStats = async(jobId: string)=>{
+const getUserStats = async(jobId: string)=>{
     try{
         const response = await authGet<RecruitmentPipelineStatsResponse>(`/users/job_offer/${jobId}/candidates/stats`);
         return response.data;
@@ -75,7 +77,7 @@ export const getUserStats = async(jobId: string)=>{
 }
 
 
-export const countJobOffers = async (currentFilters?: UserJobFiltersRequets) => {
+const countJobOffers = async (currentFilters?: UserJobFiltersRequets) => {
     try {
         const queryString = buildFilterQueryParams(currentFilters);
         const response = await authGet<ApiResponse<number>>(`/users/job_offer/count?${queryString}`);
@@ -88,11 +90,29 @@ export const countJobOffers = async (currentFilters?: UserJobFiltersRequets) => 
 };
 
 
+const getJobKpis = async(
+    jobId: string
+)=>{
+    try{
+        const response = await authGet<RecruitmentMetricsResponse>(`/applications/${jobId}/kpis`);
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
 
 
-//JobPublicationStatus
+//----JobPublicationStatus
 const JobQueries = intercept(
-    {getJobsSummary, getJobView, countJobOffers, getPostulationMetrics, getUserStats},
+    { 
+        getJobsSummary,
+        getJobView,
+        getJobKpis,
+        countJobOffers,
+        getPostulationMetrics,
+        getUserStats
+    },
     undefined,
     handleGenericApiResponseAfter
 );

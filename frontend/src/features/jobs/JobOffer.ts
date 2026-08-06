@@ -25,6 +25,14 @@ export interface JobCardinal {
   hired: number;
 }
 
+export interface JobKpis {
+    totalApplications: number;
+    applicationIncreaseThisWeek: number;
+    rejectionRate: number;
+    offersGenerated: number;
+    avgTimeToHireDays: number;
+}
+
 /** ----------------------------------------------------------------
  * Shared (Candidate + Recruiter)
  * ---------------------------------------------------------------- */

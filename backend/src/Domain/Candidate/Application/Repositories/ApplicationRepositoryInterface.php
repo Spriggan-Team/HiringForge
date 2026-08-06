@@ -16,15 +16,17 @@ interface ApplicationRepositoryInterface
 
 
     /** 
-     * count all related application of an user to a job
-     * @param array $criteria
-     *          ex: [
-     *              'companyId' => string,
-     *              'jobOfferId' => string,
-     *              'status'? => JobApplicationStatus
-     *          ]
-    */
+     * Counts applications matching criteria. If no status is provided, all applications are counted.
+     *
+     * @param array{
+     *     companyId?: string,
+     *     jobOfferId?: string,
+     *     userId?: string,
+     *     status?: mixed
+     * } $criteria
+     */
     public function count(array $criteria): int;
+
 
     /**
      * Retrieve all applications/postulation related to a specific job
@@ -78,14 +80,50 @@ interface ApplicationRepositoryInterface
      */
     public function getUserStats(string $userId, string $jobId): array;
 
+    
+    /**
+     * Counts applications created within a specific date range.
+     */
+    public function countApplicationsInPeriod(string $jobOfferId, \DateTimeInterface $start, \DateTimeInterface $end): int;
+
+
 
     /**
-     * retreive the number of postaltion made by candidate in a timeframe
-     * @param string $userId the idntifiant of an user! it is used to check the relation between the user (recruiter) & the related job
-     * @param string $jobId the uniq identifier of a kob
-     * @param string $timeframe determine wether the results are sort by 'month' (12 items) or by 'week' (7 items)
-     * @return array<int, float>
+     * Calculates average time to hire in days for a specific job offer and user.
      */
-    public function getPostulationMetrics(string $userId ,string $jobId, string $timeframe = 'month'): array;
+    public function getAvgTimeToHireDays(string $jobOfferId, string $userId): int;
 
+
+    /**
+     * Calculates baseline average time to hire across ALL job offers owned by the user
+     * to compute the relative difference (+/- days vs user average).
+     */
+    public function getUserAvgTimeToHireDays(string $userId): int;
+
+    /**
+     * Retrieves the number of applications made by candidates for a specific job offer within a timeframe.
+     *
+     * @param string $userId The recruiter ID (verifies ownership/relation)
+     * @param string $jobId  The unique job offer ID
+     * @param string $timeframe 'month' (12 items) or 'week' (7 items)
+     * @return float[] List of postulation counts ordered chronologically
+     */
+    public function getPostulationMetrics(string $userId, string $jobId, string $timeframe = 'month'): array;
+
+
+    /**
+     * Generates 12 elements for the current year (Jan to Dec).
+     * 
+     * @return float[]
+     */
+    public function getMonthlyMetrics(string $userId, string $jobId, \DateTimeImmutable $now): array;
+
+
+
+    /**
+     * Generates 7 elements for the current week (Mon to Sun).
+     * 
+     * @return float[]
+     */
+    public function getWeeklyMetrics(string $userId, string $jobId, \DateTimeImmutable $now): array;
 }

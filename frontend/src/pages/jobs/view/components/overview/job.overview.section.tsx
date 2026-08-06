@@ -29,6 +29,7 @@ import RecentAction from "../../../../components/recentAction/recent.action";
 
 //-- CSS styles 
 import styles from "./JobOverviewSection.module.css"
+import ApplicationQueries from "../../../../../api/services/application/queries";
 
 
 
@@ -59,181 +60,207 @@ const mockData = [
         type: "confirm-interview" as PersonActionType,
     }
 ]
-
-interface JobOverviewSectionProps{
-    jobView?: JobView
+interface JobOverviewSectionProps {
+    jobView?: JobView;
 }
 
-
-const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({ 
-    jobView: defaultJobView = null
+export const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({ 
+    jobView: defaultJobView = null 
 }) => {
     const { t } = useTranslation();
-    const [jobView, setJobView] = useState<JobView | null>(defaultJobView);
-
     const { id } = useParams<{ id: string }>();
+
+    const [jobView, setJobView] = useState<JobView | null>(defaultJobView);
     const [notifications, setNotifications] = useState<JobOfferNotification[]>([]);
+    const [pieData, setPieData] = useState<DonutChartData[]>([]);
 
-    const keyInformationData = useMemo(() =>{
-        if(!jobView)
-            return [];
-        return ( [
-                {
-                    label: t("jobs.department"),
-                    value: jobView.department?.label
-                },
-                {
-                    label: t('jobs.expertiseLevel'),
-                    value: jobView.expertise
-                },
-                {
-                    label: t('jobs.requireLanguage'),
-                    value: (jobView.requireLanguages ?? []).map((item) => (
-                        `${new Intl.DisplayNames(["en"], { type: 'language' }).of(item.code)} - ${item.proficiencyLevel}`
-                    )).join(", ")
-                },
-                {
-                    label: t('jobs.remoteWorkEnable'),
-                    value: jobView.jobWorkMode === "remote" ? t("global.text.yes") : t("global.text.no")
-                },
-                {
-                    label: t("global.text.status"),
-                    value: jobView.activityStatus ?? jobView.publicationStatus
-                }
-            ]
-        )
-    }, [jobView, t]);
+    // 1. Initialisation des données principales (Job & Notifications)
+    const initializingData = useCallback(async () => {
+        if (!id) return;
 
+        try {
+            const [jobData, notificationData] = await Promise.all([
+                JobQueries.getJobView(id),
+                NotificationQueries.getJobNotfication(id),
+            ]);
 
-    const pieData: DonutChartData[] = useMemo(() =>{
-        if(!jobView)
-            return [];
-        return( [
+            setJobView(jobData);
+            setNotifications(notificationData ?? []);
+        } catch (error) {
+            console.error("Failed to load job overview data:", error);
+        }
+    }, [id]);
+
+    useEffect(() => {
+        initializingData();
+    }, [initializingData]);
+
+    // 2. Chargement des statistiques du Donut (Asynchrone via useEffect)
+    useEffect(() => {
+        if (!jobView) return;
+
+        let isMounted = true;
+
+        const loadPieStats = async () => {
+            let rejectedCount = 0;
+            try {
+                rejectedCount = await ApplicationQueries.countRejected(jobView.id);
+            } catch (error) {
+                console.warn("Failed to fetch rejected applications count", error);
+            }
+
+            if (!isMounted) return;
+
+            setPieData([
                 {
                     value: jobView.cardinal?.candidates ?? 0,
-                    label: "Candidates",
+                    label: t("global.candidate.candidateLabel", {count: jobView.cardinal?.candidates ?? 0}),
                     color: "#2563EB",
                 },
                 {
                     value: jobView.cardinal?.interviews ?? 0,
-                    label: "Interview",
+                    label: t("global.interview.interviewLabel", { count: jobView.cardinal?.interviews ?? 0}),
                     color: "#7C3AED",
                 },
                 {
-                    value: 15,
-                    label: "Rejected",
+                    value: rejectedCount,
+                    label: t("global.applications.rejected.rejected", {count: rejectedCount }),
                     color: "#EF4444",
                 },
-            ]
-        )
-    }, [jobView]);
+            ]);
+        };
+
+        loadPieStats();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [jobView, t]);
 
 
+    // -- Memory calcul
+    const keyInformationData = useMemo(() => {
+        if (!jobView) return [];
 
-    const initializingData = useCallback(async ()=>{
-        try{
-            if(!id)
-                return;
+        return [
+            {
+                label: t("jobs.department"),
+                value: jobView.department?.label,
+            },
+            {
+                label: t("jobs.expertiseLevel"),
+                value: jobView.expertise,
+            },
+            {
+                label: t("jobs.requireLanguage"),
+                value: (jobView.requireLanguages ?? [])
+                    .map(
+                        (item) =>
+                            `${new Intl.DisplayNames(["en"], { type: "language" }).of(item.code)} - ${item.proficiencyLevel}`
+                    )
+                    .join(", "),
+            },
+            {
+                label: t("jobs.remoteWorkEnable"),
+                value: jobView.jobWorkMode === "remote" ? t("global.text.yes") : t("global.text.no"),
+            },
+            {
+                label: t("global.text.status"),
+                value: jobView.activityStatus ?? jobView.publicationStatus,
+            },
+        ];
+    }, [jobView, t]);
 
-            const data = await JobQueries.getJobView(id);
-            setJobView(data);
-        
-            const notifications = await NotificationQueries.getJobNotfication(id);
-            setNotifications(notifications ?? []);
-        }
-        catch(error){
-            console.log('Something went wrong', error)
-        }
-    }, []);
+
+    // -- calcul
+    const totalCandidates = jobView?.cardinal?.candidates ?? 0;
     
 
-    useEffect(() => {
-        initializingData();
-    }, []);
-
-
-    if(!jobView){
-        return <p>{t('global.messages.loading')}</p>
+    if (!jobView) {
+        return <p>{t("global.messages.loading")}</p>;
     }
 
     return (
         <div className={styles.container}>
             <div className={styles.main}>
+                {/* Header View */}
                 <div className={`${styles.view} card`}>
-                    {/** Header */}
                     <div className={styles.metaItems}>
                         <MetaInfoCard
                             icon={LocationSVGComponent}
                             text={t("global.text.place")}
-                            desc={[
+                            desc={
+                                [
                                     jobView.location?.country,
                                     jobView.location?.city,
-                                    jobView.location?.street
-                                ].filter(Boolean).join(", ") || t("global.text.notSpecify")
+                                    jobView.location?.street,
+                                ]
+                                    .filter(Boolean)
+                                    .join(", ") || t("global.text.notSpecify")
                             }
                         />
-                        <MetaInfoCard 
+                        <MetaInfoCard
                             icon={ContractSVG}
                             text={t("global.contract.title")}
                             desc={jobView.contract?.label || t("global.text.unknown")}
                         />
-                        <MetaInfoCard 
+                        <MetaInfoCard
                             icon={MoneySVG}
                             text={t("global.salary.title")}
-                            desc={formatSalary(jobView.salary) || t('global.text.unknown')}
+                            desc={formatSalary(jobView.salary) || t("global.text.unknown")}
                         />
-                        <MetaInfoCard 
+                        <MetaInfoCard
                             icon={DateSVGComponent}
                             text={t("jobs.publicationDate")}
-                            desc={jobView.publicationDate ? format(new Date(jobView.publicationDate), "MMMM, d") : t("global.text.unknown")}
+                            desc={
+                                jobView.publicationDate
+                                    ? format(new Date(jobView.publicationDate), "MMMM, d")
+                                    : t("global.text.unknown")
+                            }
                         />
                     </div>
 
-                    {/** TEXT CONTENT (BODY) */}
+                    {/* Content (Body) */}
                     <div className={styles.content}>
-                        <TipTapRenderer content={jobView.content}/>
+                        <TipTapRenderer content={jobView.content} />
                     </div>
                 </div>
 
-                {/** SKILLS */}
-                {
-                    jobView.skills && jobView.skills.length > 0 && (
-                        <div className={`${styles.skillSection} card`}>
-                            <Title title={t("jobs.createJob.skillSection.title")} />
-                            <div className={styles.skills}>
-                                {(jobView.skills ?? []).map((item) => (
-                                    <JobSkill key={item.id ?? item.name} content={item.name} />
-                                ))}    
-                            </div>
+                {/* Skills Section */}
+                {jobView.skills && jobView.skills.length > 0 && (
+                    <div className={`${styles.skillSection} card`}>
+                        <Title title={t("jobs.createJob.skillSection.title")} />
+                        <div className={styles.skills}>
+                            {jobView.skills.map((item) => (
+                                <JobSkill key={item.id ?? item.name} content={item.name} />
+                            ))}
                         </div>
-                    )
-                }
+                    </div>
+                )}
 
-                {/** RECENT ACTIVITY */}
-                {
-                    notifications.length > 0 && (
-                        <div className={`${styles.recentActivitySection} card`}>
-                            <Title title={t("global.text.recentAction")}/>
-                            <div className={styles.actions}>
-                                {notifications.map((item, index) => (
-                                    <RecentAction 
-                                        key={ index} 
-                                        title={item.data.jobTitle}
-                                        person={`${item.account?.firstName} ${item.account?.lastName}`}
-                                        type={item.type}
-                                        delay={formatRemainingTime(item.createdAt)}
-                                    />
-                                ))}
-                            </div>
-                            <button className={styles.button}>{t('global.messages.seeMore')}</button>
+                {/* Recent Activity Section */}
+                {notifications.length > 0 && (
+                    <div className={`${styles.recentActivitySection} card`}>
+                        <Title title={t("global.text.recentAction")} />
+                        <div className={styles.actions}>
+                            {notifications.map((item, index) => (
+                                <RecentAction
+                                    key={item.id ?? index}
+                                    title={item.data?.jobTitle}
+                                    person={`${item.account?.firstName ?? ""} ${item.account?.lastName ?? ""}`.trim()}
+                                    type={item.type}
+                                    delay={formatRemainingTime(item.createdAt)}
+                                />
+                            ))}
                         </div>
-                    )
-                }
+                        <button className={styles.button}>{t("global.messages.seeMore")}</button>
+                    </div>
+                )}
             </div>
 
-            {/** ASIDE */}
+            {/* Aside Section */}
             <div className={`${styles.aside} card`}>
-                {/** PIPELINE */}
+                {/* Pipeline / Donut Chart */}
                 <div className={styles.pipeline}>
                     <Title title={t("jobs.pipeline.candidates")} />
 
@@ -241,30 +268,30 @@ const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
                         data={pieData}
                         innerRadius={65}
                         outerRadius={95}
-                        centerValue={120}
-                        centerLabel="candidats"
+                        centerValue={totalCandidates}
+                        centerLabel={t("jobs.pipeline.candidates")}
                     />
 
-                    {/** LEGENDS */}
+                    {/* Legends */}
                     <div className={styles.legend}>
                         {pieData.map((item, index) => (
-                            <div 
-                                key={index} 
+                            <div
+                                key={index}
                                 className={styles.item}
                                 style={{ ["--bg-color" as string]: item.color }}
                             >
                                 <div className={styles.left}>
-                                    <div className={styles.circle}/>
+                                    <div className={styles.circle} />
                                     {item.label}
                                 </div>
-                                <span className={styles.right}>{`${item.value}%`}</span>
+                                <span className={styles.right}>{item.value}</span>
                             </div>
                         ))}
                         <button className={styles.button}>{t("jobs.pipeline.seeAllCandidates")}</button>
                     </div>
                 </div>
 
-                {/** INFORMATION CLES */}
+                {/* Key Information */}
                 <div className={`${styles.keyInfoSection} card`}>
                     {keyInformationData.map((item, index) => (
                         <div key={index} className={styles.keyInfo}>
@@ -278,35 +305,25 @@ const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
     );
 };
 
-
-
 export default JobOverviewSection;
 
+/* Meta Info Card Sub-component */
 
-/** Meta Info card */
-
-interface MetaInfoCardProps{
+interface MetaInfoCardProps {
     icon?: React.FC<React.SVGProps<SVGSVGElement>>;
     iconStyle?: React.CSSProperties;
-    text: string
+    text: string;
     desc: string;
 }
 
-
-const MetaInfoCard: React.FC<MetaInfoCardProps> = ({
-    icon : Icon,
-    iconStyle,
-    text,
-    desc
-}) => {
+const MetaInfoCard: React.FC<MetaInfoCardProps> = ({ icon: Icon, iconStyle, text, desc }) => {
     return (
         <div className={styles.meta}>
-            {Icon &&  <Icon className={styles.svg} width={15} height={15} style={iconStyle}/>}
+            {Icon && <Icon className={styles.svg} width={15} height={15} style={iconStyle} />}
             <div className={styles.metaContent}>
                 <span className={styles.title}>{text}</span>
                 <span className={styles.desc}>{desc}</span>
             </div>
         </div>
     );
-}
- 
+};

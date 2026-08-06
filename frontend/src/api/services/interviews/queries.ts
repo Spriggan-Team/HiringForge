@@ -22,7 +22,7 @@ const getRecruiterJobOfferInterviws = async (
         if (skip !== undefined) params.set('skip', String(skip));
         if (limit !== undefined) params.set('limit', String(limit));
 
-        const url = `/interviews/job_offer/${jobId}${
+        const url = `/interviews/users/job_offer/${jobId}${
             params.toString() ? `?${params.toString()}` : ''
         }`;
 

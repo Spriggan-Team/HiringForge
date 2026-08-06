@@ -15,16 +15,15 @@ use App\Domain\Interviews\InterviewsRepositoryInterface;
 
 
 use Psr\Log\LoggerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
 
-#[Route('/interviews')]
-class InterviewsQueryManagement extends AbstractController{
+#[Route('/interviews/users')]
+class InterviewsUserQueryManagement extends AbstractController{
 
     use ApiControllerHelpers;
 
@@ -41,8 +40,7 @@ class InterviewsQueryManagement extends AbstractController{
     /**
      * Route /users/job_offer/{offerId}?limit=number&skip=number
      */
-    #[IsGranted(AccountRole::USER->value)]
-    #[Route('/users/job_offer/{offerId}', methods: ['GET'])]
+    #[Route('/job_offer/{offerId}', methods: ['GET'])]
     public function getUserInterviews(
         string $offerId,
         Request $request

@@ -127,7 +127,12 @@
             "viewsLabel_other": "vues"
         },
 
-
+        "applications":{
+            "rejected":{
+                "rejected_one": "Rejeté",
+                "rejected_other": "Rejetés"
+            }
+        },
 
         "actions": {
             "recentAction": "Actions récentes",

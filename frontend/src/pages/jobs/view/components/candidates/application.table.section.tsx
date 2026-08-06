@@ -40,6 +40,7 @@ export default function ApplicationsTable({
         try{
             const initializingData = async ()=>{
                 const data = await ApplicationQueries.getApplicationsForJob(jobId, { companyId }) ?? [];
+                
                 const applications: Application[] = data.map((value)=>({
                     id: value.id,
                     candidate: `${value.candidate.firstName} ${value.candidate.lastName}`,
@@ -59,6 +60,7 @@ export default function ApplicationsTable({
             console.warn('Something went wrong', error)
         }
     }, [])
+
 
     //-- Generates the initiales
     const getInitials = (name: string) => {

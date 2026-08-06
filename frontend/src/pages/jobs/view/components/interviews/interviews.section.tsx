@@ -95,6 +95,7 @@ export default function InterviewsSection({
         }
     },[])
 
+
     // Update Status
     const handleStatusChange = async (id: string, newStatus: InterviewStatus) => {
         setIsUpdating(id);
@@ -111,6 +112,7 @@ export default function InterviewsSection({
             setIsUpdating(null);
         }
     };
+    
 
     // Handler (delete/cancel)
     const handleCancel = async (id: string) => {

@@ -189,22 +189,42 @@ class JobOfferQueryManagement extends AbstractController
 
 
 
+    /**
+     * Route: /{jobId}/candidates/stats?timeframe=month|week
+     */
     #[Route('/{jobId}/candidates/stats', methods: ['GET'])]
-    public function getCandidateStats( //count, cardinal...
-        string $jobId
-    )
-    {
-        try{
-            $candidateMetrics = $this->applicationRepository->getUserStats(jobId: $jobId);
+    public function getCandidateStats(
+        string $jobId,
+        Request $request
+    ): JsonResponse {
+        try {
+            /** @var AuthenticatedPerson $user */
+            $user = $this->getUser();
+
+            //--  Sanitization and fallback to ‘month’ if the value is invalid
+            $timeFrame = $request->query->get('timeframe', 'month');
+            if (!in_array($timeFrame, ['month', 'week'], true)) {
+                $timeFrame = 'month';
+            }
+
+            //-- Retrieving Application Metrics
+            $candidateMetrics = $this->applicationRepository->getPostulationMetrics(
+                userId: $user->getId(),
+                jobId: $jobId,
+                timeframe: $timeFrame
+            );
+
             return ApiResponse::success(
                 data: $candidateMetrics,
                 statusCode: 200,
-                message: 'Everythin is fine'
+                message: 'Everything is fine'
             )->toJsonResponse();
-        }
-        catch(\Exception $error){
+
+        } catch (\Throwable $error) {
             return ApiResponse::error(
-                message: 'Something went wrong'
+                message: 'Something went wrong while fetching candidate statistics',
+                statusCode: 400,
+                throwable: $error
             )->toJsonResponse();
         }
     }
@@ -223,6 +243,7 @@ class JobOfferQueryManagement extends AbstractController
             )->toJsonResponse();
         }
     }
+
 
     #[Route('/kanban', methods: ['GET'])]
     public function getKanbanResult()

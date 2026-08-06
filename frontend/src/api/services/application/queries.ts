@@ -1,5 +1,6 @@
 import { intercept } from "../../../utils/utils"
 import { authGet, handleGenericApiResponseAfter } from "../../handler"
+import type { ApiResponse } from "../response.types";
 import type { JobApplicationApiResponse } from "./response";
 
 
@@ -36,12 +37,22 @@ const getApplicationsForJob = async (
 };
 
 
+const countRejected = async (jobId: string)=>{
+  try{
+    const response = await authGet<ApiResponse<number>>(`/applications/${jobId}/rejected`);
+    return response.data;
+  }
+  catch(error){
+    throw error;
+  }
+}
+
 //-- User
 
 
 
 const ApplicationQueries = intercept(
-    { getApplicationsForJob },
+    { getApplicationsForJob, countRejected },
     undefined,
     handleGenericApiResponseAfter
 )
