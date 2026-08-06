@@ -4,6 +4,8 @@ export const OfferStatus = {
   ACCEPTED: 'ACCEPTED',
   DECLINED: 'DECLINED',
   EXPIRED: 'EXPIRED',
+  DRAFT: 'DRAFT',
+  CANCELLED: 'CANCELLED'
 } as const;
 
 
@@ -45,3 +47,11 @@ export interface CreateOfferPayload {
     salary: number;
     expiredAt: string;
 }
+
+export const canDeleteOffer = (status: OfferStatus): boolean => {
+    return status === 'DRAFT'; //Only draft can be deleted
+};
+
+export const canCancelOffer = (status: OfferStatus): boolean => {
+    return status === 'SENT'; // Offer sent but not accepted yet!!
+};

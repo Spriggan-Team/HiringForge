@@ -1,12 +1,22 @@
 
 
-import React, { useEffect, useState } from "react";
-import styles from "./OffersSection.module.css";
-import { CreateOfferForm } from "../../../../components/createOfferForm/create.offer.form";
+import React, { useCallback, useEffect, useState } from "react";
+
+/** Public Services */
 import { useAppContext } from "../../../../../hooks/context";
+import type { OfferStatus } from "../../../../../features/offer/offer";
+
+//-- Custom Components
+import { CreateOfferForm } from "../../../../components/createOfferForm/create.offer.form";
+
+//-- Offers Services
 import OffersServices from "../../../../../api/services/offer/command";
 
-export type OfferStatus = "Draft" | "Sent" | "Accepted" | "Declined" | "Expired";
+//-- Styles
+import styles from "./OffersSection.module.css";
+
+
+
 
 export interface Offer {
     id: string;
@@ -20,65 +30,12 @@ export interface Offer {
     avatarUrl?: string;
 }
 
-const mockOffers: Offer[] = [
-    {
-        id: "1",
-        candidate: "Sarah Dupont",
-        email: "sarah@email.com",
-        jobTitle: "UX/UI Designer",
-        salary: 42000,
-        sentAt: "2026-08-01",
-        expiresAt: "2026-08-15",
-        status: "Sent",
-    },
-    {
-        id: "2",
-        candidate: "Lucas Moreau",
-        email: "lucas@email.com",
-        jobTitle: "Lead Developer React",
-        salary: 58000,
-        sentAt: "2026-07-25",
-        expiresAt: "2026-08-05",
-        status: "Accepted",
-    },
-    {
-        id: "3",
-        candidate: "Julie Lambert",
-        email: "julie@email.com",
-        jobTitle: "Product Owner",
-        salary: 48000,
-        sentAt: "2026-07-10",
-        expiresAt: "2026-07-24",
-        status: "Declined",
-    },
-];
-
-
-const STATUS_OPTIONS: OfferStatus[] = ["Draft", "Sent", "Accepted", "Declined", "Expired"];
 
 
 export default function OffersSection() {
     const { setModal } = useAppContext();
-    const [offers, setOffers] = useState<Offer[]>(mockOffers);
+    const [offers, setOffers] = useState<Offer[]>([]);
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
-
-    const getInitials = (name: string) => {
-        return name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase()
-            .slice(0, 2);
-    };
-
-    //-- format salary
-    const formatSalary = (amount: number) => {
-        return new Intl.NumberFormat("fr-FR", {
-            style: "currency",
-            currency: "EUR",
-            maximumFractionDigits: 0,
-        }).format(amount);
-    };
 
 
     //-- Handle Status
@@ -114,6 +71,15 @@ export default function OffersSection() {
         }
     };
 
+    const handleCancel = useCallback(async (id: string)=>{
+        try{
+
+        }
+        catch(error){
+
+        }
+    }, []);
+
 
     //-- Open Modal for creating offer
     const handleOpenCreateModal = () => {
@@ -132,6 +98,22 @@ export default function OffersSection() {
         });
     };
 
+
+    const handleConsult = useCallback((offer: Offer)=>{
+        try{
+            const initializingOffers = async()=>{
+                try{
+
+                }
+                catch(error){
+                    console.log("Something went wrong ",error)
+                }
+            }
+        }
+        catch(error){
+
+        }
+    },[])
 
     //-- Fetch applications
     useEffect(()=>{
@@ -152,131 +134,210 @@ export default function OffersSection() {
                 </button>
             </div>
 
-            <div className={styles.tableContainer}>
-                <table className={styles.offersTable}>
-                    <thead>
+            <OfferTable  
+                offers={offers}
+                onDelete={handleDelete}
+                onCancel={handleCancel}
+                onView={handleConsult}
+                isUpdating={isUpdating}
+            />
+        </div>
+    );
+}
+
+
+
+
+
+interface OffersTableProps {
+    offers: Offer[];
+    onDelete: (offerId: string) => void;
+    onCancel: (offerId: string) => void;
+    onView: (offer: Offer) => void;
+    isUpdating?: string | null; // optionnal if loading loading state is manage (by lines)
+}
+
+
+const OfferTable: React.FC<OffersTableProps> = ({
+    offers,
+    onDelete,
+    onCancel,
+    onView,
+    isUpdating,
+}) => {
+    //-- 
+    const getInitials = (name: string) => {
+        if (!name) return "??";
+        return name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2);
+    };
+
+  
+    const formatSalary = (salary: number | string) => {
+        if (!salary) return "—";
+        return new Intl.NumberFormat("fr-FR", {
+            style: "currency",
+            currency: "EUR",
+            maximumFractionDigits: 0,
+        }).format(Number(salary));
+    };
+
+    //-- Dynamic static badge color
+    const renderStatusBadge = (status: OfferStatus) => {
+        const statusConfig: Record<OfferStatus, { label: string; className: string }> = {
+            DRAFT: { label: "Brouillon", className: styles.statusDraft },
+            SENT: { label: "En attente", className: styles.statusSent },
+            ACCEPTED: { label: "Acceptée", className: styles.statusAccepted },
+            DECLINED: { label: "Refusée", className: styles.statusDeclined },
+            EXPIRED: { label: "Expirée", className: styles.statusExpired },
+            CANCELLED: { label: "Annulée", className: styles.statusCancelled },
+        };
+
+        const config = statusConfig[status] || { label: status, className: "" };
+
+        return <span className={`${styles.badge} ${config.className}`}>{config.label}</span>;
+    };
+
+
+    return (
+        <div className={styles.tableContainer}>
+            <table className={styles.offersTable}>
+                <thead>
+                    <tr>
+                        <th>Candidat</th>
+                        <th>Poste</th>
+                        <th>Rémunération</th>
+                        <th>Date d'envoi</th>
+                        <th>Expiration</th>
+                        <th>Statut</th>
+                        <th className={styles.textRight}>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {offers.length === 0 ? (
                         <tr>
-                            <th>Candidat</th>
-                            <th>Poste</th>
-                            <th>Rémunération</th>
-                            <th>Date d'envoi</th>
-                            <th>Expiration</th>
-                            <th>Statut</th>
-                            <th className={styles.textRight}>Actions</th>
+                            <td colSpan={7} className={styles.emptyState}>
+                                Aucune offre enregistrée.
+                            </td>
                         </tr>
-                    </thead>
-
-                    <tbody>
-                        {offers.length === 0 ? (
-                            <tr>
-                                <td colSpan={7} className={styles.emptyState}>
-                                    Aucune offre enregistrée.
-                                </td>
-                            </tr>
-                        ) : (
-                            offers.map((offer) => (
-                                <tr
-                                    key={offer.id}
-                                    className={isUpdating === offer.id ? styles.rowDisabled : ""}
-                                >
-                                    {/* Candidat */}
-                                    <td data-label="Candidat">
-                                        <div className={styles.candidateCell}>
-                                            {offer.avatarUrl ? (
-                                                <img
-                                                    src={offer.avatarUrl}
-                                                    alt={offer.candidate}
-                                                    className={styles.avatar}
-                                                />
-                                            ) : (
-                                                <div className={styles.avatarFallback}>
-                                                    {getInitials(offer.candidate)}
-                                                </div>
-                                            )}
-                                            <div>
-                                                <span className={styles.candidateName}>
-                                                    {offer.candidate}
-                                                </span>
-                                                <span className={styles.emailText}>{offer.email}</span>
+                    ) : (
+                        offers.map((offer) => (
+                            <tr
+                                key={offer.id}
+                                className={isUpdating === offer.id ? styles.rowDisabled : ""}
+                            >
+                                {/* Candidat */}
+                                <td data-label="Candidat">
+                                    <div className={styles.candidateCell}>
+                                        {offer.avatarUrl ? (
+                                            <img
+                                                src={offer.avatarUrl}
+                                                alt={offer.candidate}
+                                                className={styles.avatar}
+                                            />
+                                        ) : (
+                                            <div className={styles.avatarFallback}>
+                                                {getInitials(offer.candidate)}
                                             </div>
+                                        )}
+                                        <div>
+                                            <span className={styles.candidateName}>
+                                                {offer.candidate}
+                                            </span>
+                                            <span className={styles.emailText}>{offer.email}</span>
                                         </div>
-                                    </td>
+                                    </div>
+                                </td>
 
-                                    {/* Poste */}
-                                    <td data-label="Poste">
-                                        <span className={styles.jobTitle}>{offer.jobTitle}</span>
-                                    </td>
+                                {/* Poste */}
+                                <td data-label="Poste">
+                                    <span className={styles.jobTitle}>{offer.jobTitle}</span>
+                                </td>
 
-                                    {/* Salaire */}
-                                    <td data-label="Rémunération">
-                                        <span className={styles.salaryText}>{formatSalary(offer.salary)}/an</span>
-                                    </td>
+                                {/* Salaire */}
+                                <td data-label="Rémunération">
+                                    <span className={styles.salaryText}>
+                                        {formatSalary(offer.salary)}/an
+                                    </span>
+                                </td>
 
-                                    {/* Date d'envoi */}
-                                    <td data-label="Date d'envoi">
-                                        {offer.sentAt
-                                            ? new Date(offer.sentAt).toLocaleDateString("fr-FR", {
-                                                day: "numeric",
-                                                month: "short",
-                                                year: "numeric",
-                                            })
-                                            : "—"}
-                                    </td>
+                                {/* Date d'envoi */}
+                                <td data-label="Date d'envoi">
+                                    {offer.sentAt
+                                        ? new Date(offer.sentAt).toLocaleDateString("fr-FR", {
+                                              day: "numeric",
+                                              month: "short",
+                                              year: "numeric",
+                                          })
+                                        : "—"}
+                                </td>
 
-                                    {/* Expiration */}
-                                    <td data-label="Expiration">
-                                        {offer.expiresAt
-                                            ? new Date(offer.expiresAt).toLocaleDateString("fr-FR", {
-                                                day: "numeric",
-                                                month: "short",
-                                                year: "numeric",
-                                            })
-                                            : "—"}
-                                    </td>
+                                {/* Expiration */}
+                                <td data-label="Expiration">
+                                    {offer.expiresAt
+                                        ? new Date(offer.expiresAt).toLocaleDateString("fr-FR", {
+                                              day: "numeric",
+                                              month: "short",
+                                              year: "numeric",
+                                          })
+                                        : "—"}
+                                </td>
 
-                                    {/* Statut */}
-                                    <td data-label="Statut">
-                                        <span className={`${styles.status} ${styles[`status${offer.status}`]}`}>
-                                            {offer.status}
-                                        </span>
-                                    </td>
+                                {/* Statut : Affichage strict (Badge) */}
+                                <td data-label="Statut">
+                                    {renderStatusBadge(offer.status)}
+                                </td>
 
-                                    {/* Actions */}
-                                    <td data-label="Actions" className={styles.actionsCell}>
-                                        <div className={styles.actionGroup}>
-                                            <select
-                                                value={offer.status}
-                                                onChange={(e) =>
-                                                    handleStatusChange(offer.id, e.target.value as OfferStatus)
-                                                }
-                                                className={styles.statusSelect}
-                                                disabled={isUpdating === offer.id}
-                                            >
-                                                {STATUS_OPTIONS.map((status) => (
-                                                    <option key={status} value={status}>
-                                                        {status}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                {/* Actions conditionnelles */}
+                                <td data-label="Actions" className={styles.actionsCell}>
+                                    <div className={styles.actionGroup}>
+                                        {/* 1. Bouton "Voir / Consulter" (Toujours visible) */}
+                                        <button
+                                            type="button"
+                                            onClick={() => onView(offer)}
+                                            className={styles.btnSecondary}
+                                            title="Voir les détails"
+                                        >
+                                            Voir
+                                        </button>
 
+                                        {/* 2. Bouton "Annuler" (Seulement si l'offre a été envoyée et attend une réponse) */}
+                                        {offer.status === "SENT" && (
                                             <button
                                                 type="button"
-                                                onClick={() => handleDelete(offer.id)}
+                                                onClick={() => onCancel(offer.id)}
+                                                className={styles.btnWarning}
+                                                title="Annuler l'offre envoyée"
+                                                disabled={isUpdating === offer.id}
+                                            >
+                                                Annuler
+                                            </button>
+                                        )}
+
+                                        {/* 3. Bouton "Supprimer" (Seulement si l'offre est un BROUILLON) */}
+                                        {offer.status === "DRAFT" && (
+                                            <button
+                                                type="button"
+                                                onClick={() => onDelete(offer.id)}
                                                 className={styles.btnDanger}
-                                                title="Supprimer l'offre"
+                                                title="Supprimer le brouillon"
                                                 disabled={isUpdating === offer.id}
                                             >
                                                 Supprimer
                                             </button>
-                                        </div>
-                                    </td>
-                                    
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                                        )}
+                                    </div>
+                                </td>
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
         </div>
     );
-}
+};

@@ -38,7 +38,7 @@
   border-radius: 9999px;
 }
 
-/* Boutons */
+/* Buttons */
 .btnPrimary {
   background-color: #2563eb;
   color: #ffffff;
@@ -75,6 +75,82 @@
 .btnDanger:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Conteneur des boutons d'action */
+.actionsCell {
+  vertical-align: middle;
+}
+
+.actionGroup {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Aligné à droite pour correspondre à <th className={styles.textRight}> */
+  gap: 0.5rem; /* 8px d'espacement entre les boutons */
+}
+
+/* Base commune pour tous les boutons d'action */
+.actionGroup button {
+  font-family: inherit;
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  padding: 0.375rem 0.75rem; /* 6px 12px */
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* État désactivé (quand isUpdating === offer.id) */
+.actionGroup button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none; /* Empêche les effets de clic si désactivé */
+}
+
+/* --------------------------------------
+   Variantes de boutons
+--------------------------------------- */
+
+  /* View button */
+.btnSecondary {
+  background-color: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+    /* Cancel button color */
+.btnWarning {
+  background-color: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.btnWarning:hover:not(:disabled) {
+  background-color: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+    /* Delete Buttons */
+.btnDanger {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.btnDanger:hover:not(:disabled) {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
 }
 
 /* Board */

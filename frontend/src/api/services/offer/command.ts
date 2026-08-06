@@ -1,5 +1,6 @@
 import type { CreateOfferPayload } from "../../../features/offer/offer";
 import { intercept } from "../../../utils/utils";
+import { handleGenericApiResponseAfter } from "../../handler";
 
 
 //--- Recruiter
@@ -15,7 +16,10 @@ const create = async(offer: CreateOfferPayload)=>{
 
 
 const OffersServices = intercept(
-    {create}
+    { create },
+    undefined,
+    handleGenericApiResponseAfter
 )
+
 
 export default OffersServices;
