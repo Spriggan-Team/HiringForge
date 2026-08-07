@@ -135,12 +135,12 @@ class OfferEntity
         return $this;
     }
 
-    public function getExpiredDate()
+    public function getExpiredAt()
     {
         return $this->expiredAt;
     }
 
-    public function setExpiredDate(\DateTimeImmutable $expiredAt):self
+    public function setExpiredAt(\DateTimeImmutable $expiredAt):self
     {
         $this->expiredAt = $expiredAt;
         return $this;
@@ -149,5 +149,10 @@ class OfferEntity
     public function getSentAt()
     {
         return $this->sentAt;
+    }
+
+    public function setSentAt(\DateTimeImmutable $sentAt) : self {
+        $this->sentAt = $sentAt;
+        return $this;
     }
 }

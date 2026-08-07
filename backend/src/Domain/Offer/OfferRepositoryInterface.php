@@ -52,5 +52,5 @@ interface OfferRepositoryInterface
      * @param string $userId The unique identifier of the user.
      * @param Offer $offer Domain object containing the data required to create an offer.
      */
-    public function createOffer(string $userId,  Offer $offer): void;
+    public function save(string $userId,  Offer $offer): void;
 }

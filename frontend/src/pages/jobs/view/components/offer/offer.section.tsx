@@ -1,6 +1,6 @@
 
 import { format } from "date-fns";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 /**  Services */
 import { useAppContext } from "../../../../../hooks/context";
@@ -32,39 +32,85 @@ export interface Offer {
 }
 
 
+
 interface OffersSectionProps{
     jobId: string
 }
+
+const LIMIT = 17;
 
 export default function OffersSection({
     jobId
 }: OffersSectionProps) {
     const { setModal } = useAppContext();
+
+    //-- Offers
     const [offers, setOffers] = useState<Offer[]>([]);
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
-    //-- Fetching data
-    useEffect(()=>{
-            const initializingOffers = async()=>{
-                try{
-                    const data = await OffersQueries.getOffersForUser(jobId);
-                    const mapping: Offer = {
-                        id: data.id,
-                        candidate: `${data.candidate.firstName} ${data.candidate.lastName}`,
-                        email: data.candidate.email,
-                        jobTitle: data.jobOffer.title,
-                        salary: data.salary,
-                        expiresAt: format(data.expiredAt, 'dd MMMM yyyy'),
-                        status: data.status
-                    }
-                    setOffers(mapping)
-                }
-                catch(error){
-                    console.log("Something went wrong ",error)
-                }
+    //-- Pagination
+    const [skip, setSkip] = useState<number>(0);
+    const [hasMore, setHasMore] = useState<boolean>(true);
+    const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+
+
+    const fetchOffers = useCallback(async (currentSkip: number) => {
+        // Secure calls
+        if (isLoadingMore || (!hasMore && currentSkip !== 0)) return;
+
+        setIsLoadingMore(true);
+        try {
+            const rawData = await OffersQueries.getUserOfferForThisJob(jobId, { 
+                skip: currentSkip, 
+                limit: LIMIT 
+            });
+
+            // Stop pagination if back-end returns fewer items than requested LIMIT
+            if (rawData.length < LIMIT) {
+                setHasMore(false);
             }
-            initializingOffers();
-    },[])
+
+            const mappedOffers: Offer[] = rawData.map((data: any) => ({
+                id: data.id,
+                candidate: `${data.candidate.firstName} ${data.candidate.lastName}`,
+                email: data.candidate.email,
+                jobTitle: data.jobOffer.title,
+                salary: data.salary,
+                expiresAt: format(new Date(data.expiredAt), 'dd MMMM yyyy'),
+                status: data.status,
+                avatarUrl: data.candidate.image?.name // optional avatar path
+            }));
+
+            setOffers(prev => (currentSkip === 0 ? mappedOffers : [...prev, ...mappedOffers]));
+        }
+        catch (error) {
+            console.error("Failed to load offers", error);
+        }
+        finally {
+            setIsLoadingMore(false);
+        }
+    }, [jobId, hasMore, isLoadingMore]);
+
+
+
+    //-- Intializing data (Fetching first batch)
+    useEffect(() => {
+        setSkip(0);
+        setHasMore(true);
+        fetchOffers(0);
+    }, [jobId]);
+
+
+
+    // Function triggered when the user scrolls to the bottom sentinel element
+    const handleLoadMore = () => {
+        if (hasMore && !isLoadingMore) {
+            const nextSkip = skip + LIMIT;
+            setSkip(nextSkip);
+            fetchOffers(nextSkip);
+        }
+    };
+
 
     //-- Handle Status
     const handleStatusChange = async (id: string, newStatus: OfferStatus) => {
@@ -88,7 +134,7 @@ export default function OffersSection({
     const handleDelete = async (id: string) => {
         setIsUpdating(id);
         try {
-            // TODO: API call -> await api.deleteOffer(id);
+            await OffersServices.deleteOffer(id);
             setOffers((prev) => prev.filter((item) => item.id !== id));
         }
         catch (error) {
@@ -99,11 +145,21 @@ export default function OffersSection({
         }
     };
 
-    const handleCancel = useCallback(async (id: string)=>{
-        try{
-        }
-        catch(error){
 
+    const handleCancel = useCallback(async (id: string) => {
+        try {
+            await OffersServices.cancelOffer(id);
+
+            setOffers(currentOffers =>
+                currentOffers.map(offer =>
+                    offer.id === id
+                        ? { ...offer, status: 'CANCELLED' }
+                        : offer
+                )
+            );
+        }
+        catch (error) {
+            console.warn("Something went wrong while cancelling the offer");
         }
     }, []);
 
@@ -157,6 +213,9 @@ export default function OffersSection({
                 onCancel={handleCancel}
                 onView={handleConsult}
                 isUpdating={isUpdating}
+                onLoadMore={handleLoadMore}
+                hasMore={hasMore}
+                isLoadingMore={isLoadingMore}
             />
         </div>
     );
@@ -172,6 +231,9 @@ interface OffersTableProps {
     onCancel: (offerId: string) => void;
     onView: (offer: Offer) => void;
     isUpdating?: string | null; // optionnal if loading loading state is manage (by lines)
+    onLoadMore: ()=>void;
+    hasMore: boolean;
+    isLoadingMore: boolean;
 }
 
 
@@ -181,8 +243,35 @@ const OfferTable: React.FC<OffersTableProps> = ({
     onCancel,
     onView,
     isUpdating,
+
+    onLoadMore,
+    hasMore,
+    isLoadingMore
 }) => {
-    //-- 
+    const observerTarget = useRef<HTMLTableRowElement | null>(null); //determines wether the scorl is at the bottom
+
+    useEffect(() => {
+        const target = observerTarget.current;
+        if (!target) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                // Trigger load-more when sentinel becomes visible
+                if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+                    onLoadMore();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        observer.observe(target);
+
+        return () => {
+            if (target) observer.unobserve(target);
+        };
+    }, [onLoadMore, hasMore, isLoadingMore]);
+
+    //-- Construct intials
     const getInitials = (name: string) => {
         if (!name) return "??";
         return name
@@ -353,6 +442,18 @@ const OfferTable: React.FC<OffersTableProps> = ({
                             </tr>
                         ))
                     )}
+                    {
+                        offers.length > 0 && hasMore && (
+                            <tr ref={observerTarget} className={styles.loadingRow}>
+                                <td
+                                    colSpan={7}
+                                    className={styles.textCenter}
+                                >
+                                    {isLoadingMore ? "Chargement des offres..." : ""}
+                                </td>
+                            </tr>
+                        )
+                    }
                 </tbody>
             </table>
         </div>

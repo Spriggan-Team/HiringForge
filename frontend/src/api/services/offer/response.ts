@@ -2,7 +2,7 @@ import type { OfferStatus } from "../../../features/offer/offer";
 import type { ApiResponse } from "../response.types";
 
 
-export type UserOfferQueryResponse = ApiResponse<UserOfferQueryData>;
+export type UserOfferQueryResponse = ApiResponse<UserOfferQueryData[]>;
 
 export type UserOfferQueryData = {
   id: string;

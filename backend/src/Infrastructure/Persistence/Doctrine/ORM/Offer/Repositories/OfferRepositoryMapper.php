@@ -1,10 +1,17 @@
 <?php
 
+
+namespace App\Infrastructure\Persistence\Doctrine\ORM\Offer\Repositories;
+
 use App\Domain\Offer\Offer;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Offer\OfferEntity;
+
+
 use Doctrine\ORM\EntityManagerInterface;
+
 
 class OfferRepositoryMapper
 {
@@ -12,33 +19,39 @@ class OfferRepositoryMapper
         private EntityManagerInterface $em
     ){}
 
-    public function toEntity(Offer $offer) : OfferEntity {
-        //-- Doctrine Reference
-        /** @var ApplicationEntity $applicationRef */
-        $applicationRef = $this->em->getReference(ApplicationEntity::class, $offer->applicationId());
+    public function toEntity(Offer $offer, ?OfferEntity $existingEntity = null): OfferEntity
+    {
+        if ($existingEntity === null) {
+            // --- CREATION (Instantiation + Initialization Fields) ---
+            $entity = new OfferEntity();
+            
+            // Fixed ownership at the time of creation
+            $entity->setSentAt($offer->sentAt());
 
-        /** @var CandidateEntity $candidateRef */
-        $candidateRef = $this->em->getReference(CandidateEntity::class, $offer->candidateId());
+            // Relations immuables définies uniquement à la création
+            if ($offer->candidateId()) {
+                $candidateRef = $this->em->getReference(CandidateEntity::class, $offer->candidateId());
+                $entity->setCandidate($candidateRef);
+            }
 
-        // Mapping Domain\Offer -> OfferEntity
-        $entity = new OfferEntity();
-        
-        if ($offer->title() !== null) {
-            $entity->setTitle($offer->title());
+            if ($offer->applicationId()) {
+                $applicationRef = $this->em->getReference(ApplicationEntity::class, $offer->applicationId());
+                $entity->setApplication($applicationRef);
+            }
         }
-        
-        if ($offer->message() !== null) {
-            $entity->setMessage($offer->message());
-        }
-        
-        if ($offer->salary() !== null) {
-            $entity->setSalary($offer->salary());
+        else {
+            // --- Update ---
+            $entity = $existingEntity;
+            // On NE touche PAS à sentAt, candidate ni application ici !
         }
 
-        $entity->setStatus($offer->status())
-            ->setExpiredDate($offer->expiredAt())
-            ->setApplication($applicationRef)
-            ->setCandidate($candidateRef);
+        // --- MUTABLE FIELDS (Create and Update) ---
+        $entity->setTitle($offer->title());
+        $entity->setMessage($offer->message());
+        $entity->setSalary($offer->salary());
+        $entity->setStatus($offer->status());
+        $entity->setExpiredAt($offer->expiredAt());
+
         return $entity;
     }
 }

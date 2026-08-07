@@ -24,7 +24,7 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({ applications, 
     const [message, setMessage] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
         const selectedApp = applications.find((app) => app.id === selectedAppId);
         if (!selectedApp || !salary || !expiredAt) return;

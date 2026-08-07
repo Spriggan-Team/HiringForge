@@ -4,7 +4,7 @@ import type {  UserOfferQueryResponse } from "./response";
 
 
 //-- Recruiters
-const getOffersForUser = async(jobId: string, 
+const getUserOfferForThisJob = async(jobId: string, 
     { 
         skip = 0, 
         limit= 17,
@@ -36,7 +36,7 @@ const getOffersForUser = async(jobId: string,
 
 
 const OffersQueries = intercept(
-    { getOffersForUser },
+    { getUserOfferForThisJob },
     undefined,
     handleGenericApiResponseAfter
 )
