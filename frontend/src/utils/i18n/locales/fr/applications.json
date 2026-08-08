@@ -1,0 +1,11 @@
+{
+    "applications":{
+        "update":{
+            "changeStatus" : "Changer de statut"
+        },
+        "messages":{
+           "loadingNextApplication": "Chargement des candidatures suivantes...",
+            "confirmStatusChange": "Voulez-vous vraiment passer la candidature de <strong>{{candidateName}}</strong> au statut <strong>{{status}}</strong> ?"
+        }
+    }
+}

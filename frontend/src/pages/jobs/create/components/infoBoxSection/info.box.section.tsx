@@ -18,7 +18,7 @@ import InputLabel from "../../../../../layout/components/form/input/input.label"
 import TipTapEditor from "../../../../../layout/components/editors/tiptap/tiptap.editor";
 import Separator from "../../../../../layout/components/separator/separator";
 import BasicInput, { globalBasicInputInput } from "../../../../../layout/components/form/input/basic.input";
-import MenuDrawer, { DrawerBuilder, MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../../layout/components/menu/drawer/menu.drawer";
+import MenuDrawer, { DrawerBuilder, MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../../layout/components/menu/dropdown/menu.dropdown";
 import JobSkill from "../../../components/skills/job.skill";
 
 //--CSS Module

@@ -20,7 +20,7 @@ import BreadCrumbs from "../../../layout/components/navigation/auth/link/bread.c
 import SimpleButton from "../../../layout/components/buttons/simple/simple.button";
 import TopBarNavigation from "../../../layout/components/navigation/topbar/topbar.navigation";
 import InfoPill, { type InfoPillProps } from "../../../layout/components/badges/pill/info.pill";
-import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/drawer/menu.drawer";
+import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/dropdown/menu.dropdown";
 import CandidatesViewSection from "./components/candidates/application.table.section";
 
 //-- SVG Components

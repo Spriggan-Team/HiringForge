@@ -5,13 +5,14 @@ import type { JobApplicationApiResponse } from "./response";
 
 
 //-- Recruiter
-const getApplicationsForJob = async (
-  jobId: string,
+const getApplicationsJob = async (
   {
+    jobId,
     companyId,
     skip,
     limit,
   }: {
+    jobId?: string;
     companyId?: string;
     skip?: number;
     limit?: number;
@@ -20,11 +21,12 @@ const getApplicationsForJob = async (
   try {
     const params = new URLSearchParams();
 
+    if(jobId) params.set('jobOfferId', jobId)
     if (companyId) params.set('companyId', companyId);
     if (skip !== undefined) params.set('skip', String(skip));
     if (limit !== undefined) params.set('limit', String(limit));
 
-    const url = `/applications/job_offer/${jobId}${
+    const url = `/applications/job_offer${
       params.toString() ? `?${params.toString()}` : ''
     }`;
 
@@ -52,7 +54,7 @@ const countRejected = async (jobId: string)=>{
 
 
 const ApplicationQueries = intercept(
-    { getApplicationsForJob, countRejected },
+    { getApplicationsJob, countRejected },
     undefined,
     handleGenericApiResponseAfter
 )

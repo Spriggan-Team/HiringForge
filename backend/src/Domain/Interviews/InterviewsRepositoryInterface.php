@@ -25,6 +25,8 @@ interface InterviewsRepositoryInterface
      *      id?: bool,
      *      startDate?: bool,
      *      minutes?: bool,
+     *      title?: bool,
+     *      candidateApproval?: bool,
      *      description?: bool,
      *      url?: bool,
      *      status?: bool,

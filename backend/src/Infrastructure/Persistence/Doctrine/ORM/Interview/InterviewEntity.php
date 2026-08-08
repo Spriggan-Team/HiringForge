@@ -20,6 +20,9 @@ class InterviewEntity
     #[ORM\Column(nullable: false)]
     private ?\DateTimeImmutable $startDate = null;
 
+    #[ORM\Column(length: 155, nullable: true)]
+    private ?string $title = null;
+
     #[ORM\Column(nullable: false)]
     private ?int $minutes = null;
 
@@ -32,6 +35,9 @@ class InterviewEntity
     #[ORM\Column(enumType: InterviewStatus::class)]
     #[ORM\JoinColumn(nullable: false)]
     private InterviewStatus $status = InterviewStatus::SCHEDULED;
+
+    #[ORM\Column(type: Types::BOOLEAN)]
+    private bool $candidateApproval = false;
 
     #[ORM\ManyToOne(targetEntity: CandidateEntity::class, inversedBy: 'interviews' )]
     #[ORM\JoinColumn(nullable: false)]
@@ -55,6 +61,7 @@ class InterviewEntity
         string $description,
         CandidateEntity $candidate,
         JobOfferEntity $jobOffer,
+        ?string $title = null,
         ?string $url = null,
         InterviewStatus $status = InterviewStatus::SCHEDULED,
     ): self {
@@ -68,6 +75,7 @@ class InterviewEntity
         $entity->jobOffer = $jobOffer;
         $entity->status = $status;
         $entity->url = $url;
+        $entity->title = $title;
 
         return $entity;
     }
@@ -79,9 +87,11 @@ class InterviewEntity
         int $minutes,
         string $description,
         ?string $url ,
+        ?string $title,
         CandidateEntity $candidate,
         JobOfferEntity $jobOffer,
         InterviewStatus $status,
+        bool $candidateApproval
     ): self {
         $entity = new self();
 
@@ -93,6 +103,8 @@ class InterviewEntity
         $entity->jobOffer = $jobOffer;
         $entity->status = $status;
         $entity->url = $url;
+        $entity->candidateApproval = $candidateApproval;
+        $entity->title = $title;
 
         return $entity;
     }
@@ -103,6 +115,11 @@ class InterviewEntity
 
     public function getId(): string{
         return $this->id;
+    }
+
+    public function getTitle()
+    {
+        return $this->title;
     }
 
     public function getDescription(){
@@ -138,6 +155,11 @@ class InterviewEntity
         return $this->url;
     }
 
+    public function getCandidateApproval()
+    {
+        return $this->candidateApproval;
+    }
+
     //======================
     //  SETTERS
     //======================
@@ -145,6 +167,11 @@ class InterviewEntity
     public function setId(string $id): static
     {
         $this->id = $id;
+        return $this;
+    }
+
+    public function setTitle(?string $title){
+        $this->title = $title;
         return $this;
     }
 
@@ -187,6 +214,11 @@ class InterviewEntity
     {
         $this->url = $url;
         return $this;
+    }
+
+    public function  setCandidateApproval(string $candidateApproval) : self {
+        $this->candidateApproval = $candidateApproval;
+        return $this;   
     }
 }
 

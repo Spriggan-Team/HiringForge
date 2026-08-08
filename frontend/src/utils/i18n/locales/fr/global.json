@@ -138,7 +138,8 @@
             "recentAction": "Actions récentes",
             "edit": "Editer",
             "duplicate": "Dupliquer",
-            "delete": "Supprimer"
+            "delete": "Supprimer",
+            "reject": "Rejecte"
         },
 
         "filters":{

@@ -8,7 +8,7 @@ import { INITIAL_CALENDAR_EVENT_VIEW, type CalendarEvent as CalendarEventType} f
 //-- Custom Compoenents
 import EditableTextInput from "../../form/input/text/EditableTextInput";
 import BrandButton from "../../buttons/brand.button";
-import MenuDrawer, { MenuDrawerTrigger } from "../../menu/drawer/menu.drawer";
+import MenuDrawer, { MenuDrawerTrigger } from "../../menu/dropdown/menu.dropdown";
 import TimePicker from "../../form/input/date/time.picker";
 
 //-- SVG Components

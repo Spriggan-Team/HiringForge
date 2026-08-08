@@ -1,0 +1,91 @@
+.modalContent {
+    padding: 1.5rem;
+    max-width: 440px;
+    width: 100%;
+}
+
+.modalHeader h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.modalBody .message {
+    font-size: 0.875rem;
+    color: #4b5563;
+    line-height: 1.4;
+}
+
+.warningBox {
+    font-size: 0.8125rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-top: 0.75rem;
+    line-height: 1.35;
+}
+
+/* Variantes du bloc d'avertissement */
+.warning_danger,
+.warning_warning {
+    color: #b91c1c;
+    background-color: #fef2f2;
+    border: 1px solid #fee2e2;
+}
+
+.warning_primary {
+    color: #1e40af;
+    background-color: #eff6ff;
+    border: 1px solid #dbeafe;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.btnCancel {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btnCancel:hover {
+    background-color: #f9fafb;
+}
+
+.btnConfirm {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: none;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.btnConfirm:hover {
+    opacity: 0.9;
+}
+
+/* Variantes du bouton de confirmation */
+.btn_danger {
+    background-color: #dc2626;
+}
+
+.btn_primary {
+    background-color: #166534; /* Vert pour embauche / action positive */
+}
+
+.btn_warning {
+    background-color: #d97706;
+}

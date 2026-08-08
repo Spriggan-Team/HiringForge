@@ -29,8 +29,8 @@ interface ApplicationRepositoryInterface
 
 
     /**
-     * Retrieve all applications/postulation related to a specific job
-     * and a user (recruiter) or a company if passed.
+     * Retrieve all applications/postulation related to a specific job,
+     * to all job of an user (recruiter) or all job of company if passed.
      *
      * @param string $jobId
      * @param int $limit

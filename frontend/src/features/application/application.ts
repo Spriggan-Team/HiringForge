@@ -116,11 +116,11 @@ export const ALLOWED_STATUS_TRANSITIONS: Record<ApplicationStatusValue, Applicat
 
 
 export interface Application {
-    id: string;
-    candidate: string;
-    email: string;
-    appliedAt: string;
-    status: ApplicationStatusValue;
-    avatarUrl?: string;
-    matchScore: number;
+  id: string;
+  candidate: string;
+  email: string;
+  appliedAt: string;
+  status: ApplicationStatusValue;
+  avatarUrl?: string;
+  matchScore: number;
 }

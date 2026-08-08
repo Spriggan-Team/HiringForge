@@ -8,7 +8,7 @@ import MenuDrawer, {
     MenuDrawerInput,
     MenuDrawerItem,
     MenuDrawerTrigger
-} from "../../../../../layout/components/menu/drawer/menu.drawer";
+} from "../../../../../layout/components/menu/dropdown/menu.dropdown";
 import { 
     LineChart
 } from "../../../../../layout/components/charts/lineChart/lineChart";

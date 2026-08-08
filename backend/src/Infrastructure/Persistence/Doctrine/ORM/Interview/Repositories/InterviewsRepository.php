@@ -35,6 +35,8 @@ class InterviewsRepository extends ServiceEntityRepository
      *      id?: bool,
      *      startDate?: bool,
      *      minutes?: bool,
+     *      title?: bool,
+     * 
      *      description?: bool,
      *      status?: bool,
      *      url?: bool,
@@ -70,7 +72,7 @@ class InterviewsRepository extends ServiceEntityRepository
         $selectedFields = [];
 
         //  Dynamic selection for Interview entity fields
-        $allowedInterviewFields = ['id', 'startDate', 'minutes', 'description', 'status', 'url'];
+        $allowedInterviewFields = ['id', 'title' , 'startDate', 'minutes', 'description', 'status', 'url'];
         foreach ($allowedInterviewFields as $field) {
             if (!empty($scheme[$field])) {
                 $selectedFields[] = 'i.' . $field;

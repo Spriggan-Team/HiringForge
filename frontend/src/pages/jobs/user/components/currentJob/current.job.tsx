@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { JobView } from "../../../../../features/jobs/JobOffer";
 
 //--Custom Components
-import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../../layout/components/menu/drawer/menu.drawer";
+import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../../layout/components/menu/dropdown/menu.dropdown";
 import SectionHeader from "../../../../../layout/components/sections/sectionHeader/section.header";
 import InfoPill from "../../../../../layout/components/badges/pill/info.pill";
 import JobSkill from "../../../components/skills/job.skill";

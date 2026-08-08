@@ -13,7 +13,7 @@ import MenuDrawer, {
     MenuDrawerBody,
     MenuDrawerItem,
     MenuDrawerTrigger,
-} from "../../menu/drawer/menu.drawer";
+} from "../../menu/dropdown/menu.dropdown";
 
 
 //CSS Modules - Styles

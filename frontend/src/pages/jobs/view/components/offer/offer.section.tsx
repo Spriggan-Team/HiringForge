@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 
 /**  Services */
 import { useAppContext } from "../../../../../hooks/context";
-import type { OfferStatus } from "../../../../../features/offer/offer";
+import type { FlatOffer, OfferStatus } from "../../../../../features/offer/offer";
 import OffersQueries from "../../../../../api/services/offer/queries";
 
 //-- Custom Components
@@ -15,21 +15,11 @@ import OffersServices from "../../../../../api/services/offer/command";
 
 //-- Styles
 import styles from "./OffersSection.module.css";
+import { OfferDetailModal } from "../../../components/offer/offer.details.modal";
+import { EyeIcon } from "../../../../../layout/components/icons/eye.icon";
 
 
 
-
-export interface Offer {
-    id: string;
-    candidate: string;
-    email: string;
-    jobTitle: string;
-    salary: number; // Ex: 45000 (en €/an)
-    sentAt?: string;
-    expiresAt?: string;
-    status: OfferStatus;
-    avatarUrl?: string;
-}
 
 
 
@@ -45,7 +35,7 @@ export default function OffersSection({
     const { setModal } = useAppContext();
 
     //-- Offers
-    const [offers, setOffers] = useState<Offer[]>([]);
+    const [offers, setOffers] = useState<FlatOffer[]>([]);
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
     //-- Pagination
@@ -70,7 +60,7 @@ export default function OffersSection({
                 setHasMore(false);
             }
 
-            const mappedOffers: Offer[] = rawData.map((data: any) => ({
+            const mappedOffers: FlatOffer[] = rawData.map((data: any) => ({
                 id: data.id,
                 candidate: `${data.candidate.firstName} ${data.candidate.lastName}`,
                 email: data.candidate.email,
@@ -108,24 +98,6 @@ export default function OffersSection({
             const nextSkip = skip + LIMIT;
             setSkip(nextSkip);
             fetchOffers(nextSkip);
-        }
-    };
-
-
-    //-- Handle Status
-    const handleStatusChange = async (id: string, newStatus: OfferStatus) => {
-        setIsUpdating(id);
-        try {
-            // TODO: API call -> await api.updateOfferStatus(id, newStatus);
-            setOffers((prev) =>
-                prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
-            );
-        }
-        catch (error) {
-            console.error("Erreur lors de la mise à jour de l'offre", error);
-        }
-        finally {
-            setIsUpdating(null);
         }
     };
 
@@ -182,21 +154,32 @@ export default function OffersSection({
     };
 
 
-    const handleConsult = useCallback((offer: Offer)=>{
-        try{
+    //-- Open offer details
+    const handleConsult = (offer: FlatOffer, onCloseCallback?: () => void) => {
+        const handleClose = () => {
+            setModal(null);
+            if (onCloseCallback) {
+                onCloseCallback(); // Réinitialise l'œil dans le tableau
+            }
+        };
 
-        }
-        catch(error){
-
-        }
-    },[])
-
+        setModal({
+            isOpen: true,
+            title: `Détails de l'offre - ${offer.candidate}`,
+            content: (
+                <OfferDetailModal
+                    offer={offer} 
+                    onClose={handleClose} 
+                />
+            ),
+            onClose: handleClose
+        });
+    };
 
 
 
     return (
         <div className={styles.tableCard}>
-            
             <div className={styles.tableHeader}>
                 <div className={styles.headerTitleGroup}>
                     <h2>Propositions d'embauche (Offres)</h2>
@@ -226,10 +209,10 @@ export default function OffersSection({
 
 
 interface OffersTableProps {
-    offers: Offer[];
+    offers: FlatOffer[];
     onDelete: (offerId: string) => void;
     onCancel: (offerId: string) => void;
-    onView: (offer: Offer) => void;
+    onView: (offer: FlatOffer, onCloseCallback?: () => void) => void;
     isUpdating?: string | null; // optionnal if loading loading state is manage (by lines)
     onLoadMore: ()=>void;
     hasMore: boolean;
@@ -248,6 +231,26 @@ const OfferTable: React.FC<OffersTableProps> = ({
     hasMore,
     isLoadingMore
 }) => {
+    const { setModal } = useAppContext();
+    const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
+
+    //-- Handle Eye icon
+    const handleToggleEye = (offer: FlatOffer) => { 
+        if (activeOfferId === offer.id) {
+            //-- Open
+            setModal(null);
+            setActiveOfferId(null);
+        }
+        else {
+            //-- Close
+            setActiveOfferId(offer.id);
+            onView(offer, () => {
+                setActiveOfferId(null);
+            });
+        }
+    };
+    
+
     const observerTarget = useRef<HTMLTableRowElement | null>(null); //determines wether the scorl is at the bottom
 
     useEffect(() => {
@@ -271,6 +274,8 @@ const OfferTable: React.FC<OffersTableProps> = ({
         };
     }, [onLoadMore, hasMore, isLoadingMore]);
 
+
+
     //-- Construct intials
     const getInitials = (name: string) => {
         if (!name) return "??";
@@ -292,6 +297,7 @@ const OfferTable: React.FC<OffersTableProps> = ({
         }).format(Number(salary));
     };
 
+
     //-- Dynamic static badge color
     const renderStatusBadge = (status: OfferStatus) => {
         const statusConfig: Record<OfferStatus, { label: string; className: string }> = {
@@ -307,6 +313,7 @@ const OfferTable: React.FC<OffersTableProps> = ({
 
         return <span className={`${styles.badge} ${config.className}`}>{config.label}</span>;
     };
+
 
 
     return (
@@ -400,19 +407,19 @@ const OfferTable: React.FC<OffersTableProps> = ({
                                 </td>
 
                                 {/* Actions conditionnelles */}
-                                <td data-label="Actions" className={styles.actionsCell}>
+                                    <td data-label="Actions" className={styles.actionsCell}>
                                     <div className={styles.actionGroup}>
-                                        {/* 1. Bouton "Voir / Consulter" (Toujours visible) */}
+                                        {/* 1. Bouton "Voir" transformé en bouton Œil intéractif */}
                                         <button
                                             type="button"
-                                            onClick={() => onView(offer)}
+                                            onClick={() => handleToggleEye(offer)}
                                             className={styles.btnSecondary}
-                                            title="Voir les détails"
+                                            title={activeOfferId ? "Masquer les détails" : "Voir les détails"}
                                         >
-                                            Voir
+                                            <EyeIcon isOpen={!!activeOfferId} />
                                         </button>
 
-                                        {/* 2. Bouton "Annuler" (Seulement si l'offre a été envoyée et attend une réponse) */}
+                                        {/* Boutons Annuler et Supprimer inchangés */}
                                         {offer.status === "SENT" && (
                                             <button
                                                 type="button"
@@ -425,7 +432,6 @@ const OfferTable: React.FC<OffersTableProps> = ({
                                             </button>
                                         )}
 
-                                        {/* 3. Bouton "Supprimer" (Seulement si l'offre est un BROUILLON) */}
                                         {offer.status === "DRAFT" && (
                                             <button
                                                 type="button"

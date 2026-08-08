@@ -6,7 +6,7 @@ import { LANGUAGES_LEVEL_VALUES, type JobLanguage, type LanguageLevel } from "..
 import LanguageQueries from "../../../../api/services/Language/queries";
 
 //-- Custom components
-import {  MultiStepDrawer } from "../../menu/drawer/menu.drawer";
+import {  MultiStepDrawer } from "../../menu/dropdown/menu.dropdown";
 import { globalBasicInputInput } from "../../form/input/basic.input";
 
 

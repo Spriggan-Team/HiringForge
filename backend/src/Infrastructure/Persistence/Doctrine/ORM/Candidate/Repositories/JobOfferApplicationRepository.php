@@ -112,8 +112,8 @@ class JobOfferApplicationRepository
         return (int) $this->createQueryBuilder('a')
             ->select('COUNT(a.id)')
             ->where('a.jobOffer = :jobOfferId')
-            ->andWhere('a.createdAt >= :start')
-            ->andWhere('a.createdAt <= :end')
+            ->andWhere('a.appliedAt >= :start')
+            ->andWhere('a.appliedAt <= :end')
             ->setParameter('jobOfferId', $jobOfferId)
             ->setParameter('start', $start)
             ->setParameter('end', $end)
@@ -129,7 +129,7 @@ class JobOfferApplicationRepository
     public function getAvgTimeToHireDays(string $jobOfferId, string $userId): int
     {
         $result = $this->createQueryBuilder('a')
-            ->select('AVG(DATE_DIFF(a.updatedAt, a.createdAt))')
+            ->select('AVG(DATE_DIFF(a.updatedAt, a.appliedAt))')
             ->innerJoin('a.jobOffer', 'j')
             ->where('j.id = :jobOfferId')
             ->andWhere('j.user = :userId')
@@ -150,7 +150,7 @@ class JobOfferApplicationRepository
     public function getUserAvgTimeToHireDays(string $userId): int
     {
         $result = $this->createQueryBuilder('a')
-            ->select('AVG(DATE_DIFF(a.updatedAt, a.createdAt))')
+            ->select('AVG(DATE_DIFF(a.updatedAt, a.appliedAt))')
             ->innerJoin('a.jobOffer', 'j')
             ->where('j.user = :userId')
             ->andWhere('a.status = :status')
@@ -229,6 +229,8 @@ class JobOfferApplicationRepository
         return $this->getMonthlyMetrics($userId, $jobId, $now);
     }
 
+
+
     /**
      * Generates 12 elements for the current year (Jan to Dec).
      * 
@@ -244,11 +246,11 @@ class JobOfferApplicationRepository
 
         // Monthly Aggregation Requests
         $qb = $this->createQueryBuilder('a')
-            ->select('MONTH(a.createdAt) as period', 'COUNT(a.id) as count')
+            ->select('MONTH(a.appliedAt) as period', 'COUNT(a.id) as count')
             ->innerJoin('a.jobOffer', 'j')
             ->where('j.id = :jobId')
             ->andWhere('j.user = :userId') // Vérifie que l'offre appartient bien au recruteur
-            ->andWhere('a.createdAt BETWEEN :start AND :end')
+            ->andWhere('a.appliedAt BETWEEN :start AND :end')
             ->setParameter('jobId', $jobId)
             ->setParameter('userId', $userId)
             ->setParameter('start', $startOfYear)
@@ -283,11 +285,11 @@ class JobOfferApplicationRepository
         // Aggregation query by day of the week
         // In MySQL, WEEKDAY() returns 0 for Monday and 6 for Sunday. We adjust this by adding 1.
         $qb = $this->createQueryBuilder('a')
-            ->select('WEEKDAY(a.createdAt) + 1 as period', 'COUNT(a.id) as count')
+            ->select('WEEKDAY(a.appliedAt) + 1 as period', 'COUNT(a.id) as count')
             ->innerJoin('a.jobOffer', 'j')
             ->where('j.id = :jobId')
             ->andWhere('j.user = :userId')
-            ->andWhere('a.createdAt BETWEEN :start AND :end')
+            ->andWhere('a.appliedAt BETWEEN :start AND :end')
             ->setParameter('jobId', $jobId)
             ->setParameter('userId', $userId)
             ->setParameter('start', $startOfWeek)
@@ -310,8 +312,8 @@ class JobOfferApplicationRepository
     //------------------------------------
 
     /**
-     * Retrieve all applications/postulation related to a specific job
-     * and a user (recruiter) or a company if passed.
+     * Retrieve all applications/postulation related to a specific job,
+     * to all job of an user (recruiter) or all job of company if passed.
      *
      * @param string $jobId
      * @param int $limit
@@ -340,7 +342,7 @@ class JobOfferApplicationRepository
      */
     #[Override]
     public function fetchJobApplicationsProjection(
-        string $jobId,
+        ?string $jobId = null,
         int $limit = 17,
         int $skip = 0,
         array $scheme = ['id' => true],
@@ -350,7 +352,7 @@ class JobOfferApplicationRepository
         $qb = $this->createQueryBuilder('a');
         $selectedFields = [];
 
-        // Dynamic selection for application fields
+        // 1. Sélection dynamique des champs d'Application
         $allowedApplicationFields = ['id', 'matchScore', 'appliedAt', 'status'];
         foreach ($allowedApplicationFields as $field) {
             if (!empty($scheme[$field])) {
@@ -358,13 +360,13 @@ class JobOfferApplicationRepository
             }
         }
 
-        // Set default id field if nothing is required by scheme
         if (empty($selectedFields) && empty($scheme['candidate'])) {
             $selectedFields[] = 'a.id';
         }
 
-        // Handling Sub-Projection for the Candidate Relationship
-        if (!empty($scheme['candidate']) && is_array($scheme['candidate'])) {
+        // 2. Gestion de la sous-projection Candidate
+        $hasCandidateScheme = !empty($scheme['candidate']) && is_array($scheme['candidate']);
+        if ($hasCandidateScheme) {
             $qb->leftJoin('a.candidate', 'c');
             $allowedCandidateFields = ['id', 'firstName', 'lastName', 'email'];
 
@@ -374,12 +376,11 @@ class JobOfferApplicationRepository
                 }
             }
 
-            // Handling Sub-Projection for Candidate's Image (FileEntity)
+            // Image du candidat
             if (!empty($scheme['candidate']['image'])) {
                 $qb->leftJoin('c.image', 'img');
                 $imageScheme = $scheme['candidate']['image'];
 
-                // Backward compatibility: if image is true, retrieve default 'name'
                 if ($imageScheme === true) {
                     $selectedFields[] = 'img.name AS candidate_image_name';
                 } elseif (is_array($imageScheme)) {
@@ -393,23 +394,25 @@ class JobOfferApplicationRepository
             }
         }
 
-        $qb->select(implode(', ', $selectedFields))
-           ->where('a.jobOffer = :jobId')
-           ->setParameter('jobId', $jobId);
+        $qb->select(implode(', ', $selectedFields));
 
-        // Filter by Company or User (Recruiter)
-        if ($companyId) {
+        // 3. Filtrage dynamique selon jobId, companyId, userId
+        if ($jobId !== null) {
+            $qb->andWhere('a.jobOffer = :jobId')
+            ->setParameter('jobId', $jobId);
+        }
+
+        if ($companyId !== null) {
             $qb->andWhere('a.company = :companyId')
-               ->setParameter('companyId', $companyId);
-        }
-        elseif ($userId) {
-            // If filtered by a recruiter, the process goes through the job posting
+            ->setParameter('companyId', $companyId);
+        } elseif ($userId !== null) {
+            // Jointure propre avec JobOffer
             $qb->innerJoin('a.jobOffer', 'jo')
-               ->andWhere('jo.user = :userId')
-               ->setParameter('userId', $userId);
+            ->andWhere('jo.user = :userId')
+            ->setParameter('userId', $userId);
         }
 
-        // Pagination handling
+        // 4. Pagination
         if ($limit > 0) {
             $qb->setMaxResults($limit);
         }
@@ -419,11 +422,12 @@ class JobOfferApplicationRepository
 
         $results = $qb->getQuery()->getArrayResult();
 
-        // Structuring the results if candidate or image fields were requested
-        if (!empty($scheme['candidate'])) {
+        // 5. Restructuration du tableau de sortie
+        if ($hasCandidateScheme) {
             return array_map(static function (array $row) {
                 $candidateData = [];
                 $imageData = [];
+                $hasCandidateValue = false;
 
                 foreach ($row as $key => $value) {
                     if (str_starts_with($key, 'candidate_image_')) {
@@ -433,18 +437,20 @@ class JobOfferApplicationRepository
                     } elseif (str_starts_with($key, 'candidate_')) {
                         $realKey = str_replace('candidate_', '', $key);
                         $candidateData[$realKey] = $value;
+                        if ($value !== null) {
+                            $hasCandidateValue = true;
+                        }
                         unset($row[$key]);
                     }
                 }
 
-                // Attach nested image object if at least one field is non-null
+                // Assigner l'image seulement si elle contient des valeurs
                 if (!empty($imageData) && array_filter($imageData, static fn($v) => $v !== null)) {
                     $candidateData['image'] = $imageData;
                 }
 
-                if (!empty($candidateData)) {
-                    $row['candidate'] = $candidateData;
-                }
+                // Assigner candidate seulement s'il existe (non null via LEFT JOIN)
+                $row['candidate'] = $hasCandidateValue ? $candidateData : null;
 
                 return $row;
             }, $results);
@@ -452,7 +458,6 @@ class JobOfferApplicationRepository
 
         return $results;
     }
-
 
 
 

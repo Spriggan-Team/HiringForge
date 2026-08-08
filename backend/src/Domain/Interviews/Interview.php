@@ -11,17 +11,20 @@ class Interview {
 
     private InterviewStatus $status = InterviewStatus::SCHEDULED;
 
+    private bool $candidateApproval = false;
+
     public function __construc(
         int $minutes,
         InterviewStatus $status = InterviewStatus::SCHEDULED,
-        
         ?string $id = null,
+        bool $candidateApproval = false,
         ?\DateTimeImmutable $startDate =null,
     ){
         $this->id = $id;
         $this->status = $status;
         $this->minutes = $minutes;
         $this->startDate = $startDate;
+        $this->candidateApproval = $candidateApproval;
     }
 
     // -- Statics
@@ -57,5 +60,15 @@ class Interview {
 
     public function getStartDate(){
         return $this->startDate;
+    }
+
+    public function candidateApproval()
+    {
+        return $this->candidateApproval;
+    }
+
+    public function setCandidateApproval()
+    {
+        return $this->candidateApproval; 
     }
 }

@@ -28,13 +28,16 @@ class ApplicationEntity
 
     #[ORM\Column(type: Types::FLOAT)]
     private ?float $matchScore = null;
-
-    #[ORM\Column(type: 'datetime_immutable')]
-    private \DateTimeImmutable $appliedAt;
-
+    
     #[ORM\Column(type: 'boolean')]
     private JobApplicationStatus $status = JobApplicationStatus::APPLIED;
 
+    #[ORM\Column(type: 'datetime_immutable')]
+    private \DateTimeImmutable $appliedAt;
+    
+
+    #[ORM\Column(type: 'datetime_immutable')]
+    private \DateTimeImmutable $updatedAt;
 
     //----------------------------
     //----- RELATIONS
@@ -71,6 +74,7 @@ class ApplicationEntity
         $this->company = $company;
         $this->status = JobApplicationStatus::APPLIED;
         $this->appliedAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public static function create(
@@ -122,6 +126,10 @@ class ApplicationEntity
         return $this->company;
     }
 
+    public function getUpdatedAt(){
+        return $this->updatedAt;
+    }
+
     //==========================
     //    SETTERS
     //==========================
@@ -135,5 +143,10 @@ class ApplicationEntity
     public function setStatus(JobApplicationStatus $status){
         $this->status = $status;
         return $this;
+    }
+
+    public function touch()
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 }

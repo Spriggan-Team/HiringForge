@@ -74,12 +74,11 @@ class ApplicationQueryController extends AbstractController
 
 
     /**
-     * Route /job_offer/{jobOfferId}?limit=number&skip=number
+     * Route /job_offer?jobOfferId=string&limit=number&skip=number
      */
     #[IsGranted(AccountRole::USER->value)]
-    #[Route('/job_offer/{jobOfferId}', methods: ['GET'])]
+    #[Route('/job_offer', methods: ['GET'])]
     public function getApplicationForJob(
-        string $jobOfferId,
         Request $request,
     ): JsonResponse {
         try {
@@ -89,6 +88,7 @@ class ApplicationQueryController extends AbstractController
             //-- Params pagination
             $limit = max(1, filter_var($request->query->get('limit', 15), FILTER_VALIDATE_INT) ?: 15);
             $skip  = max(0, filter_var($request->query->get('skip', 0), FILTER_VALIDATE_INT) ?: 0);
+            $jobOfferId = $request->query->get('jobOfferId', null);
 
             //-- Fetching with projection
             $results = $this->applicationRepository->fetchJobApplicationsProjection(
@@ -244,6 +244,13 @@ class ApplicationQueryController extends AbstractController
 
         }
         catch (\Exception $error) {
+            $this->logger->error('Une erreur est survenue', [
+                'message' => $error->getMessage(),
+                'code' => $error->getCode(),
+                'file' => $error->getFile(),
+                'line' => $error->getLine(),
+                'stack' => $error->getTraceAsString(),
+            ]);
             return ApiResponse::error(
                 message: 'Failed to fetch job KPIs: ' . $error->getMessage(),
                 statusCode: 500

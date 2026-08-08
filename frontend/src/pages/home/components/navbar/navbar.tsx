@@ -4,11 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 //-- Services
-import { useAppContext } from "../../../../hooks/context";
+import { useAppContext, useCurrentUser } from "../../../../hooks/context";
 import AuthServices from "../../../../api/services/auth/auth";
 
 //-- Custom Components
-import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../layout/components/menu/drawer/menu.drawer";
+import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../layout/components/menu/dropdown/menu.dropdown";
 import BasicInput from "../../../../layout/components/form/input/basic.input";
 import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg"
 import NotificationRingSVGComponent from "/src/assets/svg/menu/alarm-alert-bell-notification-warning-svgrepo-com.svg"
@@ -32,7 +32,8 @@ const NavBar: React.FC<NavBarProps> = ({
 }) => {
     const { t } = useTranslation();
     const { navbar, setPopup } = useAppContext();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const user = useCurrentUser();
 
     //-- Text
     const postsTxt = t('userHome.header.leading.open_post', { count: 0 });
@@ -67,7 +68,7 @@ const NavBar: React.FC<NavBarProps> = ({
                             navbar.title
                             : navbar?.title === null ?
                                 null
-                                :t("global.messages.welcome", { name: "Nexus Gaming" })
+                                :t("global.messages.welcome", { name: user.company.name })
                     }
                 </h1>
                 { 

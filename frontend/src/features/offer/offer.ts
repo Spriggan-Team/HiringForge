@@ -55,3 +55,17 @@ export const canDeleteOffer = (status: OfferStatus): boolean => {
 export const canCancelOffer = (status: OfferStatus): boolean => {
     return status === 'SENT'; // Offer sent but not accepted yet!!
 };
+
+//-- for ui (react components)
+export interface FlatOffer {
+    id: string;
+    candidate: string;
+    email: string;
+    jobTitle: string;
+    salary: number; // Ex: 45000 (en €/an)
+    sentAt?: string;
+    expiresAt?: string;
+    status: OfferStatus;
+    avatarUrl?: string;
+}
+
