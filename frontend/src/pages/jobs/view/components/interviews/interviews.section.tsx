@@ -1,283 +1,317 @@
-import React, { useEffect, useState } from "react";
-
-import InterviewsQueries from "../../../../../api/services/interviews/queries";
-import { INTERVIEW_STATUSES, type Interview, type InterviewStatus } from "../../../../../features/interviews/interviws";
-
-import styles from "./InterviewsSection.module.css";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { useDebounce } from "../../../../../hooks/timer";
+import InterviewsQueries from "../../../../../api/services/interviews/queries";
+import CandidatesQueries from "../../../../../api/services/candidate/queries";
+import InterviewsServices from "../../../../../api/services/interviews/command";
+
+import { INTERVIEW_STATUSES, type InterviewStatus } from "../../../../../features/interviews/interviews";
+import { InterviewToolbar } from "./components/interview.toolbar";
+import type { CandidateLightModel } from "../../../../../features/candidates/candidates";
 
 
-const mockInterviews: Interview[] = [
-    {
-        id: "1",
-        candidate: "Thomas Bernard",
-        email: "thomas@email.com",
-        jobTitle: "Développeur Fullstack PHP",
-        scheduledAt: "2026-08-10T10:00:00",
-        locationOrLink: "https://meet.google.com/abc-defg-hij",
-        status: "scheduled",
-    },
-    {
-        id: "2",
-        candidate: "Sarah Dupont",
-        email: "sarah@email.com",
-        jobTitle: "UX/UI Designer",
-        scheduledAt: "2026-08-03T14:30:00",
-        locationOrLink: "Salle de Réunion B",
-        status: "completed",
-    },
-    {
-        id: "3",
-        candidate: "Alexandre Petit",
-        email: "alex@email.com",
-        jobTitle: "DevOps Engineer",
-        scheduledAt: "2026-08-12T11:00:00",
-        locationOrLink: "https://zoom.us/j/123456789",
-        status: "cancel",
-    },
-];
+
+
+import styles from "./Interviews.module.css";
+
 
 const STATUS_OPTIONS= INTERVIEW_STATUSES;
 
 
-interface InterviewsSectionProps{
-    job: {
-        id: string;
-        title: string;
-    };
-    companyId?: string;
-    userId?: string;
+export interface InterviewsSectionProps {
+  job: {
+    id: string;
+    title: string;
+  };
+  companyId?: string;
+  userId?: string;
 }
 
+
+export interface Interview {
+  id: string;
+  jobTitle: string;
+  candidate: string;
+  email: string;
+  scheduledAt: string;
+  locationOrLink?: string;
+  status: string;
+  avatarUrl?: string;
+}
+
+
 export default function InterviewsSection({
-    job: {
-        id, title
-    },
-    companyId,
-    userId
+  job: { id: jobId, title: jobTitle },
+  companyId,
+  userId,
 }: InterviewsSectionProps) {
-    const [interviews, setInterviews] = useState<Interview[]>([]);
-    const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const {t} = useTranslation();
+  const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
-    const getInitials = (name: string) => {
-        return name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase()
-            .slice(0, 2);
-    };
+  // État Modale
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-    useEffect(()=>{
-        try{
-            const intializeData = async () => {
-                try{
-                    const data = await InterviewsQueries.getRecruiterJobOfferInterviws(id);
-                    const interviews: Interview[] = data.map((value)=>({
-                        id: value.id,
-                        jobTitle: title,
-                        candidate: `${value.candidate.firstName} ${value}`,
-                        email: value.candidate.email,
-                        scheduledAt: format(value.startDate, "dd MMMM yyyy"),
-                        locationOrLink: value.url,
-                        status: value.status
-                    }))
-                    setInterviews((prev)=>([...prev, ...(interviews ?? [])]))
-                }
-                catch(error){
-                    throw error;
-                }
-            }
-            intializeData();
+  // Recherche
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearch = useDebounce(searchQuery, 350);
+
+  // Pagination & Infinite Scroll
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const isLoadingRef = useRef(false);
+
+  // Cache & Refs
+  const loadedPagesRef = useRef<Set<number>>(new Set());
+  const tableContainerRef = useRef<HTMLDivElement | null>(null);
+  const observerTargetRef = useRef<HTMLDivElement | null>(null);
+
+  const PAGE_LIMIT = 10;
+
+  const getInitials = useCallback((name: string) => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  }, []);
+
+  // --- Fetch Candidates
+  const fetchCandidatesApi = useCallback(
+    async (targetJobId: string, search: string, limit: number): Promise<CandidateLightModel[]> => {
+      // TODO: Remplacer par la requête API réelle si différente
+      return await CandidatesQueries.getJobCandidates({
+        jobId: targetJobId,
+        search,
+        limit,
+      });
+    },
+    []
+  );
+
+  // --- FETCH ENTRETIENS ---
+  const fetchInterviewsPage = useCallback(
+    async (pageToFetch: number) => {
+      if (loadedPagesRef.current.has(pageToFetch) || isLoadingRef.current) return;
+
+      try {
+        isLoadingRef.current = true;
+        setIsLoadingMore(true);
+
+        const responseData = await InterviewsQueries.getRecruiterJobOfferInterviews({
+          jobId,
+          skip: pageToFetch,
+          limit: PAGE_LIMIT,
+        });
+
+        if (!responseData || responseData.length === 0) {
+          setHasMore(false);
+          loadedPagesRef.current.add(pageToFetch);
+          return;
         }
-        catch(error){
-            console.log("Something went wrong")
+
+        const mappedInterviews: Interview[] = responseData.map((value: any) => ({
+          id: value.id,
+          jobTitle: jobTitle,
+          candidate: `${value.candidate.firstName} ${value.candidate.lastName}`,
+          email: value.candidate.email,
+          scheduledAt: format(new Date(value.startDate), "yyyy-MM-dd'T'HH:mm:ss"),
+          locationOrLink: value.url,
+          status: value.status,
+          avatarUrl: value.candidate.avatarUrl,
+        }));
+
+        loadedPagesRef.current.add(pageToFetch);
+
+        setInterviews((prev) => {
+          const combined = [...prev, ...mappedInterviews];
+          const uniqueMap = new Map(combined.map((item) => [item.id, item]));
+          return Array.from(uniqueMap.values());
+        });
+
+        if (responseData.length < PAGE_LIMIT) {
+          setHasMore(false);
         }
-    },[])
+      }
+      catch (error) {
+        console.error("Erreur lors de la récupération des entretiens :", error);
+      }
+      finally {
+        isLoadingRef.current = false;
+        setIsLoadingMore(false);
+      }
+    },
+    [jobId, jobTitle]
+  );
 
 
-    // Update Status
-    const handleStatusChange = async (id: string, newStatus: InterviewStatus) => {
-        setIsUpdating(id);
-        try {
-            // TODO: API call -> await api.updateInterviewStatus(id, newStatus);
-            setInterviews((prev) =>
-                prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
-            );
+  // Reload the complete list when creating an interview
+  const refreshInterviews = useCallback(() => {
+    loadedPagesRef.current.clear();
+    setInterviews([]);
+    setHasMore(true);
+    setPage(1);
+    fetchInterviewsPage(1);
+  }, [fetchInterviewsPage]);
+
+
+
+  // Trigger pagination
+  useEffect(() => {
+    fetchInterviewsPage(page);
+  }, [page, fetchInterviewsPage]);
+
+  
+  // Infinite Scroll Observer
+  useEffect(() => {
+    const target = observerTargetRef.current;
+    const container = tableContainerRef.current;
+
+    if (!target || !hasMore || isLoadingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingRef.current) {
+          setPage((prevPage) => prevPage + 1);
         }
-        catch (error) {
-            console.error("Erreur lors de la mise à jour du statut", error);
-        }
-        finally {
-            setIsUpdating(null);
-        }
-    };
-    
-
-    // Handler (delete/cancel)
-    const handleCancel = async (id: string) => {
-        setIsUpdating(id);
-        try {
-            // TODO: API call -> await api.cancelInterview(id);
-            setInterviews((prev) =>
-                prev.map((item) => (item.id === id ? { ...item, status: "cancel" } : item))
-            );
-        }
-        catch (error) {
-            console.error("Erreur lors de l'annulation", error);
-        }
-        finally {
-            setIsUpdating(null);
-        }
-    };
-
-
-    return (
-        <div className={styles.tableCard}>
-            <div className={styles.tableHeader}>
-                <h2>Entretiens à venir</h2>
-                <span className={styles.badgeCount}>{interviews.length} au total</span>
-            </div>
-
-            <div className={styles.tableContainer}>
-                <table className={styles.interviewsTable}>
-                    <thead>
-                        <tr>
-                            <th>Candidat</th>
-                            <th>Offre d'emploi</th>
-                            <th>Date & Heure</th>
-                            <th>Lieu / Lien</th>
-                            <th>Statut</th>
-                            <th className={styles.textRight}>Actions</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {interviews.length === 0 ? (
-                            <tr>
-                                <td colSpan={6} className={styles.emptyState}>
-                                    Aucun entretien planifié.
-                                </td>
-                            </tr>
-                        ) : (
-                            interviews.map((interview) => (
-                                <tr
-                                    key={interview.id}
-                                    className={isUpdating === interview.id ? styles.rowDisabled : ""}
-                                >
-                                    {/* Candidat */}
-                                    <td data-label="Candidat">
-                                        <div className={styles.candidateCell}>
-                                            {interview.avatarUrl ? (
-                                                <img
-                                                    src={interview.avatarUrl}
-                                                    alt={interview.candidate}
-                                                    className={styles.avatar}
-                                                />
-                                            ) : (
-                                                <div className={styles.avatarFallback}>
-                                                    {getInitials(interview?.candidate ?? "")}
-                                                </div>
-                                            )}
-                                            <div>
-                                                <span className={styles.candidateName}>
-                                                    {interview.candidate}
-                                                </span>
-                                                <span className={styles.emailText}>{interview.email}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    {/* Offre */}
-                                    <td data-label="Offre d'emploi">
-                                        <span className={styles.jobTitle}>{interview.jobTitle}</span>
-                                    </td>
-
-                                    {/* Date & Heure */}
-                                    <td data-label="Date & Heure">
-                                        <div className={styles.dateCell}>
-                                            <span className={styles.dateText}>
-                                                {new Date(interview.scheduledAt).toLocaleDateString("fr-FR", {
-                                                    day: "numeric",
-                                                    month: "short",
-                                                    year: "numeric",
-                                                })}
-                                            </span>
-                                            <span className={styles.timeText}>
-                                                {new Date(interview.scheduledAt).toLocaleTimeString("fr-FR", {
-                                                    hour: "2-digit",
-                                                    minute: "2-digit",
-                                                })}
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                    {/* Lieu / Lien */}
-                                    <td data-label="Lieu / Lien">
-                                        {interview.locationOrLink ? (
-                                            interview.locationOrLink.startsWith("http") ? (
-                                                <a
-                                                    href={interview.locationOrLink}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className={styles.linkText}
-                                                >
-                                                    Rejoindre la visio 🔗
-                                                </a>
-                                            ) : (
-                                                <span className={styles.locationText}>
-                                                    📍 {interview.locationOrLink}
-                                                </span>
-                                            )
-                                        ) : (
-                                            <span className={styles.mutedText}>Non spécifié</span>
-                                        )}
-                                    </td>
-
-                                    {/* Statut */}
-                                    <td data-label="Statut">
-                                        <span className={`${styles.status} ${styles[`status${interview.status}`]}`}>
-                                            {interview.status}
-                                        </span>
-                                    </td>
-
-                                    {/* Actions */}
-                                    <td data-label="Actions" className={styles.actionsCell}>
-                                        <div className={styles.actionGroup}>
-                                            <select
-                                                value={interview.status}
-                                                onChange={(e) =>
-                                                    handleStatusChange(interview.id, e.target.value as InterviewStatus)
-                                                }
-                                                className={styles.statusSelect}
-                                                disabled={isUpdating === interview.id}
-                                            >
-                                                {STATUS_OPTIONS.map((status) => (
-                                                    <option key={status} value={status}>
-                                                        {status}
-                                                    </option>
-                                                ))}
-                                            </select>
-
-                                            {interview.status !== "cancel" && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleCancel(interview.id)}
-                                                    className={styles.btnDanger}
-                                                    title="Annuler l'entretien"
-                                                    disabled={isUpdating === interview.id}
-                                                >
-                                                    Annuler
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+      },
+      {
+        root: container,
+        rootMargin: "0px 0px 100px 0px",
+        threshold: 0.1,
+      }
     );
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [hasMore, isLoadingMore]);
+
+
+
+  // Locally Filter Search
+  const filteredInterviews = useMemo(() => {
+    if (!debouncedSearch.trim()) return interviews;
+    const query = debouncedSearch.toLowerCase();
+
+    return interviews.filter(
+      (item) =>
+        item.candidate.toLowerCase().includes(query) ||
+        item.email.toLowerCase().includes(query) ||
+        item.jobTitle.toLowerCase().includes(query)
+    );
+  }, [interviews, debouncedSearch]);
+
+
+
+  // Submit creation 
+  const handleCreateInterview = useCallback(
+    async (payload: CreateInterviewFormData) => {
+      await InterviewsServices.createInterview({
+        ...payload,
+        jobId,
+      });
+      refreshInterviews();
+    },
+    [jobId, refreshInterviews]
+  );
+
+
+  // Action: Cancel interview
+  const handleCancel = useCallback(async (id: string) => {
+    setIsUpdating(id);
+    try {
+      await InterviewsServices.cancelInterview(id);
+      setInterviews((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, status: "cancel" } : item
+        )
+      );
+    }
+    catch (error) {
+      console.error("Erreur lors de l'annulation de l'entretien :", error);
+    }
+    finally {
+      setIsUpdating(null);
+    }
+  }, []);
+
+
+
+  return (
+    <div className={styles.tableCard}>
+      {/* Header */}
+      <InterviewToolbar
+        t={t}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onOpenGenerateModal={() => setIsModalOpen(true)}
+        totalCount={filteredInterviews.length}
+      />
+
+      {/* Modale de création d'entretien */}
+      <GenerateInterviewModal
+        isOpen={isModalOpen}
+        jobId={jobId}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateInterview}
+        fetchCandidatesApi={fetchCandidatesApi}
+      />
+
+      {/* Tableau d'entretiens */}
+      <div className={styles.tableContainer} ref={tableContainerRef}>
+        <table className={styles.interviewsTable}>
+          <thead>
+            <tr>
+              <th>Candidat</th>
+              <th>Offre d'emploi</th>
+              <th>Date & Heure</th>
+              <th>Lieu / Lien</th>
+              <th>Statut</th>
+              <th className={styles.textRight}>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredInterviews.length === 0 && !isLoadingMore ? (
+              <tr>
+                <td colSpan={6} className={styles.emptyState}>
+                  Aucun entretien trouvé.
+                </td>
+              </tr>
+            ) : (
+              filteredInterviews.map((interview) => (
+                <InterviewRow
+                  key={interview.id}
+                  interview={interview}
+                  isUpdating={isUpdating === interview.id}
+                  onCancel={handleCancel}
+                  getInitials={getInitials}
+                />
+              ))
+            )}
+          </tbody>
+        </table>
+
+        {/* Sentinelle Infinite Scroll */}
+        <div ref={observerTargetRef} className={styles.sentinelContainer}>
+          {isLoadingMore && (
+            <div className={styles.loadingSpinner}>Chargement des entretiens...</div>
+          )}
+          {!hasMore && interviews.length > 0 && (
+            <span className={styles.endOfListText}>
+              Tous les entretiens ont été chargés.
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }

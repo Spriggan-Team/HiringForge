@@ -226,11 +226,30 @@
     background: #fef2f2;
 }
 
+/** Loading (Scroll Pagination)**/
+
 .emptyState {
     text-align: center;
     color: #94a3b8;
     padding: 2rem !important;
 }
+
+.tableContainer {
+  max-height: 550px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.sentinelContainer {
+  padding: 16px;
+  text-align: center;
+}
+
+.loadingSpinner, .endOfListText {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
 
 /* Responsive Mobile */
 @media (max-width: 768px) {

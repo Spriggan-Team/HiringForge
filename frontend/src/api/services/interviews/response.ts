@@ -1,4 +1,4 @@
-import type { InterviewStatus } from "../../../features/interviews/interviws";
+import type { InterviewStatus } from "../../../features/interviews/interviews";
 import type { ApiResponse } from "../response.types";
 
 export type RecruiterJobInterviewsResponse =

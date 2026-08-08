@@ -10,6 +10,8 @@ import notificationFR from "./locales/fr/notification.json"
 import jobsFR from "./locales/fr/jobs.json"
 import schedulerFR from "./locales/fr/scheduler.json"
 import applicationFR from './locales/fr/applications.json'
+import interviewsFR from './locales/fr/interviews.json'
+
 
 // EN
 import authEN from "./locales/en/auth.json";
@@ -19,7 +21,7 @@ import notificationEN from "./locales/en/notification.json"
 import jobsEN from "./locales/en/jobs.json"
 import schedulerEN from "./locales/en/scheduler.json"
 import applicationEN from './locales/en/applications.json'
-
+import interviewsEN from './locales/en/interviews.json'
 
 const resources = {
 
@@ -31,7 +33,8 @@ const resources = {
             ...notificationFR,
             ...jobsFR,
             ...schedulerFR,
-            ...applicationFR
+            ...applicationFR,
+            ...interviewsFR
         }
     },
 
@@ -43,7 +46,8 @@ const resources = {
             ...notificationEN,
             ...jobsEN,
             ...schedulerEN,
-            ...applicationEN
+            ...applicationEN,
+            ...interviewsEN
         }
     }
 };
@@ -65,13 +69,10 @@ i18n
 
 
 declare module "i18next" {
-
     interface CustomTypeOptions {
-
         defaultNS: "translation";
 
         resources: {
-
             translation:
                 typeof globalFR
                 & typeof authFR
@@ -80,6 +81,7 @@ declare module "i18next" {
                 & typeof jobsFR
                 & typeof schedulerFR
                 & typeof applicationFR
+                & typeof interviewsFR
         };
     }
 }

@@ -63,6 +63,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
   const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const loadedRef = useRef<boolean>(false); // Synchronous varification
 
   // -- Control scroll
   const observerTarget = useRef<HTMLTableRowElement | null>(null);
@@ -98,6 +99,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
       abortControllerRef.current = newController;
 
       setIsLoadingMore(true);
+      loadedRef.current = true;
       setSkip(0);
 
       try {
@@ -122,6 +124,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
       }
       finally {
         setIsLoadingMore(false);
+        loadedRef.current = false;
       }
     },
     [jobId, companyId]
@@ -130,9 +133,12 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
 
   // Pagination
   const handleFetchMore = useCallback(async () => {
-    if (isLoadingMore || !hasMore) return;
+    if (isLoadingMore || !hasMore)
+      return;
 
     setIsLoadingMore(true);
+    loadedRef.current = true;
+
     const nextSkip = skip + PAGE_SIZE;
 
     try {
@@ -147,14 +153,18 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
       setApplications((prev) => [...prev, ...moreData]);
       setSkip(nextSkip);
       setHasMore(moreData.length === PAGE_SIZE);
-    } catch (error) {
+    } 
+    catch (error) {
       console.error('Erreur lors du chargement de la suite des candidatures:', error);
-    } finally {
-      setIsLoadingMore(false);
     }
-  }, [jobId, companyId, skip, isLoadingMore, hasMore, debouncedSearch]);
+    finally {
+      setIsLoadingMore(false);
+      loadedRef.current = false;
+    }
+  }, [jobId, companyId, skip, hasMore, debouncedSearch]);
 
   
+
   // Reset trigger (search or change of props)
   useEffect(() => {
     handleResetAndFetch(debouncedSearch);
@@ -162,28 +172,27 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
 
 
   // Intersection Observer for Infinite Scroll
-    useEffect(() => {
-            const observer = new IntersectionObserver(
-                (entries) => {
-                    if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
-                    handleFetchMore();
-                    }
-                },
-                { threshold: 0.5 }
-            );
+  useEffect(() => {
+      const observer = new IntersectionObserver(
+          (entries) => {
+              if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+              handleFetchMore();
+              }
+          },
+          { threshold: 0.5 }
+      );
 
-            const currentTarget = observerTarget.current;
-            if (currentTarget) {
-                observer.observe(currentTarget);
-            }
+      const currentTarget = observerTarget.current;
+      if (currentTarget) {
+          observer.observe(currentTarget);
+      }
 
-            return () => {
-            if (currentTarget) {
-                observer.unobserve(currentTarget);
-            }
-            };
-        },[hasMore, isLoadingMore, handleFetchMore]
-    );
+      return () => {
+        if (currentTarget) {
+            observer.unobserve(currentTarget);
+        }
+      };
+  },[hasMore, handleFetchMore]);
 
 
   // Utility Initials

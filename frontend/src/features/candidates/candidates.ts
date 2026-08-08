@@ -23,3 +23,11 @@ export type CandidateStatus =
     | "withdrawn"
     | "rejected"
     | "hired";
+
+
+export interface CandidateLightModel {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl?: string;
+}

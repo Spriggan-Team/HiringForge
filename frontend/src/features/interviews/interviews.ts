@@ -26,3 +26,12 @@ export interface Interview {
     status: InterviewStatus;
     avatarUrl?: string;
 }
+
+
+export interface CreateInterviewFormData {
+  candidateId: string;
+  title?: string;
+  description?: string;
+  scheduledAt: string;
+  url?: string;
+}
