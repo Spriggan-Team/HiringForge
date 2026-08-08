@@ -311,7 +311,8 @@ class JobOfferApplicationRepository
     //--------- Entity & Collection fetch 
     //------------------------------------
 
-    /**
+ 
+   /**
      * Retrieve all applications/postulation related to a specific job,
      * to all job of an user (recruiter) or all job of company if passed.
      *
@@ -338,21 +339,25 @@ class JobOfferApplicationRepository
      * } $scheme
      * @param string|null $userId
      * @param string|null $companyId
+     * @param string|null $search allows search applications based on userName
+     * @param JobApplicationStatus|null $status allows search to be based on status
      * @return array
      */
     #[Override]
     public function fetchJobApplicationsProjection(
-        ?string $jobId = null,
+        string $jobId,
         int $limit = 17,
         int $skip = 0,
         array $scheme = ['id' => true],
         ?string $userId = null,
-        ?string $companyId = null
+        ?string $companyId = null,
+        ?string $search = null,
+        ?JobApplicationStatus $status = null,
     ): array {
         $qb = $this->createQueryBuilder('a');
         $selectedFields = [];
 
-        // 1. Sélection dynamique des champs d'Application
+        // 1. Dynamic selection of Application fields
         $allowedApplicationFields = ['id', 'matchScore', 'appliedAt', 'status'];
         foreach ($allowedApplicationFields as $field) {
             if (!empty($scheme[$field])) {
@@ -364,10 +369,16 @@ class JobOfferApplicationRepository
             $selectedFields[] = 'a.id';
         }
 
-        // 2. Gestion de la sous-projection Candidate
+        // Check if candidate join is explicitly required by scheme or search filter
         $hasCandidateScheme = !empty($scheme['candidate']) && is_array($scheme['candidate']);
-        if ($hasCandidateScheme) {
+        $needsCandidateJoin = $hasCandidateScheme || !empty($search);
+
+        if ($needsCandidateJoin) {
             $qb->leftJoin('a.candidate', 'c');
+        }
+
+        // 2. Handle Candidate sub-projection
+        if ($hasCandidateScheme) {
             $allowedCandidateFields = ['id', 'firstName', 'lastName', 'email'];
 
             foreach ($allowedCandidateFields as $candField) {
@@ -376,7 +387,7 @@ class JobOfferApplicationRepository
                 }
             }
 
-            // Image du candidat
+            // Candidate image scheme
             if (!empty($scheme['candidate']['image'])) {
                 $qb->leftJoin('c.image', 'img');
                 $imageScheme = $scheme['candidate']['image'];
@@ -396,23 +407,39 @@ class JobOfferApplicationRepository
 
         $qb->select(implode(', ', $selectedFields));
 
-        // 3. Filtrage dynamique selon jobId, companyId, userId
-        if ($jobId !== null) {
-            $qb->andWhere('a.jobOffer = :jobId')
+        // 3. Dynamic filtering based on jobId, companyId, and userId
+        $qb->andWhere('a.jobOffer = :jobId')
             ->setParameter('jobId', $jobId);
-        }
 
         if ($companyId !== null) {
             $qb->andWhere('a.company = :companyId')
-            ->setParameter('companyId', $companyId);
+                ->setParameter('companyId', $companyId);
         } elseif ($userId !== null) {
-            // Jointure propre avec JobOffer
+            // Join JobOffer entity cleanly
             $qb->innerJoin('a.jobOffer', 'jo')
-            ->andWhere('jo.user = :userId')
-            ->setParameter('userId', $userId);
+                ->andWhere('jo.user = :userId')
+                ->setParameter('userId', $userId);
         }
 
-        // 4. Pagination
+        // 4. Status filter
+        if ($status !== null) {
+            $qb->andWhere('a.status = :status')
+                ->setParameter('status', $status);
+        }
+
+        // 5. Search filter (by candidate first name, last name or full name)
+        if (!empty($search)) {
+            $trimmedSearch = trim($search);
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->like('c.firstName', ':search'),
+                    $qb->expr()->like('c.lastName', ':search'),
+                    $qb->expr()->like("CONCAT(c.firstName, ' ', c.lastName)", ':search')
+                )
+            )->setParameter('search', '%' . $trimmedSearch . '%');
+        }
+
+        // 6. Pagination
         if ($limit > 0) {
             $qb->setMaxResults($limit);
         }
@@ -422,7 +449,7 @@ class JobOfferApplicationRepository
 
         $results = $qb->getQuery()->getArrayResult();
 
-        // 5. Restructuration du tableau de sortie
+        // 7. Restructure output array
         if ($hasCandidateScheme) {
             return array_map(static function (array $row) {
                 $candidateData = [];
@@ -444,12 +471,12 @@ class JobOfferApplicationRepository
                     }
                 }
 
-                // Assigner l'image seulement si elle contient des valeurs
+                // Assign image data only if it contains non-null values
                 if (!empty($imageData) && array_filter($imageData, static fn($v) => $v !== null)) {
                     $candidateData['image'] = $imageData;
                 }
 
-                // Assigner candidate seulement s'il existe (non null via LEFT JOIN)
+                // Assign candidate only if present (non-null via LEFT JOIN)
                 $row['candidate'] = $hasCandidateValue ? $candidateData : null;
 
                 return $row;

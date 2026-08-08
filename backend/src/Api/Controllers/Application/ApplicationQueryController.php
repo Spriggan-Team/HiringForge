@@ -39,7 +39,7 @@ class ApplicationQueryController extends AbstractController
 
     #[IsGranted(AccountRole::USER->value)]
     #[Route('/{jobOfferId}/rejected', methods: ['GET'])]
-    public function getRejected(
+    public function countReject(
         string $jobOfferId
     ){
         try{
@@ -71,6 +71,22 @@ class ApplicationQueryController extends AbstractController
         }
     }
 
+
+    /**
+     * /applications/serach?text=string&status=string&candidate
+     */
+    #[Route('/serach', methods: ['GET'])]
+    public function search(){
+        try{
+            
+        }
+        catch(\Exception $error)
+        {
+            return ApiResponse::error(
+                message: "Something went wrong"
+            )->toJsonResponse();
+        }
+    }
 
 
     /**
@@ -244,13 +260,13 @@ class ApplicationQueryController extends AbstractController
 
         }
         catch (\Exception $error) {
-            $this->logger->error('Une erreur est survenue', [
-                'message' => $error->getMessage(),
-                'code' => $error->getCode(),
-                'file' => $error->getFile(),
-                'line' => $error->getLine(),
-                'stack' => $error->getTraceAsString(),
-            ]);
+            // $this->logger->error('Une erreur est survenue', [
+            //     'message' => $error->getMessage(),
+            //     'code' => $error->getCode(),
+            //     'file' => $error->getFile(),
+            //     'line' => $error->getLine(),
+            //     'stack' => $error->getTraceAsString(),
+            // ]);
             return ApiResponse::error(
                 message: 'Failed to fetch job KPIs: ' . $error->getMessage(),
                 statusCode: 500

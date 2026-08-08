@@ -11,7 +11,11 @@ const getApplicationsJob = async (
     companyId,
     skip,
     limit,
+    search,
+    signal
   }: {
+    signal?: AbortSignal;
+    search?:string;
     jobId?: string;
     companyId?: string;
     skip?: number;
@@ -23,6 +27,7 @@ const getApplicationsJob = async (
 
     if(jobId) params.set('jobOfferId', jobId)
     if (companyId) params.set('companyId', companyId);
+    if(search) params.set("search", search)
     if (skip !== undefined) params.set('skip', String(skip));
     if (limit !== undefined) params.set('limit', String(limit));
 

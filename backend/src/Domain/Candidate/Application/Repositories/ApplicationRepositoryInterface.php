@@ -28,6 +28,9 @@ interface ApplicationRepositoryInterface
     public function count(array $criteria): int;
 
 
+
+
+
     /**
      * Retrieve all applications/postulation related to a specific job,
      * to all job of an user (recruiter) or all job of company if passed.
@@ -55,9 +58,18 @@ interface ApplicationRepositoryInterface
      * } $scheme
      * @param string|null $userId
      * @param string|null $companyId
+     * @param string|null $search allows used to search applications based on userName
+     * @param string|null $status allows seacrh to be based on status
      * @return array
      */
-    public function fetchJobApplicationsProjection(string $jobId, int $limit = 17, int $skip = 0, array $scheme = ['id'=>true], ?string $userId =null, ?string $companyId = null  ): array;
+    public function fetchJobApplicationsProjection(
+        string $jobId, 
+        int $limit = 17, int $skip = 0, 
+        array $scheme = ['id'=>true], 
+        ?string $userId =null, ?string $companyId = null,
+        ?string $search = null,
+        ?JobApplicationStatus $status =null,
+    ): array;
 
 
     
@@ -67,6 +79,7 @@ interface ApplicationRepositoryInterface
     public function changeStatus(string $applicationId, JobApplicationStatus $newStatus): void;
 
     
+
     /**
      * Retrieves aggregated candidate/application statistics for a given job offer.
      *
@@ -126,4 +139,5 @@ interface ApplicationRepositoryInterface
      * @return float[]
      */
     public function getWeeklyMetrics(string $userId, string $jobId, \DateTimeImmutable $now): array;
+
 }

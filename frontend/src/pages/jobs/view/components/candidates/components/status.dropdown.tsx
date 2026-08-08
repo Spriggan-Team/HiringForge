@@ -1,9 +1,10 @@
 
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ALLOWED_STATUS_TRANSITIONS, JobApplicationStatus, type ApplicationStatusValue } from "../../../../../features/application/application";
-import styles from './StatusDropdown.module.css';
+import { ALLOWED_STATUS_TRANSITIONS, JobApplicationStatus, type ApplicationStatusValue } from "../../../../../../features/application/application";
 import { useTranslation } from 'react-i18next';
+
+import styles from './StatusDropdown.module.css';
 
 
 interface StatusDropdownProps {
@@ -12,7 +13,7 @@ interface StatusDropdownProps {
     disabled?: boolean;
 }
 
-// Statuts que le recruteur NE PEUT PAS sélectionner manuellement
+// Statuses that the recruiter CANNOT select manually
 const NON_MANUAL_STATUSES: ApplicationStatusValue[] = [
     JobApplicationStatus.HIRED,
     JobApplicationStatus.INTERVIEW_SCHEDULED, 

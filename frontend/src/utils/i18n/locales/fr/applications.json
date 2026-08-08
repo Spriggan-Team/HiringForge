@@ -3,8 +3,18 @@
         "update":{
             "changeStatus" : "Changer de statut"
         },
+        "headers":{
+            "detailsOfApplication": "Détails de la candidature"
+        },
+        "inputs":{
+            "searchForCandidates": "Chercher des candidats"
+        },
+        "confirm":{
+            "rejectCandidate": "Refuser le candidat"
+        },
         "messages":{
            "loadingNextApplication": "Chargement des candidatures suivantes...",
+           "noApplicationsFounded": "Aucune candidature trouvée.",
             "confirmStatusChange": "Voulez-vous vraiment passer la candidature de <strong>{{candidateName}}</strong> au statut <strong>{{status}}</strong> ?"
         }
     }

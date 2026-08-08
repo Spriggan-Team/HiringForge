@@ -2,16 +2,9 @@
 
 import React from 'react';
 import styles from './ApplicationDetailModal.module.css'
+import type { Application } from '../../../../features/application/application';
 
-export interface Application {
-    id: string;
-    candidate: string;
-    email: string;
-    matchScore: number;
-    status: string;
-    avatarUrl?: string;
-    appliedAt: string;
-}
+
 
 interface ApplicationDetailModalProps {
     application: Application;

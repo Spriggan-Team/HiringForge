@@ -21,7 +21,7 @@ import SimpleButton from "../../../layout/components/buttons/simple/simple.butto
 import TopBarNavigation from "../../../layout/components/navigation/topbar/topbar.navigation";
 import InfoPill, { type InfoPillProps } from "../../../layout/components/badges/pill/info.pill";
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/dropdown/menu.dropdown";
-import CandidatesViewSection from "./components/candidates/application.table.section";
+import CandidatesViewSection from "./components/candidates/application.table";
 
 //-- SVG Components
 import EditSVG from "/src/assets/svg/menu/edit-2-svgrepo-com.svg"
