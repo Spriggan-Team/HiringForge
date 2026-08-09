@@ -260,13 +260,6 @@ class ApplicationQueryController extends AbstractController
 
         }
         catch (\Exception $error) {
-            // $this->logger->error('Une erreur est survenue', [
-            //     'message' => $error->getMessage(),
-            //     'code' => $error->getCode(),
-            //     'file' => $error->getFile(),
-            //     'line' => $error->getLine(),
-            //     'stack' => $error->getTraceAsString(),
-            // ]);
             return ApiResponse::error(
                 message: 'Failed to fetch job KPIs: ' . $error->getMessage(),
                 statusCode: 500

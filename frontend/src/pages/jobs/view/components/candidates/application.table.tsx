@@ -10,7 +10,7 @@ import { canTransitionStatus } from "../../../../../features/application/helpers
 
 
 import { ApplicationSearchHeader } from "./components/applications.search.header";
-import { ApplicationTableHeader } from "./components/application.table.header";
+import { ApplicationTableHead, ApplicationTableTitle } from "./components/application.table.header";
 import { ApplicationRow } from "./components/application.table.row";
 import { ConfirmModal } from "../../../../../layout/components/conform.box";
 import { ApplicationDetailModal } from "../../../components/application/application.details";
@@ -331,9 +331,11 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
       />
 
       <div className={styles.tableCard}>
+        <ApplicationTableTitle totalCount={applications.length} />
+
         <div className={styles.tableContainer}>
           <table className={styles.applicationsTable}>
-            <ApplicationTableHeader totalCount={applications.length} t={t} />
+            <ApplicationTableHead  t={t} />
 
             <tbody>
               {applications.length === 0 && !isLoadingMore ? (

@@ -27,7 +27,7 @@ export interface NavBarProps{
 
 
 
-const NavBar: React.FC<NavBarProps> = ({
+const UserNavBar: React.FC<NavBarProps> = ({
     className
 }) => {
     const { t } = useTranslation();
@@ -157,4 +157,4 @@ const NavBar: React.FC<NavBarProps> = ({
     );
 }
  
-export default NavBar;
+export default UserNavBar;

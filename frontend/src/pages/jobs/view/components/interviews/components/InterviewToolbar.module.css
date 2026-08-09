@@ -1,0 +1,120 @@
+/* --- MAIN CONTAINER--- */
+.toolbarContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  gap: 1rem;
+  flex-wrap: wrap; /* Support du responsive */
+}
+
+/* --- TITLE & COUNTER BADGE  --- */
+.tableHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tableHeader h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.5;
+}
+
+.badgeCount {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #3730a3;
+  background-color: #e0e7ff;
+  border-radius: 9999px; /* Form - pill */
+  white-space: nowrap;
+}
+
+/* --- ACTIONS ZONE  (SEARCH + BOUTON) --- */
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* SEARCH INPUTS */
+.searchInput {
+  min-width: 260px;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #1f2937;
+  background-color: #f9fafb;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.searchInput::placeholder {
+  color: #9ca3af;
+}
+
+.searchInput:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Main action button */
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #2563eb;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btnPrimary:hover {
+  background-color: #1d4ed8;
+}
+
+.btnPrimary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+}
+
+.btnPrimary:active {
+  background-color: #1e40af;
+}
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+  .toolbarContainer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbarActions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .searchInput,
+  .btnPrimary {
+    width: 100%;
+    min-width: unset;
+  }
+}

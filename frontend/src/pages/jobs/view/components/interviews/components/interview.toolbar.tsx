@@ -2,7 +2,7 @@ import React from "react";
 import type { TFunction } from "i18next";
 
 
-import styles from "../Interviews.module.css";
+import styles from "./InterviewToolbar.module.css";
 
 
 interface InterviewToolbarProps {
@@ -14,7 +14,7 @@ interface InterviewToolbarProps {
 }
 
 export const InterviewToolbar: React.FC<InterviewToolbarProps> = ({
-    t,
+  t,
   searchQuery,
   onSearchChange,
   onOpenGenerateModal,

@@ -6,8 +6,8 @@ import RouteScheme from './route.scheme'
 import { httpContext } from './api/handler'
 
 //-- Custom Compoenents
-import SideMenu from './layout/components/menu/sidebar/side.menu'
-import NavBar from './pages/home/components/navbar/navbar'
+import UserSideMenu from './layout/components/menu/sidebar/user.side.menu'
+import UserNavBar from './pages/home/components/navbar/user.navbar'
 
 //-- Guard
 import AuthGuardPage from './pages/auth.entry'
@@ -67,6 +67,12 @@ function App() {
                 <Route path={RouteScheme.userSchedule} element={<SchedulingWorkspace />} />
                 {/** CANDIDATES */}
                 <Route path={RouteScheme.userCandidate} element={<CandidatesPage />} />
+                {/** User */}
+            </Route>
+
+            {/** EXCLUSIVE CANDIDATES */}
+            <Route>
+
             </Route>
 
             {/** PUBLIC ACCESS (AUTH) */}
@@ -84,9 +90,9 @@ export default App
 const UserAppLayout = () => {
   return (
     <div className='app-container'>
-      <SideMenu />
+      <UserSideMenu />
       <div className='app-view'>
-        <NavBar className='nav-bar' />
+        <UserNavBar className='nav-bar' />
         <Outlet  />
       </div>
     </div>

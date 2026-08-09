@@ -7,7 +7,7 @@ import InterviewsQueries from "../../../../../api/services/interviews/queries";
 import CandidatesQueries from "../../../../../api/services/candidate/queries";
 import InterviewsServices from "../../../../../api/services/interviews/command";
 
-import { INTERVIEW_STATUSES, type InterviewStatus } from "../../../../../features/interviews/interviews";
+import { INTERVIEW_STATUSES, type CreateInterviewFormData } from "../../../../../features/interviews/interviews";
 import { InterviewToolbar } from "./components/interview.toolbar";
 import type { CandidateLightModel } from "../../../../../features/candidates/candidates";
 
@@ -15,19 +15,12 @@ import type { CandidateLightModel } from "../../../../../features/candidates/can
 
 
 import styles from "./Interviews.module.css";
+import { GenerateInterviewModal } from "./components/generate.interview.modal";
+import InterviewRow from "./components/interviews.table.row";
+import { useAppContext } from "../../../../../hooks/context";
 
 
 const STATUS_OPTIONS= INTERVIEW_STATUSES;
-
-
-export interface InterviewsSectionProps {
-  job: {
-    id: string;
-    title: string;
-  };
-  companyId?: string;
-  userId?: string;
-}
 
 
 export interface Interview {
@@ -42,17 +35,26 @@ export interface Interview {
 }
 
 
+
+export interface InterviewsSectionProps {
+  job: {
+    id: string;
+    title: string;
+  };
+  companyId?: string;
+}
+
+
+
 export default function InterviewsSection({
   job: { id: jobId, title: jobTitle },
   companyId,
-  userId,
 }: InterviewsSectionProps) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
+  const { setModal } = useAppContext() ;
+
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
-
-  // État Modale
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Recherche
   const [searchQuery, setSearchQuery] = useState("");
@@ -172,7 +174,8 @@ export default function InterviewsSection({
     const target = observerTargetRef.current;
     const container = tableContainerRef.current;
 
-    if (!target || !hasMore || isLoadingMore) return;
+    if (!target || !hasMore || isLoadingMore) 
+      return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -243,6 +246,7 @@ export default function InterviewsSection({
     }
   }, []);
 
+  
 
 
   return (
@@ -252,17 +256,21 @@ export default function InterviewsSection({
         t={t}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        onOpenGenerateModal={() => setIsModalOpen(true)}
         totalCount={filteredInterviews.length}
-      />
-
-      {/* Modale de création d'entretien */}
-      <GenerateInterviewModal
-        isOpen={isModalOpen}
-        jobId={jobId}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCreateInterview}
-        fetchCandidatesApi={fetchCandidatesApi}
+        onOpenGenerateModal={() => {
+          setModal({
+            isOpen: true,
+            title: 'Création d\'un entrtien',
+            content: <GenerateInterviewModal
+              jobId={jobId}
+              onClose={() => {
+                setModal(null)
+              }}
+              onSubmit={handleCreateInterview}
+              fetchCandidatesApi={fetchCandidatesApi}
+            />
+          });
+        }}
       />
 
       {/* Tableau d'entretiens */}

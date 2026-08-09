@@ -44,11 +44,25 @@ class ApiResponse
      */
     public static function error(
         string $message = '', array $data = [], 
-        ?ApplicationErrorCode $code = null, ?\Throwable $throwable = null, int $statusCode = 400
+        ?ApplicationErrorCode $code = null, 
+        ?\Throwable $throwable = null,
+        int $statusCode = 400,
+        ?bool $verbose = false
     ): self
     {
         if ($throwable && self::$logger) {
-            self::$logger->error("Caught Exception: ". $throwable->getMessage(), ['exception' => $throwable]);
+            if($verbose){
+                self::$logger->error('Une erreur est survenue', [
+                    'message' => $throwable->getMessage(),
+                    'code' => $throwable->getCode(),
+                    'file' => $throwable->getFile(),
+                    'line' => $throwable->getLine(),
+                    'stack' => $throwable->getTraceAsString(),
+                ]);
+            }
+            else{
+                self::$logger->error("Caught Exception: ". $throwable->getMessage(), ['exception' => $throwable]);
+            }
         }
 
         return new self([
