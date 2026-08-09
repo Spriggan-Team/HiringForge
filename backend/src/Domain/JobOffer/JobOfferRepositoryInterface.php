@@ -8,7 +8,7 @@ use App\Domain\Shared\Account\AccountId;
 
 interface JobOfferRepositoryInterface
 {  
-public function exists(string $id): bool;
+    public function exists(string $id): bool;
 
     /**
      * Verifies that a job offer exists in the database and is linked to an existing user.
@@ -20,9 +20,11 @@ public function exists(string $id): bool;
     /** Check if a job's scheduled publication date has passed */
     public function hasPublicationDatePassed(string $id): bool;
 
+
     /** @return JobOffer[] */
     public function findPendingPublications(): array;
 
+    
     public function isPublicationPending(string $id): bool;
 
 
@@ -36,10 +38,14 @@ public function exists(string $id): bool;
      */
     public function findAll(string $accountId, string $offerId): array;
 
+
+    
     public function change(JobOffer $jobOffer, string $offerId, string $accountId): void;
+
 
     public function save(JobOffer $offer, AccountId $accountId): void;
 
+    
     public function delete(string $uuid, string $accountId): void;
 
     /**
@@ -55,6 +61,7 @@ public function exists(string $id): bool;
      * @param array<int, JobOfferImage>
      */
     public function associateImagesWithJob(string $offerId, array $images): void;
+    
 
     public function removeImageFromJob(string $offerId, string $fileName): void;
 }

@@ -62,7 +62,9 @@
             "agents": "Agents",
             "candidates": "Candidates",
             "interview": "Entretien",
-            "settings": "Paramèters"
+            "settings": "Paramèters",
+            "offers": "Offres d'embauches",
+            "stats": "Statistiques"
         },
         "navbar":{},
         

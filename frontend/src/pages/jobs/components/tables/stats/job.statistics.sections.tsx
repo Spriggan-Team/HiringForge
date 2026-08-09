@@ -2,9 +2,9 @@ import { useTranslation } from "react-i18next";
 import React, { useEffect, useState, useTransition } from "react";
 
 import ApplicationQueries from "../../../../../api/services/application/queries";
-import JobServices from "../../../../../api/services/jobs/command";
 import JobQueries from "../../../../../api/services/jobs/queries";
 import { currentDay, currentMonth } from '../../../../../utils/dates'
+import type { JobKpis } from "../../../../../features/jobs/JobOffer";
 
 import { LineChart, type Dataset } from "../../../../../layout/components/charts/lineChart/lineChart";
 import type { DonutChartData } from "../../../../../layout/components/charts/donutChart/donus.chart";
@@ -12,12 +12,11 @@ import DonutChart from "../../../../../layout/components/charts/donutChart/donus
 
 
 import styles from "./JobStatisticsSection.module.css";
-import type { JobKpis } from "../../../../../features/jobs/JobOffer";
 
 
 
 export interface JobStatisticsSectionProps {
-    jobId: string;
+    jobId?: string;
     jobTitle?: string;
 }
 
@@ -106,12 +105,14 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                // Fetch stats and metrics in parallel
-                const [jobKpi, statsData, postulationMetricsData] = await Promise.all([
-                    JobQueries.getJobKpis(jobId),
-                    JobQueries.getUserStats(jobId),
-                    JobQueries.getPostulationMetrics({ jobId, timeframe }),
-                ]);
+
+                const [jobKpi, statsData, postulationMetricsData] = await Promise.all(
+                     [
+                        JobQueries.getJobKpis(jobId),
+                        JobQueries.getJobOffersOverview(jobId),
+                        ApplicationQueries.getJobPostulationMetrics({ jobId, timeframe }),
+                    ]
+                );
 
                 if (!isMounted) return;
 
@@ -165,7 +166,11 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
     //----- RENDER
 
     if(isLoading){
-        return (<p>{t('global.messages.loading')}</p>)
+        return (
+            <div className="loading-placeholder">
+                <p>{t('global.messages.loading')}</p>
+            </div>
+        )
     }
 
 

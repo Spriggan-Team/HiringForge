@@ -54,7 +54,11 @@ interface ApplicationRepositoryInterface
      *              size?: bool,
      *              createdAt?: bool
      *          }
-     *      }
+     *      },
+     *      jobOffer?: array{
+     *          id?: bool,
+     *          title?: bool
+     *      } 
      * } $scheme
      * @param string|null $userId
      * @param string|null $companyId
@@ -63,7 +67,7 @@ interface ApplicationRepositoryInterface
      * @return array
      */
     public function fetchJobApplicationsProjection(
-        string $jobId, 
+        ?string $jobId, 
         int $limit = 17, int $skip = 0, 
         array $scheme = ['id'=>true], 
         ?string $userId =null, ?string $companyId = null,
@@ -78,24 +82,11 @@ interface ApplicationRepositoryInterface
      */
     public function changeStatus(string $applicationId, JobApplicationStatus $newStatus): void;
 
+
     
 
     /**
-     * Retrieves aggregated candidate/application statistics for a given job offer.
-     *
-     * @param string $jobId
-     * @return array{
-     *      preselect: int,
-     *      interviews: int,
-     *      rejected: int,
-     *      offer: int
-     * }
-     */
-    public function getUserStats(string $userId, string $jobId): array;
-
-    
-    /**
-     * Counts applications created within a specific date range.
+     * Counts applications created within a specific date range (period).
      */
     public function countApplicationsInPeriod(string $jobOfferId, \DateTimeInterface $start, \DateTimeInterface $end): int;
 
@@ -117,11 +108,11 @@ interface ApplicationRepositoryInterface
      * Retrieves the number of applications made by candidates for a specific job offer within a timeframe.
      *
      * @param string $userId The recruiter ID (verifies ownership/relation)
-     * @param string $jobId  The unique job offer ID
+     * @param string|null $jobId  The unique job offer ID
      * @param string $timeframe 'month' (12 items) or 'week' (7 items)
-     * @return float[] List of postulation counts ordered chronologically
+     * @return array<int, float> List of postulation counts ordered chronologically
      */
-    public function getPostulationMetrics(string $userId, string $jobId, string $timeframe = 'month'): array;
+    public function getPostulationMetrics(string $userId, ?string $jobId = null, string $timeframe = 'month'): array;
 
 
     /**
@@ -129,7 +120,7 @@ interface ApplicationRepositoryInterface
      * 
      * @return float[]
      */
-    public function getMonthlyMetrics(string $userId, string $jobId, \DateTimeImmutable $now): array;
+    public function getMonthlyMetrics(string $userId, ?string $jobId, \DateTimeImmutable $now): array;
 
 
 
@@ -138,6 +129,6 @@ interface ApplicationRepositoryInterface
      * 
      * @return float[]
      */
-    public function getWeeklyMetrics(string $userId, string $jobId, \DateTimeImmutable $now): array;
+    public function getWeeklyMetrics(string $userId, ?string $jobId, \DateTimeImmutable $now): array;
 
 }

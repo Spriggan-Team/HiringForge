@@ -15,4 +15,9 @@ export interface JobApplicationItem {
   };
   matchScore: number;
   appliedAt: Date; // Date
+
+  jobOffer?:{
+    id: string;
+    title: string
+  }
 }

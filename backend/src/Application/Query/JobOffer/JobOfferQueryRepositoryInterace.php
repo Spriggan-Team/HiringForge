@@ -148,5 +148,18 @@ interface JobOfferQueryRepositoryInterace
     public function fetchJobOfferProjection(string $jobOfferId, string $userId, array $scheme = []): array;
 
 
+    /**
+     * Retrieves aggregated candidate/application statistics for a given user or job offer.
+     *
+     * @param string $userId
+     * @param string|null  $jobId If null, stats are calculated for all jobs belonging to the user
+     * @return array{
+     *      preselect: int,
+     *      interviews: int,
+     *      rejected: int,
+     *      offer: int
+     * }
+     */
+    public function getJobStats(string $userId, ?string $jobId = null): array;
 
 }

@@ -15,13 +15,16 @@ import JobQueries from "../../../api/services/jobs/queries";
 
 //-- Custom components
 import Title from "../../../layout/components/text/title/title";
-import JobOverviewSection from "./components/overview/job.overview.section";
+import JobOverviewSection from "../components/tables/overview/job.overview.section";
 import BreadCrumbs from "../../../layout/components/navigation/auth/link/bread.crumbs";
 import SimpleButton from "../../../layout/components/buttons/simple/simple.button";
 import TopBarNavigation from "../../../layout/components/navigation/topbar/topbar.navigation";
 import InfoPill, { type InfoPillProps } from "../../../layout/components/badges/pill/info.pill";
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/dropdown/menu.dropdown";
-import CandidatesViewSection from "./components/candidates/application.table";
+import CandidatesViewSection from "../components/tables/candidates/application.table";
+import InterviewsSection from "../components/tables/interviews/interviews.section";
+import OffersSection from "../components/tables/offer/offer.section";
+import { JobStatisticsSection } from "../components/tables/stats/job.statistics.sections";
 
 //-- SVG Components
 import EditSVG from "/src/assets/svg/menu/edit-2-svgrepo-com.svg"
@@ -29,9 +32,6 @@ import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-s
 
 //-- CSS styles
 import styles from "./PrivateJobViewPage.module.css"
-import InterviewsSection from "./components/interviews/interviews.section";
-import OffersSection from "./components/offer/offer.section";
-import { JobStatisticsSection } from "./components/stats/job.statistics.sections";
 
 
 

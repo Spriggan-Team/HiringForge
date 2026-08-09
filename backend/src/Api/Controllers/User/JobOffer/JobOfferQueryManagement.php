@@ -19,13 +19,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
 
-#[Route('/users/job_offer')]
+#[Route('/users/job_offers')]
 class JobOfferQueryManagement extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
         private JobOfferQueryRepositoryInterace $queryRepository,
-        private ApplicationRepositoryInterface $applicationRepository
     ) {
         ApiResponse::init($logger);
     }
@@ -95,7 +94,8 @@ class JobOfferQueryManagement extends AbstractController
                 message: "Everything went successfully"
             )->toJsonResponse();
 
-        } catch (\Throwable $exception) {
+        }
+        catch (\Throwable $exception) {
             return ApiResponse::error(
                 message: "Something went wrong",
                 throwable: $exception,
@@ -187,66 +187,49 @@ class JobOfferQueryManagement extends AbstractController
     }
 
 
-
-
     /**
-     * Route: /{jobId}/candidates/stats?timeframe=month|week
+     * Route: /stats?jobId=string
+     * if jobId is specified the stats (overview) value are calcul using the scope specified
+     * job
      */
-    #[Route('/{jobId}/candidates/stats', methods: ['GET'])]
-    public function getCandidateStats(
-        string $jobId,
+    #[Route('/stats')]
+    public function getJobOfferOverview(
         Request $request
-    ): JsonResponse {
-        try {
+    ){
+        try{
             /** @var AuthenticatedPerson $user */
             $user = $this->getUser();
+            $jobId = $request->query->get("jobId", null);
 
-            //--  Sanitization and fallback to ‘month’ if the value is invalid
-            $timeFrame = $request->query->get('timeframe', 'month');
-            if (!in_array($timeFrame, ['month', 'week'], true)) {
-                $timeFrame = 'month';
-            }
-
-            //-- Retrieving Application Metrics
-            $candidateMetrics = $this->applicationRepository->getPostulationMetrics(
+            $data = $this->queryRepository->getJobStats(
                 userId: $user->getId(),
-                jobId: $jobId,
-                timeframe: $timeFrame
+                jobId: $jobId
             );
-
-            return ApiResponse::success(
-                data: $candidateMetrics,
-                statusCode: 200,
-                message: 'Everything is fine'
-            )->toJsonResponse();
-
-        } catch (\Throwable $error) {
-            return ApiResponse::error(
-                message: 'Something went wrong while fetching candidate statistics',
-                statusCode: 400,
-                throwable: $error
-            )->toJsonResponse();
-        }
-    }
-    
-
-    #[Route('/{jobId}/postulation/metrics', methods: ['GET'])]
-    public function getPostulationMetrics()
-    {
-        try{
             
+            return ApiResponse::success(
+                message: 'Everything is ok',
+                data: $data
+            );
         }
         catch(\Exception $error){
             return ApiResponse::error(
-                message: 'Something went wrong',
-                statusCode: 400
+                message: "Something went wong while fetching job overview"
             )->toJsonResponse();
         }
     }
 
+    
 
     #[Route('/kanban', methods: ['GET'])]
     public function getKanbanResult()
     {
+        try{
+
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: "Something went wrong gettings job kanbans"
+            );
+        }
     }
 }

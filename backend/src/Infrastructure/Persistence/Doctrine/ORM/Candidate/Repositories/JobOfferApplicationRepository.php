@@ -54,7 +54,8 @@ class JobOfferApplicationRepository
     //---------------------------------------
 
     /** 
-     * Counts applications matching criteria. If no status is provided, all applications are counted.
+     * Counts applications matching criteria. 
+     * If no status is provided, all applications are counted.
      *
      * @param array{
      *     companyId?: string,
@@ -162,63 +163,17 @@ class JobOfferApplicationRepository
         return $result !== null ? (int) round((float) $result) : 0;
     }
 
-    
-    /**
-     * Retrieves aggregated candidate/application statistics for a given job offer.
-     *
-     * @param string $jobId
-     * @return array{
-     *      preselect: int,
-     *      interviews: int,
-     *      rejected: int,
-     *      offer: int
-     * }
-     */
-    public function getUserStats(string $userId ,string $jobId): array
-    {
-        //  Optimized Breakdown of Applications by Status
-        $stats = $this->createQueryBuilder('a')
-            ->select('
-                SUM(CASE WHEN a.status = :preselect THEN 1 ELSE 0 END) AS preselect,
-                SUM(CASE WHEN a.status = :rejected THEN 1 ELSE 0 END) AS rejected,
-                SUM(CASE WHEN a.status = :offer THEN 1 ELSE 0 END) AS offer
-            ')
-            ->where('a.jobOffer = :jobId')
-            ->setParameter('jobId', $jobId)
-            ->setParameter('preselect', JobApplicationStatus::PRESELECTED)
-            ->setParameter('rejected', JobApplicationStatus::REJECTED)
-            ->setParameter('offer', JobApplicationStatus::OFFER_PENDING)
-            ->getQuery()
-            ->getSingleResult();
-
-        //  Breakdown of Interviews Related to the JobOffer
-        $interviewCount = (int) $this->getEntityManager()
-            ->createQueryBuilder()
-            ->select('COUNT(i.id)')
-            ->from(InterviewEntity::class, 'i')
-            ->where('i.jobOffer = :jobId')
-            ->setParameter('jobId', $jobId)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        return [
-            'preselect'  => (int) ($stats['preselect'] ?? 0),
-            'interviews' => $interviewCount,
-            'rejected'   => (int) ($stats['rejected'] ?? 0),
-            'offer'      => (int) ($stats['offer'] ?? 0),
-        ];
-    }
 
 
     /**
-     * Retrieves the number of applications made by candidates for a specific job offer within a timeframe.
+     * Retrieves the number of applications made by candidates for a job offer or all jobs of a user within a timeframe.
      *
      * @param string $userId The recruiter ID (verifies ownership/relation)
-     * @param string $jobId  The unique job offer ID
+     * @param string|null $jobId  The unique job offer ID
      * @param string $timeframe 'month' (12 items) or 'week' (7 items)
      * @return float[] List of postulation counts ordered chronologically
      */
-    public function getPostulationMetrics(string $userId, string $jobId, string $timeframe = 'month'): array
+    public function getPostulationMetrics(string $userId, ?string $jobId = null, string $timeframe = 'month'): array
     {
         $now = new \DateTimeImmutable();
 
@@ -236,7 +191,7 @@ class JobOfferApplicationRepository
      * 
      * @return float[]
      */
-    public function getMonthlyMetrics(string $userId, string $jobId, \DateTimeImmutable $now): array
+    public function getMonthlyMetrics(string $userId, ?string $jobId, \DateTimeImmutable $now): array
     {
         // Set the 12 months to 0.0 (indexed from 1 to 12)
         $metrics = array_fill(1, 12, 0.0);
@@ -248,14 +203,17 @@ class JobOfferApplicationRepository
         $qb = $this->createQueryBuilder('a')
             ->select('MONTH(a.appliedAt) as period', 'COUNT(a.id) as count')
             ->innerJoin('a.jobOffer', 'j')
-            ->where('j.id = :jobId')
-            ->andWhere('j.user = :userId') // Vérifie que l'offre appartient bien au recruteur
+            ->where('j.user = :userId')
             ->andWhere('a.appliedAt BETWEEN :start AND :end')
-            ->setParameter('jobId', $jobId)
             ->setParameter('userId', $userId)
             ->setParameter('start', $startOfYear)
             ->setParameter('end', $endOfYear)
             ->groupBy('period');
+
+        if ($jobId !== null) {
+            $qb->andWhere('j.id = :jobId')
+               ->setParameter('jobId', $jobId);
+        }
 
         $results = $qb->getQuery()->getResult();
 
@@ -274,7 +232,7 @@ class JobOfferApplicationRepository
      * 
      * @return float[]
      */
-    public function getWeeklyMetrics(string $userId, string $jobId, \DateTimeImmutable $now): array
+    public function getWeeklyMetrics(string $userId, ?string $jobId, \DateTimeImmutable $now): array
     {
         //  Set the 7 days to 0.0 (Monday through Sunday)
         $metrics = array_fill(1, 7, 0.0);
@@ -283,18 +241,20 @@ class JobOfferApplicationRepository
         $endOfWeek   = $now->modify('sunday this week')->setTime(23, 59, 59);
 
         // Aggregation query by day of the week
-        // In MySQL, WEEKDAY() returns 0 for Monday and 6 for Sunday. We adjust this by adding 1.
         $qb = $this->createQueryBuilder('a')
             ->select('WEEKDAY(a.appliedAt) + 1 as period', 'COUNT(a.id) as count')
             ->innerJoin('a.jobOffer', 'j')
-            ->where('j.id = :jobId')
-            ->andWhere('j.user = :userId')
+            ->where('j.user = :userId')
             ->andWhere('a.appliedAt BETWEEN :start AND :end')
-            ->setParameter('jobId', $jobId)
             ->setParameter('userId', $userId)
             ->setParameter('start', $startOfWeek)
             ->setParameter('end', $endOfWeek)
             ->groupBy('period');
+        
+        if ($jobId !== null) {
+            $qb->andWhere('j.id = :jobId')
+               ->setParameter('jobId', $jobId);
+        }
 
         $results = $qb->getQuery()->getResult();
 
@@ -312,40 +272,9 @@ class JobOfferApplicationRepository
     //------------------------------------
 
  
-   /**
-     * Retrieve all applications/postulation related to a specific job,
-     * to all job of an user (recruiter) or all job of company if passed.
-     *
-     * @param string $jobId
-     * @param int $limit
-     * @param int $skip
-     * @param array{
-     *      id?: bool,
-     *      matchScore?: bool,
-     *      status?: bool,
-     *      appliedAt?: bool,
-     *      candidate?: array{
-     *          id?: bool,
-     *          lastName?: bool,
-     *          firstName?: bool,
-     *          email?: bool,
-     *          image?: bool|array{
-     *              name?: bool,
-     *              mime?: bool,
-     *              size?: bool,
-     *              createdAt?: bool
-     *          }
-     *      }
-     * } $scheme
-     * @param string|null $userId
-     * @param string|null $companyId
-     * @param string|null $search allows search applications based on userName
-     * @param JobApplicationStatus|null $status allows search to be based on status
-     * @return array
-     */
     #[Override]
     public function fetchJobApplicationsProjection(
-        string $jobId,
+        ?string $jobId,
         int $limit = 17,
         int $skip = 0,
         array $scheme = ['id' => true],
@@ -365,16 +294,25 @@ class JobOfferApplicationRepository
             }
         }
 
-        if (empty($selectedFields) && empty($scheme['candidate'])) {
+        // Check scheme dependencies
+        $hasCandidateScheme = !empty($scheme['candidate']) && is_array($scheme['candidate']);
+        $hasJobOfferScheme = !empty($scheme['jobOffer']) && is_array($scheme['jobOffer']);
+
+        if (empty($selectedFields) && !$hasCandidateScheme && !$hasJobOfferScheme) {
             $selectedFields[] = 'a.id';
         }
 
-        // Check if candidate join is explicitly required by scheme or search filter
-        $hasCandidateScheme = !empty($scheme['candidate']) && is_array($scheme['candidate']);
+        // --- JOINTURE CANDIDAT ---
         $needsCandidateJoin = $hasCandidateScheme || !empty($search);
-
         if ($needsCandidateJoin) {
             $qb->leftJoin('a.candidate', 'c');
+        }
+
+        // --- JOINTURE JOB OFFER ---
+        // On effectue la jointure si demandée par le scheme OU si userId est présent
+        $needsJobOfferJoin = $hasJobOfferScheme || ($userId !== null && $companyId === null);
+        if ($needsJobOfferJoin) {
+            $qb->innerJoin('a.jobOffer', 'jo');
         }
 
         // 2. Handle Candidate sub-projection
@@ -405,19 +343,30 @@ class JobOfferApplicationRepository
             }
         }
 
+        //  Handle JobOffer sub-projection 
+        if ($hasJobOfferScheme) {
+            $allowedJobFields = ['id', 'title'];
+            foreach ($allowedJobFields as $jobField) {
+                if (!empty($scheme['jobOffer'][$jobField])) {
+                    $selectedFields[] = 'jo.' . $jobField . ' AS jobOffer_' . $jobField;
+                }
+            }
+        }
+
         $qb->select(implode(', ', $selectedFields));
 
         // 3. Dynamic filtering based on jobId, companyId, and userId
-        $qb->andWhere('a.jobOffer = :jobId')
-            ->setParameter('jobId', $jobId);
+        if ($jobId !== null) {
+            $qb->andWhere('a.jobOffer = :jobId')
+                ->setParameter('jobId', $jobId);
+        }
 
         if ($companyId !== null) {
             $qb->andWhere('a.company = :companyId')
                 ->setParameter('companyId', $companyId);
-        } elseif ($userId !== null) {
-            // Join JobOffer entity cleanly
-            $qb->innerJoin('a.jobOffer', 'jo')
-                ->andWhere('jo.user = :userId')
+        }
+        elseif ($userId !== null) {
+            $qb->andWhere('jo.user = :userId')
                 ->setParameter('userId', $userId);
         }
 
@@ -449,15 +398,24 @@ class JobOfferApplicationRepository
 
         $results = $qb->getQuery()->getArrayResult();
 
-        // 7. Restructure output array
-        if ($hasCandidateScheme) {
-            return array_map(static function (array $row) {
+        // 7. Restructure output array (MAJ pour gérer à la fois candidate et jobOffer)
+        if ($hasCandidateScheme || $hasJobOfferScheme) {
+            return array_map(static function (array $row) use ($hasCandidateScheme, $hasJobOfferScheme) {
                 $candidateData = [];
                 $imageData = [];
+                $jobOfferData = [];
                 $hasCandidateValue = false;
+                $hasJobOfferValue = false;
 
                 foreach ($row as $key => $value) {
-                    if (str_starts_with($key, 'candidate_image_')) {
+                    if (str_starts_with($key, 'jobOffer_')) {
+                        $realJobKey = str_replace('jobOffer_', '', $key);
+                        $jobOfferData[$realJobKey] = $value;
+                        if ($value !== null) {
+                            $hasJobOfferValue = true;
+                        }
+                        unset($row[$key]);
+                    } elseif (str_starts_with($key, 'candidate_image_')) {
                         $realImgKey = str_replace('candidate_image_', '', $key);
                         $imageData[$realImgKey] = $value;
                         unset($row[$key]);
@@ -471,13 +429,18 @@ class JobOfferApplicationRepository
                     }
                 }
 
-                // Assign image data only if it contains non-null values
-                if (!empty($imageData) && array_filter($imageData, static fn($v) => $v !== null)) {
-                    $candidateData['image'] = $imageData;
+                // Reconstruction de l'objet Candidate
+                if ($hasCandidateScheme) {
+                    if (!empty($imageData) && array_filter($imageData, static fn($v) => $v !== null)) {
+                        $candidateData['image'] = $imageData;
+                    }
+                    $row['candidate'] = $hasCandidateValue ? $candidateData : null;
                 }
 
-                // Assign candidate only if present (non-null via LEFT JOIN)
-                $row['candidate'] = $hasCandidateValue ? $candidateData : null;
+                // Reconstruction de l'objet JobOffer
+                if ($hasJobOfferScheme) {
+                    $row['jobOffer'] = $hasJobOfferValue ? $jobOfferData : null;
+                }
 
                 return $row;
             }, $results);

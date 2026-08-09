@@ -34,10 +34,10 @@ class UserOffersController extends AbstractController
 
 
     /**
-     * Route /offers/user/jobs/{jobId}?limit=number&skip=number&companyId=number
+     * Route /offers/user/jobs?jobId=string&limit=number&skip=number&companyId=number
      */
-    #[Route('/jobs/{jobId}', methods: ['GET'])]
-    public function getOfferForUser(string $jobId, Request $request): JsonResponse
+    #[Route('/jobs/', methods: ['GET'])]
+    public function getOfferForUser(Request $request): JsonResponse
     {
         try {
             /** @var AuthenticatedPerson|null $user */
@@ -53,7 +53,8 @@ class UserOffersController extends AbstractController
             $limit = max(1, $request->query->getInt('limit', 17));
             $skip = max(0, $request->query->getInt('skip', 0));
             $companyId = $request->query->get("companyId", null);
-
+            $jobId = $request->query->get("jobId", null);
+            
             $scheme = [
                 'id' => true,
                 'title' => true,

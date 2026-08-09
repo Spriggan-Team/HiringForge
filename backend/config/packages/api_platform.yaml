@@ -5,6 +5,9 @@ api_platform:
         json:   ['application/json']
     patch_formats:
         json:   ['application/json']
+    mapping:
+            paths: 
+                - '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/ORM'
     defaults:
         stateless: true
         cache_headers:

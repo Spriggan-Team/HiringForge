@@ -17,6 +17,7 @@ use App\Domain\Interviews\InterviewsRepositoryInterface;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillTranslationEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferLanguageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferSkillsEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferViewEntity;
@@ -192,6 +193,7 @@ class JobOfferQueryRepository implements JobOfferQueryRepositoryInterace
     }
 
 
+    
 
     public function count(
         ?string $userId = null,
@@ -262,6 +264,78 @@ class JobOfferQueryRepository implements JobOfferQueryRepositoryInterace
 
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
+
+
+
+
+
+    /**
+     * Retrieves aggregated candidate/application statistics for a given job offer.
+     *
+     * @param string|null  $jobId If null, stats are calculated for all jobs belonging to the user
+     * @return array{
+     *      preselect: int,
+     *      interviews: int,
+     *      rejected: int,
+     *      offer: int
+     * }
+     */
+    public function getJobStats(string $userId ,?string $jobId = null): array
+    {
+        //  Optimized Breakdown of Applications by Status
+        $qbStats = $this->manager->createQueryBuilder()
+            ->select('
+                SUM(CASE WHEN a.status = :preselect THEN 1 ELSE 0 END) AS preselect,
+                SUM(CASE WHEN a.status = :rejected THEN 1 ELSE 0 END) AS rejected,
+                SUM(CASE WHEN a.status = :offer THEN 1 ELSE 0 END) AS offer
+            ')
+            ->from(ApplicationEntity::class, 'a')
+            ->setParameter('preselect', JobApplicationStatus::PRESELECTED)
+            ->setParameter('rejected', JobApplicationStatus::REJECTED)
+            ->setParameter('offer', JobApplicationStatus::OFFER_PENDING);
+
+        $isJobIdProvided = $jobId != null;
+        if($isJobIdProvided){
+            $qbStats->where('a.jobOffer = :jobId')
+                    ->setParameter('jobId', $jobId);
+        }
+        else{
+            $qbStats->innerJoin("a.jobOfffer", 'j')
+                    ->where("j.user = :userId")
+                    ->setParameter("userId", $userId);
+        }
+
+        $stats = $qbStats->getQuery()->getSingleResult();
+
+        //  Breakdown of Interviews Related to the JobOffer
+        $qbInterviews =  $this->manager
+            ->createQueryBuilder()
+            ->select('COUNT(i.id)')
+            ->from(InterviewEntity::class, 'i');
+        
+        if($isJobIdProvided){
+            $qbInterviews->where("i.jobOffer = :jobId")
+                            ->setParameter("jobId", $jobId);
+        }
+        else{
+            $qbInterviews->innerJoin('i.jobOffer', 'j')
+                            ->where('j.user = :userId')
+                            ->setParameter('userId', $userId);
+        }
+
+        $interviewCount = (int) $qbInterviews->getQuery()->getSingleScalarResult();
+     
+        return [
+            'preselect'  => (int) ($stats['preselect'] ?? 0),
+            'interviews' => $interviewCount,
+            'rejected'   => (int) ($stats['rejected'] ?? 0),
+            'offer'      => (int) ($stats['offer'] ?? 0),
+        ];
+    }
+
+
+
+
 
 
     #[Override]
@@ -533,6 +607,9 @@ class JobOfferQueryRepository implements JobOfferQueryRepositoryInterace
 
         return $output;
     }
+
+
+
 
 
     

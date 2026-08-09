@@ -2,12 +2,17 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GraphQl\Query;
+use ApiPlatform\Metadata\GraphQl\QueryCollection;
+
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 use Doctrine\DBAL\Types\Types;
+
 
 #[ORM\Entity]
 #[ORM\Table(
@@ -20,6 +25,21 @@ use Doctrine\DBAL\Types\Types;
         ]    
    )
 ]
+#[ApiResource(
+    shortName: 'Application',
+    operations: [],
+    graphQlOperations: [
+        new QueryCollection(
+            name: 'getCollection',
+            security: "is_granted('ROLE_USER') or is_granted('ROLE_COMPANY_ADMIN')",
+            securityMessage: "Seuls les recuteurs peuvent consulter cette projection de candidatures."
+        ),
+        new Query(
+            name: 'getItem',
+            security: "is_granted('ROLE_USER') or is_granted('ROLE_COMPANY_ADMIN')"
+        )
+    ]
+)]
 class ApplicationEntity
 {
     #[ORM\Id]

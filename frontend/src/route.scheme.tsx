@@ -17,6 +17,9 @@ const RouteScheme = {
     candidateProfile: "/candidate/profil",
     candidateDashboard: "/candidate/dashboard",
 
+    //-- USER CANDIDATES
+    userCandidate: "/user/candidates",
+
     //-- JOBS
     jobs: "/jobs",
     jobDetails: "/jobs/:id",
@@ -25,14 +28,17 @@ const RouteScheme = {
     userJobs: "/user/jobs",
     userJobView: "/user/jobs/:id",
 
-    //-- USER JOB SCHEDULER
-    userSchedule: "/user/schedule",
-
-    //-- USER CANDIDATES
-    userCandidate: "/user/candidates",
-
     //-- User (recruteur) & Agents
     createJob: "/jobs/create",
+
+    //-- USER JOB SCHEDULER/INTERVIEWS
+    userSchedule: "/user/schedule",
+
+    //-- USER OFFERS
+    userOffer: '/user/interviews',
+
+    //-- STATS
+    userStats: '/user/stats'
 }
 
 export default RouteScheme;

@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories;
 
-
+use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\JobOffer\JobOffer;
 use App\Domain\Shared\Account\AccountId;
 use App\Domain\Exception\RessourceNotFound;
@@ -10,7 +10,9 @@ use App\Domain\JobOffer\JobOfferImage;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
 
 use App\Domain\JobOffer\JobPublicationStatus;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferImageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
@@ -103,6 +105,7 @@ class JobOfferRepository implements JobOfferRepositoryInterface
        return $posts;
     }
 
+
     
 
     public function findById(string $accountId, string $jobOfferId): JobOffer
@@ -123,6 +126,7 @@ class JobOfferRepository implements JobOfferRepositoryInterface
     {
         throw new \Exception('Not implemented');
     }
+
 
 
 

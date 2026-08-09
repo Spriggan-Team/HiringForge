@@ -14,6 +14,13 @@ import type { JobView } from "../../../features/jobs/JobOffer";
 //-- Recruiter
 //----------------------------
 
+/**
+ * Get details summary about a job for an user (recruiters)
+ * @param limit 
+ * @param skip 
+ * @param filters 
+ * @returns 
+ */
 const getJobsSummary = async (
     limit: number = 7,
     skip: number = 0,
@@ -21,7 +28,7 @@ const getJobsSummary = async (
 ) => {
     try {
         const queryString = buildFilterQueryParams(filters, { limit, skip });
-        const response = await authGet<ApiJobSummaryResponse>(`/users/job_offer?${queryString}`);
+        const response = await authGet<ApiJobSummaryResponse>(`/users/job_offers?${queryString}`);
         console.log("Job summaries", response.data);
         return response.data;
     }
@@ -31,10 +38,18 @@ const getJobsSummary = async (
 };
 
 
+//--------------------------------
+//---- Stats (Recruiters)
+//--------------------------------
 
+/**
+ * Retreive details about a job for a recruiter
+ * @param jobOfferId 
+ * @returns 
+ */
 const getJobView = async (jobOfferId: string): Promise<JobView> => {
   try {
-    const response = await authGet<JobViewApiResponse>(`/users/job_offer/${jobOfferId}`);
+    const response = await authGet<JobViewApiResponse>(`/users/job_offers/${jobOfferId}`);
     
     if (!response.data) {
       throw new Error("Job offer data is empty");
@@ -49,38 +64,16 @@ const getJobView = async (jobOfferId: string): Promise<JobView> => {
 };
 
 
-const getPostulationMetrics = async({
-    jobId,
-    timeframe = 'month'
-}:{
-    jobId?: string;
-    timeframe?: 'week' | 'month'
-})=>{
-    try{
-        const response = await authGet<ApiResponse<number[]>>(`/users/job_offer/${jobId}/candidates/stats?timeframe=${timeframe}`);
-        return response.data;
-    }
-    catch(error){
-        throw error;
-    }
-}
 
-
-const getUserStats = async(jobId: string)=>{
-    try{
-        const response = await authGet<RecruitmentPipelineStatsResponse>(`/users/job_offer/${jobId}/candidates/stats`);
-        return response.data;
-    }
-    catch(error){
-        throw error;
-    }
-}
-
-
+/**
+ * Count job with specify criteria
+ * @param currentFilters 
+ * @returns 
+ */
 const countJobOffers = async (currentFilters?: UserJobFiltersRequets) => {
     try {
         const queryString = buildFilterQueryParams(currentFilters);
-        const response = await authGet<ApiResponse<number>>(`/users/job_offer/count?${queryString}`);
+        const response = await authGet<ApiResponse<number>>(`/users/job_offers/count?${queryString}`);
         console.log('COUNT ', response.data)
         return response.data;
     }
@@ -90,11 +83,23 @@ const countJobOffers = async (currentFilters?: UserJobFiltersRequets) => {
 };
 
 
+/**
+ * Retreive kpis bases related to job(s)
+ * @param  {string|null} jobId if not specified the kpis are calculated based on all related job to the current user
+ * @returns 
+ */
 const getJobKpis = async(
-    jobId: string
+    jobId?: string
 )=>{
     try{
-        const response = await authGet<RecruitmentMetricsResponse>(`/applications/${jobId}/kpis`);
+        const params = new URLSearchParams();
+        
+        if(jobId) params.set('jobId', jobId);
+
+        const response = await authGet<RecruitmentMetricsResponse>(`/users/applications/kpis${
+            params.toString() ? params.toString() : ''
+        }`);
+        
         return response.data;
     }
     catch(error){
@@ -103,15 +108,49 @@ const getJobKpis = async(
 }
 
 
-//----JobPublicationStatus
+/**
+ * Retreive stats about a specific user of jobId specified.
+ * Otherwise retreive jobs stats related to all jobs created by the current user (recruiter)
+ * @param jobId 
+ * @returns 
+ */
+const getJobOffersOverview = async(jobId?: string)=>{
+    try{
+        const params = new URLSearchParams();
+        if(jobId) params.set("jobId", jobId);
+
+        const response = await authGet<RecruitmentPipelineStatsResponse>(
+            `/users/job_offers/stats${
+                params.toString() ? `?${params.toString()}` : ''
+            }`
+        );
+
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
+
+
+
+//------------------------------
+//--- Candidates
+//-------------------------------
+
+
+//-------------------------
+// Services
+//-------------------------
+
 const JobQueries = intercept(
     { 
         getJobsSummary,
         getJobView,
+            //-- Stats
         getJobKpis,
         countJobOffers,
-        getPostulationMetrics,
-        getUserStats
+        getJobOffersOverview,
     },
     undefined,
     handleGenericApiResponseAfter

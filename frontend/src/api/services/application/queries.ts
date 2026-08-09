@@ -5,7 +5,7 @@ import type { JobApplicationApiResponse } from "./response";
 
 
 //-- Recruiter
-const getApplicationsJob = async (
+const getApplications = async (
   {
     jobId,
     companyId,
@@ -44,6 +44,41 @@ const getApplicationsJob = async (
 };
 
 
+
+/**
+ * Retreive postulation metrics about job(s)
+ * if 
+ * @param param0 
+ * @returns 
+ */
+const getJobPostulationMetrics = async({
+    jobId,
+    timeframe = 'month'
+}:{
+    jobId?: string;
+    timeframe?: 'week' | 'month'
+})=>{
+    try{
+        const params = new URLSearchParams();
+
+        if(jobId) params.set('jobId', jobId);
+        if(timeframe) params.set('timeframe', timeframe);
+
+        const response = await authGet<ApiResponse<number[]>>(
+            `/users/applications/stats${
+                params.toString() ? params.toString() : ''      
+            }
+        `);
+        
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
+
+
+
 const countRejected = async (jobId: string)=>{
   try{
     const response = await authGet<ApiResponse<number>>(`/applications/${jobId}/rejected`);
@@ -59,7 +94,7 @@ const countRejected = async (jobId: string)=>{
 
 
 const ApplicationQueries = intercept(
-    { getApplicationsJob, countRejected },
+    { getApplications, countRejected, getJobPostulationMetrics },
     undefined,
     handleGenericApiResponseAfter
 )

@@ -27,6 +27,8 @@ import CreateJobPage from './pages/jobs/create/create.job.page'
 import PrivateJobViewPage from './pages/jobs/view/page'
 import SchedulingWorkspace from './pages/schedule/scheduling.workspace'
 import CandidatesPage from './pages/candidates/candidates.page'
+import UserOffersPage from './pages/offers/user/user.offers.page'
+import UserStatsPage from './pages/stats/user/stats.user.page'
 
 
 
@@ -67,7 +69,10 @@ function App() {
                 <Route path={RouteScheme.userSchedule} element={<SchedulingWorkspace />} />
                 {/** CANDIDATES */}
                 <Route path={RouteScheme.userCandidate} element={<CandidatesPage />} />
-                {/** User */}
+                {/** OFFER */}
+                <Route path={RouteScheme.userOffer} element={<UserOffersPage />} />
+                {/** STATS */}
+                <Route path={RouteScheme.userStats} element={<UserStatsPage />}/>
             </Route>
 
             {/** EXCLUSIVE CANDIDATES */}

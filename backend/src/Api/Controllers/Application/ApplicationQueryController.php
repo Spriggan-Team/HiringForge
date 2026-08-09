@@ -22,7 +22,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 
 
-#[Route('/applications')]
+#[Route('/users/applications')]
 class ApplicationQueryController extends AbstractController
 {
     use ApiControllerHelpers;
@@ -75,7 +75,7 @@ class ApplicationQueryController extends AbstractController
     /**
      * /applications/serach?text=string&status=string&candidate
      */
-    #[Route('/serach', methods: ['GET'])]
+    #[Route('/search', methods: ['GET'])]
     public function search(){
         try{
             
@@ -90,11 +90,16 @@ class ApplicationQueryController extends AbstractController
 
 
     /**
+     * Retreive aggregate of applications
+     * 
      * Route /job_offer?jobOfferId=string&limit=number&skip=number
+     * 
+     * Retreive all application related to an user if jobOfferId. Howerver
+     * has it been provided the search is done only with the specified job as a  scope
      */
     #[IsGranted(AccountRole::USER->value)]
     #[Route('/job_offer', methods: ['GET'])]
-    public function getApplicationForJob(
+    public function getApplications(
         Request $request,
     ): JsonResponse {
         try {
@@ -126,6 +131,10 @@ class ApplicationQueryController extends AbstractController
                             'mime' => true,
                         ],
                     ],
+                    'jobOffer' => $jobOfferId ? [
+                            'id' => true,
+                            'title' => true
+                    ] : null
                 ],
                 userId: $user->getId()
             );
@@ -169,8 +178,15 @@ class ApplicationQueryController extends AbstractController
 
 
 
-    #[Route('/{jobOfferId}/kpis', methods: ['GET'])]
-    public function getJobKpis(string $jobOfferId): JsonResponse
+    /**
+     * Route: users/applications/kpis?jobId=string
+     * Obtained kpis about job(s), if jobId is specified then the calcul is done only within the scope 
+     * of the targeted job offer
+     */
+    #[Route('/kpis', methods: ['GET'])]
+    public function getJobKpis(
+        Request $request
+    ): JsonResponse
     {
         try {
             /** @var AuthenticatedPerson|null $user */
@@ -184,6 +200,7 @@ class ApplicationQueryController extends AbstractController
             }
 
             $userId = $user->getId();
+            $jobOfferId = $request->query->get('jobId', null);
 
             //  Total number of applications associated with this job posting and this user
             $totalApplications = $this->applicationRepository->count([
@@ -268,5 +285,46 @@ class ApplicationQueryController extends AbstractController
     }
 
 
+    /**
+     * Route: /candidates/stats?jobId=string&timeframe=month|week
+     * if jobId noot specified the resarch is done within all offers related to an user
+     */
+    #[Route('/stats', methods: ['GET'])]
+    public function getJobOfferMetrics(
+        Request $request
+    ): JsonResponse {
+        try {
+            /** @var AuthenticatedPerson $user */
+            $user = $this->getUser();
+
+            $jobId = $request->query->get("jobId", null);
+            //--  Sanitization and fallback to ‘month’ if the value is invalid
+            $timeFrame = $request->query->get('timeframe', 'month');
+            if (!in_array($timeFrame, ['month', 'week'], true)) {
+                $timeFrame = 'month';
+            }
+
+            //-- Retrieving Application Metrics
+            $candidateMetrics = $this->applicationRepository->getPostulationMetrics(
+                userId: $user->getId(),
+                jobId: $jobId,
+                timeframe: $timeFrame
+            );
+
+            return ApiResponse::success(
+                data: $candidateMetrics,
+                statusCode: 200,
+                message: 'Everything is fine'
+            )->toJsonResponse();
+
+        } catch (\Throwable $error) {
+            return ApiResponse::error(
+                message: 'Something went wrong while fetching candidate statistics',
+                statusCode: 400,
+                throwable: $error
+            )->toJsonResponse();
+        }
+    }
+    
 
 }

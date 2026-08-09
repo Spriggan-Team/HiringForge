@@ -15,7 +15,7 @@ import OffersServices from "../../../../../api/services/offer/command";
 
 //-- Styles
 import styles from "./OffersSection.module.css";
-import { OfferDetailModal } from "../../../components/offer/offer.details.modal";
+import { OfferDetailModal } from "../../offer/offer.details.modal";
 import { EyeIcon } from "../../../../../layout/components/icons/eye.icon";
 
 
@@ -24,7 +24,7 @@ import { EyeIcon } from "../../../../../layout/components/icons/eye.icon";
 
 
 interface OffersSectionProps{
-    jobId: string
+    jobId?: string
 }
 
 const LIMIT = 17;
@@ -50,7 +50,8 @@ export default function OffersSection({
 
         setIsLoadingMore(true);
         try {
-            const rawData = await OffersQueries.getUserOfferForThisJob(jobId, { 
+            const rawData = await OffersQueries.getUserJobOffers({
+                jobId, 
                 skip: currentSkip, 
                 limit: LIMIT 
             });
