@@ -38,13 +38,13 @@ const CompanyIdentityDetail: React.FC<IdentityDetailProps> = ({
         <div className={styles.container}>
             <FormWrapper formData={formData} handleNext={onNext} >
                 <FormInputs>
-                    <FormTitle title={t("userRegister.form.step2.title")}/>
+                    <FormTitle title={t("userRegister.form.title")}/>
                     <BasicInput
                         svg={PersonSVG} 
                         inputName="companyName"
                         className="faint-border"
-                        placeholder={t("userRegister.form.step4.inputs.name.placeholder")}
-                        label={t("userRegister.form.step4.inputs.name.label")} 
+                        placeholder={t("userRegister.form.companyInfo.inputs.name.placeholder")}
+                        label={t("userRegister.form.companyInfo.inputs.name.label")} 
                         extraInputProps={{ defaultValue: formData.get("companyName")?.toString() ?? undefined }}
                         padding={5}  width="100%" backgroundColor={inputColor}
                         required
@@ -53,30 +53,30 @@ const CompanyIdentityDetail: React.FC<IdentityDetailProps> = ({
                         svg={PersonSVG}
                         inputName="siret"
                         className="faint-border"
-                        placeholder={t("userRegister.form.step4.inputs.siret.label")}
-                        label={t("userRegister.form.step4.inputs.siret.label")} 
+                        placeholder={t("userRegister.form.companyInfo.inputs.siret.label")}
+                        label={t("userRegister.form.companyInfo.inputs.siret.label")} 
                         padding={5}  width="100%" backgroundColor={inputColor}
                         extraInputProps={{ defaultValue: formData.get("siret")?.toString() ?? undefined }}
                         required
                     />
                     <VideoInput
-                        title={t("userRegister.form.step4.inputs.video.label")}
+                        title={t("userRegister.form.companyInfo.inputs.video.label")}
                         onChange={(file)=>{ formData.set("videoPresentation", file)}}
-                        subtitle={t("userRegister.form.step4.inputs.video.placeholder")}
+                        subtitle={t("userRegister.form.companyInfo.inputs.video.placeholder")}
                         defaultFile={formData.get("videoPresentation") ? formData.get("videoPresentation") as File : null }
                         
                     />
                     <CustomTextarea
                         inputName="description"
-                        placeholder={t("userRegister.form.step4.inputs.desc.placeholder")}
+                        placeholder={t("userRegister.form.companyInfo.inputs.desc.placeholder")}
                     />
                 </FormInputs>
                 <FormSubmitSection>
                     <BrandButton
                         type="submit"
-                        text={t("userRegister.buttons.logbtn")}
+                        text={t("global.buttons.connexion")}
                     />
-                    <FormHint text={t("userRegister.form.step1.policyText")} />
+                    <FormHint text={t("global.policyText")} />
                 </FormSubmitSection>
             </FormWrapper>
         </div>

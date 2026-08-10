@@ -89,3 +89,19 @@
 .btn_warning {
     background-color: #d97706;
 }
+
+/* Warning Block / Explanatory Note */
+.warning_request {
+    color: #4338ca;
+    background-color: #eef2ff;
+    border: 1px solid #c7d2fe;
+}
+
+/* Confirm btn for request*/
+.btn_request {
+    background-color: #4f46e5;
+}
+
+.btn_request:hover {
+    background-color: #4338ca;
+}

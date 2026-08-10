@@ -1,44 +1,35 @@
 
 
+import type { ParseKeys } from "i18next";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCallback, useRef, useState } from "react";
 import { useAppContext } from "../../../hooks/context";
 
-
 //--Config Object
 import RouteScheme from "../../../route.scheme";
 
 
-//-- CORE COMPONENTS 
-import AccountAccess from "./components/access/account.access";
-
-
 //-- Custom - React Component
-import Gauge from "../../../layout/components/progress/gauge/gauge";
+import AccountAccess from "../components/access/account.access";
 import SideForm from "./components/sideform/side.form";
-import StageTitle from "../../../layout/components/indicators/stage/stage.title";
-import StatusItem from "../../../layout/components/indicators/statusItem/status.item";
-import LanguageSelector from "../../../layout/components/selectors/language/language.selctor";
 import  CompanyIdentityDetail from "./components/identity/company/company.identity.details";
-
+import UserProfileIdentity from "../components/profile.identity.form";
+import RegisterationHeader from "../components/registeration.header";
+import RegisterationSteps, { type StepItem } from "../components/registeration.steps";
 
 //-- services
 import AuthServices from "../../../api/services/auth/auth";
 import { objectToFormData } from "../../../utils/convertor";
 import { AccountAlreadyRegistered, CompanyAlreadyRegistered } from "../../../api/services/auth/exceptions";
 import { InvalidOTP, RessourceCreationFailed } from "../../../api/services/exceptions";
+import { navigateTo } from "../../../App";
+
+//-- hooks
+import { useSendOTP } from "../../../hooks/handler";
 
 //-- SVG - Components
 import SecureAccount from "./components/security/LockAccount";
-
-//-- Custom components
-import AuthSwitcher from "../../../layout/components/navigation/auth/auth.switcher";
-import AppIdentity from "../../../layout/components/identity/app.identity";
-import UserProfileIdentity from "./components/identity/user/user.profile";
-
-//-- Images - Ressources
-import OfficeWorkerImage from "/src/assets/images/office-worker.png"
 
 
 //-- CSS Styles
@@ -48,6 +39,25 @@ import  styles from "./style.module.css"
 
 
 const REGISTERING_TOTAL_STEP = 4;
+
+export const RECRUITER_STEPS: StepItem[] = [
+  {
+    id: 1,
+    translationKey: "register.processDescription.one" ,
+  },
+  {
+    id: 2,
+    translationKey: "register.processDescription.two",
+  },
+  {
+    id: 3,
+    translationKey: "register.processDescription.three",
+  },
+  {
+    id: 4,
+    translationKey: "register.processDescription.four",
+  },
+];
 
 
 export interface AsideFormState{
@@ -80,40 +90,13 @@ const UserRegister = () => {
     });
 
 
-    /** Generate otp compte */
-    const sendOTPCode = useCallback(async ()=>{
-        //--Set loading & execute api request
-        setLoading({state: true, subtitle: t("userRegister.form.step2.next.loadingMessage")});
-        try{
-            await AuthServices.askVerificationCode(formData.current.get("email") as string, "SIGNUP");
-            setLoading({state: false, subtitle: undefined});
 
-            //--Switch to next step & update popup+
-            setCurrentStep(prev => ({ current: 2, max: 2 > prev.max ? 2 : prev.max }));
-            setPopup({status: "success", message: t("userRegister.apiResponse.verifyMailBox.success")})
+    const { sendOTPCode } = useSendOTP({
+        onSuccess: () => {
+            // Action spécifique à ce composant
+            setCurrentStep(prev => ({ current: 2, max: Math.max(2, prev.max) }));
         }
-        catch(error){
-            setLoading({state: false, subtitle: undefined});
-            
-            //-- message error
-            if (error instanceof Error) {
-                if(error instanceof AccountAlreadyRegistered){   
-                    setPopup({ status: "warning", message: t("userRegister.apiResponse.codeVerification.error.accountAlreadyResgistered") });
-                    navigation(RouteScheme.login);
-                    return;
-                }                
-                setPopup({
-                    status: "error",
-                    message: t("global.messages.error")
-                })
-                console.log("Something went wrong:", error.message);
-                console.log("Stack:", error.stack);
-            }
-            else {
-                console.log("Unknown error:", error);
-            }
-        }
-    },[setLoading, setCurrentStep, setPopup])
+    });
 
     
     /** Complete registeration */
@@ -152,11 +135,11 @@ const UserRegister = () => {
             //-- client notification & notice
             setPopup({
                 status: "success",
-                message: t("userRegister.apiResponse.registering.success")
+                message: t("register.apiResponse.registering.success")
             });
 
             localStorage.setItem("userId", JSON.stringify(res?.data.id))
-            navigation(RouteScheme.login);
+            navigateTo(navigation, RouteScheme.login);
         }
         catch(error){
             setLoading({ state: false });
@@ -168,14 +151,14 @@ const UserRegister = () => {
 
                 //-- Domain fallback (messages)
                 if(error instanceof InvalidOTP){
-                    setPopup({ status: "error", message: t("userRegister.apiResponse.codeVerification.expired") });
+                    setPopup({ status: "error", message: t("register.apiResponse.codeVerification.expired") });
                 }
                 else if(error instanceof AccountAlreadyRegistered)
-                    setPopup({ status: "warning", message: t("userRegister.apiResponse.registering.warning.accountAlreadyRegistered") })
+                    setPopup({ status: "warning", message: t("register.apiResponse.registering.warning.accountAlreadyRegistered") })
                 else if(error instanceof RessourceCreationFailed)
-                    setPopup({ status: "error", message: t("userRegister.apiResponse.registering.error.failedRegisteration") });
+                    setPopup({ status: "error", message: t("register.apiResponse.registering.error.failedRegisteration") });
                 else if(error instanceof CompanyAlreadyRegistered)
-                    setPopup({ status: "error", message: t("userRegister.apiResponse.registering.warning.companyAlreadyRegistered") });
+                    setPopup({ status: "error", message: t("register.apiResponse.registering.warning.companyAlreadyRegistered") });
             }
             else {
                 setPopup({
@@ -190,53 +173,35 @@ const UserRegister = () => {
 
     return (
         <div className={styles.container}>
-            <nav className={styles.navbar}>
-                <AppIdentity />
-                <div className={styles.actions}>
-                    <LanguageSelector />
-                    <AuthSwitcher />
-                </div>         
-            </nav>
-
            {/* MAIN CONTENT */}
             <div className={styles.mainContainerWrapper}>
                 <div className={`faint-border ${styles.mainContainer}`}>
-                
                     {/* PROCESS DESCRIPTION */}
-                    <div className={styles.infoBox}>
-                        <StageSection currentStep={currentStep} setCurrentStep={setCurrentStep} />
-                        <div className={styles.statusItemSection}>
-                            <StatusItem text={t("userRegister.processDescription.overall.1")}/>
-                            <StatusItem text={t("userRegister.processDescription.overall.2")}/>
-                            <StatusItem text={t("userRegister.processDescription.overall.3")}/>
-                        </div>
-                        <img src={OfficeWorkerImage} alt="" />
-                    </div>
+                    <RegisterationSteps 
+                        t={t}
+                        currentStep={currentStep}
+                        setCurrentStep={setCurrentStep}
+                        steps={RECRUITER_STEPS}
+                    />
+
                     
                     {/* MAIN FORM */}
-
                     <div className={styles.mainForm}>
-                        <div className={styles.header}>
-                            <h3 className={styles.formTitle}>{t("userRegister.form.title")}</h3>
-                            <div className={styles.desc}>
-                                <p>{t("userRegister.form.subtitle")}</p>
-                                <div className={styles.progessContainer}>
-                                    <span>{t("userRegister.form.currentStep", {count: currentStep.current, totalCount: REGISTERING_TOTAL_STEP})}</span>
-                                    <Gauge 
-                                        width={"50%"} height={2.5}
-                                        activeColor="#003DE7"
-                                        foregroundColor="#D9D9D9"
-                                        percent={currentStep.current / REGISTERING_TOTAL_STEP} 
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                        <RegisterationHeader
+                                t={t}
+                                titleKey={"userRegister.form.title" as ParseKeys}
+                                subtitleKey={"userRegister.form.subtitle" as ParseKeys}
+                                currentStep={currentStep.current}
+                                totalSteps={REGISTERING_TOTAL_STEP}
+                        />
                         <div className={styles.form}>
                             {currentStep.current == 1 ?
                                 <AccountAccess 
+                                    t={t}
+                                    submitButtonTextKey={"global.buttons.next"}
                                     formData={formData.current}
                                     onNext={async ()=>{
-                                        await sendOTPCode();
+                                        await sendOTPCode(formData.current.get("email") as string);
                                     }}
                                 />
                                 :  currentStep.current == 2 ?
@@ -277,93 +242,3 @@ export default UserRegister;
 
 
 
-
-/** Step Section */
-
-interface StageSectionProps{
-    currentStep: { current: number, max: number };
-    setCurrentStep: React.Dispatch<React.SetStateAction<StageSectionProps['currentStep']>>;
-}
-
-const StageSection: React.FC<StageSectionProps> = ({
-    currentStep, setCurrentStep
-}) => {
-    const { t } = useTranslation();
-
-    return (
-    <div className={styles.stagesSection}>
-            <StageTitle
-                step={1}
-                active={currentStep.current === 1}
-                textColor={currentStep.current > 1 ?  "#94a3b8" : undefined}
-                backgroundColor={currentStep.current != 1 ? "#e0e7ff": undefined}
-                txt={t("userRegister.processDescription.one")}
-                onClick={()=>{
-                    if(currentStep.max >= 1){
-                        setCurrentStep(prev => ({
-                            ...prev,
-                            current: 1
-                        }))
-                    }
-                }}
-            />
-
-            <StageTitle
-                step={2}
-                active={currentStep.current === 2}
-                textColor={currentStep.max > 2 && currentStep.current != 2 ?  "#94a3b8" : undefined}
-                backgroundColor={currentStep.max > 2 && currentStep.current != 2 ? "#e0e7ff" : undefined}
-                txt={t("userRegister.processDescription.two")}
-                disableCursorPointer={
-                    currentStep.max < 2
-                }
-                onClick={()=>{
-                    if(currentStep.max >= 2){
-                        setCurrentStep(prev => ({
-                            ...prev,
-                            current: 2
-                        }))
-                    }
-                }}
-            />
-
-            <StageTitle
-                step={3}
-                active={currentStep.current === 3}
-                txt={t("userRegister.processDescription.three")}
-                textColor={currentStep.max > 3 && currentStep.current != 3 ?  "#94a3b8" : undefined}
-                backgroundColor={currentStep.max > 3 && currentStep.current != 3 ? "#e0e7ff": undefined}
-                disableCursorPointer={
-                    currentStep.max < 3
-                }
-                onClick={()=>{
-                    if(currentStep.max >= 3){
-                        setCurrentStep(prev => ({
-                            ...prev,
-                            current: 3
-                        }))
-                    }
-                }}
-            />
-            <StageTitle
-                step={4}
-                active={currentStep.current === 4}
-                txt={t("userRegister.processDescription.four")}
-                textColor={currentStep.max == 4 && currentStep.current < 4 ?  "#94a3b8" : undefined}
-                backgroundColor={currentStep.max === 4 && currentStep.current < 4 ? "#e0e7ff": undefined}
-                disableCursorPointer={
-                    currentStep.max < 4
-                }
-                onClick={()=>{
-                    if(currentStep.max >= 4){
-                        setCurrentStep(prev => ({
-                            ...prev,
-                            current: 4
-                        }))
-                    }
-                }}
-            />
-        </div>
-    );
-}
- 

@@ -2,7 +2,7 @@ import { intercept } from "../../../utils/utils";
 
 import { type ApiResponse } from "../response.types";
 import { authGet, handleGenericApiResponseAfter } from "../../handler";
-import type { ApiJobSummaryResponse, JobViewApiResponse, RecruitmentMetricsResponse, RecruitmentPipelineStatsResponse } from "./response";
+import type { ApiJobSummaryResponse, CandidateListResponse, JobViewApiResponse, RecruitmentMetricsResponse, RecruitmentPipelineStatsResponse } from "./response";
 
 import { buildFilterQueryParams } from "./helpers";
 import { mapJobOfferViewToJobView } from "./mapper";
@@ -137,6 +137,37 @@ const getJobOffersOverview = async(jobId?: string)=>{
 
 
 
+/**
+ * Retrieves the light model of candidates associated with
+ * the specified job offer, with optional search and pagination.
+ *
+ * @param params - Query parameters used to retrieve candidates.
+ * @param params.jobId - The ID of the job offer.
+ * @param params.search - Optional search term used to filter candidates.
+ * @param params.limit - Maximum number of candidates to retrieve.
+ * @returns A list of candidates associated with the job offer.
+ */
+const getJobCandidates = async(
+    {
+        jobId,
+        search,
+        limit,
+    }:{
+        jobId: string,
+        search: string,
+        limit: number,
+    }
+)=>{
+    try{
+        const response = await authGet<CandidateListResponse>('');
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
+
+
 //------------------------------
 //--- Candidates
 //-------------------------------
@@ -148,12 +179,17 @@ const getJobOffersOverview = async(jobId?: string)=>{
 
 const JobQueries = intercept(
     { 
-        getJobsSummary,
-        getJobView,
-            //-- Stats
-        getJobApplicationKpis,
-        countJobOffers,
-        getJobOffersOverview,
+        //-------------------------------
+        //---- Recruiter
+        //--------------------------
+            getJobView,
+            getJobsSummary,
+                //-- Stats
+            countJobOffers,
+            getJobOffersOverview,
+        
+            getJobCandidates,
+            getJobApplicationKpis,
     },
     undefined,
     handleGenericApiResponseAfter

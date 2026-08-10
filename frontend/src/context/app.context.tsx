@@ -2,11 +2,21 @@ import {
     useState,
     createContext,
     useMemo,
+    useCallback,
+    useEffect,
 } from "react";
-import type { AppLoadingState, AppModalProps, AppPopUpSettings, UserAppNavBarProps } from "./context.type";
-import type { CurrentActor } from "../features/shared/account";
+
 import type { JobOverview } from "./job.context";
+import type { CurrentActor } from "../features/shared/account";
+import type { AppLoadingState, AppModalProps, AppPopUpSettings, UserAppNavBarProps } from "./context.type";
+
+import UserQueriesServices from "../api/services/user/queries";
+import CandidatesQueries from "../api/services/candidate/queries";
 import { INITIAL_JOB_VIEW, type JobView } from "../features/jobs/JobOffer";
+
+import { AccountRole } from "../core/enums/AccountRole";
+import { getSession } from "../core/auth.helpers";
+
 
 
 interface AppContextProps{
@@ -14,6 +24,10 @@ interface AppContextProps{
     loading?: AppLoadingState;
     setLoading: (param: AppLoadingState)=>void;
     
+    //-- App initialization
+    isAppInitializing: boolean;
+    initializeData: ()=>void;
+
     //-- Popup
     popup: AppPopUpSettings;
     setPopup: (param: AppPopUpSettings)=>void;
@@ -60,6 +74,10 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
     const [popup, setPopup] = useState<AppPopUpSettings>(null)
     const [loading, setLoading] = useState<AppLoadingState>();
 
+    //-- Initialization
+    const [isAppInitializing, setIsAppInitializing] = useState<boolean>(true);
+    
+    //-- modal
     const [modal, setModal] = useState<AppModalProps | null>(null);
 
     // navbar
@@ -70,21 +88,101 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
     const [jobOverview, setJobOverview ] = useState<JobOverview | null>(null);
     const [currentJob, setCurrentJob] = useState<JobView>(INITIAL_JOB_VIEW);
 
+    
+    const initializeData = useCallback(async () => {
+        try {
+            const { role } = getSession();
+
+            if (role === AccountRole.USER) {
+                const data = await UserQueriesServices.getCurrentUserContext();
+                console.log("USER DATA",{ data });
+
+                setCurrentActor({
+                    type: "user",
+                    id: data.user.id,
+                    lastName: data.user.lastName,
+                    firstName: data.user.firstName,
+                    email: data.user.email,
+                    avatarUrl: data.user.avatarUrl ?? null,
+                    company: {
+                        id: data.company.id,
+                        name: data.company.name,
+                        location: data.company.location,
+                        logoUrl: data.company.logoUrl ?? null,
+                    },
+                });
+            }
+            else if(role === AccountRole.CANDIDATE){
+                const data = await CandidatesQueries.getCurrentCandidateContext();
+                setCurrentActor({
+                    type: "candidate",
+                    id: data.id,
+                    lastName: data.lastName,
+                    firstName: data.firstName,
+                    avatarUrl: data.imageUrl,
+                    email: data.email,
+                    resumeUrl: null,
+                });
+            }
+        }
+        catch (error) {
+            console.warn("Something went wrong during initialization", error);
+            setCurrentActor(null);
+        }
+        finally {
+          setIsAppInitializing(false);
+        }
+    }, [setCurrentActor]);
+
+
+    useEffect(()=>{
+        initializeData();
+    },[initializeData])
+
+
+    //----------------------------------
     // Context value
+    //----------------------------------
+
     const contextValue = useMemo(
         () => ({
-            popup, setPopup,
-            modal, setModal,
-            
-            loading, setLoading,
-            navbar, setNavbar,
-            currentActor, setCurrentActor,
+            popup,
+            setPopup,
 
-            jobOverview, setJobOverview,
-            currentJob, setCurrentJob
+            modal,
+            setModal,
+
+            isAppInitializing,
+            loading,
+            setLoading,
+
+            navbar,
+            setNavbar,
+
+            currentActor,
+            setCurrentActor,
+
+            jobOverview,
+            setJobOverview,
+
+            currentJob,
+            setCurrentJob,
+
+            initializeData,
         }),
-        [popup, loading, navbar, currentActor, jobOverview, currentJob, modal]
+        [
+            popup,
+            loading,
+            navbar,
+            currentActor,
+            jobOverview,
+            currentJob,
+            modal,
+            isAppInitializing,
+            initializeData,
+        ]
     );
+
 
     return (
         <AppContext.Provider value={contextValue}>

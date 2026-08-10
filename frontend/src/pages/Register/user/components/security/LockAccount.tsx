@@ -19,40 +19,49 @@ import styles from "./style.module.css"
 
 interface SecureAccountProps{
     formData: FormData;
+    inputName?: string;
+    inputIcon?:  React.FC<React.SVGProps<SVGSVGElement>>;
+    inputBackgroundColor?: string;
     onNext?: (event: React.SubmitEvent<HTMLFormElement>) => void;
 }
 
 
-const inputColor = "#FDFDFE";
 
 
 const SecureAccount: React.FC<SecureAccountProps> = ({
     formData,
-    onNext
+    onNext,
+    inputName = "verificationCode",
+    inputBackgroundColor = "#FDFDFE",
+    inputIcon = PasswordSVG,
 }) => {
     const {t} = useTranslation();
 
     return (
         <FormWrapper formData={formData} handleNext={onNext}>
-            <FormTitle title={t("userRegister.form.step2.title")}/>
+            <FormTitle title={t("register.emailVerification.title")}/>
             <FormInputs>
                 <BasicInput
                     required
-                    svg={PasswordSVG}
+                    svg={inputIcon}
                     type="password"
                     className="faint-border"
-                    inputName="verificationCode"
-                    extraInputProps={{ defaultValue: formData.get("verificationCode")?.toString() }}
-                    label={t("userRegister.form.step2.inputs.verificationCode.label")} 
-                    padding={5}  width="100%" backgroundColor={inputColor}
+                    inputName={inputName}
+                    extraInputProps={{ 
+                        defaultValue: formData.get(inputName)?.toString()
+                    }}
+                    label={t("register.emailVerification.inputs.verificationCode.label")} 
+                    padding={5}  
+                    width="100%" 
+                    backgroundColor={inputBackgroundColor}
                 /> 
             </FormInputs>
             <FormSubmitSection>
                 <BrandButton
                     type="submit"
-                    text={t("userRegister.buttons.logbtn")}
+                    text={t("register.buttons.secureAccount")}
                 />
-                <FormHint text={t("userRegister.form.step1.policyText")} />
+                <FormHint  text={t("global.policyText")} />
             </FormSubmitSection>
         </FormWrapper>
     );

@@ -11,7 +11,8 @@ const AuthSwitcher = () => {
 
     return ( 
         <div className={styles.logInBtn}>
-            <span>{t("register.subtext.alreadyHaveAccount")}</span><Link to={RouteScheme.login}>{t("register.buttons.logbtn")}</Link>
+            <span>{t("register.subtext.alreadyHaveAccount")}</span>
+            <Link to={RouteScheme.login}>{t("global.buttons.connexion")}</Link>
         </div>
     );
 }

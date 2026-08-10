@@ -7,10 +7,12 @@ import RouteScheme from '../../route.scheme';
 import { useAppContext } from '../../hooks/context';
 
 //-- Services
+import { navigateTo } from '../../App';
 import AuthServices from "../../api/services/auth/auth";
 
 //-- Exception
 import { AccountNotFound, InvalidCredentials } from '../../api/services/auth/exceptions';
+import { InvalidOTP } from '../../api/services/exceptions';
 
 //-- Custom - React Component
 import BasicInput from '../../layout/components/form/input/basic.input';
@@ -23,7 +25,6 @@ import PasswordSVG from "/src/assets/svg/security/password-protection-privacy-ac
 
 //-- CSS - Styles
 import styles from './style.module.css'
-import { InvalidOTP } from '../../api/services/exceptions';
 
 
 
@@ -145,7 +146,10 @@ const Login = () => {
         <div className={styles.container}>
             {/* Standard html form used to support native submit actions (Enter key) */}
             <form className={styles.card} onSubmit={handleSubmit}>
-                <div className={styles.header}>
+                <div 
+                    className={styles.header}
+                    onClick={()=>navigateTo(navigate, RouteScheme.jobs)}
+                >
                     <LogoSVG className={styles.logo} width={113} height={113} />
                     <div className={styles.upperH}>
                         <h1 className={styles.title}>DigitalCop ATS</h1>

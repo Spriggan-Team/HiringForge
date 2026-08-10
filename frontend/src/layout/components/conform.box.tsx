@@ -7,7 +7,7 @@ export interface ConfirmModalProps {
     warningText?: string;
     confirmText?: string;
     cancelText?: string;
-    variant?: 'danger' | 'primary' | 'warning';
+    variant?: 'danger' | 'primary' | 'warning' | 'request';
     onConfirm: () => void;
     onCancel: () => void;
 }

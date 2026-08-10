@@ -4,7 +4,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories;
 
 use App\Domain\File\StaticMedia;
 use App\Domain\Candidate\Candidate;
-
+use App\Domain\Candidate\CandidateLightModel;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Candidate\CandidateRepositoryInterface;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
@@ -41,6 +41,36 @@ class CandidateRepository implements CandidateRepositoryInterface
         throw new \Exception('Not implemented');
     }
 
+    #[Override]
+    public function getCandidateLightModel(string $candidateId): CandidateLightModel
+    {
+        $result = $this->em->createQueryBuilder()
+            ->select('c.id', 'c.firstName', 'c.lastName, c.email ' ,'f.name AS imageName')
+            ->from(CandidateEntity::class, 'c')
+            ->leftJoin('c.image', 'f')
+            ->where('c.id = :candidateId')
+            ->setParameter('candidateId', $candidateId)
+            ->getQuery()
+            ->getOneOrNullResult(); // Assoc array
+
+        if (!$result) {
+            throw new RessourceNotFound("Candidate with ID {$candidateId} not found.");
+        }
+
+        // Image
+        $imageUrl = $result['imageName'] 
+            ? $result['imageName'] 
+            : null;
+
+        return new CandidateLightModel(
+            id: $result['id'],
+            firstName: $result['firstName'],
+            lastName: $result['lastName'],
+            email: $result['email'],
+            imageUrl: $imageUrl
+        );
+    }
+
 
     public function save(Candidate $candidate): void
     {
@@ -50,16 +80,19 @@ class CandidateRepository implements CandidateRepositoryInterface
     }
 
 
+
     public function delete(string $uuid): void
     {
         throw new \Exception('Not implemented');
     }
+
 
     #[Override]
     public function apply(string $candidateId, string $offerId): void
     {
         throw new \Exception('Not implemented');
     }
+
 
     #[Override]
     public function getCVFile(string $candidate): ?StaticMedia

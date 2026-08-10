@@ -3,12 +3,15 @@ import { useTranslation } from "react-i18next";
 
 import DownloadButton from "../../../../../layout/components/buttons/download/download.button";
 import BasicInput from "../../../../../layout/components/form/input/basic.input";
+import type { AsideFormState } from "../../page";
 
 import LogoSVG from '/src/assets/custom-logo.svg';
 import AddSVG from "/src/assets/svg/add/add-svgrepo-com.svg";
 
 import styles from "./style.module.css";
-import type { AsideFormState } from "../../page";
+import type { ParseKeys } from "i18next";
+import MediaUploader from "../../../components/media.uploader";
+import AddressFields from "../../../components/address.fields";
 
 
 
@@ -78,49 +81,11 @@ const SideForm: React.FC<SideFormProps> = ({
                         <h3>{t("userRegister.form.aside.title")}</h3>
                         
                         {/* DOWNLOAD LOGO SECTION */}
-                        <div className={styles.downloadLogoSection}>
-                            <h4 className={styles.logoTitle}>
-                                {t("global.logo.text")} <span className={styles.faintTxt}>({t("global.validation.optionnal")})</span>
-                            </h4>
-                            <div className={styles.downloadBox}>
-                                {currentLogoImg ? (
-                                    <div className={styles.logoPreview}>
-                                        <button 
-                                            type="button"
-                                            className={styles.removeBtn} 
-                                            onClick={() => {
-                                                URL.revokeObjectURL(currentLogoImg);
-                                                setCurrentLogoImg("");
-                                                //-- parent form state 
-                                                setForm(prev => ({ ...prev, logo: null }));
-                                            }}
-                                        >
-                                            x
-                                        </button>
-                                        <img src={currentLogoImg} alt="Logo preview" />
-                                    </div>
-                                ) : (
-                                    <LogoSVG width={45} height={45} />
-                                )}
-                                <DownloadButton
-                                    txt={t("userRegister.form.aside.downloadAssets.logo.tagline")}
-                                    onNext={(file) => {
-                                        if (file) {
-                                            //-- revoke previous img
-                                            if (currentLogoImg) URL.revokeObjectURL(currentLogoImg);
-
-                                            const url = URL.createObjectURL(file);
-                                            setCurrentLogoImg(url);
-                                            setForm(prev => ({
-                                                ...prev,
-                                                logo: file
-                                            }));
-                                        }
-                                    }}
-                                />
-                                <span className={styles.subtxt}>PNG, JPG ... </span>
-                            </div>
-                        </div>
+                        <MediaUploader
+                            file={form.logo}
+                            onFileChange={(file) => setForm(prev => ({ ...prev, logo: file }))}
+                            titleKey={"global.logo.text" as ParseKeys}
+                        />
 
                         {/* IMAGES DOWNLOAD SECTION */}
                         <div className={styles.downloadImageSection}>
@@ -194,60 +159,16 @@ const SideForm: React.FC<SideFormProps> = ({
                     </div>
 
                     {/* BOTTOM  (ADDRESS) */}
-                    <div className={styles.bottom}>
-                        <h3>{t("userRegister.form.aside.addressDetails.title")}</h3>
-                        <div className={styles.geoposSection}>
-                            <BasicInput
-                                required
-                                placeholder="France"
-                                className={styles.faintBorder} 
-                                value={form.country || ""}
-                                onChange={(e) =>
-                                    setForm(prev => ({ ...prev, country: e.target.value }))
-                                }
-                                backgroundColor="#FBFAFE" width="100%"
-                                label={t("userRegister.form.aside.addressDetails.inputs.country.label")}
-                            />
-                            <div className={styles.inpts}>
-                                <BasicInput 
-                                    required
-                                    placeholder="75002"
-                                    label={t("userRegister.form.aside.addressDetails.inputs.postalCode.label")}
-                                    backgroundColor="#FBFAFE" width="100%"
-                                    className={styles.faintBorder}
-                                    value={form.postalCode || ""}
-                                    onChange={(e) => {
-                                            setForm(prev => ({ ...prev, postalCode: e.target.value }))
-                                        }
-                                    }
-                                />
-                                <BasicInput 
-                                    required
-                                    width="100%" 
-                                    placeholder="Paris"
-                                    className={styles.faintBorder}
-                                    backgroundColor="#FBFAFE"
-                                    value={form.city || ""}
-                                    onChange={(e) =>
-                                        setForm(prev => ({ ...prev, city: e.target.value }))
-                                    }
-                                    label={t("userRegister.form.aside.addressDetails.inputs.city.label")}
-                                />
-                            </div>
-                            <BasicInput 
-                                required
-                                width="100%" 
-                                className={styles.faintBorder} 
-                                backgroundColor="#FBFAFE" 
-                                value={form.street || ""}
-                                onChange={(e) =>
-                                    setForm(prev => ({ ...prev, street: e.target.value }))
-                                }
-                                placeholder="32 rue st michelle"
-                                label={t("userRegister.form.aside.addressDetails.inputs.street.label")}
-                            />
-                        </div>
-                    </div>
+                    <AddressFields
+                        address={{
+                            country: form.country,
+                            postalCode: form.postalCode,
+                            city: form.city,
+                            street: form.street,
+                        }}
+                        onChange={(fields) => setForm(prev => ({ ...prev, ...fields }))}
+                        titleKey={"userRegister.form.aside.addressDetails.title" as ParseKeys}
+                    />
 
                     {/* OVER - ABSOLUTE ELEMENT */}
                     <div className={styles.bage}>

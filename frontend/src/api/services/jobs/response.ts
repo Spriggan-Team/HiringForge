@@ -1,5 +1,23 @@
-import type { JobActivityStatus, JobPublicationStatus, JobSummary, JobView, JobWorkMode, LanguageLevel, VisibilityStatus } from "../../../features/jobs/JobOffer";
 import type { ApiResponse } from "../response.types";
+import type { CandidateLightModel } from "../../../features/candidates/candidates";
+import type { 
+  JobActivityStatus,
+  JobPublicationStatus,
+  JobSummary,
+  JobView,
+  JobWorkMode,
+  LanguageLevel,
+  VisibilityStatus
+} from "../../../features/jobs/JobOffer";
+
+
+//---------------------
+//----- Candidates
+//------------------------
+
+
+export type CandidateListResponse = ApiResponse<CandidateLightModel[]>;
+
 
 //------------------
 //-- Job

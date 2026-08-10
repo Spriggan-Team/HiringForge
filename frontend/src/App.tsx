@@ -19,10 +19,11 @@ import Login from './pages/Login/page'
 import UserRegister from './pages/Register/user/page'
 
 import RegisterationEntry from './pages/Register/register/page'
-import CandidateRegister from './pages/Register/candidate/candidate.register'
+import CandidateRegister from './pages/Register/candidate/candidate.register.page'
 import DirectorRegister from './pages/Register/director/director.register'
 import UserHome from './pages/home/user/page'
 import UserJobsPage from './pages/jobs/page'
+
 import CreateJobPage from './pages/jobs/create/create.job.page'
 import PrivateJobViewPage from './pages/jobs/view/page'
 import SchedulingWorkspace from './pages/schedule/scheduling.workspace'
@@ -40,7 +41,7 @@ function App() {
   
   useEffect(()=>{
     httpContext.setNavigate(navigate)
-  },[navigate])
+  },[navigate]);
   
   return (
       <Routes>
@@ -54,9 +55,12 @@ function App() {
           {/** Registering  */}
           <Route path={RouteScheme.login} element={<Login />} />
           <Route path={RouteScheme.register} element={<RegisterationEntry />} />
-          <Route path={RouteScheme.userRegister} element={<UserRegister />} />
-          <Route path={RouteScheme.candidateRegister} element={<CandidateRegister />} />
-          <Route path={RouteScheme.directorRegister}  element={<DirectorRegister />} />
+
+          <Route element={<PublicAppLayout backgroundColor='transparent' />}>
+            <Route path={RouteScheme.userRegister} element={<UserRegister />} />
+            <Route path={RouteScheme.candidateRegister} element={<CandidateRegister />} />
+            <Route path={RouteScheme.directorRegister}  element={<DirectorRegister />} />
+          </Route>
 
           {/** PROTECTED ROUTES (AUTHENTIFICATION REQUIRED) */}
           <Route 
@@ -110,10 +114,10 @@ const UserAppLayout = () => {
 }
 
 //-- Common navabar (more design for candidates though)
-const PublicAppLayout = ()=>{
+const PublicAppLayout = ({ backgroundColor = "#ffffff" }: { backgroundColor?: string }) => {
   return (
     <div  style={{ display: "flex", flexDirection: "column" }}>
-      <PublicNavBar />
+      <PublicNavBar backgroundColor={backgroundColor}/>
       <div>
         <Outlet />
       </div>
@@ -132,6 +136,10 @@ const AuthAccessGranted = ()=>{
 }
 
 
+
+
+
+
 type NavigateFn = (path: string, params?: any) => void;
 
 
@@ -141,6 +149,9 @@ interface NavigateOptions {
   params?: Record<string, any>;
   menuId?: string;
   persistMenu?: boolean;
+  state?: {
+        from?: string;
+  };
 }
 
 export const navigateTo = (
@@ -152,6 +163,7 @@ export const navigateTo = (
     params,
     menuId,
     persistMenu = true,
+    state
   } = options;
 
   let finalRoute = route;
@@ -166,7 +178,9 @@ export const navigateTo = (
     }
   }
 
-  navigate(finalRoute);
+  navigate(finalRoute, {
+    state
+  });
 
   /** Persist menu state */
   if (persistMenu && menuId) {

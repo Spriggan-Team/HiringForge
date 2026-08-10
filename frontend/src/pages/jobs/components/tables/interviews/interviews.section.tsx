@@ -2,25 +2,27 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useAppContext } from "../../../../../hooks/context";
 import { useDebounce } from "../../../../../hooks/timer";
 import InterviewsQueries from "../../../../../api/services/interviews/queries";
-import CandidatesQueries from "../../../../../api/services/candidate/queries";
 import InterviewsServices from "../../../../../api/services/interviews/command";
+import JobQueries from "../../../../../api/services/jobs/queries";
 
-import { INTERVIEW_STATUSES, type CreateInterviewFormData } from "../../../../../features/interviews/interviews";
-import { InterviewToolbar } from "./components/interview.toolbar";
 import type { CandidateLightModel } from "../../../../../features/candidates/candidates";
+import { INTERVIEW_STATUSES, type CreateInterviewFormData } from "../../../../../features/interviews/interviews";
 
 
+import InterviewRow from "./components/interviews.table.row";
+import { InterviewToolbar } from "./components/interview.toolbar";
+import { GenerateInterviewModal } from "./components/generate.interview.modal";
 
 
 import styles from "./Interviews.module.css";
-import { GenerateInterviewModal } from "./components/generate.interview.modal";
-import InterviewRow from "./components/interviews.table.row";
-import { useAppContext } from "../../../../../hooks/context";
+
 
 
 const STATUS_OPTIONS= INTERVIEW_STATUSES;
+
 
 
 export interface Interview {
@@ -86,8 +88,7 @@ export default function InterviewsSection({
   // --- Fetch Candidates
   const fetchCandidatesApi = useCallback(
     async (targetJobId: string, search: string, limit: number): Promise<CandidateLightModel[]> => {
-      // TODO: Remplacer par la requête API réelle si différente
-      return await CandidatesQueries.getJobCandidates({
+      return await JobQueries.getJobCandidates({
         jobId: targetJobId,
         search,
         limit,

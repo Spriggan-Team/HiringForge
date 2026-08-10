@@ -5,10 +5,13 @@
   width: 100%;
   max-width: 1440px;
   height: calc(100vh - 40px);
+
   margin: 0 auto;
   padding: 20px;
+  
   display: flex;
   flex-direction: column;
+  
   gap: 20px;
   box-sizing: border-box;
 }
@@ -51,9 +54,7 @@
   min-height: 0;
 }
 
-/* ==========================================
-   COLONNE GAUCHE : CARTES RÉSUMÉ (Master)
-   ========================================== */
+/* LEFT COLUMN (CARD) */
 .jobCollections {
   display: flex;
   flex-direction: column;
@@ -233,9 +234,7 @@
   cursor: not-allowed;
 }
 
-/* ==========================================
-   COLONNE DROITE : PANNEAU DE DÉTAIL (Detail)
-   ========================================== */
+/* ASIDE: COLUMN */
 .selectedOffer {
   background: #ffffff;
   border-radius: 12px;
@@ -251,7 +250,7 @@
   flex-direction: column;
 }
 
-/* En-tête Sticky du Détail */
+/* Sticky Header of details */
 .jobHeader {
   position: sticky;
   top: 0;
@@ -290,24 +289,76 @@
   border-radius: 6px;
 }
 
+/** Postulate btn **/
+
 .postulateBtn {
-  background: #2563eb;
-  color: #ffffff;
-  border: none;
-  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
   font-size: 0.9rem;
   font-weight: 600;
+  color: #ffffff;
+  background-color: #2563eb;
+  border: none;
   border-radius: 8px;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 .postulateBtn:hover {
-  background: #1d4ed8;
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.postulateBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+/* Guest not connected */
+.deactivatePostulateBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2563eb;
+  background-color: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease-in-out;
+}
+
+.deactivatePostulateBtn:hover {
+  background-color: #dbeafe;
+  border-color: #93c5fd;
+  color: #1d4ed8;
   transform: translateY(-1px);
 }
+
+.deactivatePostulateBtn:active {
+  transform: translateY(0);
+}
+
+/* Hidden */
+.hidden {
+  display: none !important;
+}
+
+
+
+/** Details body **/
 
 .detailsBody {
   padding: 32px;

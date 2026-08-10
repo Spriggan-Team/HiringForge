@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 //-- services & Config
 import RouteScheme from "../../../route.scheme";
+import { navigateTo } from "../../../App";
 
 //-- Custom Components
 import InfoPill from "../../../layout/components/badges/pill/info.pill";
@@ -43,7 +44,7 @@ const RegisterationEntry = () => {
         <div className={styles.container}>
             
             <nav className={styles.navbar}>
-                <AppIdentity />
+                <AppIdentity onClick={()=>navigateTo(navigate, RouteScheme.jobs)} />
                 <div className={styles.actions}>
                     <LanguageSelector />
                     <AuthSwitcher />

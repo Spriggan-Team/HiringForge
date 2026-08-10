@@ -5,8 +5,11 @@ import {
     type PublicJobOfferLightModel,
     type PublicJobOfferDetailsModel
 } from "../../../api/services/public/responses";
+import { navigateTo } from "../../../App";
 import PublicJobQueries from "../../../api/services/public/queries";
+import { useAppContext } from "../../../hooks/context";
 
+import { ConfirmModal } from "../../../layout/components/conform.box";
 import BrandButton from "../../../layout/components/buttons/brand.button";
 import BasicInput from "../../../layout/components/form/input/basic.input";
 import TipTapRenderer from "../../../layout/components/editors/tiptap/tiptap.renderer";
@@ -16,14 +19,18 @@ import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.
 
 
 import styles from "./PublicJobPage.module.css";
+import { useNavigate } from "react-router-dom";
+import RouteScheme from "../../../route.scheme";
 
 
-const PAGINATION_LIMIT = 5;
+const PAGINATION_LIMIT = 15;
 
 
 
 const PublicJobPage = () => {
   const { t, i18n } = useTranslation();
+  const { currentActor, setModal } = useAppContext();
+  const navigate = useNavigate()
 
   // Search state
   const [searchContext, setSearchContext] = useState({ title: "", address: "" });
@@ -104,6 +111,42 @@ const PublicJobPage = () => {
     fetchDetail();
   }, [selectedJobId]);
 
+  
+    const handleApplyClick = () => {
+        //-- Start postulation
+        if (currentActor?.type === "candidate") {
+            return;
+        }
+
+        //-- display modal if not connected
+        setModal({
+            title: '',
+            isOpen: true,
+            content: (
+            <ConfirmModal
+                title={t("jobs.modal.loginRequiredTitle", "Connexion requise")}
+                message={t("jobs.modal.loginRequiredMsg", "Vous devez être connecté en tant que candidat pour postuler à cette offre.")}
+                cancelText={t("global.buttons.cancel", "Annuler")}
+                confirmText={t("global.buttons.register", "Créer un compte")}
+                variant="request"
+                onCancel={() => setModal(null)}
+                onConfirm={() => {
+                    setModal(null);
+                    navigateTo(navigate, RouteScheme.candidateRegister);
+                }}
+            />
+            ),
+        });
+    };
+
+    // Determinate postulate button style
+    const getPostulateBtnClass = () => {
+        if (!currentActor) 
+            return styles.deactivatePostulateBtn; 
+        if (currentActor.type === "candidate")
+            return styles.postulateBtn; 
+        return styles.hidden; 
+    };
 
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -113,7 +156,7 @@ const PublicJobPage = () => {
 
 
   return (
-   <div className={styles.container}>
+   <main className={styles.container}>
         {/* Header Search Bar */}
         <form className={styles.header} onSubmit={handleSearchSubmit}>
             <div className={styles.searchInputsSection}>
@@ -263,7 +306,12 @@ const PublicJobPage = () => {
                             </div>
                             
                             <div className={styles.jobActionArea}>
-                                <button className={styles.postulateBtn}>Postuler maintenant</button>
+                                <button 
+                                    onClick={handleApplyClick}
+                                    className={getPostulateBtnClass()}
+                                >
+                                    {t("jobs.buttons.applyNow", "Postuler maintenant")}
+                                </button>
                             </div>
                         </div>
 
@@ -322,7 +370,7 @@ const PublicJobPage = () => {
             }
             </div>
         </div>
-    </div>
+    </main>
   );
 };
 

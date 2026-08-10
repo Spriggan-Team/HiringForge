@@ -16,6 +16,7 @@ export interface BasicInputProps {
     value?: any;
     label?: string;
     inputName?: string;
+    defaultValue?: string;
 
     width?: number | string;
     height?:  number | string;
@@ -58,6 +59,7 @@ const BasicInput: React.FC<BasicInputProps> = ({
 
     label,
     value,
+    defaultValue,
 
     width,
     height,
@@ -121,6 +123,7 @@ const BasicInput: React.FC<BasicInputProps> = ({
                     value={value}
                     {...extraInputProps}
                     required={required}
+                    defaultValue={defaultValue}
                 />
                 
                 {type === "password" && enableViewToggle && (

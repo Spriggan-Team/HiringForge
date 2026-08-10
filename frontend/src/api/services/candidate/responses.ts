@@ -1,5 +1,14 @@
-import type { CandidateLightModel } from "../../../features/candidates/candidates";
 import type { ApiResponse } from "../response.types";
 
 
-export type CandidateListResponse = ApiResponse<CandidateLightModel[]>;
+
+export type CurrentCandidateContextResponse = ApiResponse<CurrentUser>;
+
+
+export interface CurrentUser {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    imageUrl: string | null;
+}

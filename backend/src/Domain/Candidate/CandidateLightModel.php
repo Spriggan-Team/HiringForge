@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Domain\Candidate;
+
+use App\Domain\Shared\Account\AccountLightModel;
+
+readonly class CandidateLightModel extends AccountLightModel
+{
+    public function __construct(
+        string $id,
+        string $firstName,
+        string $lastName,
+        string $email,
+        ?string $imageUrl = null,
+        public ?string $headline = null,
+    ) {
+        parent::__construct(
+            id: $id,
+            firstName: $firstName,
+            lastName: $lastName,
+            email: $email,
+            imageUrl: $imageUrl,
+        );
+    }
+}

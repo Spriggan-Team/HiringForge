@@ -9,7 +9,7 @@ import { InvalidOTP, RessourceCreationFailed } from "../exceptions";
 
 
 //-- ask code
-const askVerificationCode = async (email: string, purpose: "SIGNUP" | "PASSWORD_RESET" | "EMAIL_CHANGE")=>{
+const askVerificationCode = async (email: string, purpose: | "SIGNUP" | "PASSWORD_RESET" | "EMAIL_CHANGE")=>{
     try{
         if(!email){
             console.log("Please provide an email for beeing able to ask for code verification");

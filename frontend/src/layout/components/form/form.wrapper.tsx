@@ -70,9 +70,12 @@ export const FormSubmitSection = ({children}: {children: React.ReactNode}) => {
 
 
 //-- form hint
-export const FormHint = ({text}: {text: string})=>{
+export const FormHint = ({text, onClick}: {text: string, onClick?: ()=>void})=>{
     return(
-        <div className={styles.undertext}>
+        <div 
+            onClick={onClick}
+            className={styles.undertext}
+        >
             <p>{text}</p>
         </div>
     )

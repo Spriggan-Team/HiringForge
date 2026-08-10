@@ -10,6 +10,7 @@ import styles from "./style.module.css"
 
 interface ImageInputProps {
   title?: string;
+  required?: boolean;
   inputName?: string;
   subtitle?: string;
   maxSize?: number;

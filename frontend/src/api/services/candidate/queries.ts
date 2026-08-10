@@ -1,26 +1,19 @@
 import { data } from "react-router-dom";
 import { intercept } from "../../../utils/utils";
 import { authGet, handleGenericApiResponseAfter } from "../../handler";
-import type { CandidateListResponse } from "./responses";
+import type { CurrentCandidateContextResponse } from "./responses";
 
-//--------------
-//--- Recruiter
-//--------------------
 
-const getJobCandidates = async(
-    {
-        jobId,
-        search,
-        limit,
-    }:{
-        jobId: string,
-        search: string,
-        limit: number,
-    }
-)=>{
+
+
+//------------------------
+//---- Candidates
+//---------------------------
+
+const getCurrentCandidateContext = async()=>{
     try{
-        const response = await authGet<CandidateListResponse>('');
-        return response.data;
+        const response = await  authGet<CurrentCandidateContextResponse>(`/candidates`);
+        return response.data
     }
     catch(error){
         throw error;
@@ -28,9 +21,8 @@ const getJobCandidates = async(
 }
 
 
-
 const CandidatesQueries = intercept(
-    { getJobCandidates },
+    {  getCurrentCandidateContext },
     undefined,
     handleGenericApiResponseAfter
 )

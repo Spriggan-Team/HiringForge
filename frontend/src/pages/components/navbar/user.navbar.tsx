@@ -18,7 +18,7 @@ import NotificationRingSVGComponent from "/src/assets/svg/menu/alarm-alert-bell-
 // import DownArrowSVGComponent from "/src/assets/svg/menu/down-arrow-5-svgrepo-com.svg"
 
 //-- CSS Styles
-import styles from "./PublicNavBar.module.css"
+import styles from "./UserNavBar.module.css"
 
 
 export interface NavBarProps{

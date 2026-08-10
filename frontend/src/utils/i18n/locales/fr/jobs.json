@@ -13,7 +13,8 @@
         "buttons":{
             "create": "Créer une offre",
             "cancel": "Annuler",
-            "search": "Rechercher une offre"
+            "search": "Rechercher une offre",
+            "applyNow": "Postuler"
         },
         "inputs":{
             "searchJob":{
@@ -152,7 +153,6 @@
             "overview":{
                 "title": "Aperçu"
             }
-
 
         }
 

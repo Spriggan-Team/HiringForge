@@ -50,5 +50,10 @@ interface CandidateRepositoryInterface
      *                              for some reason without throwing an exception (no critical) 
      *                              then what is retruned will be null
      */
-    public function getCVFile(string $candidate): StaticMedia | null;
+    public function getCVFile(string $candidateId): StaticMedia | null;
+
+    /**
+     * retreive à light model of a connected user
+     */
+    public function getCandidateLightModel(string $candidateId): CandidateLightModel;
 }

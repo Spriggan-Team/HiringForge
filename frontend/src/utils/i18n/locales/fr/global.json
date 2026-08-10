@@ -2,6 +2,7 @@
     "global":{
         "appName" : "DigitalCop ATS",
         "allRightsReserved":"2026 DigitalCop - Tous droits réservés",
+        "policyText": "En créant votre compte, vous acceptez nos Conditions générales d’utilisation et reconnaissez avoir pris connaissance de notre Politique de confidentialité.",
         "rules":{
             "password":{
                 "title": "Force du mot de passe",
@@ -97,7 +98,18 @@
         "buttons":{
             "add": "Ajouter",
             "back": "Retour",
-            "cancel": "Annuler"
+            "cancel": "Annuler",
+            "goToMySpace": "Acceder à mon espace",
+            "register": "Créer un compte",
+            "connexion": "Connexion",
+            "next": "Suivant"
+        },
+
+        "address":{
+            "country":"Pays",
+            "postalCode":"Code postal",
+            "city":"Ville",
+            "street": "Adresse"
         },
 
         "candidate": {
