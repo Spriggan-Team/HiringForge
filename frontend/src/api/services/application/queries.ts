@@ -25,13 +25,13 @@ const getApplications = async (
   try {
     const params = new URLSearchParams();
 
-    if(jobId) params.set('jobOfferId', jobId)
+    if(jobId) params.set('jobId', jobId)
     if (companyId) params.set('companyId', companyId);
     if(search) params.set("search", search)
     if (skip !== undefined) params.set('skip', String(skip));
     if (limit !== undefined) params.set('limit', String(limit));
 
-    const url = `/applications/job_offer${
+    const url = `/users/applications/job_offers${
       params.toString() ? `?${params.toString()}` : ''
     }`;
 
@@ -59,18 +59,18 @@ const getJobPostulationMetrics = async({
     timeframe?: 'week' | 'month'
 })=>{
     try{
-        const params = new URLSearchParams();
+      const params = new URLSearchParams();
 
-        if(jobId) params.set('jobId', jobId);
-        if(timeframe) params.set('timeframe', timeframe);
+      if (jobId) params.set('jobId', jobId);
+      if (timeframe) params.set('timeframe', timeframe);
 
-        const response = await authGet<ApiResponse<number[]>>(
-            `/users/applications/stats${
-                params.toString() ? params.toString() : ''      
-            }
-        `);
-        
-        return response.data;
+      const response = await authGet<ApiResponse<number[]>>(
+          `/users/applications/stats${
+              params.toString() ? `?${params.toString()}` : ''
+          }`
+      );
+
+      return response.data;
     }
     catch(error){
         throw error;
@@ -81,7 +81,7 @@ const getJobPostulationMetrics = async({
 
 const countRejected = async (jobId: string)=>{
   try{
-    const response = await authGet<ApiResponse<number>>(`/applications/${jobId}/rejected`);
+    const response = await authGet<ApiResponse<number>>(`/users/applications/${jobId}/rejected`);
     return response.data;
   }
   catch(error){

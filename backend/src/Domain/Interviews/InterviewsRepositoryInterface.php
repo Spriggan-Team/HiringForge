@@ -11,7 +11,7 @@ interface InterviewsRepositoryInterface
      *              'jobOfferId' => $jobId,
      *          ]
      */
-    public function count(array $criteria);
+    public function countInterviews(array $criteria);
 
 
     /**

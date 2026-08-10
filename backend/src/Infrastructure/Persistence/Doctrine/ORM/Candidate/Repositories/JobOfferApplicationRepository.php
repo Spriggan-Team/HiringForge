@@ -65,7 +65,7 @@ class JobOfferApplicationRepository
      * } $criteria
      */
     #[Override]
-    public function count(array $criteria = []): int 
+    public function countApplications(array $criteria = []): int 
     {
         $qb = $this->createQueryBuilder('a')
             ->select('COUNT(DISTINCT a.id)');
@@ -106,41 +106,54 @@ class JobOfferApplicationRepository
 
     
     /**
-     * Counts applications created within a specific date range.
+     * Counts applications created within a specific date range, optionally filtered by job offer.
      */
-    public function countApplicationsInPeriod(string $jobOfferId, \DateTimeInterface $start, \DateTimeInterface $end): int
+    public function countApplicationsInPeriod(
+        string $userId,
+        \DateTimeInterface $start,
+        \DateTimeInterface $end,
+        ?string $jobOfferId = null
+    ): int
     {
-        return (int) $this->createQueryBuilder('a')
-            ->select('COUNT(a.id)')
-            ->where('a.jobOffer = :jobOfferId')
-            ->andWhere('a.appliedAt >= :start')
-            ->andWhere('a.appliedAt <= :end')
-            ->setParameter('jobOfferId', $jobOfferId)
-            ->setParameter('start', $start)
-            ->setParameter('end', $end)
-            ->getQuery()
-            ->getSingleScalarResult();
+        $qb = $this->createQueryBuilder('a')
+                ->select('COUNT(a.id)')
+                ->innerJoin('a.jobOffer', 'j')
+                ->where('j.user = :userId')
+                ->andWhere('a.appliedAt >= :start')
+                ->andWhere('a.appliedAt <= :end')
+                ->setParameter('userId', $userId)
+                ->setParameter('start', $start)
+                ->setParameter('end', $end);
+
+        if ($jobOfferId !== null) {
+            $qb->andWhere('j.id = :jobOfferId')
+            ->setParameter('jobOfferId', $jobOfferId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
 
-
     /**
-     * Calculates average time to hire in days for a specific job offer and user.
+     * Calculates average time to hire in days for a specific job offer OR all user jobs.
      */
-    public function getAvgTimeToHireDays(string $jobOfferId, string $userId): int
+    public function getAvgTimeToHireDays(string $userId, ?string $jobOfferId =null): int
     {
-        $result = $this->createQueryBuilder('a')
-            ->select('AVG(DATE_DIFF(a.updatedAt, a.appliedAt))')
-            ->innerJoin('a.jobOffer', 'j')
-            ->where('j.id = :jobOfferId')
-            ->andWhere('j.user = :userId')
-            ->andWhere('a.status = :status')
-            ->setParameter('jobOfferId', $jobOfferId)
-            ->setParameter('userId', $userId)
-            ->setParameter('status', JobApplicationStatus::HIRED)
-            ->getQuery()
-            ->getSingleScalarResult();
+        $qb = $this->createQueryBuilder('a')
+                ->select('AVG(DATE_DIFF(a.updatedAt, a.appliedAt))')
+                ->innerJoin('a.jobOffer', 'j')
+                ->where('j.user = :userId')
+                ->andWhere('a.status = :status')
+                ->setParameter('userId', $userId)
+                ->setParameter('status', JobApplicationStatus::HIRED);
 
+        if ($jobOfferId !== null) {
+            $qb->andWhere('j.id = :jobOfferId')
+            ->setParameter('jobOfferId', $jobOfferId);
+        }
+
+        $result = $qb->getQuery()->getSingleScalarResult();
+        
         return $result !== null ? (int) round((float) $result) : 0;
     }
 

@@ -8,6 +8,8 @@ import { useAppContext } from "../hooks/context";
 import { AccountRole } from "../core/enums/AccountRole";
 import UserQueriesServices from "../api/services/user/queries";
 import { getSession, redirectAccordingToSession } from "../core/auth.helpers";
+import { navigateTo } from "../App";
+import RouteScheme from "../route.scheme";
 
 
 
@@ -26,6 +28,7 @@ const AuthEntryPage: React.FC<EntryPageProps> = ({ children }) => {
   const initializeData = useCallback(async () => {
     try {
       const { role } = getSession();
+
       if (role === AccountRole.USER) {
         const data = await UserQueriesServices.getCurrentUserContext();
         console.log({ data });
@@ -46,8 +49,11 @@ const AuthEntryPage: React.FC<EntryPageProps> = ({ children }) => {
         });
       }
       else {
+
       }
-    } catch (error) {
+      
+    }
+    catch (error) {
       console.warn("Something went wrong during initialization", error);
       setCurrentActor(null);
     }
@@ -55,6 +61,8 @@ const AuthEntryPage: React.FC<EntryPageProps> = ({ children }) => {
       setIsInitializing(false);
     }
   }, [setCurrentActor]);
+
+
 
   useEffect(() => {
     const setup = async () => {

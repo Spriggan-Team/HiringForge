@@ -92,11 +92,12 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
         totalApplications: 0,
         applicationIncreaseThisWeek: 0,
         rejectionRate: 0,
+        offersDeclined: 0,
+        offersAccepted: 0,
         offersGenerated: 0,
         avgTimeToHireDays: 0,
         avgTimeToHireDiffDays: 0,
         rejectedCandidatesCount: 0,
-        offersAccepted: 0
     });
 
     useEffect(() => {
@@ -108,7 +109,7 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
 
                 const [jobKpi, statsData, postulationMetricsData] = await Promise.all(
                      [
-                        JobQueries.getJobKpis(jobId),
+                        JobQueries.getJobApplicationKpis(jobId),
                         JobQueries.getJobOffersOverview(jobId),
                         ApplicationQueries.getJobPostulationMetrics({ jobId, timeframe }),
                     ]
@@ -122,11 +123,12 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
                         totalApplications: jobKpi.totalApplications ?? 0,
                         applicationIncreaseThisWeek: jobKpi.applicationIncreaseThisWeek ?? 0,
                         rejectionRate: jobKpi.rejectionRate ?? 0,
+                        offersDeclined: jobKpi.offersDeclined ?? 0,
+                        offersAccepted: jobKpi.offersAccepted ?? 0,
                         offersGenerated: jobKpi.offersGenerated ?? 0,
                         avgTimeToHireDays: jobKpi.avgTimeToHireDays ?? 0,
-                        avgTimeToHireDiffDays: jobKpi.avgTimeToHireDiffDays,
-                        rejectedCandidatesCount: jobKpi.rejectedCandidatesCount,
-                        offersAccepted: jobKpi.offersAccepted
+                        avgTimeToHireDiffDays: jobKpi.avgTimeToHireDiffDays ?? 0,
+                        rejectedCandidatesCount: jobKpi.rejectedCandidatesCount ?? 0,
                     });
                 }
 
@@ -224,7 +226,7 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
                 <div className={styles.kpiCard}>
                     <span className={styles.kpiLabel}>Temps Moyen d'Embauche</span>
                     <span className={styles.kpiValue}>{jobKpisData.avgTimeToHireDays} jours</span>
-                    <span className={`${styles.kpiBadge} ${styles.positive}`}>{-2} jours vs moyenne</span>
+                    <span className={`${styles.kpiBadge} ${styles.positive}`}>{jobKpisData.avgTimeToHireDiffDays} jours vs moyenne</span>
                 </div>
             </div>
 

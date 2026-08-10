@@ -7,7 +7,7 @@ use App\Api\Responder\ApiResponse;
 use App\Domain\JobOffer\JobPublicationStatus;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Application\Query\JobOffer\DTO\JobSummaryItem;
-use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
+use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
@@ -24,7 +24,7 @@ class JobOfferQueryManagement extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
-        private JobOfferQueryRepositoryInterace $queryRepository,
+        private JobOfferQueryRepositoryInterface $queryRepository,
     ) {
         ApiResponse::init($logger);
     }
@@ -103,6 +103,43 @@ class JobOfferQueryManagement extends AbstractController
             )->toJsonResponse();
         }
     }
+
+
+    /**
+     * Route: /stats?jobId=string
+     * If jobId is specified, the stats (overview) values are calculated using the scope of that specific job.
+     * If jobId is omitted, stats are calculated for all jobs belonging to the recruiter.
+     */
+    #[Route('/stats', name: 'api_users_job_offers_stats', methods: ['GET'])]
+    public function getJobOfferOverview(
+        Request $request
+    ): JsonResponse {
+        try {
+            /** @var AuthenticatedPerson $user */
+            $user = $this->getUser();
+            $jobId = $request->query->get('jobId');
+
+            $data = $this->queryRepository->getJobStats(
+                userId: $user->getId(),
+                jobId: $jobId
+            );
+            // $this->logger->error("Controller REACH");
+
+
+            return ApiResponse::success(
+                message: 'Everything is ok',
+                data: $data
+            )->toJsonResponse();
+        }
+        catch (\Throwable $error) {
+            return ApiResponse::error(
+                message: 'Something went wrong while fetching job overview',
+                throwable: $error,
+                verbose: true
+            )->toJsonResponse();
+        }
+    }
+
 
     #[Route('/{jobId}', methods: ['GET'])]
     public function retrieveSingleJobOffer(string $jobId, Request $request): JsonResponse
@@ -187,38 +224,7 @@ class JobOfferQueryManagement extends AbstractController
     }
 
 
-    /**
-     * Route: /stats?jobId=string
-     * if jobId is specified the stats (overview) value are calcul using the scope specified
-     * job
-     */
-    #[Route('/stats')]
-    public function getJobOfferOverview(
-        Request $request
-    ){
-        try{
-            /** @var AuthenticatedPerson $user */
-            $user = $this->getUser();
-            $jobId = $request->query->get("jobId", null);
 
-            $data = $this->queryRepository->getJobStats(
-                userId: $user->getId(),
-                jobId: $jobId
-            );
-            
-            return ApiResponse::success(
-                message: 'Everything is ok',
-                data: $data
-            );
-        }
-        catch(\Exception $error){
-            return ApiResponse::error(
-                message: "Something went wong while fetching job overview"
-            )->toJsonResponse();
-        }
-    }
-
-    
 
     #[Route('/kanban', methods: ['GET'])]
     public function getKanbanResult()

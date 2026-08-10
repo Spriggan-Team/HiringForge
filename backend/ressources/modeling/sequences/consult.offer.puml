@@ -8,7 +8,7 @@ title "Consult Offer (accessible to anyone)"
 actor Account 
 'Participants
 participant JobOfferCatalogReader
-participant JobOfferQueryRepositoryInterace
+participant JobOfferQueryRepositoryInterface
 'Bdd
 Database Database
 
@@ -20,21 +20,21 @@ activate JobOfferCatalogReader
 
 
 'Execute Query (Pagination)
-JobOfferCatalogReader -> JobOfferQueryRepositoryInterace : query(limit, skip)
-activate JobOfferQueryRepositoryInterace
+JobOfferCatalogReader -> JobOfferQueryRepositoryInterface : query(limit, skip)
+activate JobOfferQueryRepositoryInterface
 note right
     query with pagination.
     only published offer are retreive here
 end note
 
-JobOfferQueryRepositoryInterace -> Database : SELECT
+JobOfferQueryRepositoryInterface -> Database : SELECT
 activate Database
-Database --> JobOfferQueryRepositoryInterace : response  
+Database --> JobOfferQueryRepositoryInterface : response  
 deactivate Database
 
 'User response
-JobOfferQueryRepositoryInterace --> JobOfferCatalogReader : offer catalog
-deactivate JobOfferQueryRepositoryInterace
+JobOfferQueryRepositoryInterface --> JobOfferCatalogReader : offer catalog
+deactivate JobOfferQueryRepositoryInterface
 JobOfferCatalogReader --> Account : offers
 deactivate JobOfferCatalogReader
 

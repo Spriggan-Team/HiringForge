@@ -79,8 +79,9 @@ interface RecruitmentMetrics {
   applicationIncreaseThisWeek: number;
   rejectionRate: number;
   rejectedCandidatesCount: number;
-  offersGenerated: number;
+  offersDeclined: number;
   offersAccepted: number;
   avgTimeToHireDays: number;
   avgTimeToHireDiffDays: number;
+  offersGenerated: number;
 }

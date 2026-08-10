@@ -176,7 +176,7 @@ class InterviewsRepository extends ServiceEntityRepository
 
 
 
-    public function count(array $criteria): int 
+    public function countInterviews(array $criteria): int 
     {
         $qb = $this->createQueryBuilder('i')
             ->select('COUNT(DISTINCT i.id)');

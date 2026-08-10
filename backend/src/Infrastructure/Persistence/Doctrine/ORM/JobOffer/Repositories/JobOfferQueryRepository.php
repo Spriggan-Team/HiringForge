@@ -6,7 +6,7 @@ use App\Application\Query\JobOffer\DTO\JobOfferStatistics;
 
 use App\Application\Query\JobOffer\DTO\JobOfferListItem;
 use App\Application\Query\JobOffer\DTO\JobSummaryItem;
-use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
+use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 
@@ -14,15 +14,19 @@ use App\Domain\JobOffer\JobActivityStatus;
 use App\Domain\JobOffer\JobPublicationStatus;
 use App\Domain\Company\CompanyRepositoryInterface;
 use App\Domain\Interviews\InterviewsRepositoryInterface;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillTranslationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferImageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferLanguageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferSkillsEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferViewEntity;
-use Doctrine\ORM\EntityManagerInterface;
+
 use Override;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 
 
@@ -38,7 +42,7 @@ use Override;
  * tailored for application query handlers.
  */
 
-class JobOfferQueryRepository implements JobOfferQueryRepositoryInterace
+class JobOfferQueryRepository implements JobOfferQueryRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $manager,
@@ -47,6 +51,218 @@ class JobOfferQueryRepository implements JobOfferQueryRepositoryInterace
         private CompanyRepositoryInterface $companyRepositoryInterface
     ){}
 
+
+
+    public function fetchPublicJobOffersSummary(
+        string $locale = 'fr',
+        ?string $search = null,
+        ?string $address = null,
+        int $limit = 10,
+        int $skip = 0
+    ): array {
+        $qb = $this->manager->createQueryBuilder()
+            ->select(
+                'j.id',
+                'j.title',
+                'j.content',
+                'j.jobWorkMode',
+                'j.minSalary',
+                'j.maxSalary',
+                'j.currency',
+                'ct.id AS contractId',
+                'ct.label AS contractLabel',
+                'a.street',
+                'a.postalCode',
+                'a.city',
+                'a.country',
+                'f.name AS imageName',
+                'f.mime AS imageMime'
+            )
+            ->from(JobOfferEntity::class, 'j')
+            ->leftJoin('j.contractType', 'ct')
+            ->leftJoin('j.address', 'a')
+            ->leftJoin(
+                'j.images',
+                'img',
+                \Doctrine\ORM\Query\Expr\Join::WITH,
+                'img.isMain = true'
+            )
+            ->leftJoin('img.file', 'f')
+            ->where('j.publicationStatus = :publishedStatus')
+            ->setParameter('publishedStatus', JobPublicationStatus::PUBLISHED);
+
+        if (!empty($search)) {
+            $qb->andWhere('LOWER(j.title) LIKE :search OR LOWER(j.content) LIKE :search')
+               ->setParameter('search', '%' . mb_strtolower($search) . '%');
+        }
+
+        if (!empty($address)) {
+            $qb->andWhere('LOWER(a.city) LIKE :addr OR LOWER(a.country) LIKE :addr OR LOWER(a.postalCode) LIKE :addr')
+               ->setParameter('addr', '%' . mb_strtolower($address) . '%');
+        }
+
+        // --- Skip & Limit ---
+        $qb->setFirstResult($skip)
+           ->setMaxResults($limit);
+
+        // Count total items
+        $countQb = clone $qb;
+        $countQb->resetDQLPart('select')
+                ->select('COUNT(DISTINCT j.id)')
+                ->setFirstResult(null)
+                ->setMaxResults(null);
+        $totalCount = (int) $countQb->getQuery()->getSingleScalarResult();
+
+        $results = $qb->getQuery()->getArrayResult();
+
+        $items = array_map(static function (array $row): array {
+            return [
+                'id' => $row['id'],
+                'title' => $row['title'],
+                'content' => $row['content'],
+                'jobWorkMode' => $row['jobWorkMode']?->value ?? $row['jobWorkMode'],
+                'salary' => [
+                    'min' => $row['minSalary'],
+                    'max' => $row['maxSalary'],
+                    'currency' => $row['currency'],
+                ],
+                'contractType' => $row['contractId'] ? [
+                    'id' => $row['contractId'],
+                    'label' => $row['contractLabel'],
+                ] : null,
+                'location' => [
+                    'street' => $row['street'],
+                    'postalCode' => $row['postalCode'],
+                    'city' => $row['city'],
+                    'country' => $row['country'],
+                ],
+                'mainImage' => $row['mainImage'] ?? null,
+            ];
+        }, $results);
+
+        return [
+            'items' => $items,
+            'total' => $totalCount,
+            'limit' => $limit,
+            'skip' => $skip,
+        ];
+    }
+
+
+
+    public function fetchPublicJobOfferDetail(
+        string $jobOfferId,
+        string $locale = 'fr'
+    ): ?array {
+        // Basic Information About the Offer
+        $qb = $this->manager->createQueryBuilder()
+            ->select(
+                'j.id',
+                'j.title',
+                'j.content',
+                'j.jobWorkMode',
+                'j.expertise',
+                'j.minSalary',
+                'j.maxSalary',
+                'j.currency',
+                'ct.id AS contractId',
+                'ct.label AS contractLabel',
+                'a.street',
+                'a.postalCode',
+                'a.city',
+                'a.country'
+            )
+            ->from(JobOfferEntity::class, 'j')
+            ->leftJoin('j.contractType', 'ct')
+            ->leftJoin('j.address', 'a')
+            ->where('j.id = :jobId')
+            ->andWhere('j.publicationStatus = :publishedStatus')
+            ->setParameter('jobId', $jobOfferId)
+            ->setParameter('publishedStatus', JobPublicationStatus::PUBLISHED);
+
+        $offer = $qb->getQuery()->getOneOrNullResult();
+
+        if (!$offer) {
+            return null;
+        }
+
+        // Skills with translations based on the locale
+        $skillsQb = $this->manager->createQueryBuilder()
+            ->select('s.id', 'st.name', 'jos.isRequired')
+            ->from(JobOfferSkillsEntity::class, 'jos')
+            ->join('jos.skill', 's')
+            ->leftJoin('s.translations', 'st')
+            ->leftJoin('st.language', 'lang')
+            ->where('jos.jobOffer = :jobId')
+            ->setParameter('jobId', $jobOfferId);
+
+        $skillsResult = $skillsQb->getQuery()->getArrayResult();
+
+        $skills = array_map(static fn(array $skill) => [
+            'id' => $skill['id'],
+            'name' => $skill['name'] ?? '',
+            'isRequired' => (bool) $skill['isRequired'],
+        ], $skillsResult);
+
+        //  Languages
+        $languagesQb = $this->manager->createQueryBuilder()
+            ->select('l.id', 'l.label AS name', 'jol.level')
+            ->from(JobOfferLanguageEntity::class, 'jol')
+            ->join('jol.language', 'l')
+            ->where('jol.jobOffer = :jobId')
+            ->setParameter('jobId', $jobOfferId);
+
+        $languagesResult = $languagesQb->getQuery()->getArrayResult();
+
+        $languages = array_map(static fn(array $lang) => [
+            'id' => $lang['id'],
+            'name' => $lang['name'],
+            'level' => $lang['level']?->value ?? $lang['level'],
+        ], $languagesResult);
+
+        // Photos / Images
+        $imagesQb = $this->manager->createQueryBuilder()
+            ->select('f.name')
+            ->from(JobOfferImageEntity::class, 'img')
+            ->innerJoin('img.file', 'f')
+            ->where('img.jobOffer = :jobId')
+            ->setParameter('jobId', $jobOfferId);
+
+        $imagesResult = array_column($imagesQb->getQuery()->getArrayResult(), 'url');
+
+        // Final Assembly of the Response Contract
+        return [
+            'id' => $offer['id'],
+            'title' => $offer['title'],
+            'content' => $offer['content'],
+            'jobWorkMode' => $offer['jobWorkMode']?->value ?? $offer['jobWorkMode'],
+            'expertise' => $offer['expertise']?->value ?? $offer['expertise'],
+            'salary' => [
+                'min' => $offer['minSalary'],
+                'max' => $offer['maxSalary'],
+                'currency' => $offer['currency'],
+            ],
+            'contractType' => $offer['contractId'] ? [
+                'id' => $offer['contractId'],
+                'label' => $offer['contractLabel'],
+            ] : null,
+            'location' => [
+                'street' => $offer['street'],
+                'postalCode' => $offer['postalCode'],
+                'city' => $offer['city'],
+                'country' => $offer['country'],
+            ],
+            'skills' => $skills,
+            'languages' => $languages,
+            'images' => $imagesResult,
+        ];
+    }
+
+
+
+    //----------------------------------
+    //--------- Private
+    //---------------------------------
 
     public function fetchJobOfferViewById(
         string $offerId,
@@ -162,9 +378,9 @@ class JobOfferQueryRepository implements JobOfferQueryRepositoryInterace
         return array_map(function (array $value) use ($companyId): JobSummaryItem {
             $jobId = (string) $value['id'];
 
-            $candidatesCount = $companyId ? (int) $this->applicationRepository->count(['companyId' => $companyId, 'jobOfferId' => $jobId]) : 0;
-            $interviewsCount = $companyId ? (int) $this->interviewsRepository->count(['companyId' => $companyId, 'jobOfferId' => $jobId]) : 0;
-            $hiredCount      = $companyId ? (int) $this->applicationRepository->count(['companyId' => $companyId, 'jobOfferId' => $jobId, 'status' => JobApplicationStatus::HIRED->value]) : 0;
+            $candidatesCount = $companyId ? (int) $this->applicationRepository->countApplications(['companyId' => $companyId, 'jobOfferId' => $jobId]) : 0;
+            $interviewsCount = $companyId ? (int) $this->interviewsRepository->countInterviews(['companyId' => $companyId, 'jobOfferId' => $jobId]) : 0;
+            $hiredCount      = $companyId ? (int) $this->applicationRepository->countApplications(['companyId' => $companyId, 'jobOfferId' => $jobId, 'status' => JobApplicationStatus::HIRED->value]) : 0;
 
             $addressParts = array_filter([$value['street'] ?? null, $value['city'] ?? null, $value['country'] ?? null]);
 
@@ -300,7 +516,7 @@ class JobOfferQueryRepository implements JobOfferQueryRepositoryInterace
                     ->setParameter('jobId', $jobId);
         }
         else{
-            $qbStats->innerJoin("a.jobOfffer", 'j')
+            $qbStats->innerJoin("a.jobOffer", 'j')
                     ->where("j.user = :userId")
                     ->setParameter("userId", $userId);
         }

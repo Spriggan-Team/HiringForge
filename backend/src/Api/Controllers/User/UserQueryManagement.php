@@ -6,7 +6,7 @@ use App\Api\Controllers\Helpers\ApiControllerHelpers;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Domain\Company\CompanyRepositoryInterface;
-use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
+use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface;
 
 use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
@@ -44,7 +44,7 @@ class UserQueryManagement extends AbstractController
     
     #[Route("/kpi", methods: ['GET'], name: "view_kpi_metrics")]
     public function getKpi(
-        JobOfferQueryRepositoryInterace $jobOfferQueryRepository
+        JobOfferQueryRepositoryInterface $jobOfferQueryRepository
     ) {
         try{
             /** @var AuthenticatedPerson */

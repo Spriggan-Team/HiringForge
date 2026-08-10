@@ -29,7 +29,7 @@ const fetchApplicationsApi = async (
   params: { jobId?: string; companyId?: string; skip: number; limit: number; search?: string },
   signal?: AbortSignal
 ): Promise<Application[]> => {
-  const data = (await ApplicationQueries.getApplicationsJob({...params, signal })) ?? [];
+  const data = (await ApplicationQueries.getApplications({...params, signal })) ?? [];
 
   return data.map((value: any) => ({
     id: value.id,

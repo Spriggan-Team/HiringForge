@@ -2,11 +2,11 @@
 
 namespace App\Application\Usecases\User;
 
-use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
+use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface;
 
 class ViewPerformanceMetrics{
     public function __construct(
-        private JobOfferQueryRepositoryInterace $query,
+        private JobOfferQueryRepositoryInterface $query,
     ){}
     
     public function execute(string $userId){

@@ -3,13 +3,13 @@
 namespace App\Application\Usecases\Account\JobOffer;
 
 use App\Application\DTO\JobOffer\GetJobOfferCollectiontRequest;
-use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterace;
+use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface;
 
 class JobOfferCatalogReader
 {
 
     public function __construct(
-        private JobOfferQueryRepositoryInterace $repository
+        private JobOfferQueryRepositoryInterface $repository
     ){}
 
     public function execute(

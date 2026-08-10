@@ -11,6 +11,8 @@ use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface
 use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
+use App\Domain\Offer\OfferRepositoryInterface;
+use App\Domain\Offer\OfferStatus;
 use App\Domain\Shared\Account\AccountRole;
 
 use Psr\Log\LoggerInterface;
@@ -30,7 +32,8 @@ class ApplicationQueryController extends AbstractController
     public function __construct(
         private LoggerInterface $logger,
         private ApplicationRepositoryInterface $applicationRepository,
-        private MediaStorageInterface $mediaStorage
+        private MediaStorageInterface $mediaStorage,
+        private OfferRepositoryInterface $offerRepository
     )
     {
         ApiResponse::init($logger);
@@ -52,7 +55,7 @@ class ApplicationQueryController extends AbstractController
                 )->toJsonResponse();
             }
 
-            $rejectedCount = $this->applicationRepository->count(criteria: [
+            $rejectedCount = $this->applicationRepository->countApplications(criteria: [
                 'userId' => $user->getId(),
                 'jobOfferId' => $jobOfferId,
                 'status' => JobApplicationStatus::REJECTED
@@ -66,7 +69,8 @@ class ApplicationQueryController extends AbstractController
         catch(\Exception $error){
             return ApiResponse::error(
                 message: 'Something went wrong',
-                statusCode: 400
+                statusCode: 400,
+                verbose: true
             )->toJsonResponse();
         }
     }
@@ -92,13 +96,13 @@ class ApplicationQueryController extends AbstractController
     /**
      * Retreive aggregate of applications
      * 
-     * Route /job_offer?jobOfferId=string&limit=number&skip=number
+     * Route /job_offer?jobId=string&limit=number&skip=number
      * 
-     * Retreive all application related to an user if jobOfferId. Howerver
+     * Retreive all application related to an user if jobId. Howerver
      * has it been provided the search is done only with the specified job as a  scope
      */
     #[IsGranted(AccountRole::USER->value)]
-    #[Route('/job_offer', methods: ['GET'])]
+    #[Route('/job_offers', methods: ['GET'])]
     public function getApplications(
         Request $request,
     ): JsonResponse {
@@ -109,11 +113,11 @@ class ApplicationQueryController extends AbstractController
             //-- Params pagination
             $limit = max(1, filter_var($request->query->get('limit', 15), FILTER_VALIDATE_INT) ?: 15);
             $skip  = max(0, filter_var($request->query->get('skip', 0), FILTER_VALIDATE_INT) ?: 0);
-            $jobOfferId = $request->query->get('jobOfferId', null);
+            $jobId = $request->query->get('jobId', null);
 
             //-- Fetching with projection
             $results = $this->applicationRepository->fetchJobApplicationsProjection(
-                jobId: $jobOfferId,
+                jobId: $jobId,
                 limit: $limit,
                 skip: $skip,
                 scheme: [
@@ -131,7 +135,7 @@ class ApplicationQueryController extends AbstractController
                             'mime' => true,
                         ],
                     ],
-                    'jobOffer' => $jobOfferId ? [
+                    'jobOffer' => $jobId ? [
                             'id' => true,
                             'title' => true
                     ] : null
@@ -202,42 +206,48 @@ class ApplicationQueryController extends AbstractController
             $userId = $user->getId();
             $jobOfferId = $request->query->get('jobId', null);
 
-            //  Total number of applications associated with this job posting and this user
-            $totalApplications = $this->applicationRepository->count([
-                'jobOfferId' => $jobOfferId,
+            //-- Dynamic construction of search criteria
+            $baseCriteria = array_filter([
                 'userId'     => $userId,
-            ]);
+                'jobOfferId' => $jobOfferId,
+            ], fn($value) => $value !== null);
+
+            //  Total number of applications associated with this job posting and this user
+            $totalApplications = $this->applicationRepository->countApplications($baseCriteria);
 
             // Candidates Not Selected for This Position
-            $rejectedCandidatesCount = $this->applicationRepository->count([
-                'jobOfferId' => $jobOfferId,
-                'userId'     => $userId,
+            $rejectedCandidatesCount = $this->applicationRepository->countApplications(array_merge($baseCriteria,[
                 'status'     => JobApplicationStatus::REJECTED,
-            ]);
+            ]));
 
             $rejectionRate = $totalApplications > 0
                 ? (int) round(($rejectedCandidatesCount / $totalApplications) * 100)
                 : 0;
 
             //  Bids generated and accepted for this specific bid
-            $offersGenerated = $this->applicationRepository->count([
-                'jobOfferId' => $jobOfferId,
-                'userId'     => $userId,
-                'status'     => JobApplicationStatus::OFFER_DECLINED,
-            ]);
+            $offersDeclined = $this->offerRepository->countOffers(array_merge($baseCriteria,[
+                'status'     => OfferStatus::DECLINED,
+            ]));
 
-            $offersAccepted = $this->applicationRepository->count([
-                'jobOfferId' => $jobOfferId,
-                'userId'     => $userId,
-                'status'     => JobApplicationStatus::HIRED,
-            ]);
 
-            //  Average time to hire for a specific job posting vs. the recruiter's overall average
-            $avgTimeToHireDays = $this->applicationRepository->getAvgTimeToHireDays($jobOfferId, $userId);
+            $offersAccepted = $this->offerRepository->countOffers(array_merge($baseCriteria,[
+                'status'     => OfferStatus::ACCEPTED,
+            ]));
+
+            $offersGenerated = $this->offerRepository->countOffers($baseCriteria);
+
+
+            //  Delay in hiring
+            $avgTimeToHireDays = $this->applicationRepository->getAvgTimeToHireDays(
+                jobOfferId: $jobOfferId,
+                userId: $userId
+            );
             $userAvgTimeToHireDays = $this->applicationRepository->getUserAvgTimeToHireDays($userId);
 
-            // Difference in days compared to the recruiter's overall average (e.g., -2)
-            $avgTimeToHireDiffDays = $avgTimeToHireDays - $userAvgTimeToHireDays;
+            //-- If no job is provided the difference is null
+            $avgTimeToHireDiffDays = $jobOfferId !== null 
+                ? ($avgTimeToHireDays - $userAvgTimeToHireDays) 
+                : 0;
 
             // Weekly increase specific to this offer
             $now = new \DateTimeImmutable();
@@ -246,20 +256,22 @@ class ApplicationQueryController extends AbstractController
             $endOfLastWeek   = $startOfThisWeek->modify('-1 second');
 
             $thisWeekCount = $this->applicationRepository->countApplicationsInPeriod(
-                $jobOfferId,
-                $startOfThisWeek,
-                $now
+                userId: $userId,
+                start: $startOfThisWeek,
+                end: $now,
+                jobOfferId: $jobOfferId
             );
 
             $lastWeekCount = $this->applicationRepository->countApplicationsInPeriod(
-                $jobOfferId,
-                $startOfLastWeek,
-                $endOfLastWeek
+                userId: $userId,
+                start: $startOfLastWeek,
+                end: $endOfLastWeek,
+                jobOfferId: $jobOfferId
             );
 
             $applicationIncreaseThisWeek = $lastWeekCount > 0
-                ? (int) round((($thisWeekCount - $lastWeekCount) / $lastWeekCount) * 100)
-                : ($thisWeekCount > 0 ? 100 : 0);
+                        ? (int) round((($thisWeekCount - $lastWeekCount) / $lastWeekCount) * 100)
+                        : ($thisWeekCount > 0 ? 100 : 0);
 
             return ApiResponse::success(
                 data: [
@@ -267,8 +279,9 @@ class ApplicationQueryController extends AbstractController
                     'applicationIncreaseThisWeek' => $applicationIncreaseThisWeek,
                     'rejectionRate'               => $rejectionRate,
                     'rejectedCandidatesCount'     => $rejectedCandidatesCount,
-                    'offersGenerated'             => $offersGenerated,
+                    'offersDeclined'              => $offersDeclined,
                     'offersAccepted'              => $offersAccepted,
+                    'offersGenerated'             => $offersGenerated,
                     'avgTimeToHireDays'           => $avgTimeToHireDays,
                     'avgTimeToHireDiffDays'       => $avgTimeToHireDiffDays,
                 ],
@@ -321,7 +334,8 @@ class ApplicationQueryController extends AbstractController
             return ApiResponse::error(
                 message: 'Something went wrong while fetching candidate statistics',
                 statusCode: 400,
-                throwable: $error
+                throwable: $error,
+                verbose: true
             )->toJsonResponse();
         }
     }

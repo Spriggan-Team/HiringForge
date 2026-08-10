@@ -13,14 +13,14 @@ const RouteScheme = {
     candidateRegister: "/candidate/register",
     directorRegister: "/candidate/register",
 
+    
     //-- CANDIDATE
     candidateProfile: "/candidate/profil",
-    candidateDashboard: "/candidate/dashboard",
 
     //-- USER CANDIDATES
     userCandidate: "/user/candidates",
 
-    //-- JOBS
+    //-- JOBS (PUBLICS)
     jobs: "/jobs",
     jobDetails: "/jobs/:id",
 
@@ -47,4 +47,5 @@ export default RouteScheme;
 
 export const PublicRoutes = [
     RouteScheme.login,
+    RouteScheme.jobs
 ];

@@ -7,11 +7,11 @@ import { httpContext } from './api/handler'
 
 //-- Custom Compoenents
 import UserSideMenu from './layout/components/menu/sidebar/user.side.menu'
-import UserNavBar from './pages/home/components/navbar/user.navbar'
+import UserNavBar from './pages/components/navbar/user.navbar'
 
 //-- Guard
 import AuthGuardPage from './pages/auth.entry'
-import EntryPage from './pages/auth.entry'
+import EntryPage from './pages/entry.page'
 
 
 //-- Pages
@@ -29,6 +29,8 @@ import SchedulingWorkspace from './pages/schedule/scheduling.workspace'
 import CandidatesPage from './pages/candidates/candidates.page'
 import UserOffersPage from './pages/offers/user/user.offers.page'
 import UserStatsPage from './pages/stats/user/stats.user.page'
+import PublicJobPage from './pages/jobs/public/public.job.page'
+import PublicNavBar from './pages/components/navbar/public.navbar'
 
 
 
@@ -43,8 +45,13 @@ function App() {
   return (
       <Routes>
           <Route path={RouteScheme.main} element={<EntryPage />} />
+          
+          {/** ALL - USER  PUBLIC */}
+          <Route element={<PublicAppLayout />}>
+              <Route path={RouteScheme.jobs} element={<PublicJobPage />} />
+          </Route>
 
-          {/** Authentification  */}
+          {/** Registering  */}
           <Route path={RouteScheme.login} element={<Login />} />
           <Route path={RouteScheme.register} element={<RegisterationEntry />} />
           <Route path={RouteScheme.userRegister} element={<UserRegister />} />
@@ -81,8 +88,6 @@ function App() {
             </Route>
 
             {/** PUBLIC ACCESS (AUTH) */}
-            
-
           </Route>
       </Routes>
   )
@@ -103,6 +108,19 @@ const UserAppLayout = () => {
     </div>
   );
 }
+
+//-- Common navabar (more design for candidates though)
+const PublicAppLayout = ()=>{
+  return (
+    <div  style={{ display: "flex", flexDirection: "column" }}>
+      <PublicNavBar />
+      <div>
+        <Outlet />
+      </div>
+    </div>
+  );
+}
+
 
 
 const AuthAccessGranted = ()=>{

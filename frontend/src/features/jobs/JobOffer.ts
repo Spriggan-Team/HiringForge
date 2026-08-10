@@ -28,10 +28,14 @@ export interface JobCardinal {
 export interface JobKpis {
   totalApplications: number;
   applicationIncreaseThisWeek: number;
+  
   rejectionRate: number;
   rejectedCandidatesCount: number;
-  offersGenerated: number;
+  
+  offersDeclined: number;
   offersAccepted: number;
+  offersGenerated: number;
+
   avgTimeToHireDays: number;
   avgTimeToHireDiffDays: number;
 }

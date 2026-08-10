@@ -12,7 +12,8 @@
 
         "buttons":{
             "create": "Créer une offre",
-            "cancel": "Annuler"
+            "cancel": "Annuler",
+            "search": "Rechercher une offre"
         },
         "inputs":{
             "searchJob":{

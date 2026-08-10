@@ -4,12 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 //-- Services
-import { useAppContext, useCurrentUser } from "../../../../hooks/context";
-import AuthServices from "../../../../api/services/auth/auth";
+import { useAppContext, useCurrentUser } from "../../../hooks/context";
+import AuthServices from "../../../api/services/auth/auth";
+import RouteScheme from "../../../route.scheme";
 
 //-- Custom Components
-import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../layout/components/menu/dropdown/menu.dropdown";
-import BasicInput from "../../../../layout/components/form/input/basic.input";
+import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/dropdown/menu.dropdown";
+import BasicInput from "../../../layout/components/form/input/basic.input";
 import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg"
 import NotificationRingSVGComponent from "/src/assets/svg/menu/alarm-alert-bell-notification-warning-svgrepo-com.svg"
 
@@ -17,8 +18,7 @@ import NotificationRingSVGComponent from "/src/assets/svg/menu/alarm-alert-bell-
 // import DownArrowSVGComponent from "/src/assets/svg/menu/down-arrow-5-svgrepo-com.svg"
 
 //-- CSS Styles
-import styles from "./style.module.css"
-import RouteScheme from "../../../../route.scheme";
+import styles from "./PublicNavBar.module.css"
 
 
 export interface NavBarProps{
@@ -128,6 +128,7 @@ const UserNavBar: React.FC<NavBarProps> = ({
                         className={styles.profileDropdown}
                         position="initial-absolute"
                     >
+                        {/** Logout */}
                         <MenuDrawerItem
                             onClick={handleLogout}
                             className={styles.logoutItem}

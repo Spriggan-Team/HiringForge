@@ -88,7 +88,7 @@ const countJobOffers = async (currentFilters?: UserJobFiltersRequets) => {
  * @param  {string|null} jobId if not specified the kpis are calculated based on all related job to the current user
  * @returns 
  */
-const getJobKpis = async(
+const getJobApplicationKpis = async(
     jobId?: string
 )=>{
     try{
@@ -97,7 +97,7 @@ const getJobKpis = async(
         if(jobId) params.set('jobId', jobId);
 
         const response = await authGet<RecruitmentMetricsResponse>(`/users/applications/kpis${
-            params.toString() ? params.toString() : ''
+            params.toString() ? `?${params.toString()}` : ''
         }`);
         
         return response.data;
@@ -117,7 +117,10 @@ const getJobKpis = async(
 const getJobOffersOverview = async(jobId?: string)=>{
     try{
         const params = new URLSearchParams();
-        if(jobId) params.set("jobId", jobId);
+
+        if (jobId) {
+            params.set('jobId', jobId);
+        }
 
         const response = await authGet<RecruitmentPipelineStatsResponse>(
             `/users/job_offers/stats${
@@ -148,7 +151,7 @@ const JobQueries = intercept(
         getJobsSummary,
         getJobView,
             //-- Stats
-        getJobKpis,
+        getJobApplicationKpis,
         countJobOffers,
         getJobOffersOverview,
     },

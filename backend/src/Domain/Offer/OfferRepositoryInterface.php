@@ -2,6 +2,8 @@
 
 namespace  App\Domain\Offer;
 
+use  App\Domain\Candidate\Application\JobApplicationStatus;
+
 interface OfferRepositoryInterface
 {
     /**
@@ -53,4 +55,17 @@ interface OfferRepositoryInterface
      * @param Offer $offer Domain object containing the data required to create an offer.
      */
     public function save(string $userId,  Offer $offer): void;
+
+
+    /**
+     * @param array{
+     *   userId?: string,
+     *   status?: OfferStatus,
+     *   jobId?: JobApplicationStatus,
+     *   candidateId?: string,
+     *   jobOfferId?: string
+     * } $criteria
+     * @return int
+     */
+    public function countOffers(array $criteria): int;
 }

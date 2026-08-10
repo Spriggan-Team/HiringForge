@@ -23,6 +23,49 @@ class OfferRepository extends ServiceEntityRepository
         parent::__construct($registry, OfferEntity::class);
     }
 
+    #[Override]
+    public function countOffers(array $criteria): int
+    {
+        $qb = $this->createQueryBuilder('o')
+            ->select('COUNT(DISTINCT o.id)');
+
+        // Direct filtering by offer status (e.g., OfferStatus::ACCEPTED, OfferStatus::DECLINED, OfferStatus::SENT)
+        if (isset($criteria['status'])) {
+            $qb->andWhere('o.status = :status')
+               ->setParameter('status', $criteria['status']);
+        }
+
+        // Direct Screening by Application
+        if (isset($criteria['applicationId'])) {
+            $qb->andWhere('o.application = :applicationId')
+               ->setParameter('applicationId', $criteria['applicationId']);
+        }
+
+        // Filter by Candidate
+        if (isset($criteria['candidateId'])) {
+            $qb->andWhere('o.candidate = :candidateId')
+               ->setParameter('candidateId', $criteria['candidateId']);
+        }
+
+        // If you search by JobOffer or by Recruiter (User), you must perform a join with Application and JobOffer
+        if (isset($criteria['jobOfferId']) || isset($criteria['userId'])) {
+            $qb->innerJoin('o.application', 'a')
+               ->innerJoin('a.jobOffer', 'j');
+
+            if (isset($criteria['jobOfferId'])) {
+                $qb->andWhere('j.id = :jobOfferId')
+                   ->setParameter('jobOfferId', $criteria['jobOfferId']);
+            }
+
+            if (isset($criteria['userId'])) {
+                $qb->andWhere('j.user = :userId')
+                   ->setParameter('userId', $criteria['userId']);
+            }
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
     
     #[Override]
     public function save(string $userId, Offer $offer): void

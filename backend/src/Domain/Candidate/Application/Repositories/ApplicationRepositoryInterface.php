@@ -25,7 +25,7 @@ interface ApplicationRepositoryInterface
      *     status?: mixed
      * } $criteria
      */
-    public function count(array $criteria): int;
+    public function countApplications(array $criteria): int;
 
 
 
@@ -86,16 +86,21 @@ interface ApplicationRepositoryInterface
     
 
     /**
-     * Counts applications created within a specific date range (period).
+     * Counts applications created within a specific date range, optionally filtered by job offer.
      */
-    public function countApplicationsInPeriod(string $jobOfferId, \DateTimeInterface $start, \DateTimeInterface $end): int;
+    public function countApplicationsInPeriod(
+        string $userId,
+        \DateTimeInterface $start,
+        \DateTimeInterface $end,
+        ?string $jobOfferId = null
+    ): int;
 
 
 
     /**
-     * Calculates average time to hire in days for a specific job offer and user.
+     * Calculates average time to hire in days for a specific job offer OR all user jobs.
      */
-    public function getAvgTimeToHireDays(string $jobOfferId, string $userId): int;
+    public function getAvgTimeToHireDays(string $userId, ?string $jobOfferId =null): int;
 
 
     /**

@@ -51,12 +51,12 @@ class OfferEntity
 
     #[ORM\ManyToOne(targetEntity: ApplicationEntity::class)]
     #[ORM\JoinColumn(name: 'application_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
-    private ?ApplicationEntity $application = null;
+    private ApplicationEntity $application;
 
 
     #[ORM\ManyToOne(targetEntity: CandidateEntity::class)]
     #[ORM\JoinColumn(name: 'candidate_id', referencedColumnName: 'id', nullable: false)]
-    private ?CandidateEntity $candidate = null;
+    private CandidateEntity $candidate;
 
 
 
