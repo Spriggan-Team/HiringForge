@@ -31,7 +31,8 @@ interface MediaStorageInterface
         MediaPurpose $mediaPurpose,
         ?string $storedFileName = null,
         ?callable  $successCallback = null,
-        ?callable  $errorCallback = null
+        ?callable  $errorCallback = null,
+        string $scope = "public"
     ): void;
 
 

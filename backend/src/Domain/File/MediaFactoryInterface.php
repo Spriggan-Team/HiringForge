@@ -22,7 +22,7 @@ interface MediaFactoryInterface
      * @throws \DomainException  should be returned when the file is not a static media (image, doc ...ect)
      * @return StaticMedia       The corresponding domain object
      */
-    public function createStaticMedia(mixed $file): StaticMedia;
+    public function createStaticMedia(mixed $file,  array $expectedTypes = []): StaticMedia;
 
     /**
      * This function convert a timed file (such as video and audio...) into a domain file object
@@ -32,5 +32,4 @@ interface MediaFactoryInterface
      *  @return TimedMedia           The corresponding domain object
     */
     public function createTimedMedia(mixed $file): TimedMedia;
-    
 }

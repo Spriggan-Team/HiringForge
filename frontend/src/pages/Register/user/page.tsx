@@ -93,7 +93,6 @@ const UserRegister = () => {
 
     const { sendOTPCode } = useSendOTP({
         onSuccess: () => {
-            // Action spécifique à ce composant
             setCurrentStep(prev => ({ current: 2, max: Math.max(2, prev.max) }));
         }
     });
@@ -108,7 +107,7 @@ const UserRegister = () => {
             return;
         }
 
-        setLoading({ state: true, subtitle: t("userRegister.form.messages.loadingMessage") });
+        setLoading({ state: true, subtitle: t("register.messages.loadingMessage") });
 
         try{
             asideForm.requestSubmit();
@@ -128,7 +127,7 @@ const UserRegister = () => {
             const data: FormData = objectToFormData(asideFormState, nativeFormData, { images: "images[]" });
             // console.log("Mes images réelles dans FormData : ",formData.current.getAll('images[]') );
             
-            const res = await AuthServices.performUserRegister(data);
+            const res = await AuthServices.performRegister(data);
             setLoading({state: false});
             console.log("Ressource ", res);
             
@@ -138,7 +137,6 @@ const UserRegister = () => {
                 message: t("register.apiResponse.registering.success")
             });
 
-            localStorage.setItem("userId", JSON.stringify(res?.data.id))
             navigateTo(navigation, RouteScheme.login);
         }
         catch(error){
@@ -188,11 +186,11 @@ const UserRegister = () => {
                     {/* MAIN FORM */}
                     <div className={styles.mainForm}>
                         <RegisterationHeader
-                                t={t}
-                                titleKey={"userRegister.form.title" as ParseKeys}
-                                subtitleKey={"userRegister.form.subtitle" as ParseKeys}
-                                currentStep={currentStep.current}
-                                totalSteps={REGISTERING_TOTAL_STEP}
+                            t={t}
+                            titleKey={"userRegister.form.title" as ParseKeys}
+                            subtitleKey={"userRegister.form.subtitle" as ParseKeys}
+                            currentStep={currentStep.current}
+                            totalSteps={REGISTERING_TOTAL_STEP}
                         />
                         <div className={styles.form}>
                             {currentStep.current == 1 ?

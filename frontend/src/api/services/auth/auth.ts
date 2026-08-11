@@ -29,10 +29,17 @@ const askVerificationCode = async (email: string, purpose: | "SIGNUP" | "PASSWOR
 
 
 //-- register 
-const performUserRegister = async (formData: FormData)=>{
+const performRegister = async (formData: FormData, type: "user" | "candidate" ="user")=>{
     try{
         if (!formData.entries().next().done) {
-            const response  = await post<AccountRegisterResponse>("/user/register", formData);
+            let url = null;
+            if(type === "user"){
+                url = "/user/register";
+            }
+            else{
+                url = "/candidate/register"
+            }
+            const response  = await post<AccountRegisterResponse>(url, formData);
             return response;
         }
         else {
@@ -120,7 +127,7 @@ const AuthServices = {
     
     login, 
     logout,
-    performUserRegister, 
+    performRegister, 
 }
 
 

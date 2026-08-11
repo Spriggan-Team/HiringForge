@@ -11,7 +11,8 @@ class Candidate extends Account
 {
 
 
-    private ?StaticMedia $cv;
+    /** @var array<int, StaticMedia> $cvs all resume */
+    private array $cvs = [];
 
     private ?Address $address;
     private int $searchRadius = 10; //default search radius on map
@@ -24,7 +25,7 @@ class Candidate extends Account
         EmailAddress $email,
         string $passwordHash,
         ?StaticMedia $image = null,
-        ?StaticMedia $cv = null,
+        array $cvs = [],
         ?Address $address = null,
         ?int $searchRadius = null,
         ?string $description = null
@@ -39,7 +40,7 @@ class Candidate extends Account
         $this->passwordHash = $passwordHash;
 
         $this->image = $image;
-        $this->cv = $cv;
+        $this->cvs = $cvs;
 
         $this->address = $address;
         if($searchRadius){
@@ -54,7 +55,7 @@ class Candidate extends Account
         string $passwordHash,
         ?string $id = null, 
         ?StaticMedia $image = null,
-        ?StaticMedia $cv = null,
+        array $cvs = [],
         ?Address $address = null,
         ?int $searchRadius = null,
     ): self
@@ -66,7 +67,7 @@ class Candidate extends Account
             email: $email,
             passwordHash: $passwordHash,
             image: $image,
-            cv: $cv,
+            cvs: $cvs,
             address: $address,
             searchRadius: $searchRadius
         );
@@ -78,9 +79,10 @@ class Candidate extends Account
 
 
 
-    public function cv(): ?StaticMedia
+    /** @return array<int, StaticMedia> */
+    public function cvs()
     {
-        return $this->cv;
+        return $this->cvs;
     }
 
 
@@ -99,15 +101,33 @@ class Candidate extends Account
     //-----------------------------------------
 
 
-    public function setCv(?StaticMedia $cv):static
+public function addCV(?StaticMedia $cv): static
     {
-        $this->cv =$cv;
+        if ($cv === null) {
+            return $this;
+        }
+
+        foreach ($this->cvs as $resume) {
+            if ($resume->name === $cv->name) {
+                throw new \DomainException('Cannot duplicate resume');
+            }
+        }
+
+        $this->cvs[] = $cv;
+
         return $this;
     }
 
-    public function removeCv():static
+    public function removeCv(?StaticMedia $cv = null): static
     {
-        $this->cv = null;
+        if ($cv === null) {
+            return $this;
+        }
+        $this->cvs = array_filter(
+            $this->cvs, 
+            fn(StaticMedia $resume) => $resume->name !== $cv->name
+        );
+
         return $this;
     }
 

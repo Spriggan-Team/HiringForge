@@ -19,9 +19,11 @@ use App\Application\DTO\Candidate\RegisterCandidateCommand;
 
 use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Candidate\CandidateRepositoryInterface;
-
-
-use App\Infrastructure\Storage\FileStorage\MediaFactory;
+use App\Domain\Exception\RessourceNotFound;
+use App\Domain\File\MediaFactoryInterface;
+use App\Domain\OTP\Exceptions\OTPException;
+use App\Domain\OTP\OTPRepositoryInterface;
+use App\Domain\Shared\Account\AccountFlowPurpose;
 
 
 
@@ -31,8 +33,9 @@ class CandidateRegisterUsecase
         private AccountRepositoryInterface $accountRepository,
         private CandidateRepositoryInterface $candidateRepository,
         private PasswordHasherInterface $hasher,
+        private OTPRepositoryInterface $OTPRepository,
         private MediaStorageInterface $storage,
-        private MediaFactory   $mediaFactory,
+        private MediaFactoryInterface   $mediaFactory,
     ){}
 
     /**
@@ -45,13 +48,40 @@ class CandidateRegisterUsecase
     {
         $email =  EmailAddress::create($command->email);
         
-        $exist = $this->accountRepository->exists(null, $email->value());
-        if($exist){
+        if($this->accountRepository->exists(null, $email->value())){
           throw new EmailAlreadyRegistered();
         }
         
-        $candidateId = CandidateId::create();
 
+        // -- Check verification code
+        try {
+            $otp = $this->OTPRepository->getLastVerificationTokenWithPurpose(
+                $email->value(), 
+                AccountFlowPurpose::SIGN_UP
+            );
+            
+            $otp->verify($command->verificationCode, $this->hasher);
+        }
+        catch (RessourceNotFound) {
+            throw new OTPException(message: "No verification code found for this account.", isInvalid: true);
+        }
+        catch (OTPException $e) {
+            if (isset($otp)) {
+                try {
+                    $this->OTPRepository->update($email->value(), $otp);
+                } catch (RessourceNotFound $exception) {
+                    throw new OTPException(
+                        message: "The verification session has expired or does not exist.", 
+                        isInvalid: true,
+                        previous: $exception
+                    );
+                }
+            }
+            throw $e;
+        }
+
+        //-- Create User entity model
+        $candidateId = CandidateId::create();
         $failedUploads = [];
 
         $candidate = Candidate::create(
@@ -64,27 +94,29 @@ class CandidateRegisterUsecase
             searchRadius: $command->searchRadius
         );
 
+        //-- Images Types
         if($command->image){
-            $staticImage = $this->mediaFactory->createStaticMedia($command->image);
+            $staticImage = $this->mediaFactory->createStaticMedia($command->image, expectedTypes: ['image/jpeg', 'image/png', 'image/webp']);
             $candidate->addImage($staticImage);
 
             $this->storage->store(
-                $command->image,
+                file: $command->image,
                 storedFileName: $staticImage->name,
                 ownerId: $candidateId->value(),
                 ownerType: MediaOwnerType::CANDIDATE,
                 mediaPurpose: MediaPurpose::PROFILE,
-                errorCallback: function($result) use (&$candidate, $staticImage, &$failedUploads,){
+                errorCallback: function($result) use (&$candidate, &$failedUploads,){
                     $failedUploads = $result->originalName;
                     $candidate->removeImage();
-                }
-
+                },
+                scope: "private"
             );
         }
 
+        //-- CV Resume
         if($command->cv){
-            $staticCV = $this->mediaFactory->createStaticMedia($command->cv);
-            $candidate->setCv($staticCV);
+            $staticCV = $this->mediaFactory->createStaticMedia(file: $command->cv, expectedTypes: ["application/pdf"]);
+            $candidate->addCV($staticCV);
               
             $this->storage->store(
                 file: $command->cv,
@@ -95,10 +127,10 @@ class CandidateRegisterUsecase
                 errorCallback: function($result) use (&$candidate, &$failedUploads){
                     $failedUploads = $result->originalName;
                     $candidate->removeCv();
-                }
+                },
+                scope: "private"
             );
         }
-
 
         $this->candidateRepository->save($candidate);
 

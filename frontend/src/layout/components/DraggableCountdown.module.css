@@ -1,0 +1,62 @@
+.countdownBadge {
+  position: fixed;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background-color: #1e293b;
+  color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  user-select: none;
+  touch-action: none; /* no touch action automatically deal with */
+  cursor: grab;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  border: 1.5px solid #334155;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.countdownBadge:hover {
+  border-color: #6366f1;
+}
+
+.dragging {
+  cursor: grabbing !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Less than 1 minutes color (warning) */
+.warning {
+  border-color: #ef4444;
+  background-color: #450a0a;
+}
+
+.dragHandle {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.timer {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums; /* same numeric length (px) */
+  color: #38bdf8;
+}
+
+.warning .timer {
+  color: #f87171;
+}

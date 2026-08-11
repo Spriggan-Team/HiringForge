@@ -16,6 +16,7 @@ import { INITIAL_JOB_VIEW, type JobView } from "../features/jobs/JobOffer";
 
 import { AccountRole } from "../core/enums/AccountRole";
 import { getSession } from "../core/auth.helpers";
+import { COUNTDOWN_EXPIRED_STORAGE_KEY, COUNTDOWN_LABEL_STORAGE_KEY, DraggableCountdown, type DraggableCountdownProps } from "../layout/components/draggable.contdown";
 
 
 
@@ -39,6 +40,10 @@ interface AppContextProps{
     //-- Navbar
     navbar?: UserAppNavBarProps | null;
     setNavbar: (param: UserAppNavBarProps | null) => void;
+
+    //-- Countdown
+    countdown: DraggableCountdownProps | null;
+    setCountdown: (param: DraggableCountdownProps | null) => void;
 
     //-- Current Actor
     currentActor: CurrentActor | null;
@@ -67,8 +72,6 @@ interface AppContextProviderProps{
 
 
 
-
-
 const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
     //-- Global state
     const [popup, setPopup] = useState<AppPopUpSettings>(null)
@@ -80,6 +83,14 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
     //-- modal
     const [modal, setModal] = useState<AppModalProps | null>(null);
 
+    //-- Countdown
+    const [countdown, setCountdownState] = useState<DraggableCountdownProps | null>(() => {
+        if (typeof window === 'undefined') return null;
+        
+        const expiration = localStorage.getItem(COUNTDOWN_EXPIRED_STORAGE_KEY);
+        return expiration ? {} : null;
+    });
+    
     // navbar
     const [navbar, setNavbar] = useState<UserAppNavBarProps | null>(null);
 
@@ -139,6 +150,24 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
         initializeData();
     },[initializeData])
 
+    //----------------------
+    //--  CUSTOM SETTER
+    //----------------------
+    
+    const handleSetCountdown = useCallback((props: DraggableCountdownProps | null) => {
+        setCountdownState((prev) => {
+            // Close dropdown
+            if (props === null) {
+                return null;
+            }
+            // Countdown djà actif
+            if (prev !== null) {
+                return prev;
+            }
+
+            return props;
+        });
+    }, []);
 
     //----------------------------------
     // Context value
@@ -151,6 +180,9 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
 
             modal,
             setModal,
+
+            countdown,
+            setCountdown: handleSetCountdown,
 
             isAppInitializing,
             loading,
@@ -174,6 +206,7 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
             popup,
             loading,
             navbar,
+            countdown,
             currentActor,
             jobOverview,
             currentJob,
@@ -187,6 +220,19 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
     return (
         <AppContext.Provider value={contextValue}>
             {children}
+            <div>
+                {countdown && (
+                        <DraggableCountdown
+                            initialSeconds={900} 
+                            initialPosition={
+                                typeof window !== 'undefined'
+                                ? { x: window.innerWidth - 180, y: window.innerHeight - 70 }
+                                : undefined
+                            }
+                            {...countdown} 
+                        />
+                    )}
+            </div>
         </AppContext.Provider>
     );
 }

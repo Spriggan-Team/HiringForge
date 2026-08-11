@@ -56,7 +56,6 @@ class CandidateQueryManagementController extends AbstractController
 
             $data = $this->candidateRepository->getCandidateLightModel(candidateId: $candidate->getId());
 
-
             return ApiResponse::success(
                 data: $data,
                 message: "Context retrieved successfully"

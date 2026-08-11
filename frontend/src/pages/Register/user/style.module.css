@@ -15,8 +15,6 @@
 
 
 
-
-
 .actions {
     display: flex;
     align-items: center;
@@ -48,7 +46,6 @@
     max-width: 1300px;
     background: #FBFCFE;
     min-width: 0;
-
 }
 
 

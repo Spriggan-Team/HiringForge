@@ -9,6 +9,7 @@ use App\Domain\File\StaticMedia;
 use App\Domain\Shared\EmailAddress;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateResumeEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 
@@ -28,14 +29,14 @@ class CandidateEntityMapper
             );
         }
 
-        $cv = $entity->getCV();
-        $staticCv = null;
-
-        if($cv){
-            $staticCv = new StaticMedia(
-                name: $cv->getName(), 
-                size: $cv->getSize(),
-                mime: $cv->getMime()
+        $cvs = [];
+        $candidateResumes = $entity->getResumes();
+        foreach($candidateResumes as $cv){
+            $resume = $cv->getFile();
+            $cvs =  StaticMedia::hydrate(
+                name: $resume->getName(), 
+                size: $resume->getSize(),
+                mime: $resume->getMime()
             );
         }
 
@@ -46,7 +47,7 @@ class CandidateEntityMapper
             email: EmailAddress::hydrate($entity->getEmail()),
             passwordHash: $entity->getPassword(),
             image: $staticImage,
-            cv: $staticCv,
+            cvs: $cvs,
             searchRadius: $entity->getSearchRadius()
         );
     }
@@ -56,7 +57,8 @@ class CandidateEntityMapper
     public static function toEntity(Domain $candidate): CandidateEntity
     {
         $entity = new CandidateEntity();
-        $entity->setEmail($candidate->email())
+        $entity->setId($candidate->id())
+               ->setEmail($candidate->email())
                ->setPassword($candidate->passwordHash())
                ->setFirstName($candidate->firstName())
                ->setLastName($candidate->lastName())
@@ -73,15 +75,21 @@ class CandidateEntityMapper
             $entity->attachToAddress($addressEntity);
         }
 
-        $cv = $candidate->cv();
-        if($cv)
-        {
+        //-- Resume
+        $cvs = $candidate->cvs();
+        foreach($cvs as $cv){
             $fileEntity = new FileEntity();
             $fileEntity->setName($cv->name)
                        ->setSize($cv->size)
                        ->setMime($cv->mime);
-            $entity->attachCV($fileEntity);
+            $resume =  CandidateResumeEntity::create(
+                candidate: $entity,
+                file: $fileEntity
+            );
+     
+            $entity->addResume($resume);
         }
+
 
         $image = $candidate->image();
         if($image){

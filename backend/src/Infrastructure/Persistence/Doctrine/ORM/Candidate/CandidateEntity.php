@@ -32,16 +32,6 @@ class CandidateEntity extends AccountEntity
     //--------------------------------
 
 
-    #[ORM\OneToOne(
-        inversedBy: 'candidateCV',
-        targetEntity: FileEntity::class,
-        cascade: ['persist'],
-        orphanRemoval: true
-    )]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?FileEntity $cv = null;
-
-
     #[ORM\OneToMany(
         mappedBy: 'candidate',
         targetEntity: ApplicationEntity::class,
@@ -66,6 +56,15 @@ class CandidateEntity extends AccountEntity
         cascade:['persist', 'remove']
     )]
     private Collection $jobOfferViews;
+
+
+    #[ORM\OneToMany(
+        mappedBy: "candidate",
+        targetEntity: CandidateResumeEntity::class,
+        cascade:['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    private Collection $resumes;
     
     //------------------------
     //  Construction...
@@ -76,6 +75,7 @@ class CandidateEntity extends AccountEntity
         $this->interviews  = new ArrayCollection();
         $this->applications = new ArrayCollection();
         $this->jobOfferViews = new ArrayCollection();
+        $this->resumes = new ArrayCollection();
     }
 
     public static function create()
@@ -92,8 +92,10 @@ class CandidateEntity extends AccountEntity
     public function getImage(): ?FileEntity{ 
         return $this->image;
     }
-    public function getCV(): ?FileEntity {
-        return $this->cv;
+
+    /** @return Collection<int, CandidateResumeEntity> */
+    public function getResumes(): Collection {
+        return $this->resumes;
     }
 
     public function getApplication():   Collection  { return $this->applications; }
@@ -144,9 +146,24 @@ class CandidateEntity extends AccountEntity
         return $this;
     } 
     
-    public function attachCV(FileEntity $cv): static {
-        $this->cv = $cv;
+    public function addResume(CandidateResumeEntity $resume): static {
+        if($this->resumes->contains($resume)){
+            return $this;
+        }
+        $this->resumes->add($resume);
         return $this;
+    }
+
+    public function removeResume(CandidateResumeEntity $resume){
+        if($this->resumes->contains($resume)){
+            $this->resumes->removeElement($resume);
+            return $this;
+        }
+        return $this;
+    }
+
+    public function clearResume(){
+
     }
 
     public function attachToAddress(AddressEntity $address):static

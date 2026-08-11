@@ -25,6 +25,7 @@ import PasswordSVG from "/src/assets/svg/security/password-protection-privacy-ac
 
 //-- CSS - Styles
 import styles from './style.module.css'
+import { AccountRole } from '../../core/enums/AccountRole';
 
 
 
@@ -61,7 +62,13 @@ const Login = () => {
 
         setLoading({ state: false });
         setPopup({ status: "success", message: t("login.apiResponse.success") });
-        navigate(RouteScheme.userHome);
+
+        if(role === AccountRole.USER){
+            navigate(RouteScheme.userHome);
+        }
+        else if(role == AccountRole.USER){
+            navigate(RouteScheme.jobs)
+        }
     };
 
 
@@ -203,8 +210,8 @@ const Login = () => {
                                     password={password}
                                     setConfirm={setIsPasswordConfirm}
                                     label={t("forgottenPassword.inputs.confirmPassword.label")}
-                                    validTxt={t("userRegister.form.step1.inputs.confirmPassword.valid")}
-                                    invalidTxt={t("userRegister.form.step1.inputs.confirmPassword.invalid")}
+                                    validTxt={t("register.accountInformation.inputs.confirmPassword.label")}
+                                    invalidTxt={t("register.accountInformation.inputs.confirmPassword.invalid")}
                                 />
                                 <BasicInput
                                     required
@@ -226,7 +233,7 @@ const Login = () => {
                 <div className={styles.btnWrapper}>
                     <button type="submit" className={`${styles.logInBtn} ${animateBtn ? styles.animate : ""}`}>
                         {mode === "Login"
-                            ? t("login.buttons.logbtn")
+                            ? t("global.buttons.connexion")
                             : mode === "ResetPassword"
                             ? phase == 1 ? 
                                 t("forgottenPassword.buttons.sentOTPCode")

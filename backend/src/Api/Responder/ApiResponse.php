@@ -47,7 +47,7 @@ class ApiResponse
         ?ApplicationErrorCode $code = null, 
         ?\Throwable $throwable = null,
         int $statusCode = 400,
-        ?bool $verbose = false
+        ?bool $verbose = true
     ): self
     {
         if ($throwable && self::$logger) {

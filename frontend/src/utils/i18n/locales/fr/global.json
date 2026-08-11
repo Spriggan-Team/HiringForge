@@ -12,6 +12,11 @@
             }
         },
 
+        "cv":{
+            "label": "CV",
+            "file": "CV File"
+        },
+
         "logo":{
             "text": "Logo"
         },
@@ -46,6 +51,7 @@
             "no": "Non",
             "yes": "Oui",
             "email": "Email",
+            "expired": "expired",
             "actions": "Actions",
             "postulationDate": "Date de postulation",
             "fork": "Fourchette",
@@ -106,6 +112,7 @@
         },
 
         "address":{
+            "label":"Adrèsse",
             "country":"Pays",
             "postalCode":"Code postal",
             "city":"Ville",

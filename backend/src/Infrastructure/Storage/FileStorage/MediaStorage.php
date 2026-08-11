@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
+
 class MediaStorage implements MediaStorageInterface
 {
     /**
@@ -35,6 +36,7 @@ class MediaStorage implements MediaStorageInterface
     }
 
 
+    
     public function store(
         mixed $file,
         string $ownerId,
@@ -43,7 +45,8 @@ class MediaStorage implements MediaStorageInterface
         MediaPurpose $mediaPurpose,
         ?string $storedFileName = null,
         ?callable  $successCallback = null,
-        ?callable  $errorCallback = null
+        ?callable  $errorCallback = null,
+        string $scope = "public"
     ): void
     {
         if(!$file instanceof UploadedFile)

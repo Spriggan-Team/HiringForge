@@ -41,6 +41,7 @@ class MediaFactory implements MediaFactoryInterface
             );
         }
 
+
         // Determine MIME type using server-side analysis
         $mime = $file->getMimeType();
 
@@ -58,15 +59,23 @@ class MediaFactory implements MediaFactoryInterface
 
     /**
      * Converts a static asset (e.g., images, PDF documents) into a StaticMedia domain object.
-     * * @param mixed $file The infrastructure file instance to convert.
+     * @param mixed|UploadedFile $file The infrastructure file instance to convert.
      * @return StaticMedia The resulting domain object enforcing static asset business constraints.
      * @throws \TypeError If the file matches a timed media format instead of a static one.
      */
-    public function createStaticMedia(mixed $file): StaticMedia
+    public function createStaticMedia(mixed $file, array $expectedTypes = []): StaticMedia
     {
         // Guard Clause: Prevent processing timed media assets (audio/video) as static files
         if ($this->isTimedMedia($file)) {
             throw new \TypeError("You mustn't try to parse a timed media as a static one");
+        }
+
+        $mime = $file->getClientMimeType();
+
+        $mime = $file->getMimeType() ?? $file->getClientMimeType();
+
+        if (!in_array($mime, $expectedTypes, true)) {
+            throw new \InvalidArgumentException("Not expected type detected for file.");
         }
 
         // Generate a cryptographically secure random filename to prevent overwrites and security flaws

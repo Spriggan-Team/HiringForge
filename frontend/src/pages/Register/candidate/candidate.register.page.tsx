@@ -1,26 +1,42 @@
 
 
-import { useRef, useState } from 'react';
+import type { ParseKeys } from 'i18next';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-//-- Hooks
+//-- Hooks & Services
 import { useSendOTP } from '../../../hooks/handler';
+import { useAppContext } from '../../../hooks/context';
+import { objectToFormData } from '../../../utils/convertor';
+import { InvalidOTP, RessourceCreationFailed } from '../../../api/services/exceptions';
+import { AccountAlreadyRegistered, CompanyAlreadyRegistered } from '../../../api/services/auth/exceptions';
 
 //-- Custom components 
 import RegisterationHeader from '../components/registeration.header';
-import  { type StepItem } from '../components/registeration.steps';
+import  RegisterationSteps, { type StepItem } from '../components/registeration.steps';
+import MediaUploader from '../components/media.uploader';
 
 
 import AccountAccess from '../components/access/account.access';
 import SecureAccount from '../user/components/security/LockAccount';
 import ProfileIdentityForm from '../components/profile.identity.form';
+import AddressFields, { type AddressData } from '../components/address.fields';
+
+//-- SVG Components
+import CVFileSVG  from "/src/assets/svg/cv-file-interface-symbol-svgrepo-com.svg"
 
 
+//-- Styles
 import styles from './CandidateRegisterPage.module.css';
+import { navigateTo } from '../../../App';
+import { useNavigate } from 'react-router-dom';
+import AuthServices from '../../../api/services/auth/auth';
+import RouteScheme from '../../../route.scheme';
+import DraggableCountdown from '../../../layout/components/draggable.contdown';
 
 
 
-export const RECRUITER_STEPS: StepItem[] = [
+export const CANDIDATES_STEPS: StepItem[] = [
   {
     id: 1,
     translationKey: "register.processDescription.one" ,
@@ -36,77 +52,230 @@ export const RECRUITER_STEPS: StepItem[] = [
 ];
 
 
+
 export const CandidateRegisterPage: React.FC = () => {
   const { t } = useTranslation();
+  
+  const navigation = useNavigate();
+  const { setLoading, setPopup, setCountdown } = useAppContext();
+
   const [currentStep, setCurrentStep] = useState({ current: 1, max: 1 });
 
-
   //-- Form State
+  const asideFormRef = useRef<HTMLFormElement | null>(null);
   const formData= useRef<FormData>(new FormData());
 
-  const [avatar, setAvatar] = useState<File | null>(null);
   const [cvFile, setCvFile] = useState<File | null>(null);
 
+  const [address, setAddress] = useState<AddressData>({
+    country: (formData.current.get("country") as string) || "",
+    postalCode: (formData.current.get("postalCode") as string) || "",
+    city: (formData.current.get("city") as string) || "",
+    street: (formData.current.get("street") as string) || "",
+  });
 
+  //-- Send OTP
   const { sendOTPCode } = useSendOTP({
       onSuccess: () => {
-          // Action spécifique à ce composant
-          setCurrentStep(prev => ({ current: 2, max: Math.max(2, prev.max) }));
+        // Action spécifique à ce composant
+        setCurrentStep(prev => ({ current: 2, max: Math.max(2, prev.max) }));
+        setCountdown({
+          onExpire: ()=> setCountdown(null)
+        });
       }
   });
 
-  const handleSubmit = (e: React.SubmitEvent) => {
-    e.preventDefault();
-    // ...
+  
+  const handleAccountAccessNext = useCallback(async () => {
+    const email = formData.current.get("email") as string;
+    if (email) {
+      await sendOTPCode(email);
+    }
+  }, [sendOTPCode]);
+
+  
+  const handleSecureAccountNext = useCallback(() => {
+    setCurrentStep(prev => ({ current: 3, max: Math.max(3, prev.max) }));
+  }, []);
+
+
+  //-- 
+  const handleAddressChange = useCallback((updatedFields: Partial<AddressData>) => {
+    // Update UI
+    setAddress((prev) => ({ ...prev, ...updatedFields }));
+
+    //-- Form Data
+    Object.entries(updatedFields).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.current.set(key, String(value));
+      }
+    });
+  }, []);
+
+
+
+  //-- Handle submit
+  const handleSubmit = async () => {
+    try{
+      const asideForm = asideFormRef.current;
+      if (!asideForm) {
+          console.warn("The aside form has still not completely been mounted");
+          return;
+      }
+      asideForm?.requestSubmit();
+      setLoading({ state: true, subtitle: t("register.messages.loadingMessage") });
+      
+      if (asideForm.invalid) {
+          console.warn("Invalid state: Please check the aside form and make sure all required fields are provided");
+          setLoading({ state: false });
+          return;
+      }
+
+      const data = formData.current;
+      console.log("DATA", data )
+      await AuthServices.performRegister(data, "candidate");
+      setLoading({ state: false });
+      
+      //-- client notification & notice
+      setPopup({
+          status: "success",
+          message: t("register.apiResponse.registering.success")
+      });
+
+      navigateTo(navigation, RouteScheme.login);
+    }
+    catch(error){
+      if (error instanceof Error) {
+          //-- console log
+          console.log("Error name", error.name, "\n");
+          console.log("Something went wrong:", error.message, "\n");
+          console.log("Stack:", error.stack, "\n");
+
+          //-- Domain fallback (messages)
+          if(error instanceof InvalidOTP){
+              setPopup({ status: "error", message: t("register.apiResponse.codeVerification.expired") });
+          }
+          else if(error instanceof AccountAlreadyRegistered)
+              setPopup({ status: "warning", message: t("register.apiResponse.registering.warning.accountAlreadyRegistered") })
+          else if(error instanceof RessourceCreationFailed)
+              setPopup({ status: "error", message: t("register.apiResponse.registering.error.failedRegisteration") });
+          else if(error instanceof CompanyAlreadyRegistered)
+              setPopup({ status: "error", message: t("register.apiResponse.registering.warning.companyAlreadyRegistered") });
+      }
+      else {
+          setPopup({
+              status: "success",
+              message: t("global.messages.error")
+          });
+          console.log("Unknown error:", error);
+      }
+      setLoading({ state: false });
+    }
   };
 
 
+  //--- RENDER
+  const renderStepContent = useMemo(() => {
+    switch (currentStep.current) {
+      case 1:
+        return (
+          <AccountAccess
+            t={t}
+            submitButtonTextKey="global.buttons.next"
+            formData={formData.current}
+            onNext={handleAccountAccessNext}
+          />
+        );
+      case 2:
+        return (
+          <SecureAccount
+            formData={formData.current}
+            onNext={handleSecureAccountNext}
+          />
+        );
+      case 3:
+        return (
+          <ProfileIdentityForm
+            formData={formData.current}
+            onNext={() => {
+              handleSubmit()
+            }}
+          />
+        );
+      default:
+        return null;
+    }
+  }, [currentStep.current, t, handleAccountAccessNext, handleSecureAccountNext]);
+
+
+
+  const handleCVChange = useCallback((file: File | null) => {
+    if (file) {
+      formData.current.set("cv", file);
+    } else {
+      formData.current.delete("cv");
+    }
+    setCvFile(file);
+  }, []);
+
+
+
+
   return (
-    <div className={`${styles.container}`}>
-       <div className={styles.containerWrapper}>
-          <div className={styles.mainForm}>
-            {/** REGISTERATION STEPS */}
+    <div className={styles.container}>
+      <div className={styles.containerWrapper}>
+        <div className={styles.mainContainer}>
 
-            {/** MainContent */}
-            <div className={styles.form}>
-                {/** Header */}
-                <RegisterationHeader
-                      t={t}
-                      totalSteps={3}
-                      titleKey={"userRegister.form.title"}
-                      subtitleKey={"userRegister.form.subtitle"}
-                      currentStep={currentStep.current}
-                />
-                {currentStep.current == 1 ?
-                    <AccountAccess
-                        t={t}
-                        submitButtonTextKey={"global.buttons.next"}
-                        formData={formData.current}
-                        onNext={async ()=>{
-                            await sendOTPCode(formData.current.get("email") as string);
-                        }}
-                    />
-                    :  currentStep.current == 2 ?
-                        <SecureAccount
-                            formData={formData.current}
-                            onNext={()=>{
-                                setCurrentStep(prev => ({ current: 3, max: Math.max(3, prev.max)}));
-                            }}
-                        />
-                        : currentStep.current == 3 ?
-                            <ProfileIdentityForm
-                                formData={formData.current}
-                                onNext={()=>{}}
-                            />
-                        : <></>
-                }
-            </div>
-            {/** Aside */}
-            <div>
+          {/* INDICATEUR D'ÉTAPES */}
+          <RegisterationSteps
+            t={t}
+            steps={CANDIDATES_STEPS}
+            currentStep={currentStep}
+            setCurrentStep={setCurrentStep}
+          />
 
-            </div>
+          {/*  GLOBAL FORM */}
+          <div  className={styles.main}>
+            
+            {/* MAIN SECTION  */}
+            <main className={styles.formSection}>
+              <RegisterationHeader
+                t={t}
+                totalSteps={3}
+                titleKey="candidateRegister.form.title"
+                subtitleKey="candidateRegister.form.subtitle"
+                currentStep={currentStep.current}
+              />
+              {renderStepContent}
+            </main>
+
+            {/* ASIDE (MEDIA + ADRESSE) */}
+            <form 
+              ref={asideFormRef}
+              className={styles.asideSection}
+              onSubmit={(e)=>e.preventDefault()}
+            >
+              <MediaUploader
+                file={cvFile}
+                buttonTaglineKey={'global.cv.label'}
+                defaultIcon={<CVFileSVG />}
+                inputAttributes={{
+                  accept: "application/pdf"
+                }}
+                titleKey={"global.cv.file" as ParseKeys}
+                onFileChange={handleCVChange}
+              />
+
+              <AddressFields
+                address={address}
+                titleKey='global.address.label'
+                onChange={handleAddressChange}
+              />
+            </form>
+
           </div>
-       </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -32,18 +32,21 @@ import UserOffersPage from './pages/offers/user/user.offers.page'
 import UserStatsPage from './pages/stats/user/stats.user.page'
 import PublicJobPage from './pages/jobs/public/public.job.page'
 import PublicNavBar from './pages/components/navbar/public.navbar'
+import DraggableCountdown from './layout/components/draggable.contdown'
+import { useAppContext } from './hooks/context'
 
 
 
 
 function App() {
   const navigate = useNavigate();
-  
+
   useEffect(()=>{
     httpContext.setNavigate(navigate)
   },[navigate]);
   
   return (
+    <div>
       <Routes>
           <Route path={RouteScheme.main} element={<EntryPage />} />
           
@@ -94,6 +97,7 @@ function App() {
             {/** PUBLIC ACCESS (AUTH) */}
           </Route>
       </Routes>
+    </div>
   )
 }
 

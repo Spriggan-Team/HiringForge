@@ -143,7 +143,7 @@ class AccountEntity
         return $this;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
         return $this;

@@ -2,6 +2,7 @@
 
 namespace App\Api\Controllers\Account;
 
+use App\Api\Controllers\Account\Mapper\RegisterCandidateCommandMapper;
 use App\Application\DTO\Candidate\RegisterCandidateCommand;
 use App\Application\DTO\User\RegisterUserCommand;
 
@@ -39,30 +40,17 @@ class RegisterController extends AbstractController
     }
 
 
-    #[Route('/candaidate/register', methods: ["POST"], name: 'candidate_register')]
+    #[Route('/candidate/register', methods: ["POST"], name: 'candidate_register')]
     public function candidateRegister(
         Request $request,
-        CandidateRegisterUsecase $usecase
+        CandidateRegisterUsecase $usecase,
+        RegisterCandidateCommandMapper $mapper
     ): JsonResponse
     {
         try{
-            /** @var InputBag FormData stored in request by Symfony  */
-            $inputBag = $request->request;
-
-            $command = new RegisterCandidateCommand(
-                lastName: $inputBag->get('firstName'),
-                firstName: $inputBag->get('firstName'),
-                email: $inputBag->get('email'),
-                password: $inputBag->get('password'),
-                image: $request->files->get('image', null),
-                cv: $request->files->get('cv', null),
-                description: $inputBag->get("description", null),
-                address:  Address::tryCreate([
-                    'street' => $inputBag->get("address[street]"),
-                    'country' => $inputBag->get("address[country]"),
-                    'postalCode' => $inputBag->get("address[postalCode]"),
-                ]),
-                searchRadius:  $inputBag->get("searchRadius")
+            $command = $mapper->map(
+                form: $request->request,
+                files: $request->files
             );
             $result = $usecase->execute($command);
             return ApiResponse::success($result)->toJsonResponse();
@@ -75,9 +63,52 @@ class RegisterController extends AbstractController
             );
             return $err->toJsonResponse();
         }
+        //-- Otp error fallback
+        catch(OTPException $optError){
+            $code = $optError->expired ? 
+                    ApplicationErrorCode::EXPIRED_OTP 
+                        : ( $optError->isInvalid 
+                                ? ApplicationErrorCode::INVALID_OTP
+                                : null
+                            );
+            return ApiResponse::error(
+                message: "OTP code expired",
+                throwable: $optError,
+                statusCode: 410,
+                code: $code,
+            )->toJsonResponse();
+        }
+        //-- File error fallback
+        catch(FileSizeExceeded $filesizeError){
+            return ApiResponse::error(
+                message: 'One of the file exceed the authorized size', 
+                throwable: $filesizeError,
+                code: ApplicationErrorCode::FILE_SIZE_EXCEEDED,
+                data: $filesizeError->getPayload() ?? []
+            )->toJsonResponse();
+        }
+        catch(FileTimeExceeded $filetimeError){
+            return ApiResponse::error(
+                message: 'One of the file (video) exceed the authorierd duration', 
+                throwable: $filetimeError,
+                code: ApplicationErrorCode::FILE_TIME_EXCEEDED,
+                data: $filetimeError->getPayload() ?? [],
+            )->toJsonResponse();
+        }
+        //-- creation rejected
+        catch(ResourceCreationRejected $ressourceCreation){
+            return ApiResponse::error(
+                message: "Failed to create candidate",
+                throwable: $ressourceCreation,
+                code: ApplicationErrorCode::RESSOURCE_CREATION_FAILED
+            )->toJsonResponse();
+        }
         catch(Exception $exception)
         {
-            return ApiResponse::error(message: "Something wen wrong", throwable: $exception)->toJsonResponse();
+            return ApiResponse::error(
+                message: "Something wen wrong",
+                throwable: $exception
+            )->toJsonResponse();
         }
     }
 
@@ -151,7 +182,7 @@ class RegisterController extends AbstractController
         //-- File error fallback
         catch(FileSizeExceeded $filesizeError){
             return ApiResponse::error(
-                message: 'This email is already registered', 
+                message: 'One of the file exceed the authorized size', 
                 throwable: $filesizeError,
                 code: ApplicationErrorCode::FILE_SIZE_EXCEEDED,
                 data: $filesizeError->getPayload() ?? []
@@ -159,7 +190,7 @@ class RegisterController extends AbstractController
         }
         catch(FileTimeExceeded $filetimeError){
             return ApiResponse::error(
-                message: 'This email is already registered', 
+                message: 'One of the file (video) exceed the authorierd duration', 
                 throwable: $filetimeError,
                 code: ApplicationErrorCode::FILE_TIME_EXCEEDED,
                 data: $filetimeError->getPayload() ?? [],

@@ -26,13 +26,12 @@ import AppModal from './layout/components/modal/app.modal.tsx'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <div>
-            <AppContextProvider>
+      <AppContextProvider>
           <AppPopup>
             <AppSpinner>
-                <BrowserRouter>
+              <BrowserRouter>
                   <AppRoutes />
               </BrowserRouter>
-
             </AppSpinner>
           <AppModal />
           </AppPopup>

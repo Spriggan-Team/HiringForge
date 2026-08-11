@@ -79,7 +79,7 @@ const ProfileIdentityForm: React.FC<UserProfileIdentityProps> = ({
                     />
                     {/**LastName */}
                     <BasicInput
-                        inputName='lastNameKey'
+                        inputName='lastName'
                         className="faint-border"
                         placeholder={t("register.profileInformation.inputs.lastName.placeholder")}
                         label={t("register.profileInformation.inputs.lastName.label")} 
