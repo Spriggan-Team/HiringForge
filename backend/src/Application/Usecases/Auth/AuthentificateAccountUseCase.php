@@ -23,7 +23,7 @@ class AuthentificateAccountUseCase
      */
     public function execute(
         AuthentificateAccount $authentificateAccount
-    ): string
+    ): array
     {
         $identity = $this->accountRepository->assertExist(null,  EmailAddress::create($authentificateAccount->email)->value());
 
@@ -36,6 +36,6 @@ class AuthentificateAccountUseCase
             throw new \DomainException("Invalid");
         }
 
-        return $identity->uuid;
+        return [$identity->uuid, $identity->accountType];
     }
 }

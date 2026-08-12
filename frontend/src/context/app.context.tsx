@@ -125,14 +125,21 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
             }
             else if(role === AccountRole.CANDIDATE){
                 const data = await CandidatesQueries.getCurrentCandidateContext();
+                console.log("DATA", data);
                 setCurrentActor({
                     type: "candidate",
                     id: data.id,
                     lastName: data.lastName,
                     firstName: data.firstName,
-                    avatarUrl: data.imageUrl,
+                    imageId: data.imageUrl ?? null,
                     email: data.email,
-                    resumeUrl: null,
+                    location: {
+                        id: data.address.id ?? null,
+                        city: data.address.city,
+                        country: data.address.country,
+                        postalCode: data.address.postalCode,
+                        street: data.address.street ?? null
+                    }
                 });
             }
         }

@@ -45,33 +45,76 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
+
   background: #eff6ff;
   color: #2563eb;
   border: 1px solid #bfdbfe;
+
   font-weight: 700;
   font-size: 0.875rem;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  letter-spacing: 0.5px;
+
   user-select: none;
+  letter-spacing: 0.5px;
+}
+
+/** -- Candidate Nav Options **/
+.navigation {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.navItem {
+    height: 38px;
+    padding: 0 12px;
+
+    display: inline-flex;
+    align-items: center;
+
+    border: none;
+    background: transparent;
+
+    color: #475569;
+    font-size: 0.875rem;
+    font-weight: 500;
+
+    border-radius: 8px;
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.navItem:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
 }
 
 /* ---  RECRUTEUR (ESPACE) --- */
 .navToSpaceBtn {
   height: 40px;
   padding: 0 18px;
+
   background-color: #2563eb;
   color: #ffffff;
+
   border: none;
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 600;
+
   cursor: pointer;
   white-space: nowrap;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   transition: all 0.2s ease-in-out;
   box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
 }

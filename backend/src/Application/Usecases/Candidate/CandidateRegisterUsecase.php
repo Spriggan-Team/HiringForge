@@ -21,10 +21,12 @@ use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Candidate\CandidateRepositoryInterface;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\File\MediaFactoryInterface;
+use App\Domain\File\MediaStorageScope;
+
 use App\Domain\OTP\Exceptions\OTPException;
 use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Shared\Account\AccountFlowPurpose;
-
+use App\Domain\Shared\AccountStorageParams;
 
 
 class CandidateRegisterUsecase
@@ -38,28 +40,26 @@ class CandidateRegisterUsecase
         private MediaFactoryInterface   $mediaFactory,
     ){}
 
-    /**
-     * @throws EmailAlreadyRegistered|RessourceNotFound
+  /**
+     * @throws EmailAlreadyRegistered|RessourceNotFound|\Throwable
      * @return AccountRegister
      */
     public function execute(
         RegisterCandidateCommand $command
-    ): AccountRegister
-    {
-        $email =  EmailAddress::create($command->email);
-        
-        if($this->accountRepository->exists(null, $email->value())){
-          throw new EmailAlreadyRegistered();
+    ): AccountRegister {
+        $email = EmailAddress::create($command->email);
+
+        if ($this->accountRepository->exists(null, $email->value())) {
+            throw new EmailAlreadyRegistered();
         }
-        
 
         // -- Check verification code
         try {
             $otp = $this->OTPRepository->getLastVerificationTokenWithPurpose(
-                $email->value(), 
+                $email->value(),
                 AccountFlowPurpose::SIGN_UP
             );
-            
+
             $otp->verify($command->verificationCode, $this->hasher);
         }
         catch (RessourceNotFound) {
@@ -71,7 +71,7 @@ class CandidateRegisterUsecase
                     $this->OTPRepository->update($email->value(), $otp);
                 } catch (RessourceNotFound $exception) {
                     throw new OTPException(
-                        message: "The verification session has expired or does not exist.", 
+                        message: "The verification session has expired or does not exist.",
                         isInvalid: true,
                         previous: $exception
                     );
@@ -80,9 +80,10 @@ class CandidateRegisterUsecase
             throw $e;
         }
 
-        //-- Create User entity model
+        // -- Create User entity model
         $candidateId = CandidateId::create();
         $failedUploads = [];
+        $successfullUploads = []; // Rollback storage
 
         $candidate = Candidate::create(
             id: $candidateId->value(),
@@ -94,45 +95,85 @@ class CandidateRegisterUsecase
             searchRadius: $command->searchRadius
         );
 
-        //-- Images Types
-        if($command->image){
+        // -- Images Types
+        if ($command->image) {
             $staticImage = $this->mediaFactory->createStaticMedia($command->image, expectedTypes: ['image/jpeg', 'image/png', 'image/webp']);
             $candidate->addImage($staticImage);
-
+            
+            $params = AccountStorageParams::candidateProfileImage(
+                candidateId: $candidateId->value(),
+                storedFileName:  $staticImage->name,
+            );
             $this->storage->store(
                 file: $command->image,
-                storedFileName: $staticImage->name,
-                ownerId: $candidateId->value(),
-                ownerType: MediaOwnerType::CANDIDATE,
-                mediaPurpose: MediaPurpose::PROFILE,
-                errorCallback: function($result) use (&$candidate, &$failedUploads,){
-                    $failedUploads = $result->originalName;
+                params: $params,
+                errorCallback: function ($result) use (&$candidate, &$failedUploads) {
+                    $failedUploads[] = $result->originalName;
                     $candidate->removeImage();
                 },
-                scope: "private"
+                successCallback: function () use (&$successfullUploads, $staticImage, $candidateId) {
+                    $successfullUploads[] = [
+                        'storedFileName' => $staticImage->name,
+                        'ownerId'        => $candidateId->value(),
+                        'ownerType'      => MediaOwnerType::CANDIDATE,
+                        'mediaPurpose'   => MediaPurpose::PROFILE,
+                        'mime'           => $staticImage->mime
+                    ];
+                },
             );
         }
 
-        //-- CV Resume
-        if($command->cv){
+        // -- CV Resume
+        if ($command->cv) {
             $staticCV = $this->mediaFactory->createStaticMedia(file: $command->cv, expectedTypes: ["application/pdf"]);
             $candidate->addCV($staticCV);
-              
+            $params = AccountStorageParams::cv(
+                candidateId: $candidateId->value(),
+                storedFileName: $staticCV->name
+            );
+
             $this->storage->store(
                 file: $command->cv,
-                ownerId: $candidateId->value(),
-                storedFileName: $staticCV->name,
-                ownerType: MediaOwnerType::CANDIDATE,
-                mediaPurpose: MediaPurpose::CV,
-                errorCallback: function($result) use (&$candidate, &$failedUploads){
-                    $failedUploads = $result->originalName;
+                params: $params,
+                errorCallback: function ($result) use (&$candidate, &$failedUploads) {
+                    $failedUploads[] = $result->originalName;
                     $candidate->removeCv();
                 },
-                scope: "private"
+                successCallback: function () use (&$successfullUploads, $staticCV, $candidateId) {
+                    $successfullUploads[] = [
+                        'storedFileName' => $staticCV->name,
+                        'ownerId'        => $candidateId->value(),
+                        'ownerType'      => MediaOwnerType::CANDIDATE,
+                        'mediaPurpose'   => MediaPurpose::CV,
+                        'mime'           => $staticCV->mime
+                    ];
+                },
             );
         }
 
-        $this->candidateRepository->save($candidate);
+        // -- Persistence
+        try {
+            $this->candidateRepository->save($candidate);
+        }
+        catch (\Throwable $exception) {
+            //Clear file
+            foreach ($successfullUploads as $mediaPayload) {
+                $params = AccountStorageParams::create(
+                    ownerId: $mediaPayload['ownerId'],
+                    purpose: $mediaPayload['mediaPurpose'],
+                    ownerType: $mediaPayload['ownerType'],
+                    storedFileName: $$mediaPayload['storedFileName'],
+                    scope: MediaStorageScope::PRIVATE,
+                );
+                $this->storage->remove(
+                    params: $params,
+                    mimeType: $mediaPayload['mime'],
+                    recursive: true
+                );
+            }
+
+            throw $exception;
+        }
 
         return new AccountRegister(
             $candidateId->value(),

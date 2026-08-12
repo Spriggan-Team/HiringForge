@@ -20,31 +20,34 @@ export const redirectAccordingToSession = (
     location?: {
         pathname: string;
         state?: {
-            from?: typeof RouteScheme[keyof typeof RouteScheme];
+            from?: string;
         };
     }
 ) => {
     const { token, role } = getSession();
-
     const pathname = location?.pathname ?? "";
 
-    if (isPublicRoute(pathname)) {
-        return;
-    }
-
+    // Not authenticated
     if (!token) {
-        navigate(RouteScheme.login);
+        if (!isPublicRoute(pathname)) {
+            navigate(RouteScheme.login);
+        }
+
         return;
     }
 
-    if (
-        role === AccountRole.USER &&
-        location?.state?.from === RouteScheme.login
-    ) {
-        navigate(RouteScheme.userHome);
+    // Already authenticated
+    if (pathname === RouteScheme.login) {
+        if (location?.state?.from) {
+            navigate(location.state.from);
+            return;
+        }
+
+        if (role === AccountRole.USER) {
+            navigate(RouteScheme.userHome);
+        }
     }
 };
-
 
 
 /**

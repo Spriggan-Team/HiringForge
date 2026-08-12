@@ -44,7 +44,8 @@ class UserEntityMapper
             $image = new StaticMedia(
                 name: $doctrine->getImage()->getName(),
                 size: $doctrine->getImage()->getSize(),
-                mime: $doctrine->getImage()->getMime()
+                mime: $doctrine->getImage()->getMime(),
+                originalName: $doctrine->getImage()->getOriginalName()
             );
         }
        
@@ -71,7 +72,8 @@ class UserEntityMapper
             $image = new StaticMedia(
                 name: $entity->getImage()->getName(),
                 size: $entity->getImage()->getSize(),
-                mime: $entity->getImage()->getMime()
+                mime: $entity->getImage()->getMime(),
+                originalName: $entity->getImage()->getOriginalName()
             );
         }
 

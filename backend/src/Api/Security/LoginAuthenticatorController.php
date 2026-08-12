@@ -49,9 +49,7 @@ class LoginAuthenticatorController extends AbstractAuthenticator
     public function supports(Request $request): ?bool
     {
         return in_array($request->getPathInfo(), [
-            '/api/user/login',
-            '/api/agent/login',
-            '/api/candidate/login',
+            '/api/login',
         ], true) && $request->isMethod('POST');
     }
 
@@ -69,15 +67,9 @@ class LoginAuthenticatorController extends AbstractAuthenticator
             password: trim($body['password'])
         );
 
-        $role = match ($request->getPathInfo()) {
-            '/candidate/login' => AccountRole::CANDIDATE->value,
-            '/agent/login'     => AccountRole::AGENT->value,
-            default            => AccountRole::USER->value,
-        };
-        
 
         try {
-            $personId = $this->usecase->execute($account);
+            [$personId, $role] = $this->usecase->execute($account);
         }
         catch (RessourceNotFound $e) {
             if(ApiResponse::$logger)

@@ -25,7 +25,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 
 #[Route('/users/applications')]
-class ApplicationQueryController extends AbstractController
+class UserApplicationQueryController extends AbstractController
 {
     use ApiControllerHelpers;
 

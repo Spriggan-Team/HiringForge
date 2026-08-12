@@ -22,12 +22,6 @@ class ApplyToJobOffer
      */
     public function execute(string $candidateId, string $offerId)
     {
-        $this->applicationRepository->assertExists($offerId);
-        $valid = $this->candidateRepository->getCVFile($candidateId);
-        if($valid)
-        {
-            $this->candidateRepository->apply($candidateId, $offerId);
-            //-- following script...
-        }
+    
     }
 }

@@ -128,6 +128,7 @@ final class Address
 
     public function toArray(){
         return [
+            "id" => $this->id,
             "street" => $this->street,
             "country" => $this->country,
             "postalCode" => $this->postalCode,

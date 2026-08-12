@@ -31,3 +31,13 @@ export interface CandidateLightModel {
   lastName: string;
   avatarUrl?: string;
 }
+
+
+export interface ResumeMetada{
+    id: string;
+    name: string;
+    size: number;
+    mime: string;
+    originalName?: string;
+    createdAt: Date ;
+}

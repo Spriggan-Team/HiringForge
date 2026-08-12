@@ -30,6 +30,9 @@ class FileEntity
     /** @var string  $name a uniq name - genrated while uploading file on server */
     private ?string $name = null;
 
+    #[ORM\Column(length: 250, nullable: true)]
+    private ?string $originalName = null;
+
     #[ORM\Column(length:15)]
     private ?string $mime = null;
 
@@ -48,12 +51,6 @@ class FileEntity
         mappedBy: 'image'
     )]
     private ?CandidateEntity $candidateImage = null;
-
-    #[ORM\OneToOne(
-        targetEntity: CandidateEntity::class,
-        mappedBy: 'cv'
-    )]
-    private ?CandidateEntity $candidateCV = null;
 
 
     #[ORM\OneToOne(mappedBy: 'videoPresentation', targetEntity: CompanyEntity::class)]
@@ -96,7 +93,8 @@ class FileEntity
     public static function create(
         string $name,
         string $mime,
-        float $size
+        float $size,
+        ?string $originalName
     ){
         return new self()
                     ->setName($name)
@@ -140,8 +138,15 @@ class FileEntity
         return $this->createdAt;
     }
 
+    public function getOriginalName(){
+        return $this->originalName;
+    }
+
     //------Collection
 
+    /**
+     * @return  Collection<int,CompanyImageEntity>
+     */
     public function getUserImages()
     {
         return $this->companyImages;
@@ -188,4 +193,11 @@ class FileEntity
         $this->companyVideoPresentation = $companyVideoPresentation;
         return $this;
     }
+
+    public function setOriginalName(?string $originalName)
+    {
+        $this->originalName = $originalName;
+        return $this;
+    }
+
 }

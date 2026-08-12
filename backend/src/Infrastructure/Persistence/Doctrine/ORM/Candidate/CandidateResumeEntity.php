@@ -12,6 +12,7 @@ use \Doctrine\ORM\Mapping as ORM;
 class CandidateResumeEntity
 {
     #[ORM\Id]
+    #[ORM\Column]
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
     private ?string $id = null;
@@ -25,6 +26,7 @@ class CandidateResumeEntity
 
     #[ORM\ManyToOne(
         targetEntity: FileEntity::class,
+        cascade: ['persist', 'remove'],
     )]
     #[ORM\JoinColumn(nullable: false, unique: true)]
     private FileEntity $file;

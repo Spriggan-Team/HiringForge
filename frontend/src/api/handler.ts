@@ -12,6 +12,9 @@ const DEV = import.meta.env.DEV;
 type RequestData = Record<string, any> | FormData | null;
 
 
+/**
+ * @throws {HttpBadResponse}
+ */
 const request = async <T, O = unknown>(
   endpoint: string,
   method: string,
@@ -57,7 +60,6 @@ const request = async <T, O = unknown>(
         Utils.openHtml(errorBody);
       }
     }
-
     //-- JSON API error
     else {
       try {
@@ -94,6 +96,15 @@ const request = async <T, O = unknown>(
   //-- Fallback: JSON
   if (contentType?.includes("application/json")) {
     return response.json();
+  }
+
+  
+  if (
+      contentType?.includes("application/pdf") ||
+      contentType?.startsWith("image/") ||
+      contentType?.startsWith("application/octet-stream")
+  ) {
+      return response.blob() as Promise<T>;
   }
 
   //-- Fallback: Text

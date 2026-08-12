@@ -29,7 +29,7 @@ parameters:
     mail_user_password: '%env(MAIL_USER_PASSWORD)%'
 
     #-------Root Dir
-    uploads_base_directory: '%kernel.project_dir%/public/uploads'
+    project_directory: '%kernel.project_dir%'
 
 
 #---------------------
@@ -186,9 +186,16 @@ services:
     #-------------------------------
     # FileStorage Services
     #-------------------------------
+    App\Infrastructure\Storage\FileStorage\LocalPathResolver:
+        arguments:
+            $projectDir: '%project_directory%'
+
+    App\Domain\Shared\PathResolverInterface:
+        alias: App\Infrastructure\Storage\FileStorage\LocalPathResolver
+
     App\Infrastructure\Storage\FileStorage\MediaStorage:
         arguments:
-            $baseStoragePath: '%uploads_base_directory%'
+            $projectDir: '%project_directory%'
 
 
     App\Domain\File\MediaStorageInterface:
@@ -197,7 +204,7 @@ services:
 
     App\Domain\File\MediaFactoryInterface:
         alias: App\Infrastructure\Storage\FileStorage\MediaFactory
-
+    
 
     #------------------------------
     # Email Services

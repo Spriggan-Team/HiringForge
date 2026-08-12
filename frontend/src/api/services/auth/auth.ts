@@ -94,7 +94,7 @@ const resetPassword = async ({
 //-- login
 const login = async (email: string, password: string)=>{
     try {
-        const response = await post<AccountLoginResponse>("/user/login", { email, password });
+        const response = await post<AccountLoginResponse>("/login", { email, password });
         return response;
     }
     catch (error) {

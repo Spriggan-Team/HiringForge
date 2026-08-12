@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 //-- Services
 import { useAppContext } from '../../../hooks/context';
 import { navigateTo } from '../../../App';
+import CandidatesQueries from '../../../api/services/candidate/queries';
 import RouteScheme from '../../../route.scheme';
 
 //-- Custom Components
@@ -30,61 +31,134 @@ const PublicNavBar: React.FC<PublicNavBarProps> = ({
     const {t} = useTranslation();
     const navigate = useNavigate();
     const {currentActor} = useAppContext();
+
+    const imageUrlRef  = useRef<string>(null)
+    const [imageUrl, setImageUrl] = useState("");
     const [imgError, setImgError] = useState(false);
 
-    //-- Generate initial
-    const getInitials = () => {
-        if(currentActor){
-            const first = currentActor.firstName?.charAt(0) || '';
-            const last =  currentActor.lastName.charAt(0) ||  '';
-            return `${first}${last}`.toUpperCase() || 'C';
-        }
-        return 'C'
-    };
 
-    console.log(currentActor)
+    //-- Generate initial
+    const initials = currentActor
+        ? `${currentActor.firstName?.[0] ?? ''}${currentActor.lastName?.[0] ?? ''}`.toUpperCase() || 'C'
+        : 'C';
+
+    useEffect(() => {
+        if (!currentActor || currentActor.type !== "candidate") {
+            setImageUrl("");
+            return;
+        }
+
+        let objectUrl: string | null = null;
+
+        const loadImage = async () => {
+            try {
+                setImgError(false);
+
+                const blob = await CandidatesQueries.getCandidateProfileImage(
+                    currentActor.id
+                );
+
+                objectUrl = URL.createObjectURL(blob);
+
+                setImageUrl(objectUrl);
+            } catch (error) {
+                setImageUrl("");
+                setImgError(true);
+
+                console.warn("Unable to load candidate profile image", error);
+            }
+        };
+
+        loadImage();
+
+        return () => {
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [currentActor]);
+
+
+    //-- Render
 
     return (
-        <div 
+        <nav 
             className={`${styles.container} ${className}`}
         >
             <nav 
                 className={styles.navbar}
-                style={{ background: backgroundColor }}
+                style={{ backgroundColor }}
             >
-                <AppIdentity />
+                {/** Leading */}
+                <AppIdentity onClick={()=> navigateTo(navigate, RouteScheme.jobs)} />
+                
+
+                
                 <div className={styles.actions}>
+                                                            {/** Options */}
+                    {
+                        currentActor ? (
+                            <div className={styles.navigation}>
+                                <span
+                                    className={styles.navItem}
+                                    onClick={()=> navigateTo(navigate, RouteScheme.candidateApplications)}
+                                >
+                                    {t("global.menu.myApplications")}
+                                </span>
+                                
+                                <span
+                                    className={styles.navItem}
+                                    onClick={()=>navigateTo(navigate, RouteScheme.candidateOffers)}
+                                >
+                                    {t('global.menu.myOffers')}
+                                </span>
+                                
+                                <span
+                                    className={styles.navItem}
+                                    onClick={()=>navigateTo(navigate, RouteScheme.candidateInterviews)}
+                                >
+                                    {t('global.menu.MyInterviews')}
+                                </span>
+                            </div>
+                        ) :<></>
+                    }
                     <LanguageSelector />
                         {
                             currentActor ?
                                 currentActor.type === "candidate" ? (
-                                    <div className={styles.avatarWrapper}>
-                                        {currentActor.avatarUrl && !imgError ? (
+                                    <div 
+                                        style={{cursor: 'pointer'}}
+                                        onClick={()=>navigateTo(navigate, RouteScheme.candidateProfile)}
+                                        className={styles.avatarWrapper}
+                                    >
+                                        {imageUrl && !imgError ? (
                                             <img
-                                                src={currentActor.avatarUrl}
+                                                src={imageUrl}
                                                 alt="Profil candidat"
                                                 className={styles.avatarImg}
                                                 onError={() => setImgError(true)}
                                             />
                                         ) : (
                                             <div className={styles.avatarFallback}>
-                                                {getInitials()}
+                                                {initials}
                                             </div>
                                         )}
-                                            </div>
-                                    ) : currentActor.type === "user" ? (
-                                            <button
-                                                className={styles.navToSpaceBtn}
-                                                onClick={() => navigateTo(navigate, RouteScheme.userJobs)}
-                                            >
-                                                {t("global.buttons.goToMySpace", "Mon espace")}
-                                            </button>
-                                    ) : <></>
+                                    </div>
+                                ) 
+                                : currentActor.type === "user" ? (
+                                    <button
+                                        className={styles.navToSpaceBtn}
+                                        onClick={() => navigateTo(navigate, RouteScheme.userJobs)}
+                                    >
+                                        {t("global.buttons.goToMySpace", "Mon espace")}
+                                    </button>
+                                ) 
+                                : <></>
                             : <AuthSwitcher />
                         }
                 </div>         
             </nav>
-        </div>
+        </nav>
     );
 }
  

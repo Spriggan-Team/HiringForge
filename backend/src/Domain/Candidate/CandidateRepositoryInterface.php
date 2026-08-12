@@ -12,6 +12,11 @@ interface CandidateRepositoryInterface
 {
 
     /**
+     * Check if wether a candidate exist or not in the system
+     */
+    public function exists(string $candidateId) : bool;
+
+    /**
      * @param string                $uuid represents the uniq identifier of an actor stored in the bdd
      * @return Candidate
      * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
@@ -44,13 +49,15 @@ interface CandidateRepositoryInterface
 
     
     /**
-     * Retreive meta data about an user's cv
-     * @throws \Exception this is thrown wheenever something get wrong while exeuting the operation 
-     * @return StaticMedia | null - returns a stactic media corresponding to the related cv but if something went wrong
-     *                              for some reason without throwing an exception (no critical) 
-     *                              then what is retruned will be null
+     * Retreive meta data about an user's resumes
+     * @throws \Exception this is thrown whenever something get wrong while exeuting the operation 
+     * @throws RessourceNotFound no candidate found
+     * @return array<int, StaticMedia>  - returns an array media corresponding to the related cvs 
      */
-    public function getCVFile(string $candidateId): StaticMedia | null;
+    public function getResumeFiles(string $candidateId): array;
+
+
+    public function findResumeById( string $candidateId, string $resumeId ): ?StaticMedia;
 
     /**
      * retreive à light model of a connected user

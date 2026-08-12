@@ -5,7 +5,11 @@ namespace App\Infrastructure\Storage\FileStorage;
 use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
+use App\Domain\File\MediaStorageParams;
+use App\Domain\File\MediaStorageScope;
 use App\Domain\File\MediaUploadResult;
+use App\Domain\Shared\PathResolverInterface;
+
 
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Filesystem\Filesystem;
@@ -20,33 +24,26 @@ class MediaStorage implements MediaStorageInterface
      * This is the project dir to the root 'src' folder
      * @property string $baseStoragePath
      */
-    private string $baseStoragePath;
+    private string $projectDir;
 
-    /**
-     * This is the relative path from the src folder ("/path")
-     * @var string $relatifPath
-     */
-    private string $relatifPath = '/Vault';
 
     public function __construct(
+        string $projectDir,
+        private PathResolverInterface $pathResolver,
         private Filesystem $filesystem,
-        string $baseStoragePath
     ){
-        $this->baseStoragePath = rtrim($baseStoragePath, '/');
+        $this->projectDir = rtrim($projectDir, '/');
     }
 
 
-    
+
     public function store(
         mixed $file,
-        string $ownerId,
         /** @var string[] a array of filename  */
-        MediaOwnerType $ownerType,
-        MediaPurpose $mediaPurpose,
+        MediaStorageParams $params,
         ?string $storedFileName = null,
-        ?callable  $successCallback = null,
-        ?callable  $errorCallback = null,
-        string $scope = "public"
+        ?callable $successCallback = null, 
+        ?callable $errorCallback = null,
     ): void
     {
         if(!$file instanceof UploadedFile)
@@ -54,11 +51,9 @@ class MediaStorage implements MediaStorageInterface
             throw new \Exception("[MediaStorage::strore] Such a class of file is not supported yet!!");
         }
         $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($file->getPathname());
-        $path = $this->resolveTargetDirectory(
+        $path = $this->pathResolver->resolveTargetDirectory(
             mimeType: $mime, 
-            ownerId: $ownerId,
-            ownerType: $ownerType,
-            purpose: $mediaPurpose
+            params: $params,
         );
 
         if(!$this->filesystem->exists($path)){
@@ -97,42 +92,55 @@ class MediaStorage implements MediaStorageInterface
     }
 
 
-
+    /**
+     * Removes files & directories
+     */
     public function remove(
-        string $uniqName, 
-        ?string $ownerId = null, 
-        ?MediaOwnerType $ownerType = null, 
-        ?MediaPurpose $purpose = null, 
+        MediaStorageParams $params,
+        ?string $mimeType = null,
+        bool $recursive = false,
         ?callable $successCallback = null, 
-        ?callable $errorCallback = null
+        ?callable $errorCallback = null,
     ): void {
         try {
-            $mimeType = null;
-            
-            $directoryPath = $this->resolveTargetDirectory(
+            //-- Determine mime if not provided
+            if ($mimeType === null) {
+                $extension = strtolower(pathinfo($params->storedFileName, PATHINFO_EXTENSION));
+                $mimeType = match ($extension) {
+                    'jpg', 'jpeg', 'png', 'webp', 'gif' => 'image/',
+                    'mp4', 'mkv', 'avi'                => 'video/',
+                    'mp3', 'wav'                       => 'audio/',
+                    'pdf'                              => 'application/pdf',
+                    default                            => null,
+                };
+            }
+
+            $directoryPath = $this->pathResolver->resolveTargetDirectory(
                 mimeType: $mimeType, 
-                ownerId: $ownerId, 
-                ownerType: $ownerType, 
-                purpose: $purpose
+                params: $params,
             );
 
-            $fullFilePath = $directoryPath . '/' . $uniqName;
+            $fullFilePath = $directoryPath . '/' . $params->storedFileName;
 
             if (!$this->filesystem->exists($fullFilePath)) {
                 throw new \Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException(
-                    sprintf('File "%s" not found in path "%s"', $uniqName, $directoryPath)
+                    sprintf('File "%s" not found in path "%s"', $params->storedFileName, $directoryPath)
                 );
             }
 
             //-- local deletion
             $this->filesystem->remove($fullFilePath);
+            if($recursive){
+                $this->removeEmptyParentDirectories( $directoryPath, $params->scope );
+            }
 
             //-- sucess callback
             if ($successCallback) {
-                $successCallback($uniqName);
+                $successCallback($params->storedFileName);
             }
 
-        } catch (\Exception $exception) {
+        }
+        catch (\Exception $exception) {
             //-- callback
             if ($errorCallback) {
                 $errorCallback($exception);
@@ -143,45 +151,49 @@ class MediaStorage implements MediaStorageInterface
         }
     }
 
-    /**
-     * This function is used to determinate where the file should precisily be stored in the 'Storage/Vault' folder
-     * @param ?string $mimeType             this is the mime type of the file that is to be recorded
-     * @param ?string $accountId                   This is the an uniq id that identify the emplacement where the file will be stored (sub folder identifier)
-     * @param ?MediaOwnerType  $ownerType    This describe what type of owner the file belongs to (User, Candidate ..ect). It is used to  create a category folder ...ect
-     * @param ?MediaPurpose    $purpose      The purpose indicates the owner sub directory that is follow
-     * @return string                       This is the new  file path generated
-     */
-    public function resolveTargetDirectory(
-        ?string $mimeType,
-        ?string $ownerId, 
-        ?MediaOwnerType $ownerType,
-        ?MediaPurpose $purpose
-    ): string
-    {
 
-        $base = $this->baseStoragePath . $this->relatifPath ;
 
-        if($ownerType){
-            $base .= '/' .$ownerType->value;
+    private function removeEmptyParentDirectories(
+        string $directoryPath,
+        MediaStorageScope $scope
+    ): void {
+        $projectDir = realpath($this->projectDir . '/' . $scope->value);
+        $currentPath = realpath($directoryPath);
+
+        if ($projectDir === false || $currentPath === false) {
+            return;
         }
 
-        $path  = match(true){
-                str_starts_with((string)$mimeType, 'image') => $base . '/images',
-                str_starts_with((string)$mimeType, 'video') => $base . '/videos',
-                str_starts_with((string)$mimeType, 'audio') => $base . '/audios',
-                str_starts_with((string)$mimeType, 'application/pdf') => $base . '/documents',
-                default => $base . '/others'
-        };
+        $normalizedBase = rtrim($projectDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
-        if($ownerId){
-            $path .= '/' .  $ownerId;
+        while (
+            $currentPath !== $projectDir &&
+            str_starts_with($currentPath . DIRECTORY_SEPARATOR, $normalizedBase)
+        ) {
+            $items = @scandir($currentPath);
+            if ($items === false) {
+                break;
+            }
+
+            $items = array_diff($items, ['.', '..']);
+            if (!empty($items)) {
+                break; // Le dossier n'est pas vide
+            }
+
+            $parentPath = dirname($currentPath);
+
+            if (!@rmdir($currentPath)) {
+                break;
+            }
+
+            // clear cache of function of file status
+            clearstatcache(true, $parentPath);
+
+            $currentPath = realpath($parentPath);
+            if ($currentPath === false) {
+                break;
+            }
         }
-
-        if($purpose){
-            $path .= '/' . $purpose->value;
-        }
-
-        return $path;
     }
 
 }

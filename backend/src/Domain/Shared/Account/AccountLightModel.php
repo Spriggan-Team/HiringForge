@@ -10,6 +10,7 @@ readonly class AccountLightModel
         public string $firstName,
         public string $lastName,
         public string $email,
-        public ?string $imageUrl = null,
+        public ?string $imageId = null,
+        public array $address = [],
     ) {}
 }

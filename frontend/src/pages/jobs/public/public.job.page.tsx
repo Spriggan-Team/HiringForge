@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -8,6 +9,8 @@ import {
 import { navigateTo } from "../../../App";
 import PublicJobQueries from "../../../api/services/public/queries";
 import { useAppContext } from "../../../hooks/context";
+import RouteScheme from "../../../route.scheme";
+
 
 import { ConfirmModal } from "../../../layout/components/conform.box";
 import BrandButton from "../../../layout/components/buttons/brand.button";
@@ -19,8 +22,6 @@ import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.
 
 
 import styles from "./PublicJobPage.module.css";
-import { useNavigate } from "react-router-dom";
-import RouteScheme from "../../../route.scheme";
 
 
 const PAGINATION_LIMIT = 15;
@@ -29,8 +30,8 @@ const PAGINATION_LIMIT = 15;
 
 const PublicJobPage = () => {
   const { t, i18n } = useTranslation();
-  const { currentActor, setModal } = useAppContext();
   const navigate = useNavigate()
+  const { currentActor, setModal } = useAppContext();
 
   // Search state
   const [searchContext, setSearchContext] = useState({ title: "", address: "" });
@@ -112,9 +113,10 @@ const PublicJobPage = () => {
   }, [selectedJobId]);
 
   
-    const handleApplyClick = () => {
+    const handleApplyClick = (id: string) => {
         //-- Start postulation
         if (currentActor?.type === "candidate") {
+            navigateTo(navigate, RouteScheme.JobApplication, {params: { id }})
             return;
         }
 
@@ -127,12 +129,12 @@ const PublicJobPage = () => {
                 title={t("jobs.modal.loginRequiredTitle", "Connexion requise")}
                 message={t("jobs.modal.loginRequiredMsg", "Vous devez être connecté en tant que candidat pour postuler à cette offre.")}
                 cancelText={t("global.buttons.cancel", "Annuler")}
-                confirmText={t("global.buttons.register", "Créer un compte")}
+                confirmText={t("global.buttons.connexion", "Connexion")}
                 variant="request"
                 onCancel={() => setModal(null)}
                 onConfirm={() => {
                     setModal(null);
-                    navigateTo(navigate, RouteScheme.candidateRegister);
+                    navigateTo(navigate, RouteScheme.login);
                 }}
             />
             ),
@@ -307,7 +309,7 @@ const PublicJobPage = () => {
                             
                             <div className={styles.jobActionArea}>
                                 <button 
-                                    onClick={handleApplyClick}
+                                    onClick={()=>handleApplyClick(selectedJobDetails.id)}
                                     className={getPostulateBtnClass()}
                                 >
                                     {t("jobs.buttons.applyNow", "Postuler maintenant")}

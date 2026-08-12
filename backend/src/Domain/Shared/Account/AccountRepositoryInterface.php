@@ -2,6 +2,7 @@
 
 namespace App\Domain\Shared\Account;
 
+use App\Domain\File\StaticMedia;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\KnownIdentity;
 
@@ -55,4 +56,13 @@ interface AccountRepositoryInterface
      */
     public function fetchView(string $id);
 
+
+    /** 
+     * Retreive an image related  to an account id 
+     * Warning: Ensure this function is  used after identity verification
+     *          as it does not fo such a thing
+     * @throws RessourceNotFound throwned when the user is not found
+     * @return StaticMedia|null
+    */
+    public function getProfileImage(string $id): ?StaticMedia;
 }

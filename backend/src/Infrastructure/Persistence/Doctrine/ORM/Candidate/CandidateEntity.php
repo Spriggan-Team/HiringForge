@@ -43,7 +43,7 @@ class CandidateEntity extends AccountEntity
 
     #[ORM\OneToOne(targetEntity: AddressEntity::class, cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(name: 'address_id', nullable: true)]
-    private ?AddressEntity $address = null;
+    private AddressEntity $address;
 
 
     #[ORM\OneToMany(mappedBy: "candidate", targetEntity: InterviewEntity::class)]
@@ -72,6 +72,7 @@ class CandidateEntity extends AccountEntity
 
     public function __construct()
     {
+        parent::__construct();
         $this->interviews  = new ArrayCollection();
         $this->applications = new ArrayCollection();
         $this->jobOfferViews = new ArrayCollection();

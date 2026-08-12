@@ -39,6 +39,9 @@ class InterviewEntity
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $candidateApproval = false;
 
+    #[ORM\Column(length: 522, nullable: true)]
+    private ?string $rejectionReason = null;
+
     #[ORM\ManyToOne(targetEntity: CandidateEntity::class, inversedBy: 'interviews' )]
     #[ORM\JoinColumn(nullable: false)]
     private CandidateEntity $candidate;
@@ -160,6 +163,10 @@ class InterviewEntity
         return $this->candidateApproval;
     }
 
+    public function getRejectionReason(){
+        return $this->rejectionReason;
+    }
+
     //======================
     //  SETTERS
     //======================
@@ -219,6 +226,11 @@ class InterviewEntity
     public function  setCandidateApproval(string $candidateApproval) : self {
         $this->candidateApproval = $candidateApproval;
         return $this;   
+    }
+
+    public function setRejectionReason(?string $reason){
+        $this->rejectionReason = $reason;
+        return $this;
     }
 }
 

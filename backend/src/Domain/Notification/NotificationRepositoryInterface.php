@@ -80,5 +80,7 @@ interface NotificationRepositoryInterface
         ?NotificationType $type = null,
         ?int $limit = 7,
         array $scheme = ['id' => true],
-    ): array ;
+    ): array;
+
+    
 }

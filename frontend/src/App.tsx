@@ -27,13 +27,16 @@ import UserJobsPage from './pages/jobs/page'
 import CreateJobPage from './pages/jobs/create/create.job.page'
 import PrivateJobViewPage from './pages/jobs/view/page'
 import SchedulingWorkspace from './pages/schedule/scheduling.workspace'
-import CandidatesPage from './pages/candidates/candidates.page'
+import CandidatesPage from './pages/user/candidates/candidates.page'
 import UserOffersPage from './pages/offers/user/user.offers.page'
 import UserStatsPage from './pages/stats/user/stats.user.page'
 import PublicJobPage from './pages/jobs/public/public.job.page'
 import PublicNavBar from './pages/components/navbar/public.navbar'
-import DraggableCountdown from './layout/components/draggable.contdown'
-import { useAppContext } from './hooks/context'
+import JobApplicationPage from './pages/candidate/apply/job.application.page'
+import CandidateApplicationPage from './pages/candidate/applications/candidate.applications.page'
+import CandidateInterviewsPage from './pages/candidate/interviews/candidate.interviews.page'
+import CandidateOfferPage from './pages/candidate/offers/candidate.offer.page'
+import CandidateProfilPage from './pages/candidate/profile/candidate.profile.page'
 
 
 
@@ -90,9 +93,14 @@ function App() {
             </Route>
 
             {/** EXCLUSIVE CANDIDATES */}
-            <Route>
-
+            <Route element={<PublicAppLayout />}>
+                <Route path={RouteScheme.JobApplication} element={<JobApplicationPage />} />
+                <Route path={RouteScheme.candidateApplications} element={<CandidateApplicationPage />} />
+                <Route path={RouteScheme.candidateInterviews} element={<CandidateInterviewsPage />} />
+                <Route path={RouteScheme.candidateOffers} element={<CandidateOfferPage />} />
+                <Route path={RouteScheme.candidateProfile} element={<CandidateProfilPage />} />
             </Route>
+
 
             {/** PUBLIC ACCESS (AUTH) */}
           </Route>

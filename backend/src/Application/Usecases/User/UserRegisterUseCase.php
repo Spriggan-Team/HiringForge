@@ -19,12 +19,13 @@ use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaFactoryInterface;
 use App\Domain\File\MediaStorageInterface;
 use App\Domain\Department\DepartmentInitializerService;
-
+use App\Domain\File\MediaStorageParams;
 use App\Domain\OTP\Exceptions\OTPException;
 use App\Domain\OTP\OTPRepositoryInterface;
 
 use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\Shared\Account\AccountId;
+use App\Domain\Shared\AccountStorageParams;
 use App\Domain\Shared\CustomUUID;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\Shared\PasswordHasherInterface;
@@ -69,10 +70,13 @@ class UserRegisterUseCase
         $userId = AccountId::create();
 
         /** @var string[] filenames array that have failed */
-        $filesFailedSize = [];
-        $filesFailedTimeout = [];
-        $filesFailedGeneric = [];
-        $successfulUploads = [];
+        $filesFailedSize = [];  //-- Files with size error
+        $filesFailedTimeout = []; //-- File with durout error
+        $filesFailedGeneric = []; //-- Files with other error
+        $successfulUploads = [];  //-- Succes files - names
+
+        /** @var array<int, MediaStorageParams> */
+        $successfulUploasParams = []; //-- Falbacl for clearing invalid saved file (bdd insertion failed)
 
         // -- Check verification code
         try {
@@ -133,46 +137,51 @@ class UserRegisterUseCase
                 $timedMedia = $this->mediaFactory->createTimedMedia($command->videoPresentation);
                 $company->addVideoPresentation($timedMedia);
                 
+                $parmas = AccountStorageParams::companyVideoPresentation(
+                    companyId: $company->id(),
+                );
                 $this->storage->store(
                     file: $command->videoPresentation,
-                    ownerId: $company->id(),
-                    mediaPurpose: MediaPurpose::PROFILE,
-                    ownerType: MediaOwnerType::COMPANY,
+                    params: $parmas,          
                     errorCallback: function($result) use (&$company, &$filesFailedGeneric) {
                         $filesFailedGeneric[] = $result->originalName;
                         $company->removeVideoPresentation();
                     },
+                    successCallback: function ()use(&$params){
+                        $successfulUploasParams[] = $params;
+                    }
                 );
-            } catch (FileSizeExceeded $e) {
+            }
+            catch (FileSizeExceeded $e) {
                 $filesFailedSize[] = $e->getPayload()["originalName"];
-            } catch (FileTimeExceeded $e) {
+            }
+            catch (FileTimeExceeded $e) {
                 $filesFailedTimeout[] = $e->getPayload()["originalName"];
             }
         }
 
         // -- Method for handling single upload (static media)
-        $uploadMedia = function($file, MediaPurpose $purpose, MediaOwnerType $ownerType, callable $onAttach, callable $onDetach) 
-            use (&$filesFailedGeneric, &$filesFailedSize, &$successfulUploads, $userId, $user) {
+        $uploadMedia = function($file, MediaStorageParams $params, callable $onAttach, callable $onDetach) 
+            use (&$filesFailedGeneric, &$filesFailedSize, &$successfulUploads, $user) {
                 try {
                     $staticMedia = $this->mediaFactory->createStaticMedia($file);
                     
                     $onAttach($staticMedia);
-
+                    $params->storedFileName = $staticMedia->name;
                     $this->storage->store(
                         file: $file,
-                        ownerId: $userId->value(),
-                        storedFileName: $staticMedia->name,
-                        ownerType: $ownerType,
-                        mediaPurpose: $purpose,
+                        params: $params,
                         errorCallback: function($result) use (&$filesFailedGeneric, $onDetach, $staticMedia) {
                             $filesFailedGeneric[] = $result->originalName;
                             $onDetach($staticMedia);
                         },
-                        successCallback: function($result) use (&$successfulUploads) {
+                        successCallback: function($result) use (&$successfulUploads, &$params) {
                             $successfulUploads[] = $result->storedName;
+                            $successfulUploasParams[] = $params;
                         }
                     );
-                } catch (FileSizeExceeded $e) {
+                }
+                catch (FileSizeExceeded $e) {
                     $filesFailedSize[] = $e->getPayload()["originalName"];
                 }
             };
@@ -181,8 +190,7 @@ class UserRegisterUseCase
         if ($command->logo) {
             $uploadMedia(
                 file: $command->logo,
-                purpose: MediaPurpose::PROFILE,
-                ownerType: MediaOwnerType::COMPANY,
+                params: AccountStorageParams::companyLogo(companyId: $company->id()),
                 onAttach: fn($media) => $company->setLogo($media),
                 onDetach: fn($media) => $company->removeImage($media)
             );
@@ -192,8 +200,7 @@ class UserRegisterUseCase
         if ($command->profileImage) {
             $uploadMedia(
                 file: $command->profileImage,
-                purpose: MediaPurpose::PROFILE,
-                ownerType: MediaOwnerType::USER,
+                params: AccountStorageParams::recruiterProfile(companyId: $company->id()),
                 onAttach: fn($media) => $user->addImage($media),
                 onDetach: fn($media) => $user->removeImage()
             );
@@ -203,8 +210,7 @@ class UserRegisterUseCase
         foreach ($command->images as $uploadedImage) {
             $uploadMedia(
                 file: $uploadedImage,
-                purpose: MediaPurpose::PROFILE,
-                ownerType: MediaOwnerType::COMPANY,
+                params: AccountStorageParams::companyImages(companyId: $company->id()),
                 onAttach: fn($media) => $company->addImages($media),
                 onDetach: fn($media) => $company->removeImage($media)
             );
@@ -217,17 +223,17 @@ class UserRegisterUseCase
                 $this->userRepository->save($user);
                 $this->departmentInitializer->initForCompany($company);
            });
-        } catch (ResourceCreationRejected $e) {
+        }
+        catch (ResourceCreationRejected $e) {
             // Rollback files
-            foreach ($successfulUploads as $storedFileName) {
+            foreach ($successfulUploasParams as $param) {
                 try {
                     $this->storage->remove(
-                        uniqName: $storedFileName,
-                        ownerId: $userId->value(),
-                        ownerType: MediaOwnerType::COMPANY,
-                        purpose: MediaPurpose::PROFILE
+                        params: $param,
+                        recursive: true
                     );
-                } catch (\Exception $storageException) {}
+                }
+                catch (\Exception $storageException) {}
             }
 
             throw $e;

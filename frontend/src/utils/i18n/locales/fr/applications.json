@@ -1,5 +1,13 @@
 {
     "applications":{
+        "title": "Application",
+        "resumeLabel": "CV",
+        "importedOn": "Importé le",
+        "previewTitle": "Aperçu du CV",
+        "noResume": "Aucun CV disponible",
+        "confirmCta": " Postuler !",
+        "loadingResume": "Chargement du CV...",
+
         "update":{
             "changeStatus" : "Changer de statut"
         },
@@ -16,6 +24,14 @@
            "loadingNextApplication": "Chargement des candidatures suivantes...",
            "noApplicationsFounded": "Aucune candidature trouvée.",
             "confirmStatusChange": "Voulez-vous vraiment passer la candidature de <strong>{{candidateName}}</strong> au statut <strong>{{status}}</strong> ?"
+        },
+        "submitting": {
+            "label": "Soumission",
+            "processing": "Votre candidature est en cours de traitement",
+            "success": "Votre candidature a bien été envoyée",
+            "error": "Une erreur est survenue lors de l'envoi de votre candidature"
         }
+
+
     }
 }

@@ -21,17 +21,6 @@ const AuthEntryPage: React.FC<EntryPageProps> = ({ children }) => {
 
 
 
-  useEffect(() => {
-    const setup = async () => {
-      redirectAccordingToSession(navigate, location);
-      if(!currentActor){
-        initializeData()
-      }
-    };
-
-    setup();
-  }, [ location, navigate]);
-
 
   //-- Initializing guard
   if (isAppInitializing) {

@@ -2,6 +2,7 @@
 
 namespace App\Domain\File;
 
+use App\Domain\Shared\RootPath;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 interface MediaStorageInterface
@@ -25,14 +26,11 @@ interface MediaStorageInterface
      */
     public function store(
         mixed $file,
-        string $ownerId,
         /** @var string[] a array of filename  */
-        MediaOwnerType $ownerType,
-        MediaPurpose $mediaPurpose,
+        MediaStorageParams $params,
         ?string $storedFileName = null,
-        ?callable  $successCallback = null,
-        ?callable  $errorCallback = null,
-        string $scope = "public"
+        ?callable $successCallback = null, 
+        ?callable $errorCallback = null,
     ): void;
 
 
@@ -52,29 +50,13 @@ interface MediaStorageInterface
      * @throws \Exception
      */
     public function remove(
-        string $uniqName, 
-        ?string $ownerId = null,
-        ?MediaOwnerType $ownerType = null,
-        ?MediaPurpose $purpose = null,
-        ?callable  $successCallback = null,
-        ?callable  $errorCallback = null
+        MediaStorageParams $params,
+        ?string $mimeType = null,
+        bool $recursive = false,
+        ?callable $successCallback = null, 
+        ?callable $errorCallback = null,
     ): void;
 
     
-
-    /**
-     * This function is used to determinate where the file should precisily be stored in the 'Storage/Vault' folder
-     * @param ?string $mimeType             this is the mime type of the file that is to be recorded
-     * @param ?string $accountId                   This is the an uniq id that identify the emplacement where the file will be stored (sub folder identifier)
-     * @param ?MediaOwnerType  $ownerType    This describe what type of owner the file belongs to (User, Candidate ..ect). It is used to  create a category folder ...ect
-     * @param ?MediaPurpose    $purpose      The purpose indicates the owner sub directory that is follow
-     * @return string                       This is the new  file path generated
-     */
-    public function resolveTargetDirectory(
-        ?string $mimeType,
-        ?string $ownerId, 
-        ?MediaOwnerType $ownerType,
-        ?MediaPurpose $purpose
-    ): string;
 
 }

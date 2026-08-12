@@ -1,3 +1,4 @@
+import JobApplicationPage from "./pages/candidate/apply/job.application.page";
 
 const RouteScheme = {
     main: "/",
@@ -12,10 +13,13 @@ const RouteScheme = {
     userRegister: "/user/resgister",
     candidateRegister: "/candidate/register",
     directorRegister: "/candidate/register",
-
+    candidateOffers: "/candidate/offers",
+    candidateInterviews: "/candidate/interviews",
     
     //-- CANDIDATE
     candidateProfile: "/candidate/profil",
+    JobApplication: "/jobs/:id/apply",
+    candidateApplications: "/candidate/applications",
 
     //-- USER CANDIDATES
     userCandidate: "/user/candidates",

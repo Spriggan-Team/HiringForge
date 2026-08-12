@@ -21,6 +21,7 @@ class StaticMedia
 
         /**identifiant of the image */
         public ?int $id = null,
+        public ?\DateTimeImmutable $createdAt = null,
     ){}
 
     public static function hydrate(
@@ -28,9 +29,10 @@ class StaticMedia
         float $size,
         string $mime, 
         ?string $originalName = null,
-        ?int $id =null
+        ?int $id =null,
+        \DateTimeImmutable $createdAt,
     ){
-        return new self(id: $id, name: $name, size: $size, mime: $mime, originalName: $originalName);
+        return new self(id: $id, name: $name, size: $size, mime: $mime, originalName: $originalName, createdAt: $createdAt);
     }
 
     /**

@@ -3,13 +3,17 @@
 import type { ParseKeys } from 'i18next';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 //-- Hooks & Services
 import { useSendOTP } from '../../../hooks/handler';
 import { useAppContext } from '../../../hooks/context';
-import { objectToFormData } from '../../../utils/convertor';
 import { InvalidOTP, RessourceCreationFailed } from '../../../api/services/exceptions';
 import { AccountAlreadyRegistered, CompanyAlreadyRegistered } from '../../../api/services/auth/exceptions';
+import AuthServices from '../../../api/services/auth/auth';
+import RouteScheme from '../../../route.scheme';
+import { navigateTo } from '../../../App';
+
 
 //-- Custom components 
 import RegisterationHeader from '../components/registeration.header';
@@ -28,11 +32,7 @@ import CVFileSVG  from "/src/assets/svg/cv-file-interface-symbol-svgrepo-com.svg
 
 //-- Styles
 import styles from './CandidateRegisterPage.module.css';
-import { navigateTo } from '../../../App';
-import { useNavigate } from 'react-router-dom';
-import AuthServices from '../../../api/services/auth/auth';
-import RouteScheme from '../../../route.scheme';
-import DraggableCountdown from '../../../layout/components/draggable.contdown';
+
 
 
 
@@ -268,6 +268,7 @@ export const CandidateRegisterPage: React.FC = () => {
 
               <AddressFields
                 address={address}
+                requirements={{ street: false }}
                 titleKey='global.address.label'
                 onChange={handleAddressChange}
               />

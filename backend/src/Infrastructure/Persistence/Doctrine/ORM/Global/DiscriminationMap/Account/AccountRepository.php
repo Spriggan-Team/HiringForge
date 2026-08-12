@@ -5,8 +5,10 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\A
 
 use App\Domain\Shared\KnownIdentity;
 use App\Domain\Exception\RessourceNotFound;
+use App\Domain\File\StaticMedia;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\Account\AccountRole;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\Mapper\FileEntityMapper;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 
@@ -15,6 +17,28 @@ class AccountRepository implements AccountRepositoryInterface
     public function __construct(
         private EntityManagerInterface $em,
     ){}
+
+    
+    #[Override]
+    public function getProfileImage(string $id): ?StaticMedia
+    {
+        /** @var AccountEntity|null $account */
+        $account = $this->em->find(AccountEntity::class, $id);
+
+        if (!$account) {
+            throw new RessourceNotFound(
+                sprintf('No account found with id "%s".', $id)
+            );
+        }
+
+        $image = $account->getImage();
+
+        if (!$image) {
+            return null;
+        }
+
+        return FileEntityMapper::toStaticDomainMedia($image);
+    }
 
 
     #[Override]

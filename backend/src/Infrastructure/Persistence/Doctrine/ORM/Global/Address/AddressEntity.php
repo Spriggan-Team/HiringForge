@@ -16,7 +16,7 @@ class AddressEntity
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $street = null;
 
     #[ORM\Column(length: 255)]
@@ -80,7 +80,7 @@ class AddressEntity
     //      SETTERS
     //=================================
 
-    public function setStreet(string $street): static
+    public function setStreet(?string $street): static
     {
         $this->street = $street;
         return $this;

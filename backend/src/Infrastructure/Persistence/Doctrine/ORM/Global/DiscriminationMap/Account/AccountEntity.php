@@ -48,7 +48,10 @@ class AccountEntity
     #[ORM\Column(type: 'text', nullable: true)]
     protected ?string $description = null;
 
-    #[ORM\Column]
+    #[ORM\Column(
+        type: 'datetime_immutable',
+        options: ['default' => 'CURRENT_TIMESTAMP']
+    )]
     protected \DateTimeImmutable $createdAt;
 
     //--------------------
@@ -57,7 +60,8 @@ class AccountEntity
 
     #[ORM\OneToOne(
         inversedBy: "accountImage",
-        targetEntity: FileEntity::class
+        targetEntity: FileEntity::class,
+        cascade: ['persist']
     )]
     protected ?FileEntity $image = null;
 

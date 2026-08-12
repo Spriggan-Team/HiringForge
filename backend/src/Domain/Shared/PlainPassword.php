@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Domain\Shared;
+
 use DomainException;
 
 class PlainPassword

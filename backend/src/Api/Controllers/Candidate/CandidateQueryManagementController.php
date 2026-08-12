@@ -7,6 +7,7 @@ use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Domain\Candidate\CandidateRepositoryInterface;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountRole;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,8 +23,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class CandidateQueryManagementController extends AbstractController
 {
     public function __construct(
+        LoggerInterface $logger,
         private CandidateRepositoryInterface $candidateRepository
-    ){}
+    ){
+        ApiResponse::init($logger);
+    }
 
     /**
      * This controller allow any connected user to access to its informations
@@ -60,19 +64,20 @@ class CandidateQueryManagementController extends AbstractController
                 data: $data,
                 message: "Context retrieved successfully"
             )->toJsonResponse();
-
         }
         catch (RessourceNotFound $e) { 
             return ApiResponse::error(
                 message: "Candidate not found",
-                statusCode: Response::HTTP_NOT_FOUND
+                statusCode: Response::HTTP_NOT_FOUND,
+                throwable: $e
             )->toJsonResponse();
 
         }
-        catch (\Throwable $e) { 
+        catch (\Exception $e) { 
             return ApiResponse::error(
                 message: "An error occurred while processing your request",
-                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR
+                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR,
+                throwable: $e,
             )->toJsonResponse();
         }
     }

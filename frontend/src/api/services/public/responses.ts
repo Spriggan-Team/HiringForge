@@ -23,6 +23,7 @@ export type BasicPublicJobOfferModel = {
   salary: PublicJobOfferSalary;
   contractType: PublicJobOfferContractType | null;
   location: PublicJobOfferLocation | null;
+  company?: string
 };
 
 export type PublicJobOfferLightModel = BasicPublicJobOfferModel & {

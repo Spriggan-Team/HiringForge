@@ -34,9 +34,12 @@ class CandidateEntityMapper
         foreach($candidateResumes as $cv){
             $resume = $cv->getFile();
             $cvs =  StaticMedia::hydrate(
+                id: $resume->getId(),
                 name: $resume->getName(), 
                 size: $resume->getSize(),
-                mime: $resume->getMime()
+                mime: $resume->getMime(),
+                originalName: $resume->getOriginalName(),
+                createdAt: $resume->getCreatedAt()
             );
         }
 
@@ -69,8 +72,9 @@ class CandidateEntityMapper
         if($address){
             $addressEntity = new AddressEntity();
             $addressEntity->setCountry($address->country)
-                        ->setPostalCode($address->postalCode)
-                        ->setStreet($address->street);
+                          ->setPostalCode($address->postalCode)
+                          ->setStreet($address->street)
+                          ->setCity($address->city);
 
             $entity->attachToAddress($addressEntity);
         }
@@ -81,7 +85,8 @@ class CandidateEntityMapper
             $fileEntity = new FileEntity();
             $fileEntity->setName($cv->name)
                        ->setSize($cv->size)
-                       ->setMime($cv->mime);
+                       ->setMime($cv->mime)
+                       ->setOriginalName($cv->originalName ?? null);
             $resume =  CandidateResumeEntity::create(
                 candidate: $entity,
                 file: $fileEntity
@@ -96,7 +101,8 @@ class CandidateEntityMapper
             $fileEntity = new FileEntity();
             $fileEntity->setName($image->name)
                        ->setSize($image->size)
-                       ->setMime($image->mime);
+                       ->setMime($image->mime)
+                       ->setOriginalName($image->originalName ?? null);
             $entity->attachImage($fileEntity);
         }
 

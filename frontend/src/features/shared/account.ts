@@ -31,8 +31,14 @@ export interface CurrentCandidate {
     firstName: string;
     lastName: string;
     email: string;
-    avatarUrl: string | null;
-    resumeUrl: string | null;
+    imageId?: string | null;
+    location?:  {
+        id?: number | null,
+        city: string,
+        postalCode: string;
+        country: string;
+        street?: string | null;
+    }
 }
 
 

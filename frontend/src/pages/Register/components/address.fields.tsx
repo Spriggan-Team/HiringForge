@@ -18,12 +18,24 @@ interface AddressFieldsProps {
   address: AddressData;
   onChange: (updatedFields: Partial<AddressData>) => void;
   titleKey?: ParseKeys; //-- Dynamic title
+  requirements?:{
+    city?: boolean,
+    postalCode?: boolean,
+    street?: boolean,
+    country?: boolean
+  }
 }
 
 export const AddressFields: React.FC<AddressFieldsProps> = ({
   address,
   onChange,
   titleKey = "userRegister.form.aside.addressDetails.title" as ParseKeys,
+  requirements = {
+    city: true,
+    postalCode: true,
+    street: true,
+    country: true
+  }
 }) => {
   const { t } = useTranslation();
 
@@ -34,7 +46,7 @@ export const AddressFields: React.FC<AddressFieldsProps> = ({
       <div className={styles.geoposSection}>
         {/* Country */}
         <BasicInput
-          required
+          required={requirements.country}
           placeholder="France"
           className={styles.faintBorder}
           value={address.country || ""}
@@ -47,7 +59,7 @@ export const AddressFields: React.FC<AddressFieldsProps> = ({
         <div className={styles.inpts}>
           {/*  Postal Code */}
           <BasicInput
-            required
+            required={requirements.postalCode}
             placeholder="75002"
             label={t("global.address.postalCode")}
             backgroundColor="#FBFAFE"
@@ -59,7 +71,7 @@ export const AddressFields: React.FC<AddressFieldsProps> = ({
 
           {/* City */}
           <BasicInput
-            required
+            required={requirements.city}
             width="100%"
             placeholder="Paris"
             className={styles.faintBorder}
@@ -72,7 +84,7 @@ export const AddressFields: React.FC<AddressFieldsProps> = ({
 
         {/* Street */}
         <BasicInput
-          required
+          required={requirements.street}
           width="100%"
           className={styles.faintBorder}
           backgroundColor="#FBFAFE"

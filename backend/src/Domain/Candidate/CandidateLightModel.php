@@ -2,6 +2,7 @@
 
 namespace App\Domain\Candidate;
 
+use App\Domain\Shared\Address;
 use App\Domain\Shared\Account\AccountLightModel;
 
 readonly class CandidateLightModel extends AccountLightModel
@@ -11,7 +12,8 @@ readonly class CandidateLightModel extends AccountLightModel
         string $firstName,
         string $lastName,
         string $email,
-        ?string $imageUrl = null,
+        array $address,
+        ?string $imageId = null,
         public ?string $headline = null,
     ) {
         parent::__construct(
@@ -19,7 +21,8 @@ readonly class CandidateLightModel extends AccountLightModel
             firstName: $firstName,
             lastName: $lastName,
             email: $email,
-            imageUrl: $imageUrl,
+            imageId: $imageId,
+            address: $address
         );
     }
 }

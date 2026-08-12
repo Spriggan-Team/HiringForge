@@ -1,6 +1,6 @@
 
 
-import ApplicationsTable from "../jobs/components/tables/candidates/application.table";
+import ApplicationsTable from "../../jobs/components/tables/candidates/application.table";
 import styles from "./CandidatesPage.module.css"
 
 

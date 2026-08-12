@@ -66,7 +66,7 @@ const Login = () => {
         if(role === AccountRole.USER){
             navigate(RouteScheme.userHome);
         }
-        else if(role == AccountRole.USER){
+        else if(role === AccountRole.CANDIDATE){
             navigate(RouteScheme.jobs)
         }
     };
