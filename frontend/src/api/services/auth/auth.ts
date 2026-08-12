@@ -1,4 +1,4 @@
-import { authPost, patch, post } from "../../handler";
+import { authPost, patch, post } from "../../http";
 
 //import types
 import { AccountAlreadyRegistered, AccountNotFound, InvalidCredentials, CompanyAlreadyRegistered } from "./exceptions";

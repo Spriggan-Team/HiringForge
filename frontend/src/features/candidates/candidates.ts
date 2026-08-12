@@ -33,7 +33,7 @@ export interface CandidateLightModel {
 }
 
 
-export interface ResumeMetada{
+export interface ResumeFileMetada{
     id: string;
     name: string;
     size: number;

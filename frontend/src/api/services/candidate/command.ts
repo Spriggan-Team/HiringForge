@@ -1,17 +1,17 @@
 import { intercept } from "../../../utils/utils";
-import { authPost, handleGenericApiResponseAfter } from "../../handler";
+import { authPost,  } from "../../http";
 
 
 
 const apply = async ({
     jobId,
-    resumeId
+    fileId
 }:{
     jobId: string,
-    resumeId: string
+    fileId: string
 })=>{
     try{
-        await authPost(`/applications/${jobId}/apply`, { resumeId });
+        await authPost(`/applications/${jobId}/apply`, { fileId });
     }
     catch(error){
         throw error;

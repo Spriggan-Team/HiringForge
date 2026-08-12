@@ -6,10 +6,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 //-- Services
 import CandidatesQueries from "../../../api/services/candidate/queries";
-import type { ResumeMetada } from "../../../features/candidates/candidates";
+import type { ResumeFileMetada } from "../../../features/candidates/candidates";
 import type { PublicJobOfferDetailsModel } from "../../../api/services/public/responses";
 import { useAppContext, useCurrentCandidate } from "../../../hooks/context";
 import PublicJobQueries from "../../../api/services/public/queries";
+import CandidateServices from "../../../api/services/candidate/command";
+import { navigateTo } from "../../../App";
+import RouteScheme from "../../../route.scheme";
 
 
 //-- Custom compoenents
@@ -21,9 +24,6 @@ import CVFileSVG  from "/src/assets/svg/cv-file-interface-symbol-svgrepo-com.svg
 
 //-- Styles
 import styles from "./JobApplicationPage.module.css"
-import CandidateServices from "../../../api/services/candidate/command";
-import { navigateTo } from "../../../App";
-import RouteScheme from "../../../route.scheme";
 
 
 interface JobApplicationPageProps{}
@@ -40,8 +40,8 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
  
     const blobCache = useRef<Map<string, string>>(new Map());
  
-    const [resumes,          setResumes]          = useState<ResumeMetada[]>([]);
-    const [selectedResumeId, setSelectedResumeId] = useState<string>("");
+    const [resumeFiles,          setResumeFiles]  = useState<ResumeFileMetada[]>([]);
+    const [selectedResumeFileId, setSelectedResumeFileId] = useState<string>("");
     const [currentResumeUrl, setCurrentResumeUrl] = useState<string>("");
     const [isResumeLoading,  setIsResumeLoading]  = useState<boolean>(false);
  
@@ -50,7 +50,7 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
  
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
  
-    const selectedResume = resumes.find(r => r.id === selectedResumeId) ?? null;
+    const selectedResume = resumeFiles.find(r => r.id === selectedResumeFileId) ?? null;
  
     // ---- Fetch job details -----
     const fetchJobDetails = useCallback(async () => {
@@ -73,8 +73,8 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
     const loadResumesMetaData = useCallback(async () => {
         try {
             const data = await CandidatesQueries.getResumes();
-            setResumes(data);
-            if (data.length > 0) setSelectedResumeId(data[0].id);
+            setResumeFiles(data);
+            if (data.length > 0) setSelectedResumeFileId(data[0].id);
         } catch (err) {
             console.error("Error loading resumes metadata:", err);
         }
@@ -94,20 +94,20 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
  
     // -- Load resume blob (with cache) --
     useEffect(() => {
-        if (!selectedResumeId) return;
+        if (!selectedResumeFileId) return;
         let alive = true;
  
         const load = async () => {
-            if (blobCache.current.has(selectedResumeId)) {
-                setCurrentResumeUrl(blobCache.current.get(selectedResumeId)!);
+            if (blobCache.current.has(selectedResumeFileId)) {
+                setCurrentResumeUrl(blobCache.current.get(selectedResumeFileId)!);
                 return;
             }
             setIsResumeLoading(true);
             try {
-                const blob = await CandidatesQueries.getResumeContent(selectedResumeId);
+                const blob = await CandidatesQueries.getResumeContent(selectedResumeFileId);
                 const url  = URL.createObjectURL(blob);
                 if (alive) {
-                    blobCache.current.set(selectedResumeId, url);
+                    blobCache.current.set(selectedResumeFileId, url);
                     setCurrentResumeUrl(url);
                 }
             } catch (err) {
@@ -119,21 +119,23 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
  
         load();
         return () => { alive = false; };
-    }, [selectedResumeId]);
+    }, [selectedResumeFileId]);
  
 
 
     // --- Submit application -- 
     const handleSubmit = useCallback(async () => {
-        if (!id || !selectedResumeId) 
+        if (!id || !selectedResumeFileId) 
             return;
         setIsSubmitting(true);
         setLoading({ state: true, subtitle: t("applications.submitting.processing") });
         
+
+  
         try {
             await CandidateServices.apply({
                 jobId:    id,
-                resumeId: selectedResumeId,
+                fileId: selectedResumeFileId,
             });
             setPopup({ status: "success", message: t("applications.submitting.success") });
         }
@@ -146,7 +148,7 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
             setLoading({ state: false, subtitle: undefined });
             navigateTo(naviagate, RouteScheme.jobs)
         }
-    }, [id, selectedResumeId, candidate.id, setLoading, setPopup, t]);
+    }, [id, selectedResumeFileId, candidate.id, setLoading, setPopup, t]);
  
 
     // -- Salary label helper ---
@@ -182,11 +184,11 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
                         <select
                             id="resume-select"
                             className={styles.selectInput}
-                            value={selectedResumeId}
-                            onChange={e => setSelectedResumeId(e.target.value)}
-                            disabled={resumes.length === 0}
+                            value={selectedResumeFileId}
+                            onChange={e => setSelectedResumeFileId(e.target.value)}
+                            disabled={resumeFiles.length === 0}
                         >
-                            {resumes.map(resume => (
+                            {resumeFiles.map(resume => (
                                 <option key={resume.id} value={resume.id}>
                                     {resume.originalName || resume.name}
                                     {" "}({(resume.size / 1024).toFixed(1)} KB
@@ -326,7 +328,7 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
                             {/* Submit */}
                             <button
                                 className={styles.submitButton}
-                                disabled={isSubmitting || !selectedResumeId}
+                                disabled={isSubmitting || !selectedResumeFileId}
                                 onClick={handleSubmit}
                             >
                                 {isSubmitting
@@ -343,9 +345,9 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
  
 export default JobApplicationPage;
  
-// ─────────────────────────────────────────────────────────────
+// --------------------------
 // Skeleton
-// ─────────────────────────────────────────────────────────────
+// -----------------------------
  
 const JobDetailsSkeleton: React.FC = () => (
     <div className={styles.jobDetailsCard}>

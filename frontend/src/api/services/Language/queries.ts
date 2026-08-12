@@ -1,7 +1,8 @@
 
 import { intercept } from "../../../utils/utils";
-import { authGet, get, handleGenericApiResponseAfter } from "../../handler";
-import type { ApiResponse } from "../response.types";
+import { handleGenericApiResponseAfter } from "../../api-response-handler";
+import { authGet, get } from "../../http";
+import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import type { LanguageApiResponse } from "./responses.types";
 
 
@@ -27,11 +28,18 @@ const getLanguagesLevel = async()=>{
 }
 
 
+const Queries =     { 
+        getLanguages ,
+        getLanguagesLevel
+}
 
-const LanguageQueries = intercept(
-    { getLanguages , getLanguagesLevel },
+const LanguageQueries = intercept<
+    typeof Queries,
+    ApiResponse | ErrorApiResponse
+>(
+    Queries,
     undefined,
-    handleGenericApiResponseAfter
+    (method, result) => handleGenericApiResponseAfter(method, result as ApiResponse)
 );
 
 

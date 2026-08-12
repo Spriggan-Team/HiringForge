@@ -1,13 +1,20 @@
 import { intercept } from "../../../utils/utils";
 
 import { type ApiResponse } from "../response.types";
-import { authGet, handleGenericApiResponseAfter } from "../../handler";
-import type { ApiJobSummaryResponse, CandidateListResponse, JobViewApiResponse, RecruitmentMetricsResponse, RecruitmentPipelineStatsResponse } from "./response";
+import { authGet } from "../../http";
+import type { 
+    ApiJobSummaryResponse,
+    CandidateListResponse,
+    JobViewApiResponse,
+    RecruitmentMetricsResponse,
+    RecruitmentPipelineStatsResponse
+} from "./response";
 
 import { buildFilterQueryParams } from "./helpers";
 import { mapJobOfferViewToJobView } from "./mapper";
 import type { UserJobFiltersRequets } from "./request";
 import type { JobView } from "../../../features/jobs/JobOffer";
+import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
 
 //----------------------------
@@ -192,7 +199,7 @@ const JobQueries = intercept(
             getJobApplicationKpis,
     },
     undefined,
-    handleGenericApiResponseAfter
+    (method, result) => handleGenericApiResponseAfter(method, result as ApiResponse)
 );
 
 

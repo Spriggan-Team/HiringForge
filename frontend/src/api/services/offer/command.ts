@@ -1,6 +1,9 @@
 import type { CreateOfferPayload } from "../../../features/offer/offer";
 import { intercept } from "../../../utils/utils";
-import { authPost, handleGenericApiResponseAfter } from "../../handler";
+import { handleGenericApiResponseAfter } from "../../api-response-handler";
+import type { ApiResponseError } from "../../exceptions";
+import { authPost } from "../../http";
+import type { ApiResponse } from "../response.types";
 
 
 //------------------
@@ -40,10 +43,16 @@ const deleteOffer = async (id: string)=>{
 }
 
 
-const OffersServices = intercept(
-    { create, cancelOffer , deleteOffer},
+//--
+const Queries = { create, cancelOffer , deleteOffer}
+
+const OffersServices = intercept<
+    typeof Queries,
+    ApiResponse | ApiResponseError
+>(
+    Queries,
     undefined,
-    handleGenericApiResponseAfter
+    (method, response) => handleGenericApiResponseAfter(method, response)
 )
 
 

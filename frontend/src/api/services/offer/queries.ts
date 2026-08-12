@@ -1,5 +1,8 @@
 import { intercept } from "../../../utils/utils";
-import { authGet, handleGenericApiResponseAfter } from "../../handler";
+import { handleGenericApiResponseAfter } from "../../api-response-handler";
+import type { ApiResponseError } from "../../exceptions";
+import { authGet } from "../../http";
+import { type ApiResponse, } from "../response.types";
 import type {  UserOfferQueryResponse } from "./response";
 
 
@@ -38,10 +41,15 @@ const getUserJobOffers = async(
 }
 
 
-const OffersQueries = intercept(
+const OffersQueries = intercept<
+    {
+        getUserJobOffers: typeof getUserJobOffers
+    },
+    ApiResponse | ApiResponseError
+>(
     { getUserJobOffers },
     undefined,
-    handleGenericApiResponseAfter
+    (method, response) => handleGenericApiResponseAfter(method, response)
 )
 
 export default OffersQueries;

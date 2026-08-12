@@ -1,7 +1,8 @@
 import { intercept } from "../../../utils/utils";
-import { authGet, handleGenericApiResponseAfter } from "../../handler";
+import { handleGenericApiResponseAfter } from "../../api-response-handler";
+import { authGet } from "../../http";
 
-import type { ApiResponse } from "../response.types";
+import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import type { SearchSkillApiResponse } from "./reponses.types";
 
 
@@ -27,10 +28,18 @@ const getExpertiseCollection = async ()=>{
 }
 
 
-const SkillServices = intercept(
-    { search, getExpertiseCollection },
+
+const Queries = { 
+    search, 
+    getExpertiseCollection
+};
+const SkillServices = intercept<
+    typeof Queries,
+    ApiResponse |ErrorApiResponse
+>(
+    Queries,
     undefined,
-    handleGenericApiResponseAfter
+    (method, response) => handleGenericApiResponseAfter(method, response)
 );
 
 export default SkillServices;

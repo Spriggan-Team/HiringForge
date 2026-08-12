@@ -1,3 +1,5 @@
+
+
 export function intercept<
     T extends object,
     TResult = unknown

@@ -1,5 +1,7 @@
 import { intercept } from "../../../utils/utils";
-import { authGet, handleGenericApiResponseAfter } from "../../handler";
+import { handleGenericApiResponseAfter } from "../../api-response-handler";
+import { authGet } from "../../http";
+import type { ApiResponse } from "../response.types";
 import type { GetJobOfferNotificationsResponse } from "./response";
 
 
@@ -21,7 +23,7 @@ const getJobNotfication = async (jobId: string, limit: number = 5)=>{
 const NotificationQueries = intercept(
     { getJobNotfication },
     undefined,
-    handleGenericApiResponseAfter
+    (method, result) => handleGenericApiResponseAfter(method, result as ApiResponse)
 )
 
 export default NotificationQueries;

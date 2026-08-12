@@ -1,10 +1,10 @@
-import type { ResumeMetada } from "../../../features/candidates/candidates";
+import type { ResumeFileMetada } from "../../../features/candidates/candidates";
 import type { ApiResponse } from "../response.types";
 
 
 
 export type CurrentCandidateContextResponse = ApiResponse<CurrentUser>;
-export type GetResumeCollection = ApiResponse<ResumeMetada[]>;
+export type GetResumeCollection = ApiResponse<ResumeFileMetada[]>;
 
 
 export interface CurrentUser {

@@ -3,7 +3,9 @@ import type {  UserContextApiResponse } from "./response";
 import type { RecruiterDashboardKpis } from "../../../features/dashboard/KpiData";
 
 import { intercept } from "../../../utils/utils";
-import { authGet, generateAuthorizationBearerHeader, get, handleGenericApiResponseAfter } from "../../handler";
+import { authGet, generateAuthorizationBearerHeader, get } from "../../http";
+import type { ApiResponse, ErrorApiResponse } from "../response.types";
+import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
 
 
@@ -34,10 +36,16 @@ const getCurrentUserContext = async ()=>{
 
 
 
-const UserQueriesServices = intercept(
+const UserQueriesServices = intercept<
+    {
+        getKPI: typeof getKPI,
+        getCurrentUserContext: typeof getCurrentUserContext
+    },
+   ApiResponse | ErrorApiResponse
+>(
     { getKPI, getCurrentUserContext },
     undefined,
-    handleGenericApiResponseAfter
+    (method, result) => handleGenericApiResponseAfter(method, result)
 )
 
 

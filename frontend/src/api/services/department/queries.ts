@@ -1,6 +1,8 @@
 import { intercept } from "../../../utils/utils";
 import type { DepartmentListApiResponse } from "./responses.type";
-import { authGet, handleGenericApiResponseAfter } from "../../handler";
+import { authGet } from "../../http";
+import type { ApiResponse, ErrorApiResponse } from "../response.types";
+import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
 
 
@@ -17,11 +19,18 @@ const getDepartmentList = async (companyId: string)=>{
 }
 
 
+//---
+const Queries =  { 
+    getDepartmentList
+}
 
-const DepartmentQueries = intercept(
-    { getDepartmentList },
+const DepartmentQueries = intercept<
+    typeof Queries,
+    ApiResponse | ErrorApiResponse
+>(
+    Queries,
     undefined,
-    handleGenericApiResponseAfter
+    (method, response) => handleGenericApiResponseAfter(method, response)
 )
 
 

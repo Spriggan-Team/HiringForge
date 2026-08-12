@@ -1,7 +1,9 @@
 import type { NavigateFunction } from "react-router-dom";
 import { intercept } from "../../../utils/utils";
-import { authGet, handleGenericApiResponseAfter,  } from "../../handler";
+import { authGet,  } from "../../http";
 import type { CurrentCandidateContextResponse, GetResumeCollection } from "./responses";
+import type { ApiResponse, ErrorApiResponse } from "../response.types";
+import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
 
 //------------------------
@@ -70,17 +72,21 @@ export class HttpContext {
 export const httpContext = new HttpContext();
 
 
+const Queries = { 
+    getCurrentCandidateContext,
+    getResumes,
+    getResumeContent,
+    getCandidateProfileImage
+}
 
-
-const CandidatesQueries = intercept(
-    {  
-        getCurrentCandidateContext,
-        getResumes,
-        getResumeContent,
-        getCandidateProfileImage
-    },
+const CandidatesQueries = intercept<
+    typeof Queries,
+    ApiResponse | ErrorApiResponse
+>(
+    Queries,
     undefined,
-    // handleGenericApiResponseAfter
+    (method, response) => handleGenericApiResponseAfter(method, response)
 )
+
 
 export default CandidatesQueries;

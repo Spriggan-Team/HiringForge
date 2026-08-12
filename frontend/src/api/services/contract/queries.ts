@@ -1,9 +1,10 @@
 
 import {  HttpBadResponse } from "../../exceptions";
-import { authGet, handleGenericApiResponseAfter } from "../../handler";
+import { authGet,  } from "../../http";
 
 import { intercept } from "../../../utils/utils";
 import {  type ApiResponse, type ContractTypeResponse, type ErrorApiResponse } from "../response.types";
+import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
 
 
@@ -29,8 +30,8 @@ const ContractQueries = intercept<
 >(
     { getContractType },
     undefined, 
-    handleGenericApiResponseAfter
+    (method, result) => handleGenericApiResponseAfter(method, result as ApiResponse)
 )
 
 
-export default ContractQueries;
+export default ContractQueries;  

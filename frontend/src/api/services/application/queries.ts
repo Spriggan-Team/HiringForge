@@ -1,6 +1,7 @@
 import { intercept } from "../../../utils/utils"
-import { authGet, handleGenericApiResponseAfter } from "../../handler"
-import type { ApiResponse } from "../response.types";
+import { handleGenericApiResponseAfter } from "../../api-response-handler";
+import { authGet } from "../../http"
+import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import type { JobApplicationApiResponse } from "./response";
 
 
@@ -92,11 +93,19 @@ const countRejected = async (jobId: string)=>{
 //-- User
 
 
+const Queries = { 
+  getApplications,
+  countRejected,
+  getJobPostulationMetrics
+}
 
-const ApplicationQueries = intercept(
-    { getApplications, countRejected, getJobPostulationMetrics },
+const ApplicationQueries = intercept<
+  typeof Queries,
+  ApiResponse | ErrorApiResponse
+>(
+    Queries,
     undefined,
-    handleGenericApiResponseAfter
+    (method, response) => handleGenericApiResponseAfter(method, response)
 )
 
 export default ApplicationQueries;

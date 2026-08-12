@@ -5,9 +5,10 @@ import { id } from "date-fns/locale";
 import type { JobView } from "../../../features/jobs/JobOffer"
 import { intercept } from "../../../utils/utils";
 import { HttpBadResponse } from "../../exceptions";
-import { authPost, handleGenericApiResponseAfter, post } from "../../handler";
-import type { ApiResponse } from "../response.types";
+import { authPost, post } from "../../http";
+import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import { FailedJobAssetsUpload } from "./exceptions";
+import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
 
 const createJob = async(
@@ -82,11 +83,20 @@ const uploadJobAssets = async (
 };
 
 
+//--- Service
+const Services = { 
+  createJob,
+  uploadJobAssets
+}
 
-const JobServices = intercept(
-    { createJob, uploadJobAssets },
+
+const JobServices = intercept<
+  typeof Services,
+  ApiResponse | ErrorApiResponse
+>(
+    Services,
     undefined,
-    handleGenericApiResponseAfter
+    (method, result) => handleGenericApiResponseAfter(method, result)
 );
 
 

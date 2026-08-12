@@ -1,3 +1,4 @@
+import type { ErrorApiResponse } from "./services/response.types";
 
 //-- Application Error Code
 export const ApiResponseCode = {
@@ -100,3 +101,6 @@ export class ExceptionWithPayload<T = unknown> extends Error
         return this.payload;
     }
 }
+
+
+export type ApiResponseError = ErrorApiResponse | Error | HttpBadResponse;

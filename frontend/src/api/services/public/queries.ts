@@ -1,4 +1,4 @@
-import { get } from "../../handler";
+import { get } from "../../http";
 import type { PublicJobOfferDetailResponse , PublicJobOfferListResponse  } from "./responses";
 
 
