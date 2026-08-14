@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Shared\Service;
+namespace App\Domain\Shared\Services;
 
 /**
  * Read or write using a vector database service (ex: chromadb, qdrant)
@@ -15,6 +15,10 @@ interface VectorServiceInterface
         float $threshold = 0.88
     ): ?array;
     
+
+    /**
+     * Insert a new skill into vector bdd
+     */
     public function indexSkill(string $skillId, string $skillName, ?array $vector = null) : void;
 
     /** 

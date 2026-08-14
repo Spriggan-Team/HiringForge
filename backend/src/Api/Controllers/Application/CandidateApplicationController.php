@@ -33,7 +33,10 @@ class CandidateApplicationController extends AbstractController
 
         }
         catch(\Exception $error){
-            throw $error;
+            return ApiResponse::error(
+                message: "Something went wrong",
+                throwable: $error
+            )->toJsonResponse();
         }
     }
 

@@ -3,8 +3,9 @@
 
 namespace App\Infrastructure\Persistence\Vector;
 
-use App\Domain\Shared\Service\EmbeddingProviderInterface;
-use App\Domain\Shared\Service\VectorServiceInterface;
+use App\Domain\Shared\Services\EmbeddingProviderInterface;
+use App\Domain\Shared\Services\VectorServiceInterface;
+
 use Override;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 

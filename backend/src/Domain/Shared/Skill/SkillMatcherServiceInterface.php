@@ -4,6 +4,16 @@ namespace App\Domain\Shared\Skill;
 
 interface SkillMatcherServiceInterface
 {
+    /**
+     * @return SkillMatch
+     */
+    public function findMatching(
+        string $text,
+        float $threshold = 0.8,
+        string $locale = 'fr',
+    ): ?SkillMatch;
+
+
     public function findOrCreateSkill(
         string $name,
         string $canonicalName,

@@ -2,17 +2,15 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories;
 
-use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\JobOffer\JobOffer;
 use App\Domain\Shared\Account\AccountId;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\JobOffer\JobOfferImage;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
-
+use App\Domain\JobOffer\JobOfferVisibilityStatus;
 use App\Domain\JobOffer\JobPublicationStatus;
-use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferImageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
@@ -29,6 +27,25 @@ class JobOfferRepository implements JobOfferRepositoryInterface
         private EntityManagerInterface $manager,
         private JobOfferEntityMapper $mapper
     ){}
+
+    #[Override]
+    public function canAcceptApplications(string $jobOfferId): bool
+    {
+        return (bool) $this->manager
+                           ->createQueryBuilder()
+                           ->select('1')
+                           ->from(JobOfferEntity::class, 'j')
+                           ->where('j.id = :jobId')
+                           ->andWhere('j.publicationStatus = :publicationStatus')
+                           ->andWhere('j.visibilityStatus = :visibilityStatus')
+                           ->setParameter('jobId', $jobOfferId)
+                           ->setParameter('publicationStatus', JobPublicationStatus::PUBLISHED)
+                           ->setParameter('visibilityStatus', JobOfferVisibilityStatus::PUBLIC)
+                           ->setMaxResults(1)
+                           ->getQuery()
+                           ->getOneOrNullResult();
+    }
+
 
 
     public function assertRelationWithUser(string $accountId, string $offerId): void
@@ -76,8 +93,9 @@ class JobOfferRepository implements JobOfferRepositoryInterface
             $file =  FileEntity::create(
                         name: $image->media->name,
                         mime: $image->media->mime,
-                        size: $image->media->size
-                    );
+                        size: $image->media->size,
+                        originalName: $image->media->originalName
+            );
             $jobOffer->addImage(
                 new JobOfferImageEntity(
                     jobOffer: $jobOffer,
@@ -121,6 +139,21 @@ class JobOfferRepository implements JobOfferRepositoryInterface
     }
 
 
+    #[Override]
+    public function getCompanyId(string $jobOfferId): string
+    {
+        $companyId = $this->manager
+            ->createQueryBuilder()
+            ->select('IDENTITY(j.company)')
+            ->from(JobOfferEntity::class, 'j')
+            ->where('j.id = :jobId')
+            ->setParameter('jobId', $jobOfferId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (string) $companyId;
+    }
+    
     
     public function fetchJobOfferViewCollection(?int $limit = null, ?int $skip = null): array
     {
@@ -128,8 +161,7 @@ class JobOfferRepository implements JobOfferRepositoryInterface
     }
 
 
-
-
+    
     #[Override]
     public function findPendingPublications(): array
     {

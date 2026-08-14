@@ -4,8 +4,9 @@ namespace  App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\Repositories
 
 use App\Domain\Shared\Skill\Skill;
 use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Shared\Skill\SkillMatchMethod;
 use App\Domain\Shared\Skill\SkillRepositoryInterface;
-
+use App\Domain\Shared\Skill\SkillResolution;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillAliasEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillTranslationEntity;
@@ -57,6 +58,55 @@ final class SkillRepository
         
         return $result != null;
     }
+
+
+
+    public function resolveSkill(string $text, string $locale = "fr"): ?SkillResolution
+    {
+        $cleanText = mb_strtolower(trim($text));
+        if ($cleanText === '') {
+            return null;
+        }
+
+        // Search by traduction (Name ou Slug)
+        $transRepo = $this->em->getRepository(SkillTranslationEntity::class);
+        $foundTrans = $transRepo->createQueryBuilder('st')
+            ->select('s.id')
+            ->join('st.skill', 's')
+            ->where('LOWER(st.name) = :text OR LOWER(st.slug) = :text')
+            ->setParameter('text', $cleanText)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($foundTrans) {
+            return new SkillResolution(
+                skillId:  $foundTrans['id'],
+                method: SkillMatchMethod::EXACT
+            );
+        }
+
+        // Search by alias
+        $aliasRepo = $this->em->getRepository(SkillAliasEntity::class);
+        $foundAlias = $aliasRepo->createQueryBuilder('al')
+            ->select('s.id')
+            ->join('al.skill', 's')
+            ->where('LOWER(al.alias) = :text')
+            ->setParameter('text', $cleanText)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($foundAlias) {
+            return new SkillResolution(
+                skillId: $foundAlias['id'],
+                method: SkillMatchMethod::ALIAS
+            );
+        }
+
+        return null;
+    }
+
 
 
 

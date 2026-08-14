@@ -52,7 +52,25 @@ class JobOfferQueryRepository implements JobOfferQueryRepositoryInterface
     ){}
 
 
+    public function getSkillIdsByJobId(string $jobId): array
+    {
+        if (trim($jobId) === '') {
+            return [];
+        }
 
+        /** @var array<int, array{skillId: string}> $results */
+        $results = $this->manager->getRepository(JobOfferSkillsEntity::class)
+            ->createQueryBuilder('jos')
+            ->select('IDENTITY(jos.skill) AS skillId')
+            ->where('jos.jobOffer = :jobId')
+            ->setParameter('jobId', $jobId)
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($results, 'skillId');
+    }
+
+    
     public function fetchPublicJobOffersSummary(
         string $locale = 'fr',
         ?string $search = null,

@@ -44,7 +44,7 @@ class JobApplicationController extends AbstractController
         try{
             /** @var AuthenticatedPerson **/
             $candidate = $this->getUser();
-            $usecase->execute(candidateId: $candidate->getId(), offerId: $offerId);
+            // $usecase->execute(candidateId: $candidate->getId(), offerId: $offerId);
             return ApiResponse::notice("Everything went smoothly")->toJsonResponse();
         }
         catch(Exception $exception)

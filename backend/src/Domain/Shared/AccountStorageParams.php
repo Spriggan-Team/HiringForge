@@ -28,7 +28,7 @@ final class AccountStorageParams
     }
 
 
-    public static function cv(
+    public static function resumes(
         string $candidateId,
         ?string $storedFileName = null,
     ): MediaStorageParams {

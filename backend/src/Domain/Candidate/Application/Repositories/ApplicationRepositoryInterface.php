@@ -2,7 +2,9 @@
 
 namespace App\Domain\Candidate\Application\Repositories;
 
+use App\Domain\Candidate\Application\Application;
 use App\Domain\Candidate\Application\JobApplicationStatus;
+use App\Domain\Exception\UnauthorizedAction;
 
 interface ApplicationRepositoryInterface
 {
@@ -13,6 +15,14 @@ interface ApplicationRepositoryInterface
      * @throws Exception|DomainException is thrown when nothing is found
      */
     public function assertExists(string $id): void;
+
+
+    /**
+     * Verifies that the application belongs to the current candidate.
+     *
+     * @throws UnauthorizedAction if the application does not belong to the candidate.
+     */
+    public function assertApplicationBelongsToCandidate(string $candidateId, string $applicationId): void;
 
 
     /** 
@@ -26,8 +36,6 @@ interface ApplicationRepositoryInterface
      * } $criteria
      */
     public function countApplications(array $criteria): int;
-
-
 
 
 
@@ -83,6 +91,11 @@ interface ApplicationRepositoryInterface
     public function changeStatus(string $applicationId, JobApplicationStatus $newStatus): void;
 
 
+    /**
+     * Save a job application to a job
+     * @return string the $id of the application
+     */
+    public function save(Application $application): string;
     
 
     /**
@@ -135,5 +148,7 @@ interface ApplicationRepositoryInterface
      * @return float[]
      */
     public function getWeeklyMetrics(string $userId, ?string $jobId, \DateTimeImmutable $now): array;
+
+
 
 }

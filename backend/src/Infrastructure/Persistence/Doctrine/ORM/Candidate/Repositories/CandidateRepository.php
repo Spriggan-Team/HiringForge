@@ -7,12 +7,16 @@ use App\Domain\Candidate\Candidate;
 use App\Domain\Candidate\CandidateLightModel;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Candidate\CandidateRepositoryInterface;
+use App\Domain\Exception\UnauthorizedAction;
 use App\Domain\Shared\Address;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateResumeEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\Mapper\FileEntityMapper;
 
+
 use Doctrine\ORM\EntityManagerInterface;
+
 
 use Override;
 
@@ -35,7 +39,27 @@ class CandidateRepository implements CandidateRepositoryInterface
 
         return $count > 0;
     }
-    
+
+    #[Override]
+    public function assertResumeBelongsToCandidate(
+        string $candidateId,
+        string $fileId
+    ): void {
+        $repository = $this->em->getRepository(CandidateResumeEntity::class);
+
+        $found = $repository->findOneBy([
+            'candidate' => $candidateId,
+            'file' => $fileId,
+        ]);
+
+        if (!$found) {
+            throw new UnauthorizedAction(
+                'Unauthorized to access this resource'
+            );
+        }
+    }
+
+
 
     public function findByEmail(string $email): Candidate
     {
@@ -49,6 +73,7 @@ class CandidateRepository implements CandidateRepositoryInterface
         $candidate = CandidateEntityMapper::toDomain($entity);
         return $candidate;
     }
+
 
 
     public function findById(string $uuid): Candidate
@@ -146,6 +171,23 @@ class CandidateRepository implements CandidateRepositoryInterface
 
 
     #[Override]
+    public function getResumeFile(string $fileId): ?StaticMedia
+    {
+        $repository = $this->em->getRepository(CandidateResumeEntity::class);
+
+        /** @var CandidateResumeEntity|null $found */
+        $found = $repository->findOneBy([
+            'file' => $fileId,
+        ]);
+
+        if(!$found)
+            return null;
+
+        return FileEntityMapper::toStaticDomainMedia($found->getFile()); 
+    }
+
+
+    #[Override]
     public function findResumeById(
         string $candidateId,
         string $resumeId
@@ -176,5 +218,23 @@ class CandidateRepository implements CandidateRepositoryInterface
         return $this->fileMapper->toStaticDomainMedia(
             $resume->getFile()
         );
+    }
+
+
+    #[Override]
+    public function getResumeFileForCandidate(string $candidateId, string $fileId): ?StaticMedia
+    {
+        $repository = $this->em->getRepository(CandidateResumeEntity::class);
+
+        /** @var CandidateResumeEntity|null $found */
+        $found = $repository->findOneBy([
+            'file' => $fileId,
+            "candidate" => $candidateId
+        ]);
+
+        if(!$found)
+            return null;
+
+        return FileEntityMapper::toStaticDomainMedia($found->getFile()); 
     }
 }

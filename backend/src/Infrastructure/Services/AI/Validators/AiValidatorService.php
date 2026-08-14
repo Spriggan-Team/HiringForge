@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Infrastructure\Service;
+namespace App\Infrastructure\Services\AI\Validators;
 
 use Override;
 
-use App\Domain\Shared\Service\AiValidatorServiceInterface;
+use App\Domain\Shared\Services\AiValidatorServiceInterface;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 

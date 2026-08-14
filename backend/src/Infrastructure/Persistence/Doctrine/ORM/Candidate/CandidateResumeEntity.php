@@ -31,6 +31,10 @@ class CandidateResumeEntity
     #[ORM\JoinColumn(nullable: false, unique: true)]
     private FileEntity $file;
 
+    //------------
+    //---- Constructing
+    //---------------
+    
     private function __construct(
         CandidateEntity $candidate,
         FileEntity $file,

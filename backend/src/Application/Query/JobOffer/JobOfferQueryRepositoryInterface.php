@@ -127,6 +127,14 @@ interface JobOfferQueryRepositoryInterface
 
 
     /**
+     * Returns all skill IDs associated with a specific job.
+     *
+     * @return array<int, string> List of skill IDs (UUIDs or string identifiers).
+    */
+    public function getSkillIdsByJobId(string $jobId): array;
+
+    
+    /**
      * Analyzes and counts the job offers associated with a user.
      * Returns statistics such as active, open, and pending-review offers.
      */

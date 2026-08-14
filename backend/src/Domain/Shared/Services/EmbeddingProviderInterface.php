@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Domain\Shared\Service;
+namespace App\Domain\Shared\Services;
 
 interface EmbeddingProviderInterface
 {

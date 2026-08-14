@@ -31,7 +31,7 @@ class CandidateAssetsController extends AbstractController
     }
 
        
-    #[Route('/profile')]
+    #[Route('/profile', methods: ['GET'])]
     public function getProfilImage()
     {
         try{
@@ -113,18 +113,21 @@ class CandidateAssetsController extends AbstractController
         }
         catch(\Exception $error){
             return ApiResponse::error(
-                message: "Something went wrong"
+                message: "Something went wrong",
+                throwable: $error
             )->toJsonResponse();
         }
     }
 
 
-    #[Route('/resumes/{resumeId}/content')]
+    #[Route('/resumes/{resumeId}/content', methods:['GET'])]
     public function getResumeContent(
         string $resumeId
     )
     {
         try{
+            ApiResponse::$logger->error("ROUTE REACHED ");
+
             /** @var AuthenticatedPerson|null $candidate */
             $candidate = $this->getUser();
 
@@ -144,19 +147,21 @@ class CandidateAssetsController extends AbstractController
                 )->toJsonResponse();
             }
             
-            $params = AccountStorageParams::cv(candidateId: $candidateId, storedFileName: $resume->name);
+            $params = AccountStorageParams::resumes(candidateId: $candidateId, storedFileName: $resume->name);
             $fullPathFile = $this->pathResolver->resolveTargetDirectory(
                 mimeType: $resume->mime,
                 params: $params
             );
 
+            ApiResponse::$logger->error("FULL PATH " . $fullPathFile);
             return new BinaryFileResponse(
                 $fullPathFile . DIRECTORY_SEPARATOR . $resume->name
             );
         }   
         catch(\Exception $error){
             return ApiResponse::error(
-                message: "Something went wrong"
+                message: "Something went wrong",
+                throwable: $error
             )->toJsonResponse();
         } 
     }

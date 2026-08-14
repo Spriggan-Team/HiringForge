@@ -5,14 +5,14 @@ import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 //-- Services
+import { navigateTo } from "../../../App";
+import RouteScheme from "../../../route.scheme";
 import CandidatesQueries from "../../../api/services/candidate/queries";
 import type { ResumeFileMetada } from "../../../features/candidates/candidates";
 import type { PublicJobOfferDetailsModel } from "../../../api/services/public/responses";
 import { useAppContext, useCurrentCandidate } from "../../../hooks/context";
 import PublicJobQueries from "../../../api/services/public/queries";
 import CandidateServices from "../../../api/services/candidate/command";
-import { navigateTo } from "../../../App";
-import RouteScheme from "../../../route.scheme";
 
 
 //-- Custom compoenents
@@ -138,6 +138,7 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
                 fileId: selectedResumeFileId,
             });
             setPopup({ status: "success", message: t("applications.submitting.success") });
+            navigateTo(naviagate, RouteScheme.jobs);
         }
         catch (err) {
             console.error("Application error:", err);
@@ -146,7 +147,6 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
         finally {
             setIsSubmitting(false);
             setLoading({ state: false, subtitle: undefined });
-            navigateTo(naviagate, RouteScheme.jobs)
         }
     }, [id, selectedResumeFileId, candidate.id, setLoading, setPopup, t]);
  

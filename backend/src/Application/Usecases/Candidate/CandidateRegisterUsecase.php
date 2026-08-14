@@ -127,7 +127,7 @@ class CandidateRegisterUsecase
         if ($command->cv) {
             $staticCV = $this->mediaFactory->createStaticMedia(file: $command->cv, expectedTypes: ["application/pdf"]);
             $candidate->addCV($staticCV);
-            $params = AccountStorageParams::cv(
+            $params = AccountStorageParams::resumes(
                 candidateId: $candidateId->value(),
                 storedFileName: $staticCV->name
             );

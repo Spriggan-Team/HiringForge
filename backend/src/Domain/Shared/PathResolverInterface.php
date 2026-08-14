@@ -7,9 +7,9 @@ use App\Domain\File\MediaStorageParams;
 interface PathResolverInterface
 {
     /**
-     * This function is used to determinate where the file should precisily be stored in the 'Storage/Vault' folder
+     * This function is used to determinate where the file is or should precisily be  stored in the 'Storage/Vault' folder
      * @param ?string $mimeType             this is the mime type of the file that is to be recorded
-     * @param  string  $storagePrefix       Storage path prefix used before the owner-specific path.
+     * @param  MediaStorageParams  $params  contains all necessary param for building path
      * @return string                       This is the new  file path generated
      */
     public function resolveTargetDirectory(

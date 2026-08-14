@@ -11,8 +11,13 @@ interface JobOfferRepositoryInterface
     public function exists(string $id): bool;
 
     /**
+     * Check if a job is able to accept publication
+     */
+    public function canAcceptApplications(string $jobOfferId): bool;
+
+    /**
      * Verifies that a job offer exists in the database and is linked to an existing user.
-     *
+     * @param string $accountId the id of the user (recuiter)
      * @throws \DomainException|\Exception If the offer does not exist or the relation is invalid.
      */
     public function assertRelationWithUser(string $accountId, string $offerId): void;
@@ -64,4 +69,10 @@ interface JobOfferRepositoryInterface
     
 
     public function removeImageFromJob(string $offerId, string $fileName): void;
+
+
+    /**
+     * Get company id based on job offerId
+     */
+    public function getCompanyId(string $jobOfferId): string;
 }

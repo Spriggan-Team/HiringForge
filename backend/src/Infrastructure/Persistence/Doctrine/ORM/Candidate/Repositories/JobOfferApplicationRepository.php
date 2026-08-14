@@ -2,16 +2,20 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories;
 
+use App\Domain\Candidate\Application\Application;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
 use App\Domain\Exception\ApplicationNotFoundException;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+
 use DomainException;
 use Override;
 
@@ -47,6 +51,13 @@ class JobOfferApplicationRepository
         if (!$exists) {
             throw new \DomainException("Job application with ID '$id' was not found.");
         }
+    }
+
+
+    #[Override]
+    public function assertApplicationBelongsToCandidate(string $candidateId, string $applicationId): void
+    {
+        throw new \Exception('Not implemented');
     }
 
     //--------------------------------------
@@ -487,4 +498,37 @@ class JobOfferApplicationRepository
         $this->entityManager->flush();
     }
 
+
+
+
+
+    #[Override]
+    public function save(Application $application): string
+    {
+        $em = $this->getEntityManager();
+
+        $candidate = $em->getReference(
+            CandidateEntity::class,
+            $application->getCandidateId(),
+        );
+
+        $jobOffer = $em->getReference(
+            JobOfferEntity::class,
+            $application->getJobOfferId(),
+        );
+
+        $company = $em->getReference(CompanyEntity::class, $application->getCompanyId());
+
+        $entity = ApplicationEntity::create(
+            candidate: $candidate,
+            jobOffer: $jobOffer,
+            company: $company,
+            matchScore: $application->getScore(),
+        );
+
+        $em->persist($entity);
+        $em->flush();
+
+        return $entity->getId();
+    }
 }

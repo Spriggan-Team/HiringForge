@@ -2,8 +2,10 @@
 
 namespace App\Domain\Candidate;
 
+use App\Domain\Exception\UnauthorizedAction;
 use App\Domain\File\StaticMedia;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
+
 
 /**
  * This interface describe how we can interact with the bdd
@@ -57,10 +59,34 @@ interface CandidateRepositoryInterface
     public function getResumeFiles(string $candidateId): array;
 
 
+    /**
+     * Verify association between user and resume file
+     * & then fetch it if founded (null if not)
+     */
+    public function getResumeFileForCandidate(string $candidateId, string $fileId): ?StaticMedia;
+
+    /**
+     * Retreive a resume of a candidate
+     */
+    public function getResumeFile(string $fileId): ?StaticMedia;
+
+
     public function findResumeById( string $candidateId, string $resumeId ): ?StaticMedia;
 
     /**
      * retreive à light model of a connected user
      */
     public function getCandidateLightModel(string $candidateId): CandidateLightModel;
+
+    /**
+     * Verifies that the resume file belongs to the candidate.
+     *
+     * @throws UnauthorizedAction|AccessDeniedException if the resume does not belong to the candidate.
+     */
+    public function assertResumeBelongsToCandidate(
+        string $candidateId,
+        string $fileId
+    ): void;
+
+
 }

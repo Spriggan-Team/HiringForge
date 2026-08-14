@@ -43,7 +43,9 @@ use Doctrine\DBAL\Types\Types;
 class ApplicationEntity
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'guid', unique: true)]
+    #[ORM\Column(type: 'guid')]
+    #[ORM\GeneratedValue(strategy: "CUSTOM")]
+    #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
     private ?string $id = null;
 
     #[ORM\Column(type: Types::FLOAT)]
@@ -81,13 +83,11 @@ class ApplicationEntity
     
     
     public function __construct(
-        string $id,
         CandidateEntity $candidate,
         JobOfferEntity $jobOffer,
         CompanyEntity $company,
         ?float $matchScore = null
     ) {
-        $this->id = $id;
         $this->candidate = $candidate;
         $this->jobOffer = $jobOffer;
         $this->matchScore = $matchScore;
@@ -98,14 +98,12 @@ class ApplicationEntity
     }
 
     public static function create(
-        string $id,
         CandidateEntity $candidate,
         JobOfferEntity $jobOffer,
         CompanyEntity $company,
         ?float $matchScore = null
     ): self {
         return new self(
-            id: $id,
             candidate: $candidate,
             jobOffer: $jobOffer,
             matchScore: $matchScore,
@@ -154,6 +152,9 @@ class ApplicationEntity
     //    SETTERS
     //==========================
 
+    /**
+     * Warning: No longer use
+     */
     public function setId(string $id): static
     {
         $this->id = $id;

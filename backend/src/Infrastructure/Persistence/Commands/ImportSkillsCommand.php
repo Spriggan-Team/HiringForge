@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Persistence\Commands;
 
-use App\Domain\Shared\Service\VectorServiceInterface;
-use App\Infrastructure\Persistence\Service\SkillMatcherService;
+use App\Domain\Shared\Services\VectorServiceInterface;
+use App\Infrastructure\Services\Skills\SkillMatcherService;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillAliasEntity;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -274,7 +274,8 @@ class ImportSkillsCommand extends Command
                                     );
                                 }
                             }
-                        } catch (\Exception $e) {
+                        }
+                        catch (\Exception $e) {
                             $this->em->clear();
                             $this->matcher->clearPendingBatchCache();
                             $failedEntityCount += count($skillVectors);

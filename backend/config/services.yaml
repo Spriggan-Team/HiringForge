@@ -128,7 +128,7 @@ services:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\Repositories\SkillRepository
 
     App\Domain\Shared\Skill\SkillMatcherServiceInterface:
-        alias: App\Infrastructure\Persistence\Service\SkillMatcherService
+        alias: App\Infrastructure\Services\Skills\SkillMatcherService
 
     #---- Language --------------
     App\Domain\Shared\Language\LanguageRepositoryInterface:
@@ -155,23 +155,33 @@ services:
     #------------------------------------
 
         #--- Embeddins
-    App\Infrastructure\Service\EmbeddingProvider:
+    App\Infrastructure\Services\EmbeddingProvider:
         arguments:
             $ollamaRootUrl: '%ollama_root_url%'
             $ollamaEmbedderModel: '%ollama_embedder_model%'
 
-    App\Domain\Shared\Service\EmbeddingProviderInterface:
-        alias: App\Infrastructure\Service\EmbeddingProvider
+    App\Domain\Shared\Services\EmbeddingProviderInterface:
+        alias: App\Infrastructure\Services\EmbeddingProvider
 
-        #- Chat completion
-    App\Infrastructure\Service\AiValidatorService:
+        #- IA Validation services
+    App\Infrastructure\Services\AI\Validators\AiValidatorService:
         arguments:
             $ollamaChatModel: '%ollama_chat_model%'
             $ollamaRootUrl: '%ollama_root_url%'
 
 
-    App\Domain\Shared\Service\AiValidatorServiceInterface:
-        alias: App\Infrastructure\Service\AiValidatorService
+    App\Domain\Shared\Services\AiValidatorServiceInterface:
+        alias: App\Infrastructure\Services\AI\Validators\AiValidatorService
+
+        #-- IA CV Parsing Service
+    App\Infrastructure\Services\AI\Resume\ResumeAiParser:
+        arguments:
+            $ollamaChatModel: '%ollama_chat_model%'
+            $ollamaRootUrl: '%ollama_root_url%'
+    
+    App\Domain\Candidate\Application\ResumeAiParserInterface:
+        alias: App\Infrastructure\Services\AI\Resume\ResumeAiParser
+
 
         #-- Vector BDD
     App\Infrastructure\Persistence\Vector\QdrantVectorService:
@@ -179,13 +189,22 @@ services:
             $qdrantRootUrl: '%qdrant_url%'
 
 
-    App\Domain\Shared\Service\VectorServiceInterface:
+    App\Domain\Shared\Services\VectorServiceInterface:
         alias: App\Infrastructure\Persistence\Vector\QdrantVectorService
 
+    #----------------------
+    #--- Parsing
+    #------------------------
+    App\Domain\Candidate\Application\ResumeLexicalParserInterface:
+        alias: App\Infrastructure\Document\ResumeLexicalParser
 
     #-------------------------------
     # FileStorage Services
     #-------------------------------
+
+    App\Domain\Shared\Document\DocumentExtractorInterface:
+        alias: App\Infrastructure\Document\PDF\PdfDocumentExtractor
+
     App\Infrastructure\Storage\FileStorage\LocalPathResolver:
         arguments:
             $projectDir: '%project_directory%'
@@ -230,6 +249,15 @@ services:
     App\Domain\Security\TokenBlacklistRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens\TokenBlacklistRepository
 
+
+    #---------------------------------
+    #      External lib
+    #---------------------------------
+    Smalot\PdfParser\Parser: ~
+
+    App\Infrastructure\Document\PDF\PdfDocumentExtractor:
+        arguments:
+            $parser: '@Smalot\PdfParser\Parser'
 
     #------------------
     #   Dev Packages

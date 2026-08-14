@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Infrastructure\Service;
+namespace App\Infrastructure\Services;
 
 use Override;
-use App\Domain\Shared\Service\EmbeddingProviderInterface;
+use App\Domain\Shared\Services\EmbeddingProviderInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class EmbeddingProvider implements EmbeddingProviderInterface
