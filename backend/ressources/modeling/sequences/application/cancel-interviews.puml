@@ -1,0 +1,61 @@
+@startuml Interview Cancellation
+
+title "Annulation d'un entretien"
+
+actor User
+participant AuthChecker
+participant InterviewPlanificator
+participant InterviewRepositoryInterface
+database Database
+
+== Annulation d'un entretien ==
+
+User -> AuthChecker : cancelInterview(dto, token)
+activate AuthChecker
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+note right
+    Vérifie que l'utilisateur
+    est authentifié
+end note
+
+AuthChecker -> InterviewPlanificator : cancel(userId, applicationId, interviewId)
+deactivate AuthChecker
+activate InterviewPlanificator
+
+' Vérification de l'accès
+InterviewPlanificator -> InterviewRepositoryInterface : verify(userId, applicationId)
+activate InterviewRepositoryInterface
+
+InterviewRepositoryInterface -> Database : SELECT interview
+activate Database
+Database --> InterviewRepositoryInterface : interview
+deactivate Database
+
+InterviewRepositoryInterface --> InterviewPlanificator : valid
+deactivate InterviewRepositoryInterface
+
+' Annulation
+InterviewPlanificator -> InterviewRepositoryInterface : cancel(interviewId)
+activate InterviewRepositoryInterface
+
+InterviewRepositoryInterface -> Database : UPDATE interview
+activate Database
+Database --> InterviewRepositoryInterface : response
+deactivate Database
+
+note right
+    Modification du statut
+    de l'entretien vers CANCEL
+end note
+
+InterviewRepositoryInterface --> InterviewPlanificator : success
+deactivate InterviewRepositoryInterface
+
+InterviewPlanificator --> User : response
+deactivate InterviewPlanificator
+
+@enduml

@@ -1,0 +1,11 @@
+{
+    "interviews":{
+        "generate": "Générer un entretien",
+        "joinMeeting": "Rejoindre la visio",
+        "form":{
+            "inputs":{
+                "candidate": ""
+            }
+        }
+    }
+}

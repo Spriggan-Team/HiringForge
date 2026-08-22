@@ -1,0 +1,160 @@
+@startuml User Offer - Modification
+
+title "Modification d'une offre d'emploi"
+
+actor User
+
+participant AuthChecker
+participant JobOfferModifier
+participant DepartmentRepository
+participant ContractTypeRepository
+participant AddressRepository
+participant JobOfferRepositoryInterface
+
+database Database
+
+
+User -> AuthChecker : updateOffer(dto, token)
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+activate AuthChecker
+
+AuthChecker -> JobOfferModifier : updateOffer(offerId, dto, userId)
+deactivate AuthChecker
+
+activate JobOfferModifier
+
+
+'========================================================
+' RETRIEVE OFFER
+'========================================================
+
+JobOfferModifier -> JobOfferRepositoryInterface : findById(offerId)
+
+activate JobOfferRepositoryInterface
+
+JobOfferRepositoryInterface -> Database : SELECT job_offer
+
+activate Database
+
+Database --> JobOfferRepositoryInterface : offer
+
+deactivate Database
+
+JobOfferRepositoryInterface --> JobOfferModifier : offer
+
+deactivate JobOfferRepositoryInterface
+
+
+'========================================================
+' OPTIONAL DEPARTMENT
+'========================================================
+
+alt departmentId fourni
+
+    JobOfferModifier -> DepartmentRepository : findById(departmentId)
+
+    activate DepartmentRepository
+
+    DepartmentRepository -> Database : SELECT department
+
+    activate Database
+
+    Database --> DepartmentRepository : department
+
+    deactivate Database
+
+    DepartmentRepository --> JobOfferModifier : department
+
+    deactivate DepartmentRepository
+
+end
+
+
+'========================================================
+' OPTIONAL CONTRACT TYPE
+'========================================================
+
+alt contractTypeId fourni
+
+    JobOfferModifier -> ContractTypeRepository : findById(contractTypeId)
+
+    activate ContractTypeRepository
+
+    ContractTypeRepository -> Database : SELECT contractType
+
+    activate Database
+
+    Database --> ContractTypeRepository : contractType
+
+    deactivate Database
+
+    ContractTypeRepository --> JobOfferModifier : contractType
+
+    deactivate ContractTypeRepository
+
+end
+
+
+'========================================================
+' OPTIONAL ADDRESS
+'========================================================
+
+alt addressId fourni
+
+    JobOfferModifier -> AddressRepository : findById(addressId)
+
+    activate AddressRepository
+
+    AddressRepository -> Database : SELECT address
+
+    activate Database
+
+    Database --> AddressRepository : address
+
+    deactivate Database
+
+    AddressRepository --> JobOfferModifier : address
+
+    deactivate AddressRepository
+
+end
+
+
+'========================================================
+' UPDATE DOMAIN OBJECT
+'========================================================
+
+JobOfferModifier -> JobOfferModifier : applyChanges(offer, dto)
+
+note right
+    Mise à jour des propriétés
+    de l'offre et de ses associations
+end note
+
+
+JobOfferModifier -> JobOfferRepositoryInterface : update(offer)
+
+activate JobOfferRepositoryInterface
+
+JobOfferRepositoryInterface -> Database : UPDATE job_offer
+
+activate Database
+
+Database --> JobOfferRepositoryInterface : response
+
+deactivate Database
+
+JobOfferRepositoryInterface --> JobOfferModifier : response
+
+deactivate JobOfferRepositoryInterface
+
+
+JobOfferModifier --> User : response
+
+deactivate JobOfferModifier
+
+@enduml

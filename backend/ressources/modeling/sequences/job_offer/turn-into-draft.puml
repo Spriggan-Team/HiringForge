@@ -1,0 +1,52 @@
+@startuml User Offer - Brouillon
+
+title "Remise d'une offre en brouillon"
+
+actor User
+
+participant AuthChecker
+participant MarkJobOfferAsDraft
+participant JobOfferRepositoryInterface
+
+database Database
+
+
+User -> AuthChecker : draftOffer(offerId, token)
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+activate AuthChecker
+
+AuthChecker -> MarkJobOfferAsDraft : changeOfferStatus(offerId, userId)
+deactivate AuthChecker
+
+activate MarkJobOfferAsDraft
+
+MarkJobOfferAsDraft -> JobOfferRepositoryInterface : setAsDraft(offerId, userId)
+
+activate JobOfferRepositoryInterface
+
+JobOfferRepositoryInterface -> Database : UPDATE publicationStatus
+
+note right
+    Vérifie notamment les règles
+    métier avant changement de statut
+end note
+
+activate Database
+
+Database --> JobOfferRepositoryInterface : response
+
+deactivate Database
+
+JobOfferRepositoryInterface --> MarkJobOfferAsDraft : response
+
+deactivate JobOfferRepositoryInterface
+
+MarkJobOfferAsDraft --> User : response
+
+deactivate MarkJobOfferAsDraft
+
+@enduml

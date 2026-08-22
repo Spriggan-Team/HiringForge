@@ -1,0 +1,193 @@
+.container{
+    position: relative;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    gap:20px;
+
+    height:150px;
+    min-width: 220px;
+    padding: 15px 20px;
+
+    overflow:hidden;
+
+    border-radius:20px;
+    border:1px solid #edf1f5;
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff 0%,
+            #fbfcfd 100%
+        );
+
+    box-shadow:
+        0 1px 2px rgba(16,24,40,.04),
+        0 10px 30px rgba(16,24,40,.05);
+
+    transition:
+        transform .25s,
+        box-shadow .25s,
+        border-color .25s;
+}
+
+
+.container:hover{
+    transform:translateY(-3px);
+
+    border-color:#dbe5ef;
+
+    box-shadow:
+        0 16px 35px rgba(16,24,40,.08);
+}
+
+
+/* ── CONTENT ─────────────────────────────────────── */
+
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.header{
+    gap: 25px;
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+
+.title{
+    font-size: .8rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.count{
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #111827;
+}
+
+
+/** ------------- Icon Container ---------------- **/
+
+
+
+.iconContainer{
+    position:relative;
+
+    width:40px;
+    height:40px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    border-radius:14px;
+    background:var(--icon-bg-color);
+
+    color:white;
+    flex-shrink:0;
+}
+
+.iconContainer::after{
+    position:absolute;
+    content:"";
+    inset:-10px;
+    z-index:-1;
+
+    border-radius:inherit;
+    background:var(--icon-bg-color);
+
+    opacity:.15;
+    filter:blur(12px);
+}
+
+
+
+/* ── KPI VALUE ───────────────────────────────────── */
+
+.percent {
+    display: flex;
+    align-items: baseline; 
+    font-size: 2.2rem;  
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: #111827;
+
+}
+
+.percent strong{
+    font-size:2.95rem;
+    font-weight:700;
+
+    letter-spacing:-.05em;
+    color:#0f172a;
+}
+
+.percent sup{
+    margin-left: 3px;
+    font-size: .9rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+
+/* ── TREND ───────────────────────────────────────── */
+
+.desc {
+    display: flex;
+    align-items: center;
+    color: #9ca3af;
+    
+    gap: 5px;
+    margin: 0;
+    font-size: .8rem;
+}
+
+.badge{
+    display: inline-flex;
+    align-items:center;
+
+    gap:4px;
+    padding:4px 10px;
+    border-radius:999px;
+
+    font-size: .72rem;
+    font-weight: 700;
+
+
+    color:#059669;
+    background:#ecfdf5;
+    border:1px solid #bbf7d0;
+}
+
+
+
+/* ── CHART ───────────────────────────────────────── */
+
+.chartWrapper {
+    width: 120px;
+    height: 100%;
+
+    display: flex;
+    align-items: flex-end; /* FIX: ancre la courbe en bas */
+    justify-content: flex-end;
+
+    opacity: 0.9;
+}
+
+.chart {
+    width: 100%;
+    height: 78%;
+}

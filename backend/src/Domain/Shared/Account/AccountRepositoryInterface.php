@@ -1,0 +1,69 @@
+<?php
+
+namespace App\Domain\Shared\Account;
+
+use App\Domain\File\StaticMedia;
+use App\Domain\Shared\EmailAddress;
+use App\Domain\Shared\KnownIdentity;
+
+
+/**
+ * Pool for transversal repository action.
+ * The particuluarity here is that only the account table is indexed for requests
+ */
+interface AccountRepositoryInterface
+{
+    /**
+     * This function allow you to perform a simple retrival of all
+     * public data about accounts.
+     */
+    public function findAll(?int $skip=null, ?int $limit = null): array;
+
+    /**
+     * Check if an user exists in bdd (using wether his uuid or email)
+     * This function throw  an Exception that indicates wether or not an user exist
+     * @param ?string                   $uuid
+     * @param ?string                   $email
+     * @throws RessourceNotFound        This exception should be sent when a ressource is not found in bdd
+     * @return KnownUserIdentity        contains basics information about user
+     */
+    public function assertExist(?string $uuid = null, ?string $email = null): KnownIdentity;
+
+
+
+    /**
+     * Throws no exception
+     */
+    public function exists(?string $uuid=null,  ?string  $email = null): bool;
+
+    /**
+     * As its name indicate, this function is used to change the password of an existing account
+     * @return void;
+     */
+    public function changePassword(string $email, string $hash): void;
+
+    
+    /**
+     * This function hepl us changing the email in the bdd
+     * @throws \Exception|RessourceNotFound
+     */
+    public function changeEmail(string $old, string $new): void;
+
+
+    /**
+     * @param string                                         $uuid is the account's id
+     * @throws RessourceNotFound|InvalidArgumentException    This is raised when an account is not identify in the bdd
+     * @return UserProfileItem                                  This is a view of all basics info about the account. It represents it profile information
+     */
+    public function fetchView(string $id);
+
+
+    /** 
+     * Retreive an image related  to an account id 
+     * Warning: Ensure this function is  used after identity verification
+     *          as it does not fo such a thing
+     * @throws RessourceNotFound throwned when the user is not found
+     * @return StaticMedia|null
+    */
+    public function getProfileImage(string $id): ?StaticMedia;
+}

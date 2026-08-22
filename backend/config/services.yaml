@@ -1,0 +1,272 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+# See also https://symfony.com/doc/current/service_container/import.html
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+
+
+#--------------------
+#   Parameters
+#------------------------------
+parameters:
+    #----------------------------
+    #--- env variables
+    #----------------------------
+    
+    app.jwt_key: '%env(JWT_SECRET_KEY)%'
+    app.url: '%env(APP_URL)%'
+
+    ollama_root_url: '%env(OLLAMA_ROOT_URL)%'
+    ollama_chat_model: '%env(OLLAMA_CHAT_MODEL)%'
+    ollama_embedder_model: '%env(OLLAMA_EMBEDDER_MODEL)%'
+    qdrant_url: '%env(QDRANT_URL)%'
+
+    smtp_host: '%env(SMTP_HOST)%'
+    mail_user_name: '%env(MAIL_USER_NAME)%'
+    mail_user_password: '%env(MAIL_USER_PASSWORD)%'
+
+    #-------Root Dir
+    project_directory: '%kernel.project_dir%'
+
+
+#---------------------
+#   Services
+#------------------------------
+
+services:
+    #---------------------
+    #  Main Config
+    #-----------------------------
+
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    #--------------------------------------
+    # API Services (Controller)
+    #-------------------------------------
+    App\Api\Controllers\:
+        resource: '../src/Api/Controllers'
+        tags: ['controller.service_arguments']
+
+    #----------------------------
+    #   Domain (Composition Root/Bootstrap)
+    #--------------------------------
+    
+    #-----------
+    #   Repositories
+    #-----------------------
+
+    #--- TransactionManager 
+    App\Domain\Shared\TransactionManagerInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\DoctrineTransactionManager
+
+
+    #--- Company
+    App\Domain\Company\CompanyRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Company\Repositories\CompanyRepository
+
+
+    #------ User ------
+    App\Domain\User\UserRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories\UserRepository
+    
+
+    #------ Candidate ----
+    App\Domain\Candidate\CandidateRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\CandidateRepository
+
+    #--- Notification
+    App\Domain\Notification\NotificationRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Notification\Repositories\NotificationRepository
+
+    #--- Application
+    App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\JobOfferApplicationRepository
+
+    App\Domain\Candidate\CandidateSkillRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\CandidateSkillRepository
+
+    App\Domain\Candidate\CandidateResumeRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\CandidateResumeRepository
+
+    #-- Interviews
+    App\Domain\Interviews\InterviewsRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Interview\Repositories\InterviewsRepository
+
+    #------ Email -------
+    App\Domain\Email\EmailRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Email\EmailRepository
+
+    #------ OTP -------
+
+    App\Domain\OTP\OTPRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens\OTPRepository
+
+
+    #----- JobOffer ------
+    App\Domain\JobOffer\JobOfferRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferRepository
+    
+    App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferQueryRepository
+    
+    #-- Offers
+    App\Domain\Offer\OfferRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Offer\Repositories\OfferRepository
+
+    #----Category -------------------
+    App\Domain\Category\Repositories\CategoryRepositoryInterace:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Category\Repositories\CategoryRepository
+    
+
+    #----- Skill------
+    App\Domain\Shared\Skill\SkillRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\Repositories\SkillRepository
+
+    App\Domain\Shared\Skill\SkillMatcherServiceInterface:
+        alias: App\Infrastructure\Services\Skills\SkillMatcherService
+
+    #---- Language --------------
+    App\Domain\Shared\Language\LanguageRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\Repositories\LanguageRepository
+
+
+    #---- Department
+    App\Domain\Department\DepartmentRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Department\Repositories\DepartmentRespository
+
+
+    #--- Contract type
+    App\Domain\Shared\Contract\ContractTypeRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Contract\Repositories\ContractTypeRepository
+
+
+    #-------------------------------------
+    #--- Ai & Embedding Service
+    #------------------------------------
+
+        #--- Embeddins
+    App\Infrastructure\Services\EmbeddingProvider:
+        arguments:
+            $ollamaRootUrl: '%ollama_root_url%'
+            $ollamaEmbedderModel: '%ollama_embedder_model%'
+
+    App\Domain\Shared\Services\EmbeddingProviderInterface:
+        alias: App\Infrastructure\Services\EmbeddingProvider
+
+        #- IA Validation services
+    App\Infrastructure\Services\AI\Validators\AiValidatorService:
+        arguments:
+            $ollamaChatModel: '%ollama_chat_model%'
+            $ollamaRootUrl: '%ollama_root_url%'
+
+
+    App\Domain\Shared\Services\AiValidatorServiceInterface:
+        alias: App\Infrastructure\Services\AI\Validators\AiValidatorService
+
+        #-- IA CV Parsing Service
+    App\Infrastructure\Services\AI\Resume\ResumeAiParser:
+        arguments:
+            $ollamaChatModel: '%ollama_chat_model%'
+            $ollamaRootUrl: '%ollama_root_url%'
+    
+    App\Domain\Candidate\Application\ResumeAiParserInterface:
+        alias: App\Infrastructure\Services\AI\Resume\ResumeAiParser
+
+
+        #-- Vector BDD
+    App\Infrastructure\Persistence\Vector\QdrantVectorService:
+        arguments:
+            $qdrantRootUrl: '%qdrant_url%'
+
+
+    App\Domain\Shared\Services\VectorServiceInterface:
+        alias: App\Infrastructure\Persistence\Vector\QdrantVectorService
+
+    #----------------------
+    #--- Parsing
+    #------------------------
+    App\Domain\Candidate\Application\ResumeLexicalParserInterface:
+        alias: App\Infrastructure\Document\ResumeLexicalParser
+
+    #-------------------------------
+    # FileStorage Services
+    #-------------------------------
+
+    App\Domain\Shared\Document\DocumentExtractorInterface:
+        alias: App\Infrastructure\Document\PDF\PdfDocumentExtractor
+
+    App\Infrastructure\Storage\FileStorage\LocalPathResolver:
+        arguments:
+            $projectDir: '%project_directory%'
+
+    App\Domain\Shared\PathResolverInterface:
+        alias: App\Infrastructure\Storage\FileStorage\LocalPathResolver
+
+    App\Infrastructure\Storage\FileStorage\MediaStorage:
+        arguments:
+            $projectDir: '%project_directory%'
+
+
+    App\Domain\File\MediaStorageInterface:
+        alias: App\Infrastructure\Storage\FileStorage\MediaStorage
+    
+
+    App\Domain\File\MediaFactoryInterface:
+        alias: App\Infrastructure\Storage\FileStorage\MediaFactory
+    
+
+    #------------------------------
+    # Email Services
+    #-------------------------------
+    App\Infrastructure\Email\EmailServices:
+        arguments:
+            $SMTP_HOST: '%smtp_host%'
+            $MAIL_USER_NAME: '%mail_user_name%'
+            $MAIL_USER_PASSWORD: '%mail_user_password%'
+
+
+    App\Domain\Email\EmailServicesInterface:
+        alias: App\Infrastructure\Email\EmailServices
+
+
+    #-------------------------------
+    #   Security
+    #-------------------------------
+
+    App\Domain\Shared\PasswordHasherInterface:
+        alias: App\Infrastructure\Security\PasswordHasher
+
+    App\Domain\Security\TokenBlacklistRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens\TokenBlacklistRepository
+
+
+    #---------------------------------
+    #      External lib
+    #---------------------------------
+    Smalot\PdfParser\Parser: ~
+
+    App\Infrastructure\Document\PDF\PdfDocumentExtractor:
+        arguments:
+            $parser: '@Smalot\PdfParser\Parser'
+
+    #------------------
+    #   Dev Packages
+    #---------------------------
+    monolog.formatter.console:
+        class: Symfony\Bridge\Monolog\Formatter\ConsoleFormatter
+    
+    

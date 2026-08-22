@@ -1,0 +1,47 @@
+@startuml User Offer - Publication
+
+title "Publication d'une offre d'emploi"
+
+actor User
+
+participant AuthChecker
+participant JobOfferPublisher
+participant JobOfferRepositoryInterface
+
+database Database
+
+
+User -> AuthChecker : publishOffer(offerId, token)
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+activate AuthChecker
+
+AuthChecker -> JobOfferPublisher : publish(offerId, userId)
+deactivate AuthChecker
+
+activate JobOfferPublisher
+
+JobOfferPublisher -> JobOfferRepositoryInterface : publish(offerId, userId)
+
+activate JobOfferRepositoryInterface
+
+JobOfferRepositoryInterface -> Database : UPDATE publicationStatus
+
+activate Database
+
+Database --> JobOfferRepositoryInterface : response
+
+deactivate Database
+
+JobOfferRepositoryInterface --> JobOfferPublisher : response
+
+deactivate JobOfferRepositoryInterface
+
+JobOfferPublisher --> User : response
+
+deactivate JobOfferPublisher
+
+@enduml

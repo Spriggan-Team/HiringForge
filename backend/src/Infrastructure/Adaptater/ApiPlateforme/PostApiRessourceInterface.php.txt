@@ -1,0 +1,36 @@
+<?php 
+
+// namespace App\Infrastructure\Adaptater\ApiPlateforme;
+
+// use ApiPlatform\Metadata\ApiProperty;
+// use ApiPlatform\Metadata\ApiResource;
+// use ApiPlatform\Metadata\Get;
+// use ApiPlatform\Metadata\Post;
+// use App\Api\Controllers\PostController;
+// use App\Infrastructure\Persistence\MySQL\Doctrine\PostEntity;
+
+#[ApiResource(
+    shortName: "Post",
+    uriTemplate: "/posts",
+    controller: PostController::class,
+    input: PostInput::class,
+    operations: [
+        new Get(
+            read: false,
+            uriTemplate: '/{id}',
+        ),
+        new Post(
+            read: false,
+            validate: false,
+            deserialize: false,
+            inputFormats: ["json"],
+            outputFormats: ['json'],
+        ),
+    ], 
+)]
+
+
+class PostApiRessourceInterface extends PostEntity {}
+
+
+?>

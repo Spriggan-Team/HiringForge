@@ -1,0 +1,97 @@
+@startuml
+
+title "Candidate Profile - Media Management"
+
+actor Candidate
+
+participant AuthChecker
+participant CandidateModifier
+participant CandidateRepository
+participant MediaFactoryInterface
+participant MediaStorageInterface
+
+database Database
+
+
+Candidate -> AuthChecker : updateProfile( token, image)
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+activate AuthChecker
+
+note right
+    Check & ensure
+    the candidate is authenticated
+end note
+
+AuthChecker -> CandidateModifier : changeCandidate(candidate, images)
+deactivate AuthChecker
+
+activate CandidateModifier
+
+
+' Validate candidate
+CandidateModifier -> CandidateRepository : findById(candidateId)
+
+activate CandidateRepository
+
+CandidateRepository -> Database : SELECT candidate
+
+activate Database
+Database --> CandidateRepository : candidate
+deactivate Database
+
+CandidateRepository --> CandidateModifier : candidate
+
+deactivate CandidateRepository
+
+
+' Create media objects
+CandidateModifier -> MediaFactoryInterface : generateDomainObject(imagesOnly)
+
+activate MediaFactoryInterface
+
+note right
+    Only StaticMedia allowed.
+    Videos are not supported
+    for Candidate profiles.
+end note
+
+MediaFactoryInterface --> CandidateModifier : mediaObjects
+
+deactivate MediaFactoryInterface
+
+
+' Store files
+CandidateModifier -> MediaStorageInterface : save(mediaObjects)
+
+activate MediaStorageInterface
+
+MediaStorageInterface --> CandidateModifier : storedPaths
+
+deactivate MediaStorageInterface
+
+
+' Update candidate
+CandidateModifier -> CandidateRepository : update(candidate)
+
+activate CandidateRepository
+
+CandidateRepository -> Database : UPDATE candidate
+
+activate Database
+Database --> CandidateRepository : response
+deactivate Database
+
+CandidateRepository --> CandidateModifier : response
+
+deactivate CandidateRepository
+
+
+CandidateModifier --> Candidate : response
+
+deactivate CandidateModifier
+
+@enduml

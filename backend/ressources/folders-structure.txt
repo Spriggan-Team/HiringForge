@@ -1,0 +1,26 @@
+src/
+ ├── Domain/
+ │    ├── Entity
+ │    ├── ValueObject
+ │    ├── Repository
+ │    ├── Service
+ │    └── Policy
+ │
+ ├── Application/
+ │    ├── Command
+ │    ├── Query
+ │    └── Handler
+ │
+ ├── Api/
+ │    ├── Controller
+ │    └── DTO
+ │         ├── Post
+ │         └── Account
+ │
+ └── Infrastructure/
+      ├── Security
+      ├── Adapter
+      └── Persistence
+           └── Doctrine
+                ├── Repository
+                └── Mapper

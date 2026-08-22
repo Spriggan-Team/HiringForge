@@ -1,0 +1,65 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    providers:
+        users_in_memory: { memory: null }
+
+    firewalls:
+        dev:
+            pattern: ^/api/(_profiler|_wdt|assets|build)/
+            security: false
+
+        # LOGIN 
+        login:
+            pattern: ^/api/login$
+            stateless: true
+            custom_authenticators:
+                - App\Api\Security\LoginAuthenticatorController
+
+        # API SECURISE 
+        api:
+            pattern: ^/api/(candidates|agents|users|notification|contract|departments|skills|job_offers|applications|interviews|offers|graphql)
+            stateless: true
+            user_checker: App\Api\Security\AccountChecker
+            custom_authenticators:
+                - App\Api\Security\JwtAuthenticatorController
+
+        main:
+            lazy: true
+            provider: users_in_memory
+
+    # contrôle d'accès
+    access_control:
+        # -- ROUTES PUBLIQUES
+        - { path: ^/api/(candidate|agent|user)/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/(candidate|agent|user)/otp,      roles: PUBLIC_ACCESS }
+
+        # -- ROUTE GRAPHQL (Globally Secure With  JWT)
+        - { path: ^/api/graphql,                         roles: [IS_AUTHENTICATED_FULLY] }
+
+        # -- ROUTES PRIVEES 
+        - { path: ^/api/skills,                 roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: ^/api/agents,                 roles: ROLE_AGENT }
+        - { path: ^/api/candidates,             roles: ROLE_CANDIDATE }
+        - { path: ^/api/users,                  roles: [ROLE_USER, ROLE_COMPANY_ADMIN] }
+        - { path: ^/api/contract,               roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: ^/api/departments,            roles: [ROLE_USER, ROLE_AGENT] }
+        - { path: ^/api/job_offers,             roles: [ROLE_USER, ROLE_AGENT, ROLE_COMPANY_ADMIN] }
+        - { path: ^/api/notification,           roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: ^/api/applications,           roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: ^/api/interviews/users,       roles: [ROLE_USER] }
+        - { path: ^/api/offers/user,            roles: [ROLE_USER] }
+
+
+
+when@test:
+    security:
+        password_hashers:
+            # Password hashers are resource-intensive by design to ensure security.
+            # In tests, it's safe to reduce their cost to improve performance.
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4 # Lowest possible value for bcrypt
+                time_cost: 3 # Lowest possible value for argon
+                memory_cost: 10 # Lowest possible value for argon

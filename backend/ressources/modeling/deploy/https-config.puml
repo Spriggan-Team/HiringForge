@@ -1,0 +1,25 @@
+@startuml
+skinparam BackgroundColor white
+skinparam ComponentStyle rectangle
+skinparam roundcorner 10
+
+cloud "Internet" as internet
+
+node "Reverse Proxy" as proxy #fff3e0
+node "Frontend React" as react #e8f5e9
+node "Backend Symfony" as symfony #e8f5e9
+
+database "MariaDB" as db #f3e5f5
+node "Service IA" as ia #f3e5f5
+storage "Storage" as storage #f3e5f5
+
+internet ==> proxy : "HTTPS : 443"
+
+proxy --> react
+proxy --> symfony
+
+symfony --> db
+symfony --> ia
+symfony --> storage
+
+@enduml

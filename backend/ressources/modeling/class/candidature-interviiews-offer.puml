@@ -1,0 +1,116 @@
+@startuml UML - Classe - Processus de recrutement
+
+skinparam dpi 300
+skinparam maxwidth 8000
+skinparam maxheight 8000
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam linetype ortho
+
+left to right direction
+
+'========================================================
+' ACTORS
+'========================================================
+
+class Candidate {
+    - id: string
+}
+
+class User {
+    - id: string
+    - userRole: string
+}
+
+class Company {
+    - id: string
+    - name: string
+    - siret: string
+    - createdAt: DateTime
+}
+
+class JobOffer {
+    - id: string
+    - title: string
+    - publicationStatus: string
+}
+
+
+'========================================================
+' APPLICATION
+'========================================================
+
+class Application {
+    - id: string
+    - status: string
+    - matchScore: Decimal
+    - appliedAt: DateTime
+    - updatedAt: DateTime
+}
+
+Candidate "1" -- "0..*" Application
+JobOffer "1" -- "0..*" Application
+Application "*" --> "1" Company
+
+
+'========================================================
+' RESUME
+'========================================================
+
+class Resume {
+    - id: string
+    - hasBeenAnalyzed: boolean
+}
+
+Application "1" --> "1" Resume
+
+
+'========================================================
+' INTERVIEW
+'========================================================
+
+class Interview {
+    - id: string
+    - startDate: DateTime
+    - minutes: int
+    - status: string
+    - title: string
+    - description: string
+    - url: string
+    - confirm: boolean
+    - rejectionReason: string
+}
+
+Application "1" -- "0..*" Interview
+
+
+'========================================================
+' EMPLOYMENT OFFER
+'========================================================
+
+class EmploymentOffer {
+    - id: string
+    - reason: string [nullable]
+}
+
+Candidate "1" -- "0..*" EmploymentOffer
+User "1" -- "0..*" EmploymentOffer : creates
+Company "1" -- "0..*" EmploymentOffer
+Application "1" -- "0..1" EmploymentOffer
+
+
+'========================================================
+' ENUMS
+'========================================================
+
+enum InterviewStatus {
+    SCHEDULED
+    IN_PROGRESS
+    CLOSED
+    CANCEL
+    MISSED
+}
+
+@enduml

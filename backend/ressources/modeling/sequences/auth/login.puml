@@ -1,0 +1,49 @@
+@startuml Auth Flow - Login
+
+actor "Account" as Account
+
+participant LoginAuthentificator
+participant JwtAuthentificator
+participant AuthenticatorAccountUseCase
+
+database Database
+
+== Login ==
+
+Account -> LoginAuthentificator : requestAuthentication(email, password)
+activate LoginAuthentificator
+
+LoginAuthentificator -> AuthenticatorAccountUseCase : checkAccount(email, password)
+activate AuthenticatorAccountUseCase
+
+AuthenticatorAccountUseCase -> Database : SELECT email, password FROM account
+activate Database
+
+Database --> AuthenticatorAccountUseCase : account credentials
+deactivate Database
+
+alt Success
+
+    AuthenticatorAccountUseCase --> LoginAuthentificator : success
+    deactivate AuthenticatorAccountUseCase
+
+    LoginAuthentificator -> JwtAuthentificator : generateToken(personId)
+    activate JwtAuthentificator
+
+    JwtAuthentificator --> LoginAuthentificator : token
+    deactivate JwtAuthentificator
+
+    LoginAuthentificator --> Account : token
+    deactivate LoginAuthentificator
+
+else Failure
+
+    AuthenticatorAccountUseCase --> LoginAuthentificator : failure
+    deactivate AuthenticatorAccountUseCase
+
+    LoginAuthentificator --> Account : error
+    deactivate LoginAuthentificator
+
+end
+
+@enduml

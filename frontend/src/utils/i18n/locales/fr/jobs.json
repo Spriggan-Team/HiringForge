@@ -1,0 +1,159 @@
+{
+    "jobs":{
+        "jobs": "Jobs",
+        "title": "Job title",
+        "modifyJob": "Modifier le job",
+        "department": "Departement",
+        "expertiseLevel": "Niveau d'expérience",
+        "requireLanguage": "Langue requise",
+        "remoteWorkEnable":"Télétravail possible",
+
+        "empty": "vide",
+
+        "buttons":{
+            "create": "Créer une offre",
+            "cancel": "Annuler",
+            "search": "Rechercher une offre",
+            "applyNow": "Postuler"
+        },
+        "inputs":{
+            "searchJob":{
+                "placeholder": "Rechercher une offre ?"
+            },
+            "searchAddress":{
+                "placeholder": "Rechercher avec une addrèsse ? "
+            }
+        },
+
+        "overview":{
+            "title": "Aperçu"
+        },
+        "publicationDate": "Date de publication",
+
+        "pipeline":{
+            "candidates": "Pipeline des candidats",
+            "seeAllCandidates": "Voir tout les candidats"
+        },
+
+        "messages":{
+            "failedToLoadJob": "Impossible de charger l'offre d'emploi."
+        },
+        "candidateStatuses":{
+            "preselected" : "Préselectionné",
+            "inInterviews":"En Entretien",
+            "generatedOffer": "Offre Générées",
+            "rejected": "Rejetés"
+        },
+
+
+        "createJob":{
+            "messages":{
+                "creatingJob": "Création de l'offre d'emploi",
+                "uploadingImage": "Envoi de l'image en cours...",
+                "jobCreate": "L'offre a été crée avec succès",
+                "failToCreateJob": "La crétion de l'offre à échoué",
+                "failedUploadMainImage": "L'image de l'offre à échoué sa sauvegarde"
+            },
+            "constraints":{
+                "minSalary":{
+                    "title": "Salaire invalide",
+                    "minSalaryConstraint": "Le salaire minimum ne peut pas être supérieur au salaire maximum"
+                },
+                "maxSalary":{
+                    "title": "Salaire invalide",
+                    "maxSalaryConstraint": "Le salaire maximum ne peut pas être inférieur au salaire minimum actuellement défini"
+                }
+            },
+            "generalInformationSection":{
+                "title": "Information générales",
+                "inputs":{
+                    "offerTitle": {
+                        "label": "Titre du poste",
+                        "placeholder": "Ex: React Frontend Développer"
+                    },
+                    "location":{
+                        "label": "Lieu",
+                        "placeholder": "Ex: Paris, France"
+                    },
+                    "offerType":{
+                        "label": "Type de poste",
+                        "placeholder": "Selectionner un type"
+                    }
+                },
+                "drawers":{
+                    "department": {
+                        "label": "Departement",
+                        "placeholder": "Selectionner un departement",
+                        "values": {}
+                    }
+                }
+            },
+
+            "postDescriptionSection":{
+                "title":"Description du poste",
+                "inputs": {
+                    "description":{
+                        "label": "Description détaillé",
+                        "placeholder": "Décrivez les missions, responsabilités et le contexte du poste"
+                    }
+                }
+            },
+
+            "skillSection":{
+                "title":"Compétences requises",
+                "inputs":{
+                    "addSkill": {
+                        "label": "Ajouter des compétences",
+                        "placeholder": "Ex: React, TypeScript, HTML"
+                    }
+                }
+            },
+
+            "salarySection":{
+                "title": "Salaire",
+                "inputs":{
+                    "salary":{
+                        "label": "Fourchettes de renumération mensuel",
+                        "minSalary": {
+                            "placeholder": "Salaire minimum"
+                        },
+                        "maxSalary":{
+                            "placeholder": "Salaire maximum"
+                        }
+                    }
+                }
+            },
+
+            "publicationSettingsSection":{
+                "title": "Paramètre de publication",
+                "inputs":{
+                    "publicationDate":{
+                        "title": "Date de publication"
+                    }
+                }
+            },
+
+            "additionnalOpstions":{
+                "title": "Options supplémentaires",
+                "inputs":{
+                    "expertiseLevel":{
+                        "label": "Niveau d'expérience",
+                        "placeholder": "Sélectionner un niveau"
+                    },
+                    "requireLanguage":{
+                        "label": "Language requis",
+                        "placeholder": "Selectionner une langue"
+                    }
+                },
+                "switchs":{
+                    "jobWorkMode": "Télétravail possible"
+                }
+            },
+
+            "overview":{
+                "title": "Aperçu"
+            }
+
+        }
+    }
+}

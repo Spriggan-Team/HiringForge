@@ -1,0 +1,141 @@
+
+
+/* -- Page wrapper -- */
+.container {
+    display:     grid;
+    grid-template-columns: 44px 1fr;
+    gap:         var(--space-page, 28px);
+    align-items: start;
+
+    width:          100%;
+    max-width:      1360px;
+    margin-inline:  auto;
+    padding:        var(--space-page, 28px);
+
+    padding-bottom: 80px;
+    box-sizing:     border-box;
+}
+
+/* -- Side rail -- */
+.side {
+    position:       sticky;
+    top:            var(--space-page, 28px);
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+}
+
+.backButton {
+    width:  40px;
+    height: 40px;
+    flex-shrink: 0;
+
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+
+    border-radius: 10px;
+    border:        1px solid var(--border-subtle);
+    background:    var(--surface);
+    cursor:        pointer;
+    box-shadow:    var(--shadow);
+
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+
+.backButton:hover        { background: var(--bg); transform: translateX(-2px); }
+.backButton:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+/* Content */
+.content { min-width: 0; }
+
+
+/*  Three-column grid*/
+.columns {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        clamp(240px, 22%, 320px)
+        clamp(260px, 22%, 300px);
+    grid-template-areas: "form image inspector";
+
+    gap:         16px;
+    align-items: start;
+}
+
+.mainInfoBox {
+    grid-area:      form;
+    display:        flex;
+    flex-direction: column;
+    gap:            14px;
+    min-width:      0;
+}
+
+.image {
+    grid-area:      image;
+    height:         fit-content;
+    display:        flex;
+    flex-direction: column;
+    gap:            10px;
+}
+
+
+.paramBox {
+    grid-area: inspector;
+    height: fit-content;
+    min-height: 0;
+    
+    position: sticky;
+    top: var(--space-page, 28px);
+
+    overflow: visible; 
+}
+
+
+.paramBox::-webkit-scrollbar       { width: 4px; }
+.paramBox::-webkit-scrollbar-track { background: transparent; }
+.paramBox::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+
+
+/*  Responsive */
+@media (max-width: 1100px) {
+    .columns {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "form      form"
+            "image     inspector";
+    }
+    .paramBox {
+        position:   static;
+        max-height: none;
+        overflow-y: visible;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+        padding:        16px;
+        padding-bottom: 72px;
+        gap:            14px;
+    }
+    .side {
+        position:        static;
+        flex-direction:  row;
+        justify-content: flex-start;
+    }
+    .columns {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "form"
+            "image"
+            "inspector";
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container { padding: 12px; padding-bottom: 64px; }
+    .columns   { gap: 10px; }
+}

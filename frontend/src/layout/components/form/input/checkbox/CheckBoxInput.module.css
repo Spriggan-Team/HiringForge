@@ -1,0 +1,108 @@
+
+.container {
+    display:     inline-flex;
+    align-items: flex-start;
+    gap:         10px;
+    cursor:      pointer;
+    user-select: none;
+}
+
+.container[aria-disabled="true"],
+.container:has(.input:disabled) {
+    opacity: 0.45;
+    cursor:  not-allowed;
+}
+
+/* Hide native checkbox */
+.input {
+    position: absolute;
+    opacity:  0;
+    width:    0;
+    height:   0;
+    margin:   0;
+}
+
+
+/* Custom indicator box */
+.box {
+    flex-shrink:     0;
+    display:         inline-flex;
+    align-items:     center;
+    justify-content: center;
+
+    width:           18px;
+    height:          18px;
+    margin-top:      1px;
+
+    border:          1.5px solid #cbd5e1;
+    border-radius:   6px;
+    background:      white;
+
+    color:           transparent; /* icon color */
+    transition:
+        border-color     120ms ease,
+        background-color 120ms ease,
+        color            120ms ease,
+        box-shadow       120ms ease;
+}
+
+
+/* Focus ring — keyboard accessible */
+.input:focus-visible + .box {
+    outline:        2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+
+/** States**/
+
+/* Hover */
+.container:hover .box {
+    border-color: #93c5fd;
+}
+
+/* Checked */
+.input:checked + .box {
+    border-color:     #2563eb;
+    background-color: #2563eb;
+    color:            white;
+    box-shadow:       0 1px 4px rgba(37, 99, 235, 0.25);
+}
+
+/* Disabled */
+.input:disabled + .box {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+.icon {
+    width:  11px;
+    height: 11px;
+    stroke: currentColor;
+    
+    /* checkmark path animation */
+    stroke-dasharray:   20;
+    stroke-dashoffset:  20;
+    transition: stroke-dashoffset 160ms ease;
+}
+
+.input:checked + .box .icon {
+    stroke-dashoffset: 0;
+}
+
+/* Text labels */
+.label {
+    display:     block;
+    font-size:   0.875rem;
+    font-weight: 500;
+    color:       #1e293b;
+    line-height: 1.4;
+}
+
+.desc {
+    display:     block;
+    font-size:   0.78rem;
+    color:       #64748b;
+    margin-top:  2px;
+    line-height: 1.4;
+}

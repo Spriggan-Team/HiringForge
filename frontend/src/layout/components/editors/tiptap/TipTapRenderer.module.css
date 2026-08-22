@@ -1,0 +1,22 @@
+
+
+/* TipTap Renderer Typography */
+.container {
+  color: #334155;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.container p {
+  margin: 0 0 1em 0;
+}
+
+.container ul,
+.container ol {
+  margin: 0 0 1em 0;
+  padding-left: 1.4rem;
+}
+
+.container li {
+  margin-bottom: 0.4em;
+}

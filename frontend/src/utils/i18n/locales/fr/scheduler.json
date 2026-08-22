@@ -1,0 +1,13 @@
+{
+    "scheduler":{
+        "scheduled": "Programmé",
+        "createEvent":{
+            "inputs":{
+                "title":{ "placeholder": "Titre" },
+                "rate": { "label": "Taux" },
+                "note":{ "label": "Note", "placeholder": "Ajouter une note"},
+                "members":{"label": "Members" }
+            }
+        }
+    }
+}

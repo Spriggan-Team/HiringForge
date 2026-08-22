@@ -1,0 +1,62 @@
+@startuml Auth Flow - Reset Email
+
+actor "Account" as Account
+
+participant EmailRenitializer
+participant AccountRepository
+participant OTPRepository
+
+database Database
+
+== Reset Email ==
+
+Account -> EmailRenitializer : resetEmail(oldEmail, newEmail, password)
+activate EmailRenitializer
+
+' Check identity
+EmailRenitializer -> AccountRepository : checkIdentity(oldEmail, password)
+activate AccountRepository
+
+AccountRepository -> Database : SELECT
+activate Database
+
+Database --> AccountRepository : response
+deactivate Database
+
+AccountRepository --> EmailRenitializer : success
+deactivate AccountRepository
+
+' Retrieve token
+EmailRenitializer -> OTPRepository : getLastTokenWithPurpose(email)
+activate OTPRepository
+
+OTPRepository -> Database : SELECT token
+activate Database
+
+Database --> OTPRepository : token
+deactivate Database
+
+OTPRepository --> EmailRenitializer : token
+deactivate OTPRepository
+
+' Compare token
+EmailRenitializer -> EmailRenitializer : checkToken(providedToken, retrievedToken)
+
+' Update email
+EmailRenitializer -> AccountRepository : updateEmail(oldEmail, newEmail)
+activate AccountRepository
+
+AccountRepository -> Database : UPDATE email
+activate Database
+
+Database --> AccountRepository : response
+deactivate Database
+
+AccountRepository --> EmailRenitializer : success
+deactivate AccountRepository
+
+' User response
+EmailRenitializer --> Account : response
+deactivate EmailRenitializer
+
+@enduml

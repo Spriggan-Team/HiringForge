@@ -1,0 +1,36 @@
+.container{}
+
+.btn{
+    outline: none;
+
+    width: var(--width);
+    padding: var(--padding);
+    background: var(--bg-color);
+    border-radius: var(--radius);
+
+
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    transform: scale(1);
+
+    color: var(--color);
+    box-shadow: 0 7px 4px 0 #CBDCFD;
+}
+
+.btn *{
+    display: inline-block;
+    vertical-align: middle;
+}
+
+
+.btn:hover{
+    transform: scale(1.01);
+}
+
+.svg{
+    width: 25px;
+    height: 25px;
+    color: var(--color);
+    margin-left: 9px;
+}

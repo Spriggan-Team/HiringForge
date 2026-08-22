@@ -1,0 +1,170 @@
+
+.container {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: column;
+    
+    width: 100%;
+    max-width: 100%; 
+    
+    box-sizing: border-box;
+    overflow-x: hidden; 
+}
+
+
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+}
+
+
+.mainContainerWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; 
+    flex: 1;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.mainContainer {
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    padding: 50px 75px;
+    margin: 0 0 12px 0;
+    border-radius: 28px;
+    box-sizing: border-box;
+    position: relative;
+    width: 100%;
+    max-width: 1300px;
+    background: #FBFCFE;
+    min-width: 0;
+}
+
+
+.mainForm {
+    gap: 24px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    flex: 1.5;
+    max-width: 460px;
+    width: 100%;
+}
+
+
+.form {
+    width: 420px;
+    /* width: 100%; */
+    /* max-width: 430px; */
+    margin-inline: auto;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    border-radius: 24px;
+    box-sizing: border-box;
+    border: 1px solid rgba(0,0,0,.06);
+    background: #ffffff;
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.02),
+        0 2px 10px rgba(0,0,0,.01);
+}
+
+
+
+@media (max-width: 1024px) {
+    .navbar {
+        padding: 16px 32px;
+    }
+
+    /* CORRECTION : Assurer que le wrapper garde bien sa largeur relative */
+    .mainContainerWrapper {
+        padding: 32px 24px;
+        width: 100%;
+    }
+
+    .mainContainer {
+        padding: 40px 32px;
+        flex-direction: column;
+        align-items: center; 
+        gap: 3rem;
+    }
+
+    .infoBox {
+        max-width: 500px; 
+        width: 100%;
+        flex-direction: row; 
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 32px;
+    }
+    
+    .infoBox img { 
+        display: none; 
+    }
+
+    .infoBox .stagesSection,
+    .infoBox .statusItemSection {
+        flex: 1;
+        width: 100%;
+    }
+
+    .mainForm {
+        max-width: 500px; 
+        width: 100%;
+    }
+
+}
+
+@media (max-width: 768px) {
+    .infoBox {
+        flex-direction: column;
+        gap: 24px;
+        margin-inline: auto;
+    }
+}
+
+
+@media (max-width: 640px) {
+    .navbar {
+        padding: 16px 20px;
+    }
+
+    .mainContainerWrapper {
+        padding: 8px; 
+    }
+
+    .mainContainer {
+        padding: 20px 12px; 
+        gap: 1.5rem;
+        border-radius: 16px;
+    }
+
+    .infoBox {
+        .statusItemSection { display: none; } 
+    }
+
+    .form {
+        padding: 20px 12px; 
+        width: 100%;
+    }
+    
+}
+
+@media (max-width: 340px) {
+    .mainContainer {
+        padding: 16px 6px;
+    }
+    
+    .form {
+        padding: 16px 8px;
+    }
+}

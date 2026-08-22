@@ -1,0 +1,128 @@
+
+
+.container {
+    display:        flex;
+    flex-direction: column;
+    gap:            15px;
+}
+
+/* -- Card wrapper -- */
+.contextBox {
+    display:        flex;
+    flex-direction: column;
+    gap:            20px;
+    width:          100%;   
+}
+
+
+/* -- Input stacks -- */
+.inputs {
+    display:        flex;
+    flex-direction: column;
+    gap:            12px;
+    /* background: #000; */
+}
+
+
+/* -- Two-column inline row (location + contract, or salary range) */
+.inlineInputs {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+    flex-wrap:   wrap; 
+}
+
+
+.inlineInputs > * { flex: 1 1 140px; }   /* min 140px, then grow equally */
+.inlineInputs .separator { flex: 0 0 auto; }
+
+/* -- Drawer wrapper -- */
+.drawer { width: 100%; }
+
+
+/* -- Skill input row -- */
+.inputSkillsSection {
+    display:        flex;
+    flex-direction: column;
+    gap:            8px;
+}
+
+.inputSection {
+    display:     flex;
+    align-items: stretch;
+    gap:         6px;
+}
+
+/* Drawer inside skill input takes remaining space */
+.skillDrawerWrapper { 
+    flex: 1 1 0; 
+    min-width: 0;
+}
+
+
+.addSkillButton {
+    flex-shrink: 0;
+    align-self: center;
+    padding: 11px 14px;
+
+    font-size:     0.85rem;
+    font-weight:   500;
+    color:         #64748b;
+    background:    #f1f5f9;
+    border:        0;
+    border-radius: 6px;
+    cursor:        pointer;
+    white-space:   nowrap;
+    transition:    background 0.15s ease, color 0.15s ease;
+}
+.addSkillButton:hover:not(:disabled)    { background: #e2e8f0; color: #334155; }
+.addSkillButton:disabled                { opacity: 0.4; cursor: not-allowed; }
+
+
+
+/* -- Skill tags -- */
+.skills {
+    display:   flex;
+    flex-wrap: wrap;
+    gap:       6px;
+}
+
+/* -- Devise trigger (currency selector in salary row) --  */
+.deviseTrigger {
+    flex: 0 0 auto;
+    padding: 11px 12px;
+    min-width: 70px;
+}
+
+
+/* -- TipTap editor -- */
+.editor { max-height: 740px; }
+
+
+
+/* -- Activate state (selected value in drawer) -- */
+.activate { color: var(--text-default, #1e293b); }
+
+
+/* -- Dropdown overrides -- */
+
+.selectDropdown {
+    border-radius: 8px;
+    box-shadow:    0 4px 16px rgba(0,0,0,0.08);
+    overflow:      hidden;
+}
+.selectItem {
+    padding: 8px 12px;
+    cursor:  pointer;
+    transition: background 0.1s ease;
+}
+.selectItem:hover { background: var(--bg, #f8fafc); }
+
+
+
+/* -- Responsive --*/
+@media (max-width: 600px) {
+    .inlineInputs { flex-direction: column; }
+    .inlineInputs > * { flex: 1 1 100%; }
+    .inlineInputs .separator { display: none; }
+}

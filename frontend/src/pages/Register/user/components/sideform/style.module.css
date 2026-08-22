@@ -1,0 +1,134 @@
+/** SIDE FORM CONTAINER **/
+.sideForm {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex: 1;
+}
+
+.sideForm form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+}
+
+.sideForm h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4px 0;
+}
+
+/** SIDE FORM - TOP SECTION **/
+.top {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+
+
+/** SIDE FORM -  IMAGES SECTION (PRESENTETAION) **/
+
+.downloadImageSection {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.images {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.imageWrapper {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+}
+
+.images img {
+    width: 70px;
+    height: 70px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.addBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    padding: 4px;
+    background: #e5e7eb;
+    border-radius: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    transition: background-color 0.2s ease;
+}
+
+.addBox:hover {
+    background: #d1d5db;
+}
+
+.addBox > span {
+    width: 100%;
+    font-size: 10px;
+    font-weight: 500;
+    color: #4b5563;
+    text-align: center;
+    line-height: 1.2;
+    margin-top: 4px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/** SIDE FORM - BOTTOM SECTION **/
+
+
+
+
+/** SECURITY BADGE (ABSOLUTE) **/
+.bage {
+    position: absolute;
+    right: 0;
+    bottom: -60px;
+}
+
+/** FOOTER **/
+.footer {
+    width: 100%;
+    padding: 20px 70px;
+    box-sizing: border-box;
+}
+
+/** MEDIA QUERIES **/
+@media (max-width: 1024px) {
+    .sideForm {
+        max-width: 550px;
+        width: 100%;
+    }
+
+    .bage {
+        position: relative;
+        bottom: 0;
+        align-self: center;
+        margin-top: 20px;
+        transform: none;
+        right: auto;
+    }
+}

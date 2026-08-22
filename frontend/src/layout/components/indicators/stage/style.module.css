@@ -1,0 +1,126 @@
+.container{
+    gap: 14px;
+
+    display: flex;
+    align-items: center;
+
+    min-width: 190px;
+
+    padding: 10px 15px;
+
+    border-radius: 18px;
+
+    position: relative;
+
+    cursor: var(--pointer);
+
+    transition:
+        transform .2s ease,
+        background .25s ease,
+        box-shadow .25s ease,
+        border-color .25s ease;
+
+    border:
+        1px solid transparent;
+
+    background: var(--backgroundColor);
+
+    backdrop-filter:
+        blur(8px);
+}
+
+
+.container:hover{
+    transform: translateY(-2px);
+
+    background:
+        rgba(255,255,255,.8);
+
+    border-color:
+        rgba(1,93,252,.08);
+}
+
+/* ACTIVE*/
+
+.active{
+    background: #FBFBFE;
+
+    border:
+        1px solid rgba(1,93,252,.08);
+
+    box-shadow:
+        0 10px 25px rgba(1,93,252,.08),
+        0 2px 8px rgba(0,0,0,.03);
+}
+
+/* STEP */
+
+.stepWrapper{
+    position: relative;
+
+    flex-shrink: 0;
+}
+
+.step{
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    color: var(--stepColor);
+    box-shadow:
+        0 8px 16px rgba(1,93,252,.22);
+
+    transition:
+        transform .2s ease,
+        box-shadow .25s ease;
+}
+
+/* active bubble */
+
+.active .step{
+    transform: scale(1.05);
+    color: white;
+    
+    background:
+        linear-gradient(
+            135deg,
+            #015DFC,
+            #3B82F6
+        );
+
+    box-shadow:
+        0 10px 22px rgba(1,93,252,.3);
+}
+
+/* CONTENT*/
+
+.content{
+    display: flex;
+    flex-direction: column;
+    color: var(--textColor);
+}
+
+.txt{
+    font-size: 14px;
+    font-weight: 700;
+
+
+    letter-spacing: -.01em;
+}
+
+.subtxt{
+    margin-top: 3px;
+
+    font-size: 12px;
+    font-weight: 500;
+
+    color: #6B7280;
+}

@@ -1,0 +1,55 @@
+.container {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    
+    padding: 4px 10px; 
+    border-radius: 8px;
+    width: max-content;
+    
+    color: var(--color);
+    background-color: var(--bgColor);
+    
+    transition: background-color 0.2s ease;
+}
+
+.content {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.4;
+    user-select: none; 
+}
+
+/* ==========================================================================
+   Closing Buuton (Svg Wrapper)
+   ========================================================================== */
+.closeButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    background: transparent;
+    border: none;
+    padding: 2px;
+    margin: 0;
+    border-radius: 4px;
+    
+    cursor: pointer;
+    color: #6366F1; 
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.closeButton:hover {
+    background-color: #E0E7FF;
+    color: #3730A3;
+}
+
+.closeButton:focus-visible {
+    outline: 2px solid #4338CA;
+    outline-offset: 1px;
+}
+
+.svg {
+    fill: currentColor; 
+    stroke: currentColor;
+}

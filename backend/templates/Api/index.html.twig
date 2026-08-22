@@ -1,0 +1,313 @@
+
+
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <header>
+        <h1>API Administrator</h1>
+        <input id="base-url" placeholder="http://localhost:3000"/>
+        <input id="authorization-Key" placeholder="Authorization API Key"/>
+    </header>
+    <div id="container"></div>
+    <script src="{{ path('secure-js') }}"></script>
+{% endblock %}
+
+
+{% block styles %}
+<style>
+        /* =========================================================
+        RESET & BASE
+        ========================================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0e1117 0%, #161b22 100%);
+            color: #c9d1d9;
+        }
+
+        .display-none { display: none; }
+        .visibility-hidden { visibility: hidden; }
+
+        /* =========================================================
+        HEADER
+        ========================================================= */
+        header {
+            padding: 20px 28px;
+            background: #0e1117;
+            border-bottom: 1px solid #30363d;
+        }
+
+        header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            color: #58a6ff;
+        }
+
+        header input {
+            width: 320px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            background: #010409;
+            color: #c9d1d9;
+            font-size: 13px;
+        }
+
+        header input::placeholder {
+            color: #8b949e;
+        }
+
+        header input:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+
+        /* =========================================================
+        CONTAINER
+        ========================================================= */
+        #container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 28px;
+        }
+
+        .resource {
+            margin-bottom: 48px;
+        }
+
+        .resource-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #58a6ff;
+        }
+
+        /* =========================================================
+        ROUTE
+        ========================================================= */
+        .route {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .route:hover {
+            background: #1f2630;
+        }
+
+        .method {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            color: #0e1117;
+        }
+
+        .GET { background: #2ea043; }
+        .POST { background: #8957e5; }
+        .PUT { background: #d29922; }
+        .PATCH { background: #db6d28; }
+        .DELETE { background: #f85149; }
+
+        .endpoint {
+            font-size: 13px;
+            color: #c9d1d9;
+        }
+
+        /* =========================================================
+        LEADING
+        ========================================================= */
+        .route-leading {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .svg-box svg {
+            width: 22px;
+            height: 22px;
+            fill: #8b949e;
+        }
+
+        .svg-box svg:hover {
+            fill: #58a6ff;
+        }
+
+        /* =========================================================
+        BADGES
+        ========================================================= */
+        .route-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: #21262d;
+            color: #8b949e;
+            border: 1px solid #30363d;
+        }
+
+        /* =========================================================
+        ROUTE CONTENT
+        ========================================================= */
+        .route-content {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            padding: 20px;
+            margin-top: 10px;
+            margin-bottom: 26px;
+            border-radius: 10px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+        }
+
+        /* =========================================================
+        PARAMETERS & QUERIES
+        ========================================================= */
+        .params-section,
+        .query-section {
+            background: #161b22;
+            border-radius: 8px;
+            padding: 14px;
+            border: 1px solid #30363d;
+        }
+
+        .params-section .title,
+        .query-section .title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #58a6ff;
+            margin-bottom: 8px;
+        }
+
+        .inputs-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .params-section input,
+        .query-section input,
+        .inputable-key-section input {
+            width: 220px;
+            max-width: 260px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            background: #010409;
+            color: #58a6ff;
+            font-size: 13px;
+        }
+
+        .params-section input::placeholder,
+        .query-section input::placeholder,
+        .inputable-key-section input::placeholder {
+            color: #8b949e;
+        }
+
+        .params-section input:focus,
+        .query-section input:focus,
+        .inputable-key-section input:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+
+        /* =========================================================
+        OBJEKTRA / JSON
+        ========================================================= */
+        .input-schema-container,
+        .output-schema-container {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid #30363d;
+        }
+
+        .json-object-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-left: 14px;
+        }
+
+        .bracket {
+            color: #7ee787;
+            font-weight: bold;
+        }
+
+        .inputable-key-section {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .inputable-key-section span {
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .inputable-key-section span:first-child {
+            color: #8b949e;
+        }
+
+        .inputable-key-section span:nth-child(2) {
+            color: #79c0ff;
+        }
+
+        /* sous-objet inline */
+        .inputable-key-section > .json-object-container {
+            margin-left: 6px;
+        }
+
+        .inputable-key-section
+        > .json-object-container
+        > .inputable-key-section {
+            margin-left: 16px;
+        }
+
+        /* =========================================================
+        SELECT
+        ========================================================= */
+        .header-options {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            background: #010409;
+            color: #c9d1d9;
+            font-size: 13px;
+        }
+
+        /* =========================================================
+        EXECUTE BUTTON
+        ========================================================= */
+        .route-btn-executer {
+            align-self: flex-start;
+            padding: 10px 22px;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+            background: #238636;
+            color: #ffffff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .route-btn-executer:hover {
+            background: #2ea043;
+        }
+
+</style>
+{% endblock %}

@@ -1,0 +1,32 @@
+.addressContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.geoposSection {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+}
+
+.inpts {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+
+.faintBorder {
+    border: 1px solid #e5e7eb;
+}
+
+
+@media (max-width: 640px) {
+    .inpts {
+        flex-direction: column;
+        gap: 14px;
+    }
+}

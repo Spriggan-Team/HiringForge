@@ -1,0 +1,66 @@
+@startuml User Offer - Suppression
+
+title "Suppression d'une offre d'emploi"
+
+actor User
+
+participant AuthChecker
+participant JobOfferEraser
+participant JobOfferRepositoryInterface
+
+database Database
+
+
+User -> AuthChecker : deleteOffer(offerId, token)
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+activate AuthChecker
+
+AuthChecker -> JobOfferEraser : erase(offerId, userId)
+deactivate AuthChecker
+
+activate JobOfferEraser
+
+
+JobOfferEraser -> JobOfferRepositoryInterface : findById(offerId)
+
+activate JobOfferRepositoryInterface
+
+JobOfferRepositoryInterface -> Database : SELECT job_offer
+
+activate Database
+
+Database --> JobOfferRepositoryInterface : offer
+
+deactivate Database
+
+JobOfferRepositoryInterface --> JobOfferEraser : offer
+
+deactivate JobOfferRepositoryInterface
+
+
+JobOfferEraser -> JobOfferRepositoryInterface : erase(offerId)
+
+activate JobOfferRepositoryInterface
+
+JobOfferRepositoryInterface -> Database : DELETE job_offer
+
+activate Database
+
+Database --> JobOfferRepositoryInterface : response
+
+deactivate Database
+
+JobOfferRepositoryInterface --> JobOfferEraser : response
+
+deactivate JobOfferRepositoryInterface
+
+
+JobOfferEraser --> User : response
+
+deactivate JobOfferEraser
+
+@enduml

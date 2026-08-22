@@ -1,0 +1,68 @@
+{
+  "userHome": {
+
+    "header": {
+      "leading": {
+        "summary_sentence": "Vous avez {{openPostsText}} et {{candidaturesText}} à traiter",
+
+        "open_post_one": "{{count}} poste ouvert",
+        "open_post_other": "{{count}} postes ouverts",
+
+        "candidature_one": "{{count}} candidature",
+        "candidature_other": "{{count}} candidatures"
+      }
+    },
+
+    "inputs":{
+        "search":{
+            "placeholder": "Rechercher..."
+        }
+    },
+
+    "kpi":{
+      "postulationRate": "Taux de postulation",
+      "openOffers": "Offres ouvertes",
+      "reviewOffers": " A revoir",
+      "interviews": "Entretiens",
+      "hired": "Embauchés"
+    },
+
+    "borad":{
+      "kanban":{
+        "title": "Recrutement pipeline",
+        "colomns":{
+          "new": {
+            "title": "Nouveaux"
+          },
+          "interviews":{
+            "title": "Entretiens RH"
+          },
+          "techInterview":{
+            "title": "Entretiens Tech"
+          },
+          "hired":{
+            "title": "Embauchés"
+          }
+        }
+      }
+    },
+
+    "priorityTask":{
+      "title": "Priorités"
+    },
+    "agenda": {
+      "title": "Agenda d'aujourd'hui"
+    },
+    "acitveOffer":{
+      "title": "ActiveOffers"
+    },
+
+    "statistics":{
+      "title": "Statistiques",
+      "drawer":{
+        "instrcution": "Sélectionner une semaine",
+        "addOption": "Entrée une date"
+      }
+    }
+  }
+}

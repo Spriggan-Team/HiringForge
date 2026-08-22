@@ -1,0 +1,9 @@
+.label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: #4b5563;
+    margin-bottom: 6px;
+    transition: color .2s ease;
+}

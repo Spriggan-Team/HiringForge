@@ -1,0 +1,5 @@
+{
+    "notification": {
+        "postulate": "{{person}} a postulé au poste {{offre}}"
+    }
+}

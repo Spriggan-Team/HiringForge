@@ -1,0 +1,66 @@
+import { useEffect, useLayoutEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+
+//-- Custom Components
+import BasicInput, { type BasicInputProps } from '../../basic.input';
+
+//-- SVG Components
+import OKCircleSVG from '../../../../../../assets/svg/check/ok-circle-svgrepo-com.svg';
+
+//-- CSS Styles
+import styles from './styles.module.css'
+
+
+
+type ConfirmPasswordProps = BasicInputProps & {
+                                password: string;
+                                defaultValue?: string;
+                                invalidTxt?: string;
+                                validTxt?: string;
+                                setConfirm?: (b: boolean)=> void;
+                            }
+
+
+
+const ConfirmPassword: React.FC<ConfirmPasswordProps> = ({
+    password,
+    setConfirm,
+    defaultValue,
+    invalidTxt,
+    validTxt,
+    ...props
+}) => {
+    const [value, setValue] = useState(defaultValue);
+    const [isConfirm, setIsConfirm] = useState<boolean>(false);
+
+    useLayoutEffect(() => {
+        const isValid = password !== "" && value === password;
+        setIsConfirm(isValid);
+        // console.log({password, value,isValid})
+        
+        if (setConfirm) {
+            setConfirm(isValid);
+        }
+    }, [value, password, setConfirm]);
+
+
+    return ( 
+        <div className={styles.container}>
+            <BasicInput 
+                {...props}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                leadingSVG={isConfirm ? OKCircleSVG : () => null}
+                enableViewToggle={!isConfirm}
+            />
+            <div className={`${styles.txtSection} ${value ? styles.visible : styles.hidden}`}>
+                <div className={styles.circle}/>
+                <span className={`${styles.subtxt} ${isConfirm && value ? styles.validTxt : styles.invalidTxt}`}>
+                    { isConfirm && value ?  validTxt ?? "Les mots de passe correspondent" : invalidTxt ?? "les mots de passe sont invalident" }
+                </span>
+            </div>
+        </div>
+    );
+};
+ 
+export default ConfirmPassword;

@@ -1,0 +1,165 @@
+@startuml
+
+title Application Management
+
+actor User
+participant AuthChecker 
+
+participant ApplicationModifier
+participant InterviewPlanificator
+participant AccountRepository
+
+participant ApplicationRepository
+participant InterviewRepositoryInterface
+participant JobOfferRepositoryInterface
+database Database
+
+=== Application Status (Accepted/Refused/Waiting) ==
+
+'Auth checking
+User -> AuthChecker : updateApplicationStatus(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> ApplicationModifier: changeApplicationStatus(dto)
+activate ApplicationModifier
+deactivate AuthChecker
+
+'Validation
+ApplicationModifier -> ApplicationRepository: validate(u_id, offer_id, application_id)
+activate ApplicationRepository
+
+ApplicationRepository -> Database : SELECT
+activate Database
+Database --> ApplicationRepository : response
+deactivate Database
+
+ApplicationRepository --> ApplicationModifier : valid
+deactivate ApplicationRepository
+
+'Change Status
+ApplicationModifier -> ApplicationRepository : changeStatus(application_id, status)
+activate ApplicationRepository
+
+ApplicationRepository -> Database : UPDATE
+activate Database
+Database --> ApplicationRepository : response
+deactivate Database
+
+'User response
+ApplicationRepository --> ApplicationModifier : success
+deactivate ApplicationRepository
+
+ApplicationModifier --> User : response
+deactivate ApplicationModifier
+
+
+=== Plan Interview ==
+
+'Auth checking
+User -> AuthChecker : planInterview(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> InterviewPlanificator : plan(u_id, application_id)
+activate InterviewPlanificator
+deactivate AuthChecker
+
+'Verification
+InterviewPlanificator -> InterviewRepositoryInterface : verify(u_id, application_id) 
+activate InterviewRepositoryInterface
+
+InterviewRepositoryInterface -> Database : SELECT
+activate Database
+Database --> InterviewRepositoryInterface : response
+deactivate Database
+
+InterviewRepositoryInterface --> InterviewPlanificator : valid
+deactivate InterviewRepositoryInterface
+
+'Save interview
+InterviewPlanificator -> InterviewRepositoryInterface : save(theme, description, date, duration)
+activate InterviewRepositoryInterface
+
+InterviewRepositoryInterface -> Database : INSERT
+activate Database
+Database --> InterviewRepositoryInterface : response
+deactivate Database
+
+'User response
+InterviewRepositoryInterface --> InterviewPlanificator : response
+deactivate InterviewRepositoryInterface
+
+InterviewPlanificator --> User : response
+deactivate InterviewPlanificator
+
+
+=== Cancel Interview ==
+
+'Auth checking
+User -> AuthChecker : cancelInterview(dto, token)
+ref over AuthChecker
+    Auth Checking ...
+end ref
+activate AuthChecker
+
+note right
+    Check & ensure 
+    the user is authenticated
+end note
+
+'Usecase
+AuthChecker -> InterviewPlanificator : cancel(u_id, application_id, interview_id)
+activate InterviewPlanificator
+deactivate AuthChecker
+
+'Verification
+InterviewPlanificator -> InterviewRepositoryInterface : verify(u_id, application_id) 
+activate InterviewRepositoryInterface
+
+InterviewRepositoryInterface -> Database : SELECT
+activate Database
+Database --> InterviewRepositoryInterface : response
+deactivate Database
+
+InterviewRepositoryInterface --> InterviewPlanificator : valid
+deactivate InterviewRepositoryInterface
+
+'Soft delete
+InterviewPlanificator -> InterviewRepositoryInterface : delete(interview_id)
+activate InterviewRepositoryInterface
+
+InterviewRepositoryInterface -> Database : UPDATE
+activate Database
+Database --> InterviewRepositoryInterface : response
+deactivate Database
+
+note right
+    Soft delete 
+    (only if date is still valid)
+end note
+
+'User response
+InterviewRepositoryInterface --> InterviewPlanificator : response
+deactivate InterviewRepositoryInterface
+
+InterviewPlanificator --> User : response
+deactivate InterviewPlanificator
+
+@enduml

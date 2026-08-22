@@ -1,0 +1,130 @@
+<?php
+
+namespace App\Api\Security;
+
+use App\Api\Responder\ApiResponse;
+use App\Application\DTO\Auth\AuthentificateAccount;
+
+
+use App\Domain\ApplicationErrorCode;
+use App\Domain\Shared\Account\AccountRole;
+use App\Domain\Exception\RessourceNotFound;
+use App\Application\DTO\Auth\AuthenticatedPerson;
+use App\Infrastructure\Security\JwtAuthentificator;
+use App\Application\Usecases\Auth\AuthentificateAccountUseCase;
+
+
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+
+
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
+
+
+use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
+
+
+
+
+class LoginAuthenticatorController extends AbstractAuthenticator
+{
+    public function __construct(
+        private AuthentificateAccountUseCase $usecase,
+        private JwtAuthentificator $jwtService,
+        private LoggerInterface $logger
+    ) {
+        ApiResponse::init($logger);
+    }
+
+    /**
+     * This one is called on every request to decide if this authentificator should be used
+     * for the request or not;
+     */
+    public function supports(Request $request): ?bool
+    {
+        return in_array($request->getPathInfo(), [
+            '/api/login',
+        ], true) && $request->isMethod('POST');
+    }
+
+
+    public function authenticate(Request $request): Passport
+    {
+        $body = json_decode($request->getContent(), true);
+        
+        if (!isset($body['email'], $body['password'])) {
+            throw new CustomUserMessageAuthenticationException('Données d’identification incomplètes.', [], 400);
+        }
+
+        $account = new AuthentificateAccount(
+            email: trim($body['email']),
+            password: trim($body['password'])
+        );
+
+
+        try {
+            [$personId, $role] = $this->usecase->execute($account);
+        }
+        catch (RessourceNotFound $e) {
+            if(ApiResponse::$logger)
+                ApiResponse::$logger->error("Caught Exception: ". $e->getMessage(), ['exception' => $e]);
+            throw new CustomUserMessageAuthenticationException('Identifiants invalides.', [], 404);
+        }
+        catch (\DomainException $e) {
+            if(ApiResponse::$logger)
+                ApiResponse::$logger->error("Caught Exception: ". $e->getMessage(), ['exception' => $e]);
+            throw new CustomUserMessageAuthenticationException($e->getMessage(), [], 403);
+        }
+        catch(\Exception $e){
+            if(ApiResponse::$logger)
+                ApiResponse::$logger->error("Caught Exception: ". $e->getMessage(), ['exception' => $e]);
+            throw new CustomUserMessageAuthenticationException($e->getMessage(), [], 400); 
+        }
+
+        $actor = new AuthenticatedPerson(
+            id: $personId,
+            sub: $account->email,
+            roles: [$role]
+        );
+
+        return new SelfValidatingPassport(
+            new UserBadge($actor->getUserIdentifier(), fn() => $actor)
+        );
+    }
+
+
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
+    {
+        /** @var AuthenticatedPerson $user */
+        $user = $token->getUser();
+
+        $jwt = $this->jwtService->generate([
+            'id'    => $user->getId(),
+            'sub'   => $user->getUserIdentifier(), //-- currently the email
+            'roles' => array_merge($user->getRoles(), []),
+        ]);
+
+        return ApiResponse::success(
+            data: [
+                'token' => $jwt,
+                "role" => $user->getRoles()[0]
+            ],
+            message: "Connexion réussie.",
+        )->toJsonResponse();
+    }
+
+    
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
+    {
+        return ApiResponse::error(
+            message: $exception->getMessage() ?: "Identifiants invalides, veuillez réessayer.",
+            code: ApplicationErrorCode::INVALID_CREDENTIALS
+        )->toJsonResponse();
+    }
+}

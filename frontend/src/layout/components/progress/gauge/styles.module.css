@@ -1,0 +1,17 @@
+.gauge{
+    position: relative;
+    width: var(--width);
+    height: var(--height);
+    border-radius: var(--borderRadius);
+    background-color: var(--foregroundColor);
+}
+
+.gauge::before{
+    left: 0;
+    content: " ";
+    position: absolute;
+    height: var(--height);
+    width: var(--currentWidth);
+    border-radius: var(--borderRadius);
+    background: var(--activeColor);
+}

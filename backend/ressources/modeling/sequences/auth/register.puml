@@ -1,0 +1,24 @@
+@startuml Auth Flow - Register
+
+actor "Account (Utilisateur)" as User
+participant "RegisterUseCase" as UC
+database "Database" as DB
+
+== Register ==
+
+User -> UC : register(dto)
+activate UC
+
+ref over UC
+  Identity Verification (OTP / Email)
+end ref
+
+UC -> DB : INSERT account
+activate DB
+DB --> UC : account created
+deactivate DB
+
+UC --> User : response (JWT / Confirmation)
+deactivate UC
+
+@enduml

@@ -1,0 +1,22 @@
+.title {
+    display: inline-block;
+    
+    color: #0f172a; 
+    
+    font-weight: 600;
+    line-height: 1.4;
+    
+    letter-spacing: -0.01em;
+    
+    margin-bottom: 4px;
+}
+
+/* ==========================
+   RESPONSIVE SCOPE
+   ========================== */
+   
+@media (max-width: 640px) {
+    .title {
+        font-size: 1.05rem;
+    }
+}

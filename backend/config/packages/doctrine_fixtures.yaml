@@ -1,0 +1,4 @@
+doctrine_fixtures:
+    paths:
+        - '%kernel.project_dir%/src/DataFixtures'
+        - '%kernel.project_dir%/src/Infrastructure/Persistence/Doctrine/ORM'

@@ -1,0 +1,60 @@
+@startuml
+
+title Auth Process
+
+actor Account
+participant AuthChecker
+participant JWTAuthentificator
+participant AccountRepository
+database Database
+
+== Identity Verification ==
+
+'Check User 
+Account -> AuthChecker : check(accountId)
+activate AuthChecker
+
+AuthChecker -> AccountRepository : assertExist(accountId)
+activate AccountRepository
+
+'Check user in DB
+AccountRepository -> Database : SELECT
+activate Database
+Database --> AccountRepository: account
+deactivate Database
+
+AccountRepository --> AuthChecker: response
+deactivate AccountRepository
+
+AuthChecker --> Account : response
+deactivate AuthChecker
+
+
+== Auth Verification ==
+
+'Init
+Account -> AuthChecker : checkToken(token)
+activate AuthChecker
+
+'Decode Token
+AuthChecker -> JWTAuthentificator : decodeAndVerify(token)
+note right
+    Check if token is not expired
+    and not blacklisted in DB
+end note
+activate JWTAuthentificator
+
+'Check token validity
+JWTAuthentificator -> Database : checkValidity(token)
+activate Database
+Database --> JWTAuthentificator : response
+deactivate Database
+
+'Return response
+JWTAuthentificator --> AuthChecker : valid / invalid
+deactivate JWTAuthentificator
+
+AuthChecker --> Account : response
+deactivate AuthChecker
+
+@enduml

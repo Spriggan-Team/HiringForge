@@ -1,0 +1,87 @@
+@startuml UML - Classe - CV et Compétences
+
+skinparam dpi 300
+skinparam maxwidth 8000
+skinparam maxheight 8000
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam linetype ortho
+
+left to right direction
+
+'========================================================
+' MEDIA
+'========================================================
+
+class File {
+    - id: int
+    - name: string
+    - originalName: string
+    - mime: string
+    - size: double
+    - createdAt: DateTime
+}
+
+Account "0..1" --> "0..1" File : image
+Company "0..1" --> "0..1" File : logo
+Company "0..1" --> "0..1" File : videoPresentation
+
+
+'========================================================
+' RESUME
+'========================================================
+
+class Resume {
+    - id: string
+    - hasBeenAnalyzed: boolean
+}
+
+Candidate "1" -- "0..*" Resume
+Resume "1" --> "1" File
+
+
+'========================================================
+' SKILLS
+'========================================================
+
+class Skill {
+    - id: string
+    - ecoUri: string
+    - onetCode: string
+    - isDefault: boolean
+    - canonicalName: string
+}
+
+class SkillTranslation {
+    - id: int
+    - name: string
+    - slug: string
+}
+
+class SkillAlias {
+    - id: int
+    - alias: string
+}
+
+class Language {
+    - id: int
+    - code: string
+    - label: string
+}
+
+class CandidateSkill {
+    - candidateResumeId: string
+}
+
+Candidate "1" -- "0..*" CandidateSkill
+CandidateSkill "*" --> "1" Skill
+CandidateSkill "*" --> "0..1" Resume
+
+Skill "1" -- "0..*" SkillTranslation
+SkillTranslation "*" --> "1" Language
+
+Skill "1" -- "0..*" SkillAlias
+
+@enduml

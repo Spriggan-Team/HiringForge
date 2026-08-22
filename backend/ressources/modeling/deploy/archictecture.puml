@@ -1,0 +1,36 @@
+@startuml
+skinparam BackgroundColor white
+skinparam ComponentStyle rectangle
+skinparam roundcorner 10
+skinparam Shadowing true
+
+cloud "🌐 INTERNET" as internet
+
+node "💻 Machine Linux (Docker / Docker Compose)" {
+
+    package "🛡️ Gateway" {
+        [🔒 Reverse Proxy\nHTTP / TLS] as proxy #fff3e0
+    }
+
+    package "🚀 Services Applicatifs" {
+        [⚛️ Frontend React\nContainer] as react #e8f5e9
+        [🎼 Backend Symfony\nContainer] as symfony #e8f5e9
+    }
+
+    package "🗄️ Stockage & IA" {
+        database "🐬 MariaDB\nContainer" as db #f3e5f5
+        [🤖 Service IA\nContainer] as ia #f3e5f5
+        storage "📁 Storage\nVolume" as storage #f3e5f5
+    }
+}
+
+internet ==> proxy : "HTTPS"
+
+proxy --> react
+proxy --> symfony
+
+symfony --> db
+symfony --> ia
+symfony --> storage
+
+@enduml

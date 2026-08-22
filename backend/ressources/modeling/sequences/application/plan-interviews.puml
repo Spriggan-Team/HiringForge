@@ -1,0 +1,69 @@
+@startuml Interview Planning
+
+title "Planification d'un entretien"
+
+actor User
+participant AuthChecker
+participant InterviewPlanificator
+participant InterviewRepositoryInterface
+participant ApplicationRepository
+database Database
+
+== Planification d'un entretien ==
+
+User -> AuthChecker : planInterview(dto, token)
+activate AuthChecker
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+note right
+    Vérifie que l'utilisateur
+    est authentifié
+end note
+
+AuthChecker -> InterviewPlanificator : plan(userId, applicationId, data)
+deactivate AuthChecker
+activate InterviewPlanificator
+
+' Vérification de la candidature
+InterviewPlanificator -> ApplicationRepository : findById(applicationId)
+activate ApplicationRepository
+
+ApplicationRepository -> Database : SELECT application
+activate Database
+Database --> ApplicationRepository : application
+deactivate Database
+
+ApplicationRepository --> InterviewPlanificator : application
+deactivate ApplicationRepository
+
+' Vérification des droits du recruteur
+InterviewPlanificator -> InterviewRepositoryInterface : verify(userId, applicationId)
+activate InterviewRepositoryInterface
+
+InterviewRepositoryInterface -> Database : SELECT
+activate Database
+Database --> InterviewRepositoryInterface : valid
+deactivate Database
+
+InterviewRepositoryInterface --> InterviewPlanificator : valid
+deactivate InterviewRepositoryInterface
+
+' Création de l'entretien
+InterviewPlanificator -> InterviewRepositoryInterface : save(interview)
+activate InterviewRepositoryInterface
+
+InterviewRepositoryInterface -> Database : INSERT interview
+activate Database
+Database --> InterviewRepositoryInterface : response
+deactivate Database
+
+InterviewRepositoryInterface --> InterviewPlanificator : interview
+deactivate InterviewRepositoryInterface
+
+InterviewPlanificator --> User : response
+deactivate InterviewPlanificator
+
+@enduml

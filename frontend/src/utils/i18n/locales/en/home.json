@@ -1,0 +1,10 @@
+{
+    "menu":{
+        "home": "Acceuil",
+        "poste": "Postes",
+        "calendar": "Calendrier",
+        "candidates": "Candidates",
+        "interview": "Entretien",
+        "settings": "Paramèters"
+    }
+}

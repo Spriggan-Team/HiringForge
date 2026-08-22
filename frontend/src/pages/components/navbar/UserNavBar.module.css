@@ -1,0 +1,246 @@
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 75px;
+    gap: 32px;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ==========================
+   LEADING SECTION
+   ========================== */
+
+.leadingSection {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    flex: 1;
+}
+
+.leadingSection .title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.leadingSection .desc {
+    margin: 4px 0 0;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ==========================
+   ACTION SECTION
+   ========================== */
+
+.actionSection {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+}
+
+/* Search Box */
+.search {
+    width: 280px;
+}
+
+
+/* Notification Button & Badge */
+.notification {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.notification:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+.notficationRing {
+    color: #64748b;
+}
+
+.notification:hover .notficationRing {
+    color: #0f172a;
+}
+
+/* Badge numérique réactif */
+.notification {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+}
+
+.notificationBadge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #ef4444;
+    color: #fff;
+
+    border: 2px solid #fff;
+    border-radius: 9999px;
+
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+
+    z-index: 10;
+}
+
+/* Profile Section */
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.profile:hover {
+    background: #f1f5f9;
+}
+
+.img {
+    width: 42px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+}
+
+
+/*  PROFILE MENU OVERRIDES & ENHANCEMENTS  */
+
+.profileTrigger {
+    padding: 6px 10px !important;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.profileTrigger:hover {
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+/* profil info */
+.profileInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.profileDetails {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    line-height: 1.25;
+}
+
+.username {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.role {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 400;
+}
+
+/* -- drop down body -- */
+.profileDropdown {
+    min-width: 180px;
+    margin-top: 6px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0 !important;
+}
+
+/*-- decconexion --- */
+.logoutItem {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #dc2626 !important; 
+}
+
+.logoutItem:hover {
+    background-color: #fef2f2 !important; 
+    color: #b91c1c !important;
+}
+
+.logoutItem svg {
+    color: currentColor;
+}
+
+/* ==========================
+   RESPONSIVE SCOPE
+   ========================== */
+@media (max-width: 768px) {
+    .leadingSection {
+        display: none; 
+    }
+    
+    .container {
+        justify-content: flex-end; 
+        height: 65px;
+    }
+}
+
+@media (max-width: 480px) {
+    .search {
+        display: none; 
+    }
+}

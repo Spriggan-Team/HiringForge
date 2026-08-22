@@ -1,0 +1,269 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Sekuya&display=swap');
+
+
+:root{
+  /** Global **/
+  --textSecondaryColor: #536075;
+  --fade-background-color: #94A3B8;
+
+  /** Calendar theme **/
+  --calendar-task-low:      #CBD5E1; /* gris clair */
+  --calendar-task-normal:   #3B82F6; /* bleu */
+  --calendar-task-medium:   #6366F1; /* indigo */
+  --calendar-task-high:     #F59E0B; /* orange */
+  --calendar-task-urgent:   #DC2626; /* rouge */
+
+  --calendar-task-success:  #10B981; /* vert */
+  --calendar-task-warning:  #F59E0B; /* orange */
+  --calendar-task-danger:   #EF4444; /* rouge vif */
+
+  
+  /** Offers Components**/
+  --interviews-color: #4690EE;
+  --offer-color: #E7BB6C;
+  --candidates-color: #2ECC71;
+  --hired-color: #9B59B6;
+
+  /** Status txt**/
+  --status-active-text: #047857;
+  --status-active-bg: #D1FAE5;
+
+  --status-pending-text: #2563EB;
+  --status-pending-bg: #DBEAFE;
+
+  --status-published-text: #7C3AED;
+  --status-published-bg: #EDE9FE;
+
+  --status-draft-text: #475569;
+  --status-draft-bg: #F1F5F9;
+
+  --status-closed-text: #DC2626;
+  --status-closed-bg: #FEE2E2;
+
+}
+
+
+*{
+  margin: 0;
+  padding: 0;
+}
+
+html, body{
+  width: 100%;
+  height: 100%;
+  
+  background:
+      linear-gradient(
+          135deg,
+          #f7f8fc,
+          #eef2ff
+  );
+}
+
+a{
+    color: #2563eb;
+
+    text-decoration: none;
+
+    transition:
+        opacity .2s ease,
+        transform .2s ease;
+}
+
+/** Global link styles **/
+a:hover{
+    opacity: .75;
+    transform: translateY(-1px);
+}
+
+.faint-border{
+  border: 1px solid #e2e8f0;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+.faint-txt{
+  color: gray;
+}
+
+/** Toogle visibility **/
+
+.hidden {
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.visible {
+    opacity: 1;
+    max-height: 40px; 
+    margin-top: 5px;
+}
+
+
+.boldSecondaryTxt{
+  font-size: 20px;
+  font-weight: 500;
+}
+
+/** App Container **/
+.app-container{
+  display: flex;
+  background: #f8fafc;
+}
+
+.app-container .app-view{
+  padding: 18px 25px;
+  width: 100%;
+  /* background: red; */
+}
+
+/** NavBar **/
+.nav-bar{}
+
+/** Main **/
+main{
+  padding: 24px;
+}
+
+
+/** Scrollbar **/
+.scrollbar::-webkit-scrollbar {
+    height: 6px;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/** Input **/
+
+.input {
+  border-radius: 12px;
+  background: #e5e7eb;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1; 
+}
+
+.input:hover {
+  background: #d1d5db;
+  border-color: #94a3b8;
+}
+
+.input-placeholder::placeholder {
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+.input-like-placeholder {
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+
+/** Card style !Important **/
+.card{
+  background: #FFF;
+  padding: 14px 16px;
+
+  border-radius: 16px;
+  border: 1px solid #E5E7EB;
+}
+
+.card-border{
+  border: 1px solid #E5E7EB;
+}
+
+/* fade bottom */
+.fadeBottom {
+  position: absolute;
+  bottom: 0;
+  height: 50px;
+  width: 100%;
+  background: linear-gradient(transparent, white);
+}
+
+
+/** Drawer style **/
+
+.drawer { /** parent container **/
+  width: 100%;
+  position: relative;
+}
+
+.drawer span { /** trigger **/
+  color: #94a3b8; 
+  font-size: 0.875rem;
+  transition: color 0.15s ease;
+}
+
+.drawer .activate {
+  color: #0f172a !important;
+  font-weight: 500;
+}
+
+.selectDropdown {  /** body **/
+  width: 100%;
+  max-height: 240px; 
+  overflow-y: auto; 
+  margin-top: 6px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0 !important;
+}
+
+.selectDropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.selectDropdown::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+
+.selectDropdown::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+}
+
+.selectDropdown::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.selectItem {  /** body item **/
+  font-size: 0.875rem;
+  padding: 10px 12px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.15s ease;
+}
+
+.selectItem:hover {
+    background-color: #f8fafc !important;
+    color: #2563eb !important; /* Accent bleu au survol */
+}
+
+
+/** Loading **/
+.loading-placeholder{
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex: 1;
+  justify-content: center;
+  justify-content: center;
+}

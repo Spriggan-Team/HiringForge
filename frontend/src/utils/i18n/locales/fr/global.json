@@ -1,0 +1,216 @@
+{
+    "global":{
+        "appName" : "DigitalCop ATS",
+        "allRightsReserved":"2026 DigitalCop - Tous droits réservés",
+        "policyText": "En créant votre compte, vous acceptez nos Conditions générales d’utilisation et reconnaissez avoir pris connaissance de notre Politique de confidentialité.",
+        "rules":{
+            "password":{
+                "title": "Force du mot de passe",
+                "lenght": "Longueur sécurisée",
+                "uppercase": "Contient une majuscule",
+                "number": "Contient un chiffre"
+            }
+        },
+
+        "cv":{
+            "label": "CV",
+            "file": "CV File"
+        },
+
+        "logo":{
+            "text": "Logo"
+        },
+        
+        "pagination": {
+            "meta": "{{from}}–{{to}} of {{total}} results"
+        },
+
+        "validation":{
+            "required": "requis",
+            "optionnal": "optionnel"
+        },
+        
+        "connexion":{
+            "logout": "Déconnexion"
+        },
+
+        "messages":{
+            "welcome": "Bonjour {{name}}",
+            "secureData": "Données sécurisées",
+            "seeDetails": "Voir détails",
+            "save": "Sauvegarder",
+            "error": "Une erreur inattendue est survenue",
+            "more": "Plus",
+            "seeMore": "Voir plus",
+            "logoutSuccess": "Deconnexion réussie",
+            "loading": "Chargement"
+        },
+
+
+        "text":{
+            "no": "Non",
+            "yes": "Oui",
+            "email": "Email",
+            "expired": "expired",
+            "actions": "Actions",
+            "postulationDate": "Date de postulation",
+            "fork": "Fourchette",
+            "place": "Lieu",
+            "unknown": "Unknow",
+            "notSpecify": "Pas préciser",
+            "status": "Statut",
+            "recentAction": "Recente action"
+        },
+
+        "menu":{
+            "home": "Acceuil",
+            "poste": "Postes",
+            "calendar": "Calendrier",
+            "agents": "Agents",
+            "candidates": "Candidates",
+            "interview": "Entretien",
+            "settings": "Paramèters",
+            "offers": "Offres d'embauches",
+            "stats": "Statistiques",
+            "myApplications": "Mes applications",
+            "myOffers": "Mes offres",
+            "MyInterviews": "Entretiens"
+        },
+        "navbar":{},
+        
+        "dates": {
+            "date": "Date",
+            "thisMonth": "ce mois",
+            "today": "Aujourd'hui",
+            "calendar": "Calendrier",
+            "thisWeek": "Cette semaine",
+            "lastWeek": "La semaine dernière",
+            "inputs":{
+                "selectCalandarDate":{
+                    "placeholder": "Aucune"
+                }
+            }
+        },
+        "duration":{
+            "time": {
+                "hours":{
+                    "hours_one": "Heure"
+                }
+            },
+            "publishSince": "Publié il y a {{time}}"
+        },
+
+        "link":{
+            "viewAll": "Voir tout"
+        },
+
+        "buttons":{
+            "add": "Ajouter",
+            "back": "Retour",
+            "cancel": "Annuler",
+            "goToMySpace": "Acceder à mon espace",
+            "register": "Créer un compte",
+            "connexion": "Connexion",
+            "next": "Suivant"
+        },
+
+        "address":{
+            "label":"Adrèsse",
+            "country":"Pays",
+            "postalCode":"Code postal",
+            "city":"Ville",
+            "street": "Adresse"
+        },
+
+        "candidate": {
+            "candidateLabel_one": "candidat",
+            "candidateLabel_other": "candidats"
+        },
+        "interview": {
+            "interviewLabel_one": "entretien",
+            "interviewLabel_other": "entretiens"
+        },
+
+        "hired": {
+            "hiredLabel_one": "Embauché",
+            "hiredLabel_other": "Embauchés"
+        },
+
+        
+        "offer": {
+            "offerLabel_one": "offer",
+            "offerLabel_other": "offers"
+        },
+
+        "statistics":{
+            "statistics_one": "Statistique",
+            "statistics_other": "Statistiques"
+        },
+
+        "views":{
+            "viewsLabel_one": "vue",
+            "viewsLabel_other": "vues"
+        },
+
+        "applications":{
+            "rejected":{
+                "rejected_one": "Rejeté",
+                "rejected_other": "Rejetés"
+            }
+        },
+
+        "actions": {
+            "recentAction": "Actions récentes",
+            "edit": "Editer",
+            "duplicate": "Dupliquer",
+            "delete": "Supprimer",
+            "reject": "Rejecte"
+        },
+
+        "filters":{
+            "title": "Filters"
+        },
+        "jobs":{
+            "publicationState": {
+                "title":"État de publication",
+                "published": "Publié",
+                "draft": "Brouillon",
+                "closed": "Closed"
+            },
+            "offerStatus":{
+                "title": "Statut de l'offre",
+                "active": "Active",
+                "pending": "En cours",
+                "inactive": "Inactive"
+            },
+            "visibilityStatus":{
+                "title": "Visibilité",
+                "public":{
+                    "title": "Public",
+                    "desc": "Visible par tout les candidats"
+                },
+                "private":{
+                    "title": "Privé",
+                    "desc": "Visible uniquement sur invitation"
+                }
+            }
+        },
+        "salary":{
+            "title": "Rénumération"
+        },
+
+        "map":{
+            "error": "Impossible de localiser cette adresse — affichage de la position par défaut."
+        },
+
+        "location": {
+            "title": "Location"
+        },
+
+        "contract":{
+            "title": "Contrat"
+        }
+    }
+}
+
+

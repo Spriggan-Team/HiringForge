@@ -1,0 +1,130 @@
+.board{
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 10px;
+}
+
+
+
+/* ==========================
+   Column
+   ========================== */
+
+
+.columns{
+    display: flex;
+    flex-direction: column;
+    min-width: 280px;
+    max-width: 280px;
+
+    padding: 14px;
+    border-radius: 12px;
+
+    background: var(--bgColor, #f6f8fa);
+
+    border: 1px solid rgba(0,0,0,.08);
+    box-shadow:
+        0 2px 4px rgba(0,0,0,.05),
+        0 8px 20px rgba(0,0,0,.04);
+}
+
+
+.columns .txtSection{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 12px;
+}
+
+
+.columns .title{
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--color, #222);
+}
+
+
+.columns .count{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 26px;
+    height: 26px;
+    padding: 0 8px;
+
+    border-radius: 999px;
+
+    background: rgba(0,0,0,.08);
+    color: var(--color, #222);
+
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+
+.columns .content{
+    min-height: 30px;
+}
+
+/* ==========================
+   Cards
+   ========================== */
+
+
+
+.card{
+    display: flex;
+    align-items: center;
+
+    margin-bottom: 8px;
+    padding: 12px;
+
+    border-radius: 10px;
+
+    background: white;
+    border: 1px solid rgba(0,0,0,.08);
+
+    cursor: grab;
+    user-select: none;
+
+    transition:
+        transform .15s,
+        box-shadow .15s,
+        border-color .15s;
+}
+
+.card:last-child{
+    margin-bottom: 0;
+}
+
+.card:hover{
+    transform: translateY(-2px);
+
+    border-color: rgba(0,0,0,.15);
+
+    box-shadow:
+        0 4px 10px rgba(0,0,0,.08);
+}
+
+.card:active{
+    cursor: grabbing;
+}
+
+/* ==========================
+   Placeholder
+   ========================== */
+
+.dashedstrokeCard{
+    min-height: 60px;
+
+    border: 2px dashed rgba(0,0,0,.25);
+    border-radius: 10px;
+
+    background: rgba(0,0,0,.04);
+
+    transition: all .15s;
+}

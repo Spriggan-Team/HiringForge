@@ -1,0 +1,104 @@
+@startuml Usecase
+
+skinparam dpi 300
+left to right direction
+
+actor "Recruteur" as User
+actor "Candidat" as Candidate
+
+rectangle "Hiring Project" {
+
+    ' Consultation des offres
+    (Consulter les offres d'emploi) as ConsultJobOfferList
+    (Consulter une offre d'emploi) as ConsultJobOffer
+    (Filtrer les offres) as FilterJobOffer
+
+    ' Profil candidat
+    (Gérer le profil candidat) as ManageCandidateProfile
+    (Modifier les informations personnelles) as ModifyCandidateInformation
+    (Modifier l'adresse) as ModifyCandidateAddress
+    (Importer un CV) as ImportCV
+
+    ' Candidature
+    (Postuler à une offre d'emploi) as ApplyJobOffer
+
+    ' Candidatures recruteur
+    (Consulter les candidatures) as ConsultCandidateList
+    (Consulter une candidature) as ConsultCandidate
+    (Filtrer les candidatures) as FilterCandidate
+    (Gérer les candidatures) as ManageCandidates
+    (Sélectionner les candidats) as CandidateSelection
+    (Planifier un entretien) as PlanInterview
+    (Generer une proposition d'embauche) as HiredDemand
+    (Accepter ou refuser une offre d'emploi) as HiredDemandResponse
+
+    ' Profil recruteur
+    (Gérer le profil recruteur) as ManageUserProfile
+    (Modifier les informations personnelles du recruteur) as ModifyUserInformation
+    (Modifier le information de l'entreprise) as ChangeCompanyInformation
+    (Modifier les identifiants de connexion) as ChangeAuthCredential
+    (Téléverser une vidéo de présentation) as UploadVideo
+
+    ' Gestion des offres
+    (Gérer les offres d'emploi) as ManageJobOffer
+    (Créer une offre) as CreateOffer
+    (Modifier une offre) as ModifyOffer
+    (Publier une offre) as PublishJobOffer
+    (Manipuler le status d'une offre) as StatusOffer
+    (Supprimer une offre) as DeleteJobOffer
+
+    'Interviews
+    (Planification d'un entretien) as CreateInterviews
+    (Acceptation d'un entretien) as AcceptInterviews
+    (Refus d'un intretien) as RejectInterviews
+}
+
+' --- Candidat ---
+
+Candidate --> ConsultJobOfferList
+Candidate --> ConsultJobOffer
+Candidate --> FilterJobOffer
+
+Candidate --> ManageCandidateProfile
+Candidate -right-> ChangeAuthCredential
+ManageCandidateProfile ..> ModifyCandidateInformation : <<include>>
+ManageCandidateProfile ..> ModifyCandidateAddress : <<include>>
+ManageCandidateProfile ..> ImportCV : <<include>>
+
+Candidate --> ApplyJobOffer
+Candidate -> AcceptInterviews
+Candidate -> RejectInterviews
+
+Candidate -> HiredDemandResponse
+
+' --- Recruteur ---
+
+User --> ConsultJobOfferList
+User --> ConsultJobOffer
+User --> FilterJobOffer
+
+User --> ConsultCandidateList
+ConsultCandidateList ..> ConsultCandidate : <<include>>
+ConsultCandidateList ..> FilterCandidate : <<include>>
+
+User --> ManageCandidates
+ManageCandidates ..> CandidateSelection : <<include>>
+ManageCandidates ..> PlanInterview : <<include>>
+
+User --> ManageUserProfile
+User -> ModifyUserInformation
+ManageUserProfile ..> ChangeAuthCredential : <<include>>
+ManageUserProfile ..> UploadVideo : <<include>>
+
+User --> ManageJobOffer
+ManageJobOffer ..> CreateOffer : <<include>>
+ManageJobOffer ..> ModifyOffer : <<include>>
+ManageJobOffer ..> PublishJobOffer : <<include>>
+ManageJobOffer ..> StatusOffer : <<include>>
+ManageJobOffer ..> DeleteJobOffer : <<include>>
+
+User ->CreateInterviews
+User -> HiredDemand
+User -right-> ChangeCompanyInformation 
+
+@enduml

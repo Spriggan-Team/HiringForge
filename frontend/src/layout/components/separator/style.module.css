@@ -1,0 +1,13 @@
+.container {
+    flex-shrink: 0;
+    
+    /* On applique les variables calculées */
+    width: var(--separator-width);
+    height: var(--separator-height);
+    
+    background: var(--separator-color);
+    margin: var(----separator-margin);
+
+    border-radius: var(--separator-border-radius);
+}
+

@@ -1,0 +1,360 @@
+@startuml UML - Classe
+
+
+skinparam dpi 300
+
+skinparam maxwidth 8000
+skinparam maxheight 8000
+skinparam dpi 300
+
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+skinparam nodesep 60
+skinparam ranksep 80
+
+skinparam linetype ortho
+
+
+
+left to right direction
+skinparam classAttributeIconSize 0
+
+'========================================================
+' CORE ACCOUNT
+'========================================================
+
+class Account {
+    - id: string
+    - email: string
+    - password: string
+    - firstName: string
+    - lastName: string
+    - description: string
+    - createdAt: DateTime
+}
+
+class User {
+    - id: string
+    - userRole: string
+}
+
+class Candidate {
+    - id: string
+}
+
+Account "1" -up- "0..1" User
+Account "1" -- "0..1" Candidate
+
+
+'========================================================
+' ORGANISATION
+'========================================================
+
+class Company {
+    - id: string
+    - name: string
+    - siret: string
+    - createdAt: DateTime
+}
+
+User "*" --> "1" Company
+
+
+'========================================================
+' ADDRESS
+'========================================================
+
+class Address {
+    - id: int
+    - country: string
+    - postalCode: string
+    - city: string
+    - street: string
+}
+
+Candidate "1" --> "0..1" Address
+Company "1" -- "0..*" Address
+JobOffer "0..*" --> "0..1" Address
+
+
+'========================================================
+' FILE / MEDIA
+'========================================================
+
+class File {
+    - id: int
+    - name: string
+    - originalName: string
+    - mime: string
+    - size: double
+    - createdAt: DateTime
+}
+
+Account "0..1" --> "0..1" File : image
+Company "0..1" --> "0..1" File : logo
+Company "0..1" --> "0..1" File : videoPresentation
+
+
+'========================================================
+' RESUME
+'========================================================
+
+class Resume {
+    - id: string
+    - hasBeenAnalyzed: boolean
+}
+
+Candidate "1" -- "0..*" Resume
+Resume "1" --> "1" File
+
+
+'========================================================
+' SKILLS
+'========================================================
+
+class Skill {
+    - id: string
+    - ecoUri: string
+    - onetCode: string
+    - isDefault: boolean
+    - canonicalName: string
+}
+
+class SkillTranslation {
+    - id: int
+    - name: string
+    - slug: string
+}
+
+class SkillAlias {
+    - id: int
+    - alias: string
+}
+
+class Language {
+    - id: int
+    - code: string
+    - label: string
+}
+
+class CandidateSkill {
+    - candidateResumeId: string
+}
+
+class JobOfferSkill
+
+
+Candidate "1" -- "0..*" CandidateSkill
+CandidateSkill "*" --> "1" Skill
+CandidateSkill "*" --> "0..1" Resume
+
+Skill "1" -- "0..*" SkillTranslation
+SkillTranslation "*" --> "1" Language
+
+Skill "1" -- "0..*" SkillAlias
+
+JobOffer "1" -- "0..*" JobOfferSkill
+JobOfferSkill "*" --> "1" Skill
+
+
+'========================================================
+' DEPARTMENT
+'========================================================
+
+class Department {
+    - id: int
+    - label: string
+    - description: string
+    - code: string
+    - externalRef: string
+}
+
+Department "0..1" --> "0..*" Department : parent
+
+
+'========================================================
+' CONTRACT
+'========================================================
+
+class ContractType {
+    - id: int
+    - label: string
+    - country: string
+    - default: boolean
+    - organisationId: string
+}
+
+
+'========================================================
+' JOB OFFER
+'========================================================
+
+class JobOffer {
+    - id: string
+    - title: string
+    - content: JSON
+    - publicationStatus: string
+    - minSalary: Decimal
+    - maxSalary: Decimal
+    - currency: string
+    - jobWorkMode: string
+    - activityStatus: string
+    - publicationDate: Date
+    - expertise: string
+    - createdAt: DateTime
+    - updatedAt: DateTime
+}
+
+Company "1" -- "0..*" JobOffer
+User "1" -- "0..*" JobOffer : creates
+Department "1" -- "0..*" JobOffer
+ContractType "1" -- "0..*" JobOffer
+
+
+'========================================================
+' JOB OFFER VIEWS
+'========================================================
+
+class JobOfferView {
+    - id: int
+    - viewedAt: DateTime
+}
+
+Candidate "1" -- "0..*" JobOfferView
+JobOffer "1" -- "0..*" JobOfferView
+
+
+'========================================================
+' APPLICATION
+'========================================================
+
+class Application {
+    - id: string
+    - status: string
+    - matchScore: Decimal
+    - appliedAt: DateTime
+    - updatedAt: DateTime
+}
+
+Candidate "1" -- "0..*" Application
+JobOffer "1" -- "0..*" Application
+Application "1" --> "1" Resume
+Application "*" --> "1" Company
+
+
+'========================================================
+' INTERVIEW
+'========================================================
+
+class Interview {
+    - id: string
+    - startDate: DateTime
+    - minutes: int
+    - status: string
+    - title: string
+    - description: string
+    - url: string
+    - confirm: boolean
+    - rejectionReason: string
+}
+
+Application "1" -- "0..*" Interview
+
+
+'========================================================
+' EMPLOYMENT OFFER
+'========================================================
+
+class EmploymentOffer {
+    - id: string
+    - reason: string [nullable]
+}
+
+Candidate "1" -- "0..*" EmploymentOffer
+User "1" -- "0..*" EmploymentOffer : creates
+Company "1" -left- "0..*" EmploymentOffer
+Application "1" -- "0..1" EmploymentOffer
+
+'========================================================
+' NOTIFICATION
+'========================================================
+
+class Notification {
+    - id: string
+    - type: string
+    - data: JSON
+    - isRead: boolean
+    - createdAt: DateTime
+    - readAt: DateTime
+}
+
+Account "1" -left- "0..*" Notification : recipient
+Account "1" -- "0..*" Notification : sender
+
+
+'========================================================
+' AUTHENTICATION / SECURITY
+'========================================================
+
+class VerificationToken {
+    - id: string
+    - codeHash: string
+    - purpose: string
+    - expiredAt: DateTime
+    - createdAt: DateTime
+}
+
+class OTPVerification {
+    - id: int
+    - email: string
+    - attempts: int
+}
+
+class BlacklistedToken {
+    - id: string
+    - jti: string
+    - expiredAt: DateTime
+    - blacklistedAt: DateTime
+    - reason: string
+}
+
+Account "1" -- "0..*" OTPVerification
+OTPVerification --> VerificationToken
+
+'========================================================
+' TRACE / NOTIFICATION INTERNE
+'========================================================
+
+class KeepTrace {
+    - id: string
+    - entityType: string
+    - entityId: string
+    - message: string
+    - status: string
+    - createdAt: DateTime
+    - readAt: DateTime
+}
+
+Account "1" -- "0..*" KeepTrace
+
+
+'========================================================
+' ENUMS
+'========================================================
+
+enum JobPublicationStatus {
+    DRAFT
+    PUBLISHED
+    CLOSED
+}
+
+enum InterviewStatus {
+    SCHEDULED
+    IN_PROGRESS
+    CLOSED
+    CANCEL
+    MISSED
+}
+
+@enduml

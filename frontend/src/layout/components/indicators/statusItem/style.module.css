@@ -1,0 +1,12 @@
+
+.container {
+    display: flex;
+    align-items: center;
+}
+
+
+.container .text {
+    display: inline-block;
+    font-weight: 400;
+    min-width: 100px;
+}

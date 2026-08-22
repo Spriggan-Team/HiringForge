@@ -1,0 +1,9 @@
+{
+    "scheduler":{
+        "createEvent":{
+            "inputs":{
+                "title":{ "placeholder": "Title" }
+            }
+        }
+    }
+}

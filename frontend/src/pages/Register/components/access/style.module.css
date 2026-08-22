@@ -1,0 +1,12 @@
+.container{}
+
+
+/***
+    FORM
+**/
+
+.form{
+    gap: 14px;
+    display: flex;
+    flex-direction: column;
+}

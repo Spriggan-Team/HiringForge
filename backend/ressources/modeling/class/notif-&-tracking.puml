@@ -1,0 +1,60 @@
+@startuml UML - Classe - Notifications et Traçabilité
+
+skinparam dpi 300
+skinparam maxwidth 8000
+skinparam maxheight 8000
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam linetype ortho
+
+left to right direction
+
+'========================================================
+' ACCOUNT
+'========================================================
+
+class Account {
+    - id: string
+    - email: string
+    - password: string
+    - firstName: string
+    - lastName: string
+}
+
+
+'========================================================
+' NOTIFICATION
+'========================================================
+
+class Notification {
+    - id: string
+    - type: string
+    - data: JSON
+    - isRead: boolean
+    - createdAt: DateTime
+    - readAt: DateTime
+}
+
+Account "1" -left- "0..*" Notification : recipient
+Account "1" -- "0..*" Notification : sender
+
+
+'========================================================
+' TRACE
+'========================================================
+
+class KeepTrace {
+    - id: string
+    - entityType: string
+    - entityId: string
+    - message: string
+    - status: string
+    - createdAt: DateTime
+    - readAt: DateTime
+}
+
+Account "1" -- "0..*" KeepTrace
+
+@enduml
