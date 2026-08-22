@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Services\Skills;
 
+use App\Domain\Candidate\CandidateSkillRepositoryInterface;
 use App\Domain\Shared\Skill\SkillMatch;
 use App\Domain\Shared\Skill\SkillRepositoryInterface;
 use App\Domain\Shared\Skill\SkillMatcherServiceInterface;
@@ -27,6 +28,7 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
         private readonly SkillNormalizer $normalizer,
         private readonly SkillBatchCache $batchCache,
         private readonly SkillVectorMatcher $vectorMatcher,
+        private readonly CandidateSkillRepositoryInterface $candidateSkillRepository,
         private readonly SkillRepositoryInterface $skillRepository,
     ) {}
 
@@ -34,6 +36,9 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
     #[Override]
     public function findMatching(
         string $text,
+        string $candidateId,
+        ?callable $onUnlinkedVectorSkill = null,
+        bool $enableVectorMatch = true,
         float $threshold = 0.8,
         string $locale = 'fr',
     ): ?SkillMatch {
@@ -42,6 +47,7 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
         if ($text === '') {
             return null;
         }
+
 
         // STEP 0 — Normalize
         $normalizedText = $this->normalizer->normalize(
@@ -52,6 +58,20 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
         if ($normalizedText === '') {
             return null;
         }
+        
+        //-- STEP 1 — Exact / Alias among the candidate's skills.
+        $resolution = $this->candidateSkillRepository->resolveSkill(
+            candidateId: $candidateId,
+            text: $normalizedText,
+        );
+
+        if ($resolution !== null) {
+            return new SkillMatch(
+                skillId: $resolution->skillId,
+                method: $resolution->method,
+            );
+        }
+
 
         // STEP 1 — Exact / alias
         $resolution = $this->skillRepository->resolveSkill(
@@ -66,15 +86,36 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
             );
         }
 
+        //-- control vector search
+        if (!$enableVectorMatch) {
+            return null;
+        }
+
         // STEP 2 — Vector search
         $match = $this->vectorMatcher->searchClosestSkill(
             text: $normalizedText,
             threshold: $threshold,
         );
 
+        //-- Check if Qdrant result already belongs to candidate
+        if (!$this->candidateSkillRepository->hasSkill(
+            candidateId: $candidateId,
+            skillId: $match['skill_id'],
+        )) {
+            return null;
+        }
+
         if ($match === null) {
             return null;
         }
+
+        if ($onUnlinkedVectorSkill !== null) {
+            $onUnlinkedVectorSkill(
+                $match['skill_id'],
+                $match['score'],
+            );
+        }
+
 
         return new SkillMatch(
             skillId: $match['skill_id'],

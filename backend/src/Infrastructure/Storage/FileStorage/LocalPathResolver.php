@@ -25,6 +25,7 @@ class LocalPathResolver implements PathResolverInterface
     public function resolveTargetDirectory(
         ?string $mimeType,
         MediaStorageParams $params,
+        ?string $fileName = null
     ): string
     {
 
@@ -65,11 +66,21 @@ class LocalPathResolver implements PathResolverInterface
             );
         }
 
+        $storedFileName = $fileName ?? $params->storedFileName;
+
+        if ($storedFileName !== null) {
+            $path = $this->appendPath(
+                $path,
+                $storedFileName,
+            );
+        }
+
         return $path;
     }
 
+
     //Safely Build path
-    private function appendPath(string $base, string ...$segments): string
+    public function appendPath(string $base, string ...$segments): string
     {
         return rtrim($base, '/\\')
             . DIRECTORY_SEPARATOR

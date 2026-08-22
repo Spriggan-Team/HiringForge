@@ -34,7 +34,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  * This controller is guarded through JWT control and 
  * user exitence control (check in bdd)
  */
-#[Route('/job_offer')]
+#[Route('/job_offers')]
 class UserJobOfferManagementController extends AbstractController
 {
 
@@ -55,14 +55,20 @@ class UserJobOfferManagementController extends AbstractController
     {
         try
         {
-            /** @var AuthenticatedPerson */
-            $account = $this->getUser();
+            /** @var AuthenticatedPerson|null */
+            $user = $this->getUser();
+            if(!$user){
+                return ApiResponse::error(
+                    message: "Unauthorize action",
+                    statusCode: 404
+                )->toJsonResponse();
+            }
 
             $body = json_decode($request->getContent(), true);
 
             $command = $mapper->fromArray($body);
             $offerId = $handler->execute(
-                accountId: $account->getId(),
+                accountId: $user->getId(),
                 command: $command
             );
 
@@ -70,8 +76,6 @@ class UserJobOfferManagementController extends AbstractController
             return ApiResponse::success(["offerId" => $offerId],"Everything went smoothly")->toJsonResponse();
         }
         catch(Exception $e){
-            dump($e->getMessage());
-            dump($e->getTraceAsString());
             return ApiResponse::error(
                 message: "Something wrong happenned",
                 throwable: $e
@@ -150,8 +154,15 @@ class UserJobOfferManagementController extends AbstractController
         LoggerInterface $logger
     ) {
         try {
-            /** @var AuthenticatedPerson $user */
+            /** @var AuthenticatedPerson|null $user */
             $user = $this->getUser();
+
+            if(!$user){
+                return ApiResponse::error(
+                    message: "Unauthorize action",
+                    statusCode: 404
+                )->toJsonResponse();
+            }
 
             $body = json_decode($request->getContent(), true) ?? [];
             $fileNames = is_array($body['fileNames'] ?? null) ? $body['fileNames'] : [];

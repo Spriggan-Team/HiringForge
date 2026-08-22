@@ -29,18 +29,23 @@ const fetchApplicationsApi = async (
   params: { jobId?: string; companyId?: string; skip: number; limit: number; search?: string },
   signal?: AbortSignal
 ): Promise<Application[]> => {
+  console.log("PARAMS  : ", params )
   const data = (await ApplicationQueries.getApplications({...params, signal })) ?? [];
-
-  return data.map((value: any) => ({
-    id: value.id,
-    candidate: `${value.candidate.firstName} ${value.candidate.lastName}`,
-    matchScore: value.matchScore ?? 0,
-    status: value.status,
-    email: value.candidate.email,
-    avatarUrl: value.candidate.imageUrl,
-    appliedAt: formatDate(value.appliedAt, 'd MM yyyy'),
-  }));
+  return data.map((value: any) => {
+    // console.log("Application id : ",value.candidate.id)
+      return ({
+        id: value.id,
+        candidateId: value.candidate.id,
+        candidate: `${value.candidate.firstName} ${value.candidate.lastName}`,
+        matchScore: value.matchScore ?? 0,
+        status: value.status,
+        email: value.candidate.email,
+        avatarUrl: value.candidate.imageUrl,
+        appliedAt: value.appliedAt ?? "",
+    })
+  });
 };
+
 
 
 
@@ -55,9 +60,12 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
   const { t } = useTranslation();
   const { setModal } = useAppContext();
 
-  const [applications, setApplications] = useState<Application[]>([]);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
-  const [activeApplicationId, setActiveApplicationId] = useState<string | null>(null);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [activeApplication, setActiveApplication] = useState<{applicationId: string; candidateId: string} | null>(null);
+  const [candidateProfilImages, setCandidateProfilImages] = useState<Record<string, string>>({});
+  const [candidateResumes, setCandidateResume] = useState<Record<string, string>>({});
+
 
   // -- Pagination / Hot loading
   const [skip, setSkip] = useState(0);
@@ -65,9 +73,13 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadedRef = useRef<boolean>(false); // Synchronous varification
 
+  //-- cache ref
+  const imageUrlCache = useRef<Map<string, string>>(new Map()); // image url ...
+  const resumeUrlCache = useRef<Map<string, string>>(new Map()); // image url ...
+
   // -- Control scroll
   const observerTarget = useRef<HTMLTableRowElement | null>(null);
-
+  
   // -- Search State
   const [search, setSearch] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
@@ -103,6 +115,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
       setSkip(0);
 
       try {
+        //-- Fetch application data
         const freshData = await fetchApplicationsApi(
           {
             jobId,
@@ -116,6 +129,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
 
         setApplications(freshData);
         setHasMore(freshData.length === PAGE_SIZE);
+        handleCandidateProfilImage(freshData);
       }
       catch (error: any) {
         if (error.name !== 'AbortError') {
@@ -153,6 +167,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
       setApplications((prev) => [...prev, ...moreData]);
       setSkip(nextSkip);
       setHasMore(moreData.length === PAGE_SIZE);
+      handleCandidateProfilImage(moreData);
     } 
     catch (error) {
       console.error('Erreur lors du chargement de la suite des candidatures:', error);
@@ -163,12 +178,78 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
     }
   }, [jobId, companyId, skip, hasMore, debouncedSearch]);
 
-  
 
-  // Reset trigger (search or change of props)
-  useEffect(() => {
-    handleResetAndFetch(debouncedSearch);
-  }, [debouncedSearch, jobId, companyId, handleResetAndFetch]);
+
+  // load candidate image
+  const handleCandidateProfilImage = useCallback(async (data: Application[]) => {
+      for (const application of data) {
+        const applicationId = application.id;
+
+        // Image déjà chargée
+        const cachedUrl = imageUrlCache.current.get(applicationId);
+
+        if (cachedUrl) {
+          setCandidateProfilImages((prev) => ({
+            ...prev,
+            [applicationId]: cachedUrl,
+          }));
+
+          continue;
+        }
+
+        try {
+          const blob = await ApplicationQueries.getCandidateProfilImage({
+            candidateId: application.candidateId,
+            applicationId: applicationId,
+          });
+
+          const url = URL.createObjectURL(blob);
+
+          imageUrlCache.current.set(applicationId, url);
+
+          setCandidateProfilImages((prev) => ({
+            ...prev,
+            [applicationId]: url,
+          }));
+        }
+        catch (error) {
+          console.error(
+            `Impossible de récupérer l'image du candidat ${application.candidateId}`,
+            error
+          );
+        }
+      }
+  },[]);
+
+
+  const handleCandidateResume = useCallback(async ({candidateId, applicationId}: {candidateId: string, applicationId: string})=>{
+    const cachedUrl = resumeUrlCache.current.get(applicationId);
+
+    if (cachedUrl) {
+      setCandidateResume((prev) => ({
+        ...prev,
+        [applicationId]: cachedUrl,
+      }));
+
+      return;
+    }
+
+    try{
+      const blob = await ApplicationQueries.getCandidateResume({
+        candidateId,
+        applicationId
+      });
+
+      const url = URL.createObjectURL(blob);
+      resumeUrlCache.current.set(applicationId, url);
+      setCandidateResume((prev)=>({...prev, [applicationId]: url}));
+    }
+    catch(error){
+      console.log("Something went wrong while fetching candidates resume")
+    }
+  },[])
+
+
 
 
   // Intersection Observer for Infinite Scroll
@@ -303,23 +384,65 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
     setModal({
       isOpen: true,
       title: `${t('applications.headers.detailsOfApplication')} - ${application.candidate}`,
-      content: <ApplicationDetailModal application={application} onClose={handleClose} />,
+      content: <ApplicationDetailModal 
+                  onClose={handleClose}
+                  application={application}
+                  imageUrl={candidateProfilImages[application.id]}
+                  resumeUrl={candidateResumes[application.id]}
+               />,
       onClose: handleClose,
     });
   };
 
 
   const handleToggleEye = (application: Application) => {
-    if (activeApplicationId === application.id) {
+    if (activeApplication?.applicationId === application.id) {
       setModal(null);
-      setActiveApplicationId(null);
+      setActiveApplication(null);
     } else {
-      setActiveApplicationId(application.id);
+      setActiveApplication({
+        applicationId: application.id,
+        candidateId: application.candidateId
+      });
       handleConsult(application, () => {
-        setActiveApplicationId(null);
+        setActiveApplication(null);
       });
     }
   };
+
+
+  //-- Clear memory
+  useEffect(()=>{
+    return () => {
+      for (const url of imageUrlCache.current.values()) {
+        URL.revokeObjectURL(url);
+      }
+      for(const url of resumeUrlCache.current.values()){
+        URL.revokeObjectURL(url);
+      }
+      imageUrlCache.current.clear();
+      resumeUrlCache.current.clear()
+    };
+  },[])
+
+  // Reset trigger (search or change of props)
+  useEffect(() => {
+    handleResetAndFetch(debouncedSearch);
+  }, [debouncedSearch, jobId, companyId, handleResetAndFetch]);
+
+
+  useEffect(()=>{
+    if(
+      activeApplication?.applicationId &&
+      activeApplication.candidateId
+    ){
+
+      handleCandidateResume({
+        candidateId: activeApplication.candidateId,
+        applicationId: activeApplication.applicationId
+      });
+    }
+  },[activeApplication])
 
 
   return (
@@ -347,11 +470,12 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
               ) : (
                 applications.map((application) => (
                   <ApplicationRow
+                    t={t}
                     key={application.id}
                     application={application}
                     isUpdating={isUpdating === application.id}
-                    isEyeOpen={activeApplicationId === application.id}
-                    t={t}
+                    isEyeOpen={activeApplication?.applicationId === application.id}
+                    imageUrl={candidateProfilImages[application.id]}
                     onToggleEye={handleToggleEye}
                     onRequestStatusChange={handleRequestStatusChange}
                     onReject={handleReject}

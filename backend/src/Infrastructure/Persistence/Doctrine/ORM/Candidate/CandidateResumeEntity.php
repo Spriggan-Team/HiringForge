@@ -4,6 +4,7 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
+use Doctrine\DBAL\Types\Types;
 use \Doctrine\ORM\Mapping as ORM;
 
 
@@ -16,6 +17,14 @@ class CandidateResumeEntity
     #[ORM\GeneratedValue(strategy: "CUSTOM")]
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
     private ?string $id = null;
+
+    #[ORM\Column(type: Types::BOOLEAN)]
+    private bool $hasbeenAnalyzed = false;
+
+
+    //--------------------------------------
+    // Relations
+    //---------------------------------------
 
     #[ORM\ManyToOne(
         targetEntity: CandidateEntity::class,
@@ -31,9 +40,9 @@ class CandidateResumeEntity
     #[ORM\JoinColumn(nullable: false, unique: true)]
     private FileEntity $file;
 
-    //------------
+    //--------------------
     //---- Constructing
-    //---------------
+    //----------------------
     
     private function __construct(
         CandidateEntity $candidate,
@@ -45,6 +54,9 @@ class CandidateResumeEntity
         $this->id = $id;
     }
 
+
+
+
     public static function create(CandidateEntity $candidate, FileEntity $file): static
     {
         return new static($candidate, $file);
@@ -55,6 +67,7 @@ class CandidateResumeEntity
         return new static($candidate, $file, $id);
     }
 
+    
     public function getId(): ?string
     {
         return $this->id;
@@ -64,6 +77,8 @@ class CandidateResumeEntity
     {
         return $this->candidate;
     }
+
+
 
     public function setCandidate(CandidateEntity $candidate): static
     {
@@ -83,4 +98,17 @@ class CandidateResumeEntity
 
         return $this;
     }
+
+        
+    public function hasItbeenAnalyzed(){
+        return $this->hasbeenAnalyzed;
+    }
+
+
+    public function markAsAnalyzed(bool $state){
+        $this->hasbeenAnalyzed = $state;
+        return $this;
+    }
+
+
 }

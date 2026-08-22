@@ -2,10 +2,12 @@
 
 //--import job
 import { id } from "date-fns/locale";
+
 import type { JobView } from "../../../features/jobs/JobOffer"
 import { intercept } from "../../../utils/utils";
 import { HttpBadResponse } from "../../exceptions";
 import { authPost, post } from "../../http";
+
 import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import { FailedJobAssetsUpload } from "./exceptions";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
@@ -45,7 +47,7 @@ const createJob = async(
 
         console.log({createJobBodyRequest: data});
         
-        const response = await authPost<ApiResponse<{offerId: string}>>('/job_offer', data);
+        const response = await authPost<ApiResponse<{offerId: string}>>('/job_offers', data);
         return response.data;
     }
     catch(error){
@@ -72,7 +74,7 @@ const uploadJobAssets = async (
       }
     });
 
-    await authPost(`/job_offer/${jobId}/assets/uploads`, body);
+    await authPost(`/job_offers/${jobId}/assets/uploads`, body);
   }
   catch (error) {
     if (error instanceof HttpBadResponse) {

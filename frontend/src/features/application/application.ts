@@ -118,9 +118,9 @@ export const ALLOWED_STATUS_TRANSITIONS: Record<ApplicationStatusValue, Applicat
 export interface Application {
   id: string;
   candidate: string;
+  candidateId: string;
   email: string;
   appliedAt: string;
   status: ApplicationStatusValue;
-  avatarUrl?: string;
   matchScore: number;
 }

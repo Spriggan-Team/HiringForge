@@ -1,0 +1,84 @@
+@startuml
+
+title Resume Analysis during Application
+
+participant ApplicationCreator
+participant ResumeParser
+participant AIResumeAnalyzer
+participant ResumeRepositoryInterface
+participant ApplicationRepository
+database Database
+
+
+=== Resume Analysis ===
+
+ApplicationCreator -> ResumeParser : parse(resume)
+
+activate ResumeParser
+
+
+' Extract CV content
+ResumeParser -> ResumeParser : extractText(resume.file)
+
+note right
+    Extract text and
+    relevant sections
+    from the PDF
+end note
+
+
+' AI analysis
+ResumeParser -> AIResumeAnalyzer : analyze(text)
+
+activate AIResumeAnalyzer
+
+AIResumeAnalyzer -> AIResumeAnalyzer : extractSkills()
+AIResumeAnalyzer -> AIResumeAnalyzer : extractExperience()
+AIResumeAnalyzer -> AIResumeAnalyzer : extractEducation()
+
+AIResumeAnalyzer --> ResumeParser : structuredData
+
+deactivate AIResumeAnalyzer
+
+
+' Update resume
+ResumeParser -> ResumeRepositoryInterface : updateAnalysis(resumeId, structuredData)
+
+activate ResumeRepositoryInterface
+
+ResumeRepositoryInterface -> Database : UPDATE resume
+
+activate Database
+
+Database --> ResumeRepositoryInterface : success
+
+deactivate Database
+
+ResumeRepositoryInterface --> ResumeParser : success
+
+deactivate ResumeRepositoryInterface
+
+
+ResumeParser --> ApplicationCreator : analyzedResume
+
+deactivate ResumeParser
+
+
+' Calculate match score
+ApplicationCreator -> ApplicationRepository : calculateMatchScore(applicationId, resumeData, offer)
+
+activate ApplicationRepository
+
+ApplicationRepository -> Database : UPDATE match_score
+
+activate Database
+
+Database --> ApplicationRepository : success
+
+deactivate Database
+
+ApplicationRepository --> ApplicationCreator : success
+
+deactivate ApplicationRepository
+
+@enduml

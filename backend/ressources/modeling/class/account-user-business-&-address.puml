@@ -1,0 +1,70 @@
+@startuml UML - Classe - Comptes et Organisation
+
+skinparam dpi 300
+skinparam maxwidth 8000
+skinparam maxheight 8000
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam linetype ortho
+
+left to right direction
+
+'========================================================
+' CORE ACCOUNT
+'========================================================
+
+class Account {
+    - id: string
+    - email: string
+    - password: string
+    - firstName: string
+    - lastName: string
+    - description: string
+    - createdAt: DateTime
+}
+
+class User {
+    - id: string
+    - userRole: string
+}
+
+class Candidate {
+    - id: string
+}
+
+Account "1" -up- "0..1" User
+Account "1" -- "0..1" Candidate
+
+
+'========================================================
+' ORGANISATION
+'========================================================
+
+class Company {
+    - id: string
+    - name: string
+    - siret: string
+    - createdAt: DateTime
+}
+
+User "*" --> "1" Company
+
+
+'========================================================
+' ADDRESS
+'========================================================
+
+class Address {
+    - id: int
+    - country: string
+    - postalCode: string
+    - city: string
+    - street: string
+}
+
+Candidate "1" --> "0..1" Address
+Company "1" -- "0..*" Address
+
+@enduml

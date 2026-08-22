@@ -9,6 +9,8 @@ class Application{
 
     private string $candidateId;
 
+    private ?string $candidateResumeId;
+
     private string $jobOfferId;
 
     private string $companyId;
@@ -25,12 +27,15 @@ class Application{
         string $jobOfferId,
         string $candidateId,
         string $companyId,
+        ?string $candidateResumeId = null,
         ?string $id = null,
     ){
         $this->id = $id;
         $this->jobOfferId = $jobOfferId;
         $this->candidateId = $candidateId;
+        $this->candidateResumeId =$candidateResumeId;
 
+        $this->companyId = $companyId;
         $this->status = JobApplicationStatus::APPLIED;
         $this->appliedAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
@@ -41,6 +46,7 @@ class Application{
         string $jobOfferId,
         string $candidateId,
         string $companyId,
+        string $candidateResumeId,
         ?string $id = null,
         ?float $score = null
     ){
@@ -49,6 +55,7 @@ class Application{
             companyId: $companyId,
             jobOfferId: $jobOfferId,
             candidateId: $candidateId,
+            candidateResumeId: $candidateResumeId
         );
 
         $domain->setScore($score);
@@ -72,6 +79,11 @@ class Application{
 
     public function getCompanyId(){
         return $this->companyId;
+    }
+
+    public function getCandidateResumeId()
+    {
+        return $this->candidateResumeId;
     }
 
     public function getScore(){

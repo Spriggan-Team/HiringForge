@@ -1,5 +1,5 @@
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -19,6 +19,7 @@ import NotificationRingSVGComponent from "/src/assets/svg/menu/alarm-alert-bell-
 
 //-- CSS Styles
 import styles from "./UserNavBar.module.css"
+import NotificationQueries from "../../../api/services/notification/queries";
 
 
 export interface NavBarProps{
@@ -31,9 +32,11 @@ const UserNavBar: React.FC<NavBarProps> = ({
     className
 }) => {
     const { t } = useTranslation();
-    const { navbar, setPopup } = useAppContext();
-    const navigate = useNavigate();
     const user = useCurrentUser();
+    const navigate = useNavigate();
+    const { navbar, setPopup } = useAppContext();
+    const [notificationCount, setNotificationCount] = useState<number>(0);
+
 
     //-- Text
     const postsTxt = t('userHome.header.leading.open_post', { count: 0 });
@@ -56,6 +59,21 @@ const UserNavBar: React.FC<NavBarProps> = ({
         localStorage.clear();
         setPopup({ status: "success", message: t("global.messages.logoutSuccess") });
         navigate(RouteScheme.login);
+    },[]);
+
+
+    const countUnreadNotification = async ()=>{
+        try{
+            const count = await NotificationQueries.countUnreadNotification();
+            setNotificationCount(count.unreadCount);
+        }
+        catch(error){
+            console.log("Something went wrong while counting unread notification", error)
+        }
+    }
+
+    useEffect(()=>{
+        countUnreadNotification();
     },[])
 
     return (
@@ -94,15 +112,18 @@ const UserNavBar: React.FC<NavBarProps> = ({
                     />
                 </div>
 
-                <div 
-                    style={{ ["--notifNumber" as string]: "2" }}
-                    className={styles.notification}
-                >
-                    <NotificationRingSVGComponent 
+                <div className={styles.notification}>
+                    <NotificationRingSVGComponent
                         width={25}
                         height={25}
                         className={styles.notficationRing}
                     />
+
+                    {notificationCount > 0 && (
+                        <span className={styles.notificationBadge}>
+                            {notificationCount > 99 ? '99+' : notificationCount}
+                        </span>
+                    )}
                 </div>
 
                 {/** User profile */}

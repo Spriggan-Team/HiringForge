@@ -59,7 +59,9 @@ class JobOfferEntityMapper
                     id: $img->getId(),
                     name: $img->getName(),
                     size: $img->getSize(),
-                    mime: $img->getMime()
+                    mime: $img->getMime(),
+                    originalName: $img->getOriginalName(),
+                    createdAt: $img->getCreatedAt()
                 ),
                 isMain: $jobImages->getIsMain()
             );
@@ -93,6 +95,8 @@ class JobOfferEntityMapper
             minSalary: $offer->minSalary(),
             maxSalary: $offer->maxSalary(),
             currency: $offer->currency(),
+            publicationStatus: $offer->publicationStatus()
+            
         );
 
         //-- images
@@ -103,7 +107,8 @@ class JobOfferEntityMapper
                     file: FileEntity::create(
                         name: $image->media->name,
                         mime: $image->media->mime,
-                        size: $image->media->size
+                        size: $image->media->size,
+                        originalName: $image->media->originalName,
                     ),
                     isMain: $image->isMain
                 )

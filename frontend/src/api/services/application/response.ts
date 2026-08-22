@@ -8,6 +8,7 @@ export interface JobApplicationItem {
   id: string;
   status: ApplicationStatusValue;
   candidate: {
+    id: string;
     email: string;
     firstName: string;
     lastName: string;

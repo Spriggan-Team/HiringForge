@@ -9,6 +9,9 @@ interface SkillMatcherServiceInterface
      */
     public function findMatching(
         string $text,
+        string $candidateId,
+        ?callable $onUnlinkedVectorSkill = null,
+        bool $enableVectorMatch = true,
         float $threshold = 0.8,
         string $locale = 'fr',
     ): ?SkillMatch;

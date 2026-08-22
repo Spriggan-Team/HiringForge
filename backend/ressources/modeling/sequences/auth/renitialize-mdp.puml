@@ -1,0 +1,61 @@
+@startuml Auth Flow - Reset Password
+
+actor "Account" as Account
+
+participant PasswordRenitializer
+participant AccountRepository
+participant OTPRepository
+
+database Database
+
+== Reset Password ==
+
+Account -> PasswordRenitializer : reinitialize(email, newPassword, verificationToken)
+activate PasswordRenitializer
+
+' Check user
+PasswordRenitializer -> AccountRepository : verifyUser(email)
+activate AccountRepository
+
+AccountRepository -> Database : SELECT
+activate Database
+
+Database --> AccountRepository : account
+deactivate Database
+
+AccountRepository --> PasswordRenitializer : response
+deactivate AccountRepository
+
+' Retrieve token
+PasswordRenitializer -> OTPRepository : retrieveExisting(verificationToken)
+activate OTPRepository
+
+OTPRepository -> Database : SELECT token
+activate Database
+
+Database --> OTPRepository : token
+deactivate Database
+
+OTPRepository --> PasswordRenitializer : OTP
+deactivate OTPRepository
+
+' Verify token
+PasswordRenitializer -> PasswordRenitializer : verifyToken(verificationToken)
+
+' Update password
+PasswordRenitializer -> AccountRepository : updatePassword(email, newPassword)
+activate AccountRepository
+
+AccountRepository -> Database : UPDATE password
+activate Database
+
+Database --> AccountRepository : response
+deactivate Database
+
+AccountRepository --> PasswordRenitializer : success
+deactivate AccountRepository
+
+PasswordRenitializer --> Account : response
+deactivate PasswordRenitializer
+
+@enduml

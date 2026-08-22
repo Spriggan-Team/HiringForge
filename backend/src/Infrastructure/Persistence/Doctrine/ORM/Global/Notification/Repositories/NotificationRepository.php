@@ -2,9 +2,12 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Notification\Repositories;
 
+use App\Domain\Notification\Notification;
 use App\Domain\Notification\NotificationRepositoryInterface;
 use App\Domain\Notification\NotificationType;
 use App\Domain\Notification\RecipientType;
+use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
 use Override;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Notification\NotificationEntity;
@@ -24,7 +27,9 @@ class NotificationRepository extends ServiceEntityRepository
         parent::__construct($registry, NotificationEntity::class);
     }
 
-   /**
+
+
+    /**
      * @return array<int, array{
      *     id: string,
      *     targetUrl: string|null,
@@ -314,5 +319,43 @@ class NotificationRepository extends ServiceEntityRepository
 
             return $row;
         }, $results);
+    }
+
+
+
+    #[Override]
+    public function save(Notification $notification): string
+    {
+        $em = $this->getEntityManager();
+        $owner = $em->getReference(AccountEntity::class, $notification->accountId());
+
+        $recipientAccount = null;
+        if ($notification->recipientId() !== null) {
+            $recipientAccount = $em->getReference(
+                AccountEntity::class,
+                $notification->recipientId()
+            );
+        }
+
+        $recipientCompany = null;
+
+        if ($notification->recipientCompanyId() !== null) {
+            $recipientCompany = $em->getReference(
+                CompanyEntity::class,
+                $notification->recipientCompanyId()
+            );
+        }
+
+        $entity = NotificationEntityMapper::toEntity(
+            owner: $owner,
+            domain: $notification,
+            recipientAccount: $recipientAccount,
+            recipientCompany: $recipientCompany
+        );
+
+        $em->persist($entity);
+        $em->flush();
+
+        return $entity->getId();
     }
 }

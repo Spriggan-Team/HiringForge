@@ -26,9 +26,6 @@ use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferViewEntity;
 
 use Override;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\Pagination\Paginator;
-
-
 
 
 /**

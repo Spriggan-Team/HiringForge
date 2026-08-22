@@ -67,7 +67,7 @@ class CandidateAssetsController extends AbstractController
                     
             /** Binary response */
             return new BinaryFileResponse(
-                $fullPathFile . DIRECTORY_SEPARATOR . $image->name
+                $fullPathFile 
             );
         }
         catch(\Exception $error){
@@ -155,7 +155,7 @@ class CandidateAssetsController extends AbstractController
 
             ApiResponse::$logger->error("FULL PATH " . $fullPathFile);
             return new BinaryFileResponse(
-                $fullPathFile . DIRECTORY_SEPARATOR . $resume->name
+                $fullPathFile
             );
         }   
         catch(\Exception $error){

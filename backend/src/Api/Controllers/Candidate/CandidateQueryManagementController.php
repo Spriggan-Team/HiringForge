@@ -7,7 +7,9 @@ use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Domain\Candidate\CandidateRepositoryInterface;
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountRole;
+
 use Psr\Log\LoggerInterface;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;

@@ -11,6 +11,8 @@ use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface;
 use App\Domain\File\MediaOwnerType;
 use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
+use App\Domain\Shared\AccountStorageParams;
+use App\Domain\Shared\PathResolverInterface;
 use App\Domain\User\UserRepositoryInterface;
 
 
@@ -34,6 +36,7 @@ class UserQueryManagement extends AbstractController
 
     public function __construct(
         private LoggerInterface $logger,
+        private PathResolverInterface $pathResolver
     ) {
         //This is mandatory that permit ApiResponseBuilder to log exception in a special format
         //It purpose is to reduce the resposability of the http controller.
@@ -86,7 +89,10 @@ class UserQueryManagement extends AbstractController
                 )->toJsonResponse();
             }
 
+            //----------------------------------------
             // Retrieving the User Profile
+            //----------------------------------------
+
             $user = $userQueryRepository->findById($authenticatedUser->getId());
 
             if (!$user) {
@@ -96,18 +102,20 @@ class UserQueryManagement extends AbstractController
                 )->toJsonResponse();
             }
 
+            //--------------------------------------
             // Building the Avatar URL
+            //--------------------------------------
+
             $avatar = null;
             if ($user->image()) {
-                $avatar = $this->resolveUrl(
-                    mediaStorage: $mediaStorage,
+                $avatar = $this->resolvePublicImageUrl(
                     request: $request,
-                    mimeType: $user->image()->mime,
-                    fileName: $user->image()->name,
-                    ownerId: $user->id(),
-                    purpose: MediaPurpose::PROFILE,
-                    ownerType: MediaOwnerType::USER,
-                    projectDir: $projectDir
+                    pathResolver: $this->pathResolver,
+                    params: AccountStorageParams::recruiterProfile(
+                        companyId: $user->companyId(),
+                        storedFileName: $user->image()->name
+                    ),
+                    mime: $user->image()->mime,
                 );
             }
 
@@ -119,7 +127,10 @@ class UserQueryManagement extends AbstractController
                 'avatarUrl'    => $avatar,
             ];
 
+            //----------------------------------------------
             // Retrieval of company data, if applicable
+            //----------------------------------------------
+
             $companyData = null;
             if ($user->companyId()) {
                 $company = $companyRepository->get($user->companyId());
@@ -138,18 +149,20 @@ class UserQueryManagement extends AbstractController
                         ];
                     }
 
+                    //---------------------------------
                     //-- Logo URL Structure 
+                    //---------------------------------
+
                     $logoURL = null;
                     if ($company->logo()) {
-                        $logoURL = $this->resolveUrl(
-                            mediaStorage: $mediaStorage,
+                        $logoURL = $this->resolvePublicImageUrl(
                             request: $request,
-                            mimeType: $company->logo()->mime,
-                            fileName: $company->logo()->name,
-                            ownerId: $company->id(),
-                            purpose: MediaPurpose::PROFILE,
-                            ownerType: MediaOwnerType::COMPANY,
-                            projectDir: $projectDir
+                            params: AccountStorageParams::companyLogo(
+                                companyId: $company->id(),
+                                storedFileName:  $company->logo()->name
+                            ),
+                            mime: $company->logo()->mime,
+                            pathResolver: $this->pathResolver
                         );
                     }
 

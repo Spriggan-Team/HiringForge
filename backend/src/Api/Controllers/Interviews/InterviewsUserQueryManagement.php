@@ -13,6 +13,8 @@ use App\Domain\File\MediaStorageInterface;
 
 use App\Domain\Shared\Account\AccountRole;
 use App\Domain\Interviews\InterviewsRepositoryInterface;
+use App\Domain\Shared\AccountStorageParams;
+use App\Domain\Shared\PathResolverInterface;
 
 
 use Psr\Log\LoggerInterface;
@@ -30,6 +32,7 @@ class InterviewsUserQueryManagement extends AbstractController{
 
     public function __construct(
         LoggerInterface $logger,
+        private PathResolverInterface $pathResolver,
         private InterviewsRepositoryInterface $interviewsRepository,
         private MediaStorageInterface $mediaStorage
     )
@@ -82,15 +85,14 @@ class InterviewsUserQueryManagement extends AbstractController{
             //-- Mapping image public URL resolution
             $data = array_map(function (array $value) use ($request) {
                 if (isset($value['candidate']['image']['name'], $value['candidate']['image']['mime'])) {
-                    $value['candidate']['image'] = $this->resolveUrl(
+                    $value['candidate']['image'] = $this->resolvePublicImageUrl(
                         request: $request,
-                        ownerId: $value['candidate']['id'],
-                        projectDir: '...',
-                        fileName: $value['candidate']['image']['name'],
-                        mimeType: $value['candidate']['image']['mime'],
-                        mediaStorage: $this->mediaStorage,
-                        ownerType: MediaOwnerType::CANDIDATE,
-                        purpose: MediaPurpose::PROFILE
+                        pathResolver: $this->pathResolver,
+                        params: AccountStorageParams::candidateProfileImage(
+                            candidateId: $value['candidate']['id'],
+                            storedFileName: $value['candidate']['image']['name']
+                        ),
+                        mime: $value['candidate']['image']['mime']
                     );
                 } elseif (isset($value['candidate'])) {
                     $value['candidate']['image'] = null;

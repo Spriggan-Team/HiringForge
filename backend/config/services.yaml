@@ -88,10 +88,19 @@ services:
     App\Domain\Candidate\CandidateRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\CandidateRepository
 
+    #--- Notification
+    App\Domain\Notification\NotificationRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Notification\Repositories\NotificationRepository
 
     #--- Application
     App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\JobOfferApplicationRepository
+
+    App\Domain\Candidate\CandidateSkillRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\CandidateSkillRepository
+
+    App\Domain\Candidate\CandidateResumeRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\CandidateResumeRepository
 
     #-- Interviews
     App\Domain\Interviews\InterviewsRepositoryInterface:
@@ -144,11 +153,6 @@ services:
     App\Domain\Shared\Contract\ContractTypeRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Contract\Repositories\ContractTypeRepository
 
-
-    #---- Notification
-    App\Domain\Notification\NotificationRepositoryInterface:
-        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Notification\Repositories\NotificationRepository
-    
 
     #-------------------------------------
     #--- Ai & Embedding Service

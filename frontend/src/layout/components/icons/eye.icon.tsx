@@ -1,9 +1,12 @@
 import React from 'react';
+import styles from "./EyeIcon.module.css"
+
 
 interface EyeIconProps {
     isOpen: boolean;
     size?: number;
 }
+
 
 export const EyeIcon: React.FC<EyeIconProps> = ({ isOpen, size = 20 }) => {
     if (isOpen) {

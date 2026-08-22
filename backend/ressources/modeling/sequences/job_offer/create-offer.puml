@@ -1,0 +1,143 @@
+@startuml User Offer - Création
+
+title "Création d'une offre d'emploi"
+
+actor User
+
+participant AuthChecker
+participant JobOfferRecorder
+participant DepartmentRepository
+participant ContractTypeRepository
+participant AddressRepository
+participant JobOfferRepositoryInterface
+
+database Database
+
+User -> AuthChecker : createOffer(dto, token)
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+activate AuthChecker
+
+note right
+    Vérifie que l'utilisateur
+    est authentifié
+end note
+
+AuthChecker -> JobOfferRecorder : createOffer(dto, userId)
+deactivate AuthChecker
+
+activate JobOfferRecorder
+
+
+'========================================================
+' DEPARTMENT
+'========================================================
+
+alt departmentId fourni
+
+    JobOfferRecorder -> DepartmentRepository : findById(departmentId)
+    activate DepartmentRepository
+
+    DepartmentRepository -> Database : SELECT department
+    activate Database
+
+    Database --> DepartmentRepository : department
+    deactivate Database
+
+    DepartmentRepository --> JobOfferRecorder : department
+    deactivate DepartmentRepository
+
+else departmentId non fourni
+
+    note right of JobOfferRecorder
+        Aucun département associé
+    end note
+
+end
+
+
+'========================================================
+' CONTRACT TYPE
+'========================================================
+
+alt contractTypeId fourni
+
+    JobOfferRecorder -> ContractTypeRepository : findById(contractTypeId)
+    activate ContractTypeRepository
+
+    ContractTypeRepository -> Database : SELECT contractType
+    activate Database
+
+    Database --> ContractTypeRepository : contractType
+    deactivate Database
+
+    ContractTypeRepository --> JobOfferRecorder : contractType
+    deactivate ContractTypeRepository
+
+else contractTypeId non fourni
+
+    note right of JobOfferRecorder
+        Aucun type de contrat associé
+    end note
+
+end
+
+
+'========================================================
+' ADDRESS
+'========================================================
+
+alt addressId fourni
+
+    JobOfferRecorder -> AddressRepository : findById(addressId)
+    activate AddressRepository
+
+    AddressRepository -> Database : SELECT address
+    activate Database
+
+    Database --> AddressRepository : address
+    deactivate Database
+
+    AddressRepository --> JobOfferRecorder : address
+    deactivate AddressRepository
+
+else addressId non fourni
+
+    note right of JobOfferRecorder
+        Aucune adresse associée
+    end note
+
+end
+
+
+'========================================================
+' CREATE OFFER
+'========================================================
+
+JobOfferRecorder -> JobOfferRepositoryInterface : save(offer)
+
+activate JobOfferRepositoryInterface
+
+note right
+    L'offre contient les associations
+    disponibles selon les données fournies
+end note
+
+JobOfferRepositoryInterface -> Database : INSERT job_offer
+
+activate Database
+
+Database --> JobOfferRepositoryInterface : offer
+deactivate Database
+
+JobOfferRepositoryInterface --> JobOfferRecorder : offer
+deactivate JobOfferRepositoryInterface
+
+JobOfferRecorder --> User : response
+
+deactivate JobOfferRecorder
+
+@enduml

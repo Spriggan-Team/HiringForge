@@ -1,0 +1,56 @@
+@startuml Application Status
+
+title "Modification du statut d'une candidature"
+
+actor User
+participant AuthChecker
+participant ApplicationModifier
+participant ApplicationRepository
+database Database
+
+== Modification du statut ==
+
+User -> AuthChecker : updateApplicationStatus(dto, token)
+activate AuthChecker
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+note right
+    Vérifie que l'utilisateur
+    est authentifié
+end note
+
+AuthChecker -> ApplicationModifier : changeApplicationStatus(dto)
+deactivate AuthChecker
+activate ApplicationModifier
+
+' Vérification de l'accès à la candidature
+ApplicationModifier -> ApplicationRepository : validate(userId, applicationId)
+activate ApplicationRepository
+
+ApplicationRepository -> Database : SELECT application
+activate Database
+Database --> ApplicationRepository : application
+deactivate Database
+
+ApplicationRepository --> ApplicationModifier : valid
+deactivate ApplicationRepository
+
+' Modification du statut
+ApplicationModifier -> ApplicationRepository : changeStatus(applicationId, status)
+activate ApplicationRepository
+
+ApplicationRepository -> Database : UPDATE application
+activate Database
+Database --> ApplicationRepository : response
+deactivate Database
+
+ApplicationRepository --> ApplicationModifier : success
+deactivate ApplicationRepository
+
+ApplicationModifier --> User : response
+deactivate ApplicationModifier
+
+@enduml

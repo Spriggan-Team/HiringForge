@@ -8,16 +8,22 @@ use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
-use App\Domain\File\MediaOwnerType;
-use App\Domain\File\MediaPurpose;
-use App\Domain\File\MediaStorageInterface;
+use App\Domain\Candidate\CandidateRepositoryInterface;
+use App\Domain\Candidate\CandidateResumeRepositoryInterface;
 use App\Domain\Offer\OfferRepositoryInterface;
 use App\Domain\Offer\OfferStatus;
+use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\Account\AccountRole;
+use App\Domain\Shared\AccountStorageParams;
+use App\Domain\Shared\PathResolverInterface;
+use App\Domain\User\UserRepositoryInterface;
+
 
 use Psr\Log\LoggerInterface;
+
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -32,7 +38,6 @@ class UserApplicationQueryController extends AbstractController
     public function __construct(
         private LoggerInterface $logger,
         private ApplicationRepositoryInterface $applicationRepository,
-        private MediaStorageInterface $mediaStorage,
         private OfferRepositoryInterface $offerRepository
     )
     {
@@ -46,7 +51,7 @@ class UserApplicationQueryController extends AbstractController
         string $jobOfferId
     ){
         try{
-            /** @var AuthenticatedPerson $user */
+            /** @var AuthenticatedPerson|null $user */
             $user = $this->getUser();
             if(!$user){
                 return ApiResponse::error(
@@ -82,7 +87,15 @@ class UserApplicationQueryController extends AbstractController
     #[Route('/search', methods: ['GET'])]
     public function search(){
         try{
-            
+            /** @var AuthenticatedPerson $user */
+            $user = $this->getUser();
+            if(!$user){
+                return ApiResponse::error(
+                    message: 'Unauthorized action',
+                    statusCode: 403
+                )->toJsonResponse();
+            }
+            return ApiResponse::notice(message: "Not implemeneted");
         }
         catch(\Exception $error)
         {
@@ -96,7 +109,7 @@ class UserApplicationQueryController extends AbstractController
     /**
      * Retreive aggregate of applications
      * 
-     * Route /job_offer?jobId=string&limit=number&skip=number
+     * Route /job_offer?jobId=string&limit=number&skip=number&search
      * 
      * Retreive all application related to an user if jobId. Howerver
      * has it been provided the search is done only with the specified job as a  scope
@@ -109,17 +122,21 @@ class UserApplicationQueryController extends AbstractController
         try {
             /** @var AuthenticatedPerson $user */
             $user = $this->getUser();
+            $userId = $user->getId();
 
             //-- Params pagination
             $limit = max(1, filter_var($request->query->get('limit', 15), FILTER_VALIDATE_INT) ?: 15);
             $skip  = max(0, filter_var($request->query->get('skip', 0), FILTER_VALIDATE_INT) ?: 0);
+            
             $jobId = $request->query->get('jobId', null);
+            $search =  $request->request->get('search');
 
             //-- Fetching with projection
             $results = $this->applicationRepository->fetchJobApplicationsProjection(
                 jobId: $jobId,
                 limit: $limit,
                 skip: $skip,
+                search: $search,
                 scheme: [
                     'id' => true,
                     'status' => true,
@@ -140,31 +157,23 @@ class UserApplicationQueryController extends AbstractController
                             'title' => true
                     ] : null
                 ],
-                userId: $user->getId()
+                userId: $userId 
             );
 
-            //-- Mapping image resolution safely
-            $data = array_map(function (array $value) use ($request) {
-                // Check if candidate and image data exist before resolving public URL
-                if (isset($value['candidate']['image']['name'], $value['candidate']['image']['mime'])) {
-                    $value['candidate']['image'] = $this->resolveUrl(
-                        request: $request,
-                        ownerId: $value['candidate']['id'],
-                        projectDir: '...',
-                        fileName: $value['candidate']['image']['name'],
-                        mimeType: $value['candidate']['image']['mime'],
-                        mediaStorage: $this->mediaStorage,
-                        ownerType: MediaOwnerType::CANDIDATE,
-                        purpose: MediaPurpose::PROFILE
-                    );
-                }
-                else if (isset($value['candidate'])) {
-                    // set to null if no image exists
-                    $value['candidate']['image'] = null;
-                }
+            //-- Mapping date txt
+            $data = $results = array_map(
+                static function (array $row): array {
+                    if (
+                        isset($row['appliedAt'])
+                        && $row['appliedAt'] instanceof \DateTimeInterface
+                    ) {
+                        $row['appliedAt'] = $row['appliedAt']->format(\DateTimeInterface::ATOM);
+                    }
 
-                return $value;
-            }, $results);
+                    return $row;
+                },
+                $results
+            );
 
             return ApiResponse::success(
                 data: $data,
@@ -180,6 +189,121 @@ class UserApplicationQueryController extends AbstractController
         }
     }
 
+
+    /**
+     * Retreive image of an applicant of requested
+     * by a recruiter
+     */
+    #[Route('/{applicationId}/candidates/{candidateId}/profile-image', methods: ['GET'])]
+    public function getCandidateImage(
+        string $candidateId,
+        string $applicationId,
+        ApplicationRepositoryInterface $repository,
+        AccountRepositoryInterface $accountRepo,
+        PathResolverInterface $pathResolver
+    ){
+        try{
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
+            if(!$user){
+                return ApiResponse::error(
+                    message: 'Unauthorized action',
+                    statusCode: 403
+                )->toJsonResponse();
+            }
+
+            //-- Check if requriements
+            $repository->assertRecruiterHasAccessToApplication(
+                recruiterId: $user->getId(),
+                candidateId: $candidateId,
+                applicationId: $applicationId
+            );
+
+            $media = $accountRepo->getProfileImage($candidateId);
+            
+            if ($media === null) {
+                return ApiResponse::error(
+                    message: 'No profile image found for this user.',
+                    statusCode: 404
+                )->toJsonResponse();
+            }
+            
+            $fullPath = $pathResolver->resolveTargetDirectory(
+                params: AccountStorageParams::candidateProfileImage(
+                    candidateId: $candidateId,
+                    storedFileName: $media->name
+                ),
+                mimeType: $media->mime
+            );
+
+            return new BinaryFileResponse($fullPath);
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: "Something went wrong while fectching candidate iamge",
+                throwable: $error
+            )->toJsonResponse();
+        }
+    }
+
+
+    /**
+     * Access to candidate resume
+     * has its is necessary for treating application (recruiter)
+     */
+    #[Route('/{applicationId}/candidates/{candidateId}/resume', methods: ['GET'])]
+    public function getCandidateResume(
+        string $candidateId,
+        string $applicationId,
+        ApplicationRepositoryInterface $repository,
+        PathResolverInterface $pathResolver
+    ) {
+        try{
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
+            if(!$user){
+                return ApiResponse::error(
+                    message: 'Unauthorized action',
+                    statusCode: 403
+                )->toJsonResponse();
+            }
+
+            
+            //-- Check if requriements
+            $repository->assertRecruiterHasAccessToApplication(
+                recruiterId: $user->getId(),
+                candidateId: $candidateId,
+                applicationId: $applicationId
+            );
+
+            $media = $repository->getResumeFile(
+                candidateId: $candidateId,
+                applicationId: $applicationId
+            );
+            
+            if ($media === null) {
+                return ApiResponse::error(
+                    message: 'No profile image found for this user.',
+                    statusCode: 404
+                )->toJsonResponse();
+            }
+            
+            $fullPath = $pathResolver->resolveTargetDirectory(
+                params: AccountStorageParams::resumes(
+                    candidateId: $candidateId,
+                    storedFileName: $media->name
+                ),
+                mimeType: $media->mime
+            );
+            return new BinaryFileResponse($fullPath);
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: "Something went wrong while fectching candidate resume for candidate",
+                throwable: $error
+            )->toJsonResponse();
+        }
+    }
 
 
     /**

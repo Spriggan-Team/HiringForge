@@ -1,130 +1,104 @@
 @startuml Usecase
 
+skinparam dpi 300
 left to right direction
 
-actor "User" as User
-actor Candidate
-actor Agent
-actor "HR Director" as HRDirector
+actor "Recruteur" as User
+actor "Candidat" as Candidate
 
-rectangle "Actions" {
+rectangle "Hiring Project" {
 
-
-    (Consulter les offres d'emploi) as ConslutJobOfferList
+    ' Consultation des offres
+    (Consulter les offres d'emploi) as ConsultJobOfferList
     (Consulter une offre d'emploi) as ConsultJobOffer
     (Filtrer les offres) as FilterJobOffer
 
-    (Consulter des candidatures) as ConsultCandidateList
-    (Consulter une candidature) as ConsultCandidate
-    (Filtrer les candidatures) as FilterCandidate
+    ' Profil candidat
+    (Gérer le profil candidat) as ManageCandidateProfile
+    (Modifier les informations personnelles) as ModifyCandidateInformation
+    (Modifier l'adresse) as ModifyCandidateAddress
+    (Importer un CV) as ImportCV
 
-    (Gérer le profil) as ManageCandidateProfil
-    (Importer CV) as ImportCV
-    usecase "Modification d'information (nom)" as ModifyCandidateName 
-    usecase "Modification de l'addrèsse" as ModifyAddress 
-
-    (Gérer le profil) as ManageUserProfil
-    (Téléversement d'une video de presentation) as UploadVideo
-    (Modification Siret) as ChangeSiretNumber
-    (Modification des credentials) as ChangeAuthCredential
-
-    (CV Importé) as ImportedCV
+    ' Candidature
     (Postuler à une offre d'emploi) as ApplyJobOffer
 
+    ' Candidatures recruteur
+    (Consulter les candidatures) as ConsultCandidateList
+    (Consulter une candidature) as ConsultCandidate
+    (Filtrer les candidatures) as FilterCandidate
     (Gérer les candidatures) as ManageCandidates
-    (Selection des candidats) as CandidateSelection
-    (Planification d'entretien) as PlanInterview
+    (Sélectionner les candidats) as CandidateSelection
+    (Planifier un entretien) as PlanInterview
+    (Generer une proposition d'embauche) as HiredDemand
+    (Accepter ou refuser une offre d'emploi) as HiredDemandResponse
 
-    (Gérer les offres d'emplois) as ManageJobOffer
-    (Publication d'une offre) as PublishJobOffer
-    (Créer une offre d'emploi) as CreateOffer
-    (Redéfinir en tant que brouillon) as DraftOffer
-    (Supprimer une offre d'emploi) as DeleteJobOffer
-    (Modifier d'emploi) as ModifyOffer
+    ' Profil recruteur
+    (Gérer le profil recruteur) as ManageUserProfile
+    (Modifier les informations personnelles du recruteur) as ModifyUserInformation
+    (Modifier le information de l'entreprise) as ChangeCompanyInformation
+    (Modifier les identifiants de connexion) as ChangeAuthCredential
+    (Téléverser une vidéo de présentation) as UploadVideo
 
-    (Gérer des agents techniques) as ManageAgent
-    (Générer des des agents techniques) as CreateAgent
-    (Definission du scope d'un agent) as AgentScopeAction
-    (Assigner une tâche) as AgentAssignement
-    (Supprimer un agent) as DeleteAgent 
+    ' Gestion des offres
+    (Gérer les offres d'emploi) as ManageJobOffer
+    (Créer une offre) as CreateOffer
+    (Modifier une offre) as ModifyOffer
+    (Publier une offre) as PublishJobOffer
+    (Manipuler le status d'une offre) as StatusOffer
+    (Supprimer une offre) as DeleteJobOffer
 
-
-
-
-    (Accéder au système) as AccessSystem
-    (Consulter le dashboard global) as ViewDashboard
-    (Consulter les recruteurs) as GetRecruiters
-    (Consulter les offres par recruteur) as GetOffersByRecruiter
-    (Consulter les candidatures globales) as GetApplications
-    (Calculer les KPI) as ComputeKPIs
-    (Modification des credentials) as ChangeAuthCredential2
-
+    'Interviews
+    (Planification d'un entretien) as CreateInterviews
+    (Acceptation d'un entretien) as AcceptInterviews
+    (Refus d'un intretien) as RejectInterviews
 }
 
+' --- Candidat ---
 
+Candidate --> ConsultJobOfferList
+Candidate --> ConsultJobOffer
+Candidate --> FilterJobOffer
 
-ConslutJobOfferList ..> ConsultJobOffer: extends
-ConslutJobOfferList ..> FilterJobOffer: extends
-
-User --> ConslutJobOfferList
-User --> ChangeAuthCredential
-Candidate --> ChangeAuthCredential
-Candidate -> ConslutJobOfferList
-
-ManageCandidateProfil ..> ModifyCandidateName : extends
-ManageCandidateProfil ..> ModifyAddress :extends
-ManageCandidateProfil ..> ImportCV : extends
-
-Candidate --> ManageCandidateProfil
+Candidate --> ManageCandidateProfile
+Candidate -right-> ChangeAuthCredential
+ManageCandidateProfile ..> ModifyCandidateInformation : <<include>>
+ManageCandidateProfile ..> ModifyCandidateAddress : <<include>>
+ManageCandidateProfile ..> ImportCV : <<include>>
 
 Candidate --> ApplyJobOffer
-ApplyJobOffer <.up. ImportedCV : include 
+Candidate -> AcceptInterviews
+Candidate -> RejectInterviews
 
-ManageAgent ..> CreateAgent : extends
-ManageAgent ..> AgentScopeAction : extends
-ManageAgent ..> DeleteAgent : extends
-ManageAgent ..> AgentAssignement
+Candidate -> HiredDemandResponse
 
-User -> ManageAgent
+' --- Recruteur ---
 
-ConsultCandidateList ..> ConsultCandidate : extends
-ConsultCandidateList ..> FilterCandidate : extends
+User --> ConsultJobOfferList
+User --> ConsultJobOffer
+User --> FilterJobOffer
 
-ManageCandidates ..> CandidateSelection : extends
-ManageCandidates ..> PlanInterview : extends
+User --> ConsultCandidateList
+ConsultCandidateList ..> ConsultCandidate : <<include>>
+ConsultCandidateList ..> FilterCandidate : <<include>>
 
-User -> ManageCandidates
-User -> ConsultCandidateList
+User --> ManageCandidates
+ManageCandidates ..> CandidateSelection : <<include>>
+ManageCandidates ..> PlanInterview : <<include>>
 
-ManageUserProfil ..> ModifyCandidateName: extends
-ManageUserProfil ..> ModifyAddress     : extends
-ManageUserProfil ..> UploadVideo       : extends
-ManageUserProfil ..> ChangeSiretNumber : extends
+User --> ManageUserProfile
+User -> ModifyUserInformation
+ManageUserProfile ..> ChangeAuthCredential : <<include>>
+ManageUserProfile ..> UploadVideo : <<include>>
 
-User -> ManageUserProfil
+User --> ManageJobOffer
+ManageJobOffer ..> CreateOffer : <<include>>
+ManageJobOffer ..> ModifyOffer : <<include>>
+ManageJobOffer ..> PublishJobOffer : <<include>>
+ManageJobOffer ..> StatusOffer : <<include>>
+ManageJobOffer ..> DeleteJobOffer : <<include>>
 
-ManageJobOffer ..> PublishJobOffer : extends
-ManageJobOffer ..> DeleteJobOffer  : extends
-ManageJobOffer ..> CreateOffer     : extends
-ManageJobOffer ..> ModifyOffer     : extends
-ManageJobOffer ..> DraftOffer : extends
-
-User -> ManageJobOffer
-
-Agent ..> ManageJobOffer : extends
-Agent ..> ManageCandidates: extends
-
-
-
-
-HRDirector --> AccessSystem
-AccessSystem ..> ViewDashboard : extends
-
-ViewDashboard ..> GetRecruiters : extends
-ViewDashboard ..> GetOffersByRecruiter : extends
-ViewDashboard ..> GetApplications : extends
-ViewDashboard ..> ComputeKPIs : extends
-
-HRDirector -down-> ChangeAuthCredential2
+User ->CreateInterviews
+User -> HiredDemand
+User -right-> ChangeCompanyInformation 
 
 @enduml

@@ -11,6 +11,7 @@ use DateTimeImmutable;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\JoinColumn;
 
 
@@ -20,10 +21,12 @@ use Doctrine\ORM\Mapping\JoinColumn;
 class NotificationEntity
 {
     #[ORM\Id]
-    #[ORM\Column(type: Types::STRING, length: 36)]
-    private string $id;
+    #[ORM\Column(type: 'guid')]
+    #[GeneratedValue('CUSTOM')]
+    #[ORM\CustomIdGenerator('doctrine.uuid_generator')]
+    private ?string $id = null;
 
-    #[ORM\Column(enumType: NotificationType::class)]
+    #[ORM\Column(enumType: NotificationType::class, length: 55)]
     private NotificationType $type;
 
     #[ORM\Column(type: Types::STRING, length: 500, nullable: true)]
@@ -70,9 +73,9 @@ class NotificationEntity
 
     
     public static function create(
-        string $id,
         NotificationType $type,
         NotificationDataInterface $data,
+        ?string $id =null,
         ?AccountEntity $account = null,
         ?AccountEntity $recipientAccount = null,
         ?CompanyEntity $recipientCompany = null,

@@ -1,0 +1,41 @@
+@startuml User Offer - Consultation
+
+title "Consultation des offres d'emploi"
+
+actor User
+participant AuthChecker
+participant UserOfferFetcher
+database Database
+
+User -> AuthChecker : fetchOffer(dto, token)
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+activate AuthChecker
+
+note right
+    Vérifie que l'utilisateur
+    est authentifié
+end note
+
+AuthChecker -> UserOfferFetcher : retrieveOffer(userId, limit, skip)
+deactivate AuthChecker
+activate UserOfferFetcher
+
+UserOfferFetcher -> Database : SELECT
+
+note right
+    Récupère les offres de
+    l'utilisateur (tous statuts)
+end note
+
+activate Database
+Database --> UserOfferFetcher : responses
+deactivate Database
+
+UserOfferFetcher --> User : response
+deactivate UserOfferFetcher
+
+@enduml

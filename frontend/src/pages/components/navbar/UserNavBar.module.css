@@ -86,30 +86,43 @@
 }
 
 /* Badge numérique réactif */
-.notification::after {
-    content: var(--notifNumber);
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    
-    min-width: 1.7em;
-    height: 1.7em;
-    padding: 0 0.3em;
-    box-sizing: border-box;
-    
-    background: #ef4444;
-    color: #ffffff;
-    border: 2px solid #ffffff;
-    border-radius: 10px;
-    
-    font-size: 0.7rem;
-    font-weight: 700;
-    font-family: monospace, sans-serif;
-    
+.notification {
+    position: relative;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+    border-radius: 12px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+}
+
+.notificationBadge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #ef4444;
+    color: #fff;
+
+    border: 2px solid #fff;
+    border-radius: 9999px;
+
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+
+    z-index: 10;
 }
 
 /* Profile Section */

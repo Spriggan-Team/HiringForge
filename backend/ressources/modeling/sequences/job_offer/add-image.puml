@@ -1,0 +1,92 @@
+@startuml User Offer - Ajout Image
+
+title "Ajout d'une image à une offre d'emploi"
+
+actor User
+
+participant AuthChecker
+participant JobOfferImageUploader
+participant MediaFactoryInterface
+participant MediaStorageInterface
+participant JobOfferRepositoryInterface
+
+database Database
+
+
+User -> AuthChecker : uploadImage(dto, token)
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+activate AuthChecker
+
+AuthChecker -> JobOfferImageUploader : uploadImage(files, offerId, userId)
+deactivate AuthChecker
+
+activate JobOfferImageUploader
+
+
+JobOfferImageUploader -> JobOfferRepositoryInterface : findById(offerId)
+
+activate JobOfferRepositoryInterface
+
+JobOfferRepositoryInterface -> Database : SELECT job_offer
+
+activate Database
+
+Database --> JobOfferRepositoryInterface : offer
+deactivate Database
+
+JobOfferRepositoryInterface --> JobOfferImageUploader : offer
+deactivate JobOfferRepositoryInterface
+
+
+loop Pour chaque image
+
+    JobOfferImageUploader -> MediaFactoryInterface : createStaticMedia(file)
+
+    activate MediaFactoryInterface
+
+    note right
+        Vérifie le type et la taille
+        du fichier
+    end note
+
+    MediaFactoryInterface -> MediaStorageInterface : store(media)
+
+    activate MediaStorageInterface
+
+    MediaStorageInterface --> MediaFactoryInterface : storedPath
+
+    deactivate MediaStorageInterface
+
+    MediaFactoryInterface --> JobOfferImageUploader : mediaObject
+
+    deactivate MediaFactoryInterface
+
+end
+
+
+JobOfferImageUploader -> JobOfferRepositoryInterface : associateJobWithImages(offerId, images)
+
+activate JobOfferRepositoryInterface
+
+JobOfferRepositoryInterface -> Database : INSERT
+
+activate Database
+
+Database --> JobOfferRepositoryInterface : response
+
+deactivate Database
+
+JobOfferRepositoryInterface --> JobOfferImageUploader : response
+
+deactivate JobOfferRepositoryInterface
+
+
+JobOfferImageUploader --> User : response
+
+deactivate JobOfferImageUploader
+
+@enduml

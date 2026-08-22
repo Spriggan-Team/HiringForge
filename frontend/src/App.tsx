@@ -37,6 +37,7 @@ import CandidateApplicationPage from './pages/candidate/applications/candidate.a
 import CandidateInterviewsPage from './pages/candidate/interviews/candidate.interviews.page'
 import CandidateOfferPage from './pages/candidate/offers/candidate.offer.page'
 import CandidateProfilPage from './pages/candidate/profile/candidate.profile.page'
+import CandidateContextProvider from './context/candidate.context'
 
 
 
@@ -55,7 +56,14 @@ function App() {
           
           {/** ALL - USER  PUBLIC */}
           <Route element={<PublicAppLayout />}>
-              <Route path={RouteScheme.jobs} element={<PublicJobPage />} />
+              <Route
+                path={RouteScheme.jobs}
+                element={
+                  <CandidateContextProvider>
+                    <PublicJobPage />
+                  </CandidateContextProvider>
+                }
+              />
           </Route>
 
           {/** Registering  */}
@@ -90,11 +98,20 @@ function App() {
                 <Route path={RouteScheme.userOffer} element={<UserOffersPage />} />
                 {/** STATS */}
                 <Route path={RouteScheme.userStats} element={<UserStatsPage />}/>
+
+                <Route  />
             </Route>
 
             {/** EXCLUSIVE CANDIDATES */}
             <Route element={<PublicAppLayout />}>
-                <Route path={RouteScheme.JobApplication} element={<JobApplicationPage />} />
+                <Route 
+                  path={RouteScheme.JobApplication}
+                  element={
+                    <CandidateContextProvider>
+                      <JobApplicationPage />
+                    </CandidateContextProvider>
+                  }
+                />
                 <Route path={RouteScheme.candidateApplications} element={<CandidateApplicationPage />} />
                 <Route path={RouteScheme.candidateInterviews} element={<CandidateInterviewsPage />} />
                 <Route path={RouteScheme.candidateOffers} element={<CandidateOfferPage />} />

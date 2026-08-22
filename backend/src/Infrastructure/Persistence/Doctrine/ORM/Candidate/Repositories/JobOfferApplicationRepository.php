@@ -7,11 +7,13 @@ use App\Domain\JobOffer\JobOfferRepositoryInterface;
 use App\Domain\Exception\ApplicationNotFoundException;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
-
+use App\Domain\File\StaticMedia;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateResumeEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
+
 
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -57,7 +59,86 @@ class JobOfferApplicationRepository
     #[Override]
     public function assertApplicationBelongsToCandidate(string $candidateId, string $applicationId): void
     {
-        throw new \Exception('Not implemented');
+        $relation = $this->createQueryBuilder('a')
+            ->select('1')
+            ->where('a.candidate = :candidateId')
+            ->andWhere('a.id = :applicationId')
+            ->setParameter('candidateId', $candidateId)
+            ->setParameter('applicationId', $applicationId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($relation === null) {
+            throw new \DomainException(
+                'The current candidate is not related to the designated application.'
+            );
+        }
+    }
+
+
+    #[Override]
+    public function assertRecruiterHasAccessToApplication(
+        string $recruiterId,
+        string $applicationId,
+        string $candidateId
+    ): void {
+        $relation = $this->createQueryBuilder('a')
+            ->select('1')
+            ->innerJoin('a.jobOffer', 'job')
+            ->where('a.id = :applicationId')
+            ->andWhere('a.candidate = :candidateId')
+            ->andWhere('job.user = :recruiterId')
+            ->setParameter('applicationId', $applicationId)
+            ->setParameter('candidateId', $candidateId)
+            ->setParameter('recruiterId', $recruiterId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($relation === null) {
+            throw new \DomainException(
+                'The recruiter does not have access to this application.'
+            );
+        }
+    }
+
+
+    #[Override]
+    public function getResumeFile(
+        string $applicationId,
+        string $candidateId
+    ): StaticMedia {
+        $result = $this->createQueryBuilder('a')
+            ->select(
+                'file.id',
+                'file.name',
+                'file.mime',
+                'file.size',
+                'file.originalName',
+                'file.createdAt'
+            )
+            ->where('a.id = :applicationId')
+            ->andWhere('a.candidate = :candidateId')
+            ->setParameter('applicationId', $applicationId)
+            ->setParameter('candidateId', $candidateId)
+            ->innerJoin('a.candidateResume', 'cr')
+            ->innerJoin('cr.file', 'file')
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($result === null) {
+            throw new \DomainException(
+                'Resume file was not found for this application.'
+            );
+        }
+
+        return StaticMedia::hydrate(
+            id: $result['id'],
+            name: $result['name'],
+            mime: $result['mime'],
+            size: $result['size'],
+            originalName: $result['originalName'],
+            createdAt: $result['createdAt'],
+        );
     }
 
     //--------------------------------------
@@ -356,7 +437,8 @@ class JobOfferApplicationRepository
 
                 if ($imageScheme === true) {
                     $selectedFields[] = 'img.name AS candidate_image_name';
-                } elseif (is_array($imageScheme)) {
+                }
+                elseif (is_array($imageScheme)) {
                     $allowedImageFields = ['name', 'mime', 'size', 'createdAt'];
                     foreach ($allowedImageFields as $imgField) {
                         if (!empty($imageScheme[$imgField])) {
@@ -519,11 +601,17 @@ class JobOfferApplicationRepository
 
         $company = $em->getReference(CompanyEntity::class, $application->getCompanyId());
 
+        $candidateResume =null;
+        if($application->getCandidateResumeId()){
+            $candidateResume = $em->getReference(CandidateResumeEntity::class, $application->getCandidateResumeId());
+        }
+
         $entity = ApplicationEntity::create(
             candidate: $candidate,
             jobOffer: $jobOffer,
             company: $company,
             matchScore: $application->getScore(),
+            candidateResume: $candidateResume
         );
 
         $em->persist($entity);

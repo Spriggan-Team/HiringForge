@@ -3,6 +3,7 @@
 
 namespace App\Infrastructure\Services\AI\Resume;
 
+use App\Api\Responder\ApiResponse;
 use App\Domain\Candidate\Application\ResumeAiParserInterface;
 use App\Domain\Shared\Document\ExtractedDocument;
 use App\Domain\Candidate\Application\StructuredResume;
@@ -30,7 +31,10 @@ readonly final class ResumeAiParser implements ResumeAiParserInterface
             'POST',
             rtrim($this->ollamaRootUrl, '/') . '/api/chat',
             [
+                'timeout' => 600,
+                'max_duration' => 600,
                 'json' => [
+                    'keep_alive' => '30m',
                     'model' => $this->ollamaChatModel,
                     'stream' => false,
                     'format' => $this->resumeResponseSchema->schema(),
@@ -48,10 +52,12 @@ readonly final class ResumeAiParser implements ResumeAiParserInterface
             ]
         );
 
+
         $data = $response->toArray();
         $content = $data['message']['content'] ?? null;
 
-        if(!is_string($content) || $content = ''){
+
+        if(!is_string($content) || trim($content)=== ''){
             throw new RuntimeException(
                 'Ollama returned an empty response.'
             );
@@ -61,7 +67,7 @@ readonly final class ResumeAiParser implements ResumeAiParserInterface
             $content, true, 512, JSON_THROW_ON_ERROR
         );
 
-        $this->responseValidator->validate($data);
+        $this->responseValidator->validate($parsed);
 
         return StructuredResume::fromArray($parsed);
     }

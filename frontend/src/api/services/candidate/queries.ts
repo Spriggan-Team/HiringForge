@@ -1,6 +1,7 @@
 import type { NavigateFunction } from "react-router-dom";
 import { intercept } from "../../../utils/utils";
 import { authGet,  } from "../../http";
+
 import type { CurrentCandidateContextResponse, GetResumeCollection } from "./responses";
 import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
@@ -9,6 +10,31 @@ import { handleGenericApiResponseAfter } from "../../api-response-handler";
 //------------------------
 //---- Candidates
 //---------------------------
+
+/**
+ * Retreive job ids
+ * related to the current candidate
+ */
+const getCandidateApplicationJobIds = async ():  Promise<Record<string, boolean>>=>{
+    try{
+        const response = await authGet<ApiResponse<string[]>>(
+            '/applications/jobs/ids'
+        );
+
+        const map: Record<string, boolean> = {};
+
+        for (const id of response.data) {
+            map[id] = true;
+        }
+
+        return map;
+    }
+    catch(error)
+    {
+        throw error;
+    }
+}
+
 
 const getCandidateProfileImage = async(candidateId: string)=>{
     try{
@@ -76,7 +102,8 @@ const Queries = {
     getCurrentCandidateContext,
     getResumes,
     getResumeContent,
-    getCandidateProfileImage
+    getCandidateProfileImage,
+    getCandidateApplicationJobIds
 }
 
 const CandidatesQueries = intercept<

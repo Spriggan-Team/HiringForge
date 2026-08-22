@@ -8,23 +8,27 @@ use DateTimeImmutable;
 final class Notification
 {
     private function __construct(
-        private readonly string $id,
         private readonly string $accountId,
         private readonly NotificationType $type,
-        private ?string $targetUrl,
-        private array $data,
+        private NotificationDataInterface $data,
         private bool $isRead,
         private ?DateTimeImmutable $readAt,
         private readonly DateTimeImmutable $createdAt,
+        private ?string $id = null,
+        private ?string $recipientId =null, 
+        private ?string $targetUrl =null,
+        private ?string $recipientCompanyId = null,
     ) {
     }
 
     public static function create(
-        string $id,
         string $accountId,
         NotificationType $type,
+        NotificationDataInterface $data,
+        ?string $recipientCompanyId =null,
+        ?string $id =null,
+        ?string $recipientId = null,
         ?string $targetUrl = null,
-        array $data = [],
     ): self {
         return new self(
             id: $id,
@@ -32,8 +36,10 @@ final class Notification
             type: $type,
             targetUrl: $targetUrl,
             data: $data,
+            recipientCompanyId: $recipientCompanyId,
             isRead: false,
             readAt: null,
+            recipientId: $recipientId,
             createdAt: new DateTimeImmutable(),
         );
     }
@@ -43,7 +49,7 @@ final class Notification
         string $accountId,
         NotificationType $type,
         ?string $targetUrl,
-        array $data,
+        NotificationDataInterface $data,
         bool $isRead,
         ?DateTimeImmutable $readAt,
         DateTimeImmutable $createdAt,
@@ -85,6 +91,16 @@ final class Notification
         return $this->accountId;
     }
 
+    public function recipientId()
+    {
+        return $this->recipientId;
+    }
+
+    public function recipientCompanyId(){
+        return $this->recipientCompanyId;
+    }
+
+
     public function type(): NotificationType
     {
         return $this->type;
@@ -95,7 +111,7 @@ final class Notification
         return $this->targetUrl;
     }
 
-    public function data(): array
+    public function data(): NotificationDataInterface
     {
         return $this->data;
     }
@@ -105,8 +121,18 @@ final class Notification
         return $this->readAt;
     }
 
+
     public function createdAt(): DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    //------------------
+    //--- SETTERS
+    //------------------------
+    public function  setId(?string $id)
+    {
+        $this->id = $id;
+        return $this;
     }
 }

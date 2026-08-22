@@ -3,9 +3,10 @@
 
 namespace App\Api\Controllers\Helpers;
 
-use App\Domain\File\MediaOwnerType;
-use App\Domain\File\MediaPurpose;
-use App\Domain\File\MediaStorageInterface;
+
+use App\Domain\File\MediaStorageParams;
+use App\Domain\Shared\PathResolverInterface;
+use App\Domain\Shared\RootPath;
 
 use Symfony\Component\HttpFoundation\Request;
 
@@ -15,33 +16,33 @@ trait ApiControllerHelpers
     /**
      * Resolves the public URL for a given media file relative to the project public directory.
      */
-    protected function resolveUrl(
-        MediaStorageInterface $mediaStorage,
+    protected function resolvePublicImageUrl(
         Request $request,
-        string $mimeType,
-        string $fileName,
-        mixed $ownerId,
-        MediaPurpose $purpose,
-        MediaOwnerType $ownerType,
-        string $projectDir,
-        string $scope = 'public'
+        MediaStorageParams $params,
+        PathResolverInterface $pathResolver,
+        ?string $fileName = null,
+        ?string $mime = null
     ): ?string {
-        $directoryPath = $mediaStorage->resolveTargetDirectory(
-            mimeType: $mimeType,
-            ownerId: $ownerId,
-            purpose: $purpose,
-            ownerType: $ownerType
+        $absolutePath = $pathResolver->resolveTargetDirectory(
+            params: $params,
+            mimeType: $mime,
+            fileName: $fileName,
         );
 
-        $fullPath = rtrim($directoryPath, '/') . '/' . $fileName;
-        /** @var string $projectDir */
-        $publicDir = $projectDir . '/public';
+        $relativePath = $pathResolver->resolvePath(
+            $absolutePath,
+            RootPath::PUBLIC,
+        );
 
-        if (str_starts_with($fullPath, $publicDir)) {
-            $relativePath = substr($fullPath, strlen($publicDir));
-            return $request->getUriForPath($relativePath);
-        }
+        $relativePath = str_replace(
+            '\\',
+            '/',
+            $relativePath,
+        );
 
-        return null;
+
+        return $request->getUriForPath(
+            '/' . ltrim($relativePath, '/'),
+        );
     }
 }

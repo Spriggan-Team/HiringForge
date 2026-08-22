@@ -2,6 +2,9 @@
 
 namespace App\Infrastructure\Storage\Adaptater;
 
+/**
+ * @deprecated 
+ */
 class LocalMediaPathResolver // implements MediaPathResolverInterface
 {
     public function resolveDirectory(?string $ownerType, ?string $mediaPurpose): string

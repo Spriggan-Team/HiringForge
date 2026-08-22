@@ -6,10 +6,12 @@ use App\Domain\File\StaticMedia;
 use App\Domain\Candidate\Candidate;
 use App\Domain\Candidate\CandidateLightModel;
 use App\Domain\Exception\RessourceNotFound;
+
 use App\Domain\Candidate\CandidateRepositoryInterface;
 use App\Domain\Exception\UnauthorizedAction;
 use App\Domain\Shared\Address;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateResumeEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\Mapper\FileEntityMapper;
@@ -28,6 +30,43 @@ class CandidateRepository implements CandidateRepositoryInterface
         private FileEntityMapper $fileMapper
     ){}
 
+
+    #[Override]
+    public function getCandidateApplicationJobIds(string $candidateId): array
+    {
+        return $this->em->createQueryBuilder()
+            ->select('j.id')
+            ->from(ApplicationEntity::class, 'a')
+            ->leftJoin('a.jobOffer', 'j')
+            ->where('a.candidate = :candidateId')
+            ->setParameter('candidateId', $candidateId)
+            ->getQuery()
+            ->getSingleColumnResult();
+    }
+
+
+    #[Override]
+    public function getFullName(string $candidateId): string
+    {
+        $result = $this->em->createQueryBuilder()
+            ->select("CONCAT(c.firstName, ' ', c.lastName)")
+            ->from(CandidateEntity::class, 'c')
+            ->where('c.id = :candidateId')
+            ->setParameter('candidateId', $candidateId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($result === null) {
+            throw new \DomainException(
+                sprintf('Candidate "%s" was not found.', $candidateId)
+            );
+        }
+
+        return trim((string) $result[1]);
+    }
+
+
+
     #[Override]
     public function exists(string $candidateId): bool
     {
@@ -39,6 +78,43 @@ class CandidateRepository implements CandidateRepositoryInterface
 
         return $count > 0;
     }
+
+
+    /** returns applications ids of an candidate */
+    #[Override]
+    public function getApplicationsIds(string $candidateId): array
+    {
+        return array_column(
+            $this->em->createQueryBuilder()
+                ->select('a.id')
+                ->from(ApplicationEntity::class, 'a')
+                ->where('a.candidate = :candidateId')
+                ->setParameter('candidateId', $candidateId)
+                ->getQuery()
+                ->getScalarResult(),
+            'id'
+        );
+    }
+    
+
+    #[Override]
+    public function canApply(string $candidateId, string $jobId): bool
+    {
+        $result = $this->em->createQueryBuilder()
+            ->select('1')
+            ->from(ApplicationEntity::class, 'a')
+            ->where('a.candidate = :candidateId')
+            ->andWhere('a.jobOffer = :jobId')
+            ->setParameter('candidateId', $candidateId)
+            ->setParameter('jobId', $jobId)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getScalarResult();
+
+        return $result === [];
+    }
+
+
 
     #[Override]
     public function assertResumeBelongsToCandidate(
@@ -124,11 +200,13 @@ class CandidateRepository implements CandidateRepositoryInterface
     }
 
 
-    public function save(Candidate $candidate): void
+
+    public function save(Candidate $candidate): string
     {
         $entity = CandidateEntityMapper::toEntity($candidate);
         $this->em->persist($entity);
         $this->em->flush();
+        return $entity->getId();
     }
 
 
@@ -236,5 +314,11 @@ class CandidateRepository implements CandidateRepositoryInterface
             return null;
 
         return FileEntityMapper::toStaticDomainMedia($found->getFile()); 
+    }
+
+    #[Override]
+    public function getCandidateSkills(string $candidateId): array
+    {
+        throw new \Exception('CandidateRepository::getCandidateSkills Not implemented');
     }
 }

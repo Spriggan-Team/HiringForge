@@ -10,7 +10,7 @@ import RouteScheme from "../../../route.scheme";
 import CandidatesQueries from "../../../api/services/candidate/queries";
 import type { ResumeFileMetada } from "../../../features/candidates/candidates";
 import type { PublicJobOfferDetailsModel } from "../../../api/services/public/responses";
-import { useAppContext, useCurrentCandidate } from "../../../hooks/context";
+import { useAppContext, useCandidateContext, useCurrentCandidate } from "../../../hooks/context";
 import PublicJobQueries from "../../../api/services/public/queries";
 import CandidateServices from "../../../api/services/candidate/command";
 
@@ -34,8 +34,9 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
     const naviagate = useNavigate();
     const { id }       = useParams<{ id: string }>();
 
-    const candidate    = useCurrentCandidate();
     const { t }        = useTranslation();
+    const candidate    = useCurrentCandidate();
+    const { setAppliedJobIds } = useCandidateContext();
     const { setPopup, setLoading } = useAppContext();
  
     const blobCache = useRef<Map<string, string>>(new Map());
@@ -68,6 +69,8 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
             setIsDetailsLoading(false);
         }
     }, [id]);
+
+
  
     // -- Fetch resumes metadata ---
     const loadResumesMetaData = useCallback(async () => {
@@ -75,7 +78,8 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
             const data = await CandidatesQueries.getResumes();
             setResumeFiles(data);
             if (data.length > 0) setSelectedResumeFileId(data[0].id);
-        } catch (err) {
+        }
+        catch (err) {
             console.error("Error loading resumes metadata:", err);
         }
     }, []);
@@ -129,15 +133,15 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
             return;
         setIsSubmitting(true);
         setLoading({ state: true, subtitle: t("applications.submitting.processing") });
-        
-
   
         try {
-            await CandidateServices.apply({
+            const applicationId = await CandidateServices.apply({
                 jobId:    id,
                 fileId: selectedResumeFileId,
             });
             setPopup({ status: "success", message: t("applications.submitting.success") });
+            setAppliedJobIds((prev)=>({...prev, [applicationId]: true })); // mark postulation (for dynamic ui)
+            
             navigateTo(naviagate, RouteScheme.jobs);
         }
         catch (err) {
@@ -301,8 +305,8 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
                                         {t("jobs.createJob.skillSection.title")}
                                     </h3>
                                     <div className={styles.skillsList}>
-                                        {jobDetails.skills.map(skill => (
-                                            <JobSkill key={skill.id} content={skill.name} />
+                                        {jobDetails.skills.map((skill, index) => (
+                                            <JobSkill key={index} content={skill.name} />
                                         ))}
                                     </div>
                                 </div>

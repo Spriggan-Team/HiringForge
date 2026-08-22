@@ -17,6 +17,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 
 
@@ -27,6 +28,50 @@ class JobOfferRepository implements JobOfferRepositoryInterface
         private EntityManagerInterface $manager,
         private JobOfferEntityMapper $mapper
     ){}
+
+
+    #[Override]
+    public function getAuthorId(string $jobId): string
+    {
+        $result = $this->manager->createQueryBuilder()
+            ->select('IDENTITY(j.user) AS authorId')
+            ->from(JobOfferEntity::class, 'j')
+            ->where('j.id = :jobId')
+            ->setParameter('jobId', $jobId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($result === null || $result['authorId'] === null) {
+            throw new RessourceNotFound(
+                "Author of job id not found"
+            );
+        }
+
+        return (string) $result['authorId'];
+    }
+    
+
+    #[Override]
+    public function getTitle(string $jobId): string
+    {
+        $qb = $this->manager->createQueryBuilder()
+            ->select('j.title')
+            ->from(JobOfferEntity::class, 'j')
+            ->where('j.id = :jobId')
+            ->setParameter('jobId', $jobId)
+            ->getQuery();
+
+        $title = $qb->getOneOrNullResult();
+
+        if ($title === null) {
+            throw new ResourceNotFoundException(
+                sprintf('Job offer "%s" was not found.', $jobId)
+            );
+        }
+
+        return $title['title'];
+    }
+
 
     #[Override]
     public function canAcceptApplications(string $jobOfferId): bool

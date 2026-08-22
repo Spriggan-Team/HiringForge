@@ -1,0 +1,40 @@
+@startuml Auth Flow - Verification Token
+
+actor "Utilisateur" as User
+
+participant "VerificationCodeSender" as Sender
+participant "AccountRepository" as Repo
+participant "EmailServices" as Email
+database "Database" as DB
+
+== Demande de code de vérification ==
+
+User -> Sender : askForToken(email, purpose)
+activate Sender
+
+alt purpose nécessite une vérification préalable (ex: EMAIL_CHANGE, RESET_PASSWORD)
+    Sender -> Repo : findByEmail(email)
+    activate Repo
+    
+    Repo -> DB : SELECT account WHERE email = ?
+    activate DB
+    DB --> Repo : account / null
+    deactivate DB
+    
+    Repo --> Sender : account
+    deactivate Repo
+else purpose direct (ex: SIGN_UP)
+    note over Sender : Génération directe du code\nsans contrôle d'existence BDD
+end
+
+Sender -> Email : sendVerificationEmail(email, code, purpose)
+activate Email
+
+Email -> Email : prepareEmail(message)
+Email --> Sender : success
+deactivate Email
+
+Sender --> User : 200 OK (code envoyé)
+deactivate Sender
+
+@enduml

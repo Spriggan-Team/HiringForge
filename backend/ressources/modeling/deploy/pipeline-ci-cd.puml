@@ -1,0 +1,19 @@
+@startuml
+skinparam ActivityBackgroundColor #f8fafc
+skinparam ActivityBorderColor #0288d1
+skinparam ActivityFontColor #0f172a
+skinparam ArrowColor #64748b
+
+title Pipeline CI/CD - Déploiement
+
+start
+:🚀 Nouvelle version;
+:🧪 Tests CI;
+:🏷️ Création du tag;
+:🐳 Construction des images Docker;
+:🛑 Arrêt / remplacement des anciens conteneurs;
+:🗄️ Migration de la base;
+:▶️ Démarrage de la nouvelle version;
+:✅ Vérification;
+stop
+@enduml

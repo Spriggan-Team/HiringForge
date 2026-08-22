@@ -1,0 +1,88 @@
+@startuml
+
+title Apply to Job Offer
+
+actor Candidate
+participant AuthChecker
+participant ApplicationCreator
+participant JobOfferRepositoryInterface
+participant ResumeRepositoryInterface
+participant ApplicationRepository
+database Database
+
+
+=== Apply to Job Offer ===
+
+Candidate -> AuthChecker : apply(offerId, resumeId, token)
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+activate AuthChecker
+
+note right
+    Check & ensure
+    the candidate is authenticated
+end note
+
+AuthChecker -> ApplicationCreator : apply(candidateId, offerId, resumeId)
+deactivate AuthChecker
+
+activate ApplicationCreator
+
+
+' Verify job offer
+ApplicationCreator -> JobOfferRepositoryInterface : findById(offerId)
+
+activate JobOfferRepositoryInterface
+
+JobOfferRepositoryInterface -> Database : SELECT
+activate Database
+
+Database --> JobOfferRepositoryInterface : jobOffer
+
+deactivate Database
+
+JobOfferRepositoryInterface --> ApplicationCreator : jobOffer
+deactivate JobOfferRepositoryInterface
+
+
+' Verify resume
+ApplicationCreator -> ResumeRepositoryInterface : findById(resumeId)
+
+activate ResumeRepositoryInterface
+
+ResumeRepositoryInterface -> Database : SELECT
+activate Database
+
+Database --> ResumeRepositoryInterface : resume
+
+deactivate Database
+
+ResumeRepositoryInterface --> ApplicationCreator : resume
+deactivate ResumeRepositoryInterface
+
+
+' Create application
+ApplicationCreator -> ApplicationRepository : save(candidateId, offerId, resumeId)
+
+activate ApplicationRepository
+
+ApplicationRepository -> Database : INSERT application
+
+activate Database
+
+Database --> ApplicationRepository : application
+
+deactivate Database
+
+ApplicationRepository --> ApplicationCreator : application
+deactivate ApplicationRepository
+
+
+ApplicationCreator --> Candidate : response
+
+deactivate ApplicationCreator
+
+@enduml

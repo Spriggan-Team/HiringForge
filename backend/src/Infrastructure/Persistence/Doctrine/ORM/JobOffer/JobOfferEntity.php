@@ -212,6 +212,7 @@ class JobOfferEntity
         ?float $minSalary=null,
         ?string $currency = null,
         ?float $maxSalary = null,
+        ?JobPublicationStatus $publicationStatus = null,
         JobOfferVisibilityStatus $visibilityStatus = JobOfferVisibilityStatus::PUBLIC,
     ): self {
         $entity = new self();
@@ -219,9 +220,12 @@ class JobOfferEntity
         $entity->title = $title;
         $entity->content = $content;
         $entity->user = $user;
-        $entity->publicationStatus = JobPublicationStatus::DRAFT;
         $entity->visibilityStatus = $visibilityStatus;
         $entity->company= $company;
+
+        if($publicationStatus === JobPublicationStatus::PUBLISHED){
+            $entity->publicationDate = new \DateTimeImmutable();
+        }
 
         $entity->setCurrency($currency);
         $entity->setMaxSalary($maxSalary);

@@ -27,6 +27,9 @@ class CompanyEntity
     #[ORM\Column(length: 255, nullable: false)]
     private string $siret;
 
+    #[ORM\Column(nullable: true)]
+    private ?string $description = null;
+
     #[ORM\Column()]
     private \DateTimeImmutable $createdAt;
 

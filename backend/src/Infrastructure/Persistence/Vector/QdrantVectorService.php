@@ -33,7 +33,7 @@ class QdrantVectorService implements VectorServiceInterface
     {
         $vector = $this->embeddingsProvider->generateEmbedding($text);
 
-        if (empty($vector)) {
+        if ($vector === []) {
             return null;
         }
 
@@ -50,19 +50,9 @@ class QdrantVectorService implements VectorServiceInterface
         );
 
         $data = $response->toArray();
+        $data = $response->toArray(false);
 
-        $results = $data["result"] ?? [];
-
-        if (empty($results)) {
-            return null;
-        }
-
-        $point = $results[0];
-
-        return [
-            'skill_id' => (string) $point['payload']['skill_id'],
-            'score'    => (float) $point['score'],
-        ];
+        return $this->extractClosestPoint($data);
     }
 
 
@@ -125,23 +115,44 @@ class QdrantVectorService implements VectorServiceInterface
         if ($response->getStatusCode() !== 200) {
             return null;
         }
+        
+        return $this->extractClosestPoint(
+            $response->toArray(false)
+        );
+    }
 
-        $data = $response->toArray(false);
-        $points = $data['result']['points'] ?? $data['result'] ?? [];
 
-        if (empty($points)) {
+    
+    private function extractClosestPoint(array $data): ?array
+    {
+        $result = $data['result'] ?? null;
+
+        if (!is_array($result)) {
             return null;
         }
 
-        $closestPoint = $points[0];
+        $points = $result['points'] ?? $result;
 
-        if (!isset($closestPoint['payload']['skill_id'])) {
+        if (!is_array($points) || $points === []) {
+            return null;
+        }
+
+        $point = $points[0] ?? null;
+
+        if (!is_array($point)) {
+            return null;
+        }
+
+        $skillId = $point['payload']['skill_id'] ?? null;
+        $score = $point['score'] ?? null;
+
+        if ($skillId === null || $score === null) {
             return null;
         }
 
         return [
-            'skill_id' => (string) $closestPoint['payload']['skill_id'],
-            'score'    => (float) $closestPoint['score'],
+            'skill_id' => (string) $skillId,
+            'score' => (float) $score,
         ];
     }
 }

@@ -44,7 +44,8 @@ interface JobOfferRepositoryInterface
     public function findAll(string $accountId, string $offerId): array;
 
 
-    
+    public function getTitle(string $jobId): string;
+
     public function change(JobOffer $jobOffer, string $offerId, string $accountId): void;
 
 
@@ -75,4 +76,9 @@ interface JobOfferRepositoryInterface
      * Get company id based on job offerId
      */
     public function getCompanyId(string $jobOfferId): string;
+
+    /**
+     * Retreive the id of the author of this job offer (recruiter)
+     */
+    public function getAuthorId(string $jobId): string;
 }

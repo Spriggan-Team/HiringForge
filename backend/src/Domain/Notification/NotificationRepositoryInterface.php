@@ -83,4 +83,5 @@ interface NotificationRepositoryInterface
     ): array;
 
     
+    public function save(Notification $notification): string;
 }

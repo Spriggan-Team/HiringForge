@@ -1,0 +1,125 @@
+@startuml UML - Classe - Offres d'emploi
+
+skinparam dpi 300
+skinparam maxwidth 8000
+skinparam maxheight 8000
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam linetype ortho
+
+left to right direction
+
+'========================================================
+' JOB OFFER
+'========================================================
+
+class JobOffer {
+    - id: string
+    - title: string
+    - content: JSON
+    - publicationStatus: string
+    - minSalary: Decimal
+    - maxSalary: Decimal
+    - currency: string
+    - jobWorkMode: string
+    - activityStatus: string
+    - publicationDate: Date
+    - expertise: string
+    - createdAt: DateTime
+    - updatedAt: DateTime
+}
+
+class Company {
+    - id: string
+    - name: string
+    - siret: string
+    - createdAt: DateTime
+}
+
+class User {
+    - id: string
+    - userRole: string
+}
+
+class Address {
+    - id: int
+    - country: string
+    - postalCode: string
+    - city: string
+    - street: string
+}
+
+Company "1" -- "0..*" JobOffer
+User "1" -- "0..*" JobOffer : creates
+JobOffer "0..*" --> "0..1" Address
+
+
+'========================================================
+' DEPARTMENT
+'========================================================
+
+class Department {
+    - id: int
+    - label: string
+    - description: string
+    - code: string
+    - externalRef: string
+}
+
+Department "0..1" --> "0..*" Department : parent
+
+JobOffer "*" --> "1" Department
+
+
+'========================================================
+' CONTRACT
+'========================================================
+
+class ContractType {
+    - id: int
+    - label: string
+    - country: string
+    - default: boolean
+    - organisationId: string
+}
+
+ContractType "1" -- "0..*" JobOffer
+
+
+'========================================================
+' SKILLS
+'========================================================
+
+class Skill {
+    - id: string
+    - ecoUri: string
+    - onetCode: string
+    - isDefault: boolean
+    - canonicalName: string
+}
+
+class JobOfferSkill
+
+JobOffer "1" -- "0..*" JobOfferSkill
+JobOfferSkill "*" --> "1" Skill
+
+
+'========================================================
+' VIEWS
+'========================================================
+
+class JobOfferView {
+    - id: int
+    - viewedAt: DateTime
+}
+
+class Candidate {
+    - id: string
+}
+
+Candidate "1" -- "0..*" JobOfferView
+JobOffer "1" -- "0..*" JobOfferView
+
+@enduml

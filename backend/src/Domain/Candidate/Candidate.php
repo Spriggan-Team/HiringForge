@@ -14,6 +14,8 @@ class Candidate extends Account
     /** @var array<int, StaticMedia> $cvs all resume */
     private array $cvs = [];
 
+    private CandidateStatus $status = CandidateStatus::ACTIVE;
+
     private ?Address $address;
     private int $searchRadius = 10; //default search radius on map
 
@@ -101,7 +103,7 @@ class Candidate extends Account
     //-----------------------------------------
 
 
-public function addCV(?StaticMedia $cv): static
+    public function addCV(?StaticMedia $cv): static
     {
         if ($cv === null) {
             return $this;
@@ -136,5 +138,9 @@ public function addCV(?StaticMedia $cv): static
     {
         $this->searchRadius = $searchRadius;
         return $this;
+    }
+
+    public function chanegStatus(CandidateStatus $status){
+        $this->status = $status;
     }
 }

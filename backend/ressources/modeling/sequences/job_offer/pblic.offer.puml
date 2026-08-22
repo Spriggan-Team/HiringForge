@@ -15,12 +15,12 @@ Database Database
 'Treatment...
 
 'Checck auth
-Account -> JobOfferCatalogReader : getOffer();
+Account -> JobOfferCatalogReader : getOffer(skip, limit, filters);
 activate JobOfferCatalogReader
 
 
 'Execute Query (Pagination)
-JobOfferCatalogReader -> JobOfferQueryRepositoryInterface : query(limit, skip)
+JobOfferCatalogReader -> JobOfferQueryRepositoryInterface : query(limit, skip, filters)
 activate JobOfferQueryRepositoryInterface
 note right
     query with pagination.

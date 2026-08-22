@@ -7,14 +7,27 @@ use App\Domain\File\MediaStorageParams;
 interface PathResolverInterface
 {
     /**
-     * This function is used to determinate where the file is or should precisily be  stored in the 'Storage/Vault' folder
-     * @param ?string $mimeType             this is the mime type of the file that is to be recorded
-     * @param  MediaStorageParams  $params  contains all necessary param for building path
-     * @return string                       This is the new  file path generated
+     * Determines the absolute path where a file is or should be stored
+     * within the Storage/Vault directory.
+     *
+     * When a file name is provided, the returned path points to the file.
+     * Otherwise, the returned path points to the target directory.
+     *
+     * @param string|null $mimeType
+     *        MIME type of the file.
+     *
+     * @param MediaStorageParams $params
+     *        Parameters required to build the storage path.
+     *
+     * @param string|null $fileName
+     *        Optional file name. If provided, it is appended to the target directory.
+     *
+     * @return string Absolute path to the target directory or file.
      */
     public function resolveTargetDirectory(
         ?string $mimeType,
         MediaStorageParams $params,
+        ?string $fileName = null
     ): string;
 
 
@@ -28,4 +41,9 @@ interface PathResolverInterface
         string $absolutePath,
         RootPath $rootPath
     ): string;
+
+    /**
+     * Resolve merging  path (or path compenent)
+     */
+    public function appendPath(string $base, string ...$segments): string;
 }

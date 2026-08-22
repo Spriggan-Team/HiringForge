@@ -5,6 +5,7 @@ namespace App\Domain\Candidate\Application\Repositories;
 use App\Domain\Candidate\Application\Application;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Exception\UnauthorizedAction;
+use App\Domain\File\StaticMedia;
 
 interface ApplicationRepositoryInterface
 {
@@ -150,5 +151,22 @@ interface ApplicationRepositoryInterface
     public function getWeeklyMetrics(string $userId, ?string $jobId, \DateTimeImmutable $now): array;
 
 
+    /**
+     * Verify if an user , a recuiter and an application
+     * are all contected
+     */
+    public function assertRecruiterHasAccessToApplication(
+        string $recruiterId,
+        string $applicationId,
+        string $candidateId
+    ): void;
 
+    /**
+     * Retreive information about the resume file that has been
+     * used for a specific application
+     */
+    public function getResumeFile(
+        string $applicationId,
+        string $candidateId
+    ): StaticMedia;
 }

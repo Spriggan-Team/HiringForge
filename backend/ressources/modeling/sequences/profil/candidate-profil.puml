@@ -1,0 +1,89 @@
+@startuml Candidate - CV Analysis
+
+title "Candidate Profile - CV Analysis"
+
+actor Candidate
+
+participant AuthChecker
+participant CandidateModifier
+participant CandidateRepository
+participant CVParser
+
+database Database
+
+
+Candidate -> AuthChecker : updateProfile(dto, token, cv)
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+activate AuthChecker
+
+note right
+    Check & ensure
+    the candidate is authenticated
+end note
+
+AuthChecker -> CandidateModifier : changeCandidate(candidate, cv)
+deactivate AuthChecker
+
+activate CandidateModifier
+
+
+' Validate candidate
+CandidateModifier -> CandidateRepository : findById(candidateId)
+
+activate CandidateRepository
+
+CandidateRepository -> Database : SELECT candidate
+
+activate Database
+Database --> CandidateRepository : candidate
+deactivate Database
+
+CandidateRepository --> CandidateModifier : candidate
+
+deactivate CandidateRepository
+
+
+' Parse CV
+CandidateModifier -> CVParser : parse(cv)
+
+activate CVParser
+
+note right
+    CV analysis:
+    - extract text
+    - identify experiences
+    - identify skills
+    - identify education
+    - structure extracted data
+end note
+
+CVParser --> CandidateModifier : parsedCV
+
+deactivate CVParser
+
+
+' Save parsed data
+CandidateModifier -> CandidateRepository : save(parsedCV)
+
+activate CandidateRepository
+
+CandidateRepository -> Database : INSERT / UPDATE resume data
+
+activate Database
+Database --> CandidateRepository : response
+deactivate Database
+
+CandidateRepository --> CandidateModifier : response
+
+deactivate CandidateRepository
+
+
+CandidateModifier --> Candidate : response
+
+deactivate CandidateModifier
+
+@enduml

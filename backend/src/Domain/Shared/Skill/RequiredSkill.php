@@ -10,4 +10,8 @@ final readonly class RequiredSkill
         public string $skillId,
         public float $weight = 1.0,
     ) {}
+
+    public function skillId(){
+        return $this->skillId;
+    }
 }

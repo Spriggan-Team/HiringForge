@@ -15,6 +15,7 @@ interface ApplicationRowProps {
   isUpdating: boolean;
   isEyeOpen: boolean;
   t: TFunction;
+  imageUrl?: string;
   onToggleEye: (application: Application) => void;
   onRequestStatusChange: (
     applicationId: string,
@@ -29,10 +30,11 @@ interface ApplicationRowProps {
 
 // Sub-component responsible for rendering an individual table row
 export const ApplicationRow: React.FC<ApplicationRowProps> = ({
+  t,
   application,
   isUpdating,
   isEyeOpen,
-  t,
+  imageUrl,
   onToggleEye,
   onRequestStatusChange,
   onReject,
@@ -43,9 +45,9 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
       {/* Candidate */}
       <td data-label="Candidat">
         <div className={styles.candidateCell}>
-          {application.avatarUrl ? (
+          {imageUrl  ? (
             <img
-              src={application.avatarUrl}
+              src={imageUrl}
               alt={application.candidate}
               className={styles.avatar}
             />
@@ -95,17 +97,16 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
 
       {/* Actions */}
       <td data-label="Actions" className={styles.actionsCell}>
-        <button
-          type="button"
-          onClick={() => onToggleEye(application)}
-          className={styles.btnSecondary}
-          title={isEyeOpen ? 'Masquer les détails' : 'Voir les détails'}
-          disabled={isUpdating}
-        >
-          <EyeIcon isOpen={isEyeOpen} />
-        </button>
-
         <div className={styles.actionGroup}>
+          <button
+            type="button"
+            onClick={() => onToggleEye(application)}
+            className={styles.btnSecondary}
+            title={isEyeOpen ? 'Masquer les détails' : 'Voir les détails'}
+            disabled={isUpdating}
+          >
+            <EyeIcon isOpen={isEyeOpen} />
+          </button>
           <button
             type="button"
             onClick={() => onReject(application.id)}

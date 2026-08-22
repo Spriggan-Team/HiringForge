@@ -101,4 +101,16 @@ final class AccountStorageParams
             ownerType: MediaOwnerType::USER,
         );
     }
+
+    public static function companyJobImages(
+        string $companyId,
+        ?string $storedFileName = null
+    ): MediaStorageParams{
+        return new MediaStorageParams(
+            ownerId: $companyId,
+            ownerType: MediaOwnerType::COMPANY,
+            storedFileName: $storedFileName,
+            purpose: MediaPurpose::JOB_OFFER_IMAGE,
+        );
+    }
 }

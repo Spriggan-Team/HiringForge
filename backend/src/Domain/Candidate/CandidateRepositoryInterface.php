@@ -2,10 +2,10 @@
 
 namespace App\Domain\Candidate;
 
-use App\Domain\Exception\UnauthorizedAction;
 use App\Domain\File\StaticMedia;
+use App\Domain\Exception\UnauthorizedAction;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
-
+use App\Domain\Shared\Skill\BasicSkillModel;
 
 /**
  * This interface describe how we can interact with the bdd
@@ -17,6 +17,15 @@ interface CandidateRepositoryInterface
      * Check if wether a candidate exist or not in the system
      */
     public function exists(string $candidateId) : bool;
+
+
+    /**
+     * Retreive user full name
+     */
+    public function getFullName(string $candidateId) :string;
+
+
+
 
     /**
      * @param string                $uuid represents the uniq identifier of an actor stored in the bdd
@@ -40,7 +49,7 @@ interface CandidateRepositoryInterface
      * @param Candidate $candidate The candidate you want to register
      * @throws Exception
      */
-    public function save(Candidate $candidate): void;
+    public function save(Candidate $candidate): string;
 
 
     /**
@@ -89,4 +98,28 @@ interface CandidateRepositoryInterface
     ): void;
 
 
+    /**
+     * Check if an user can apply to a job
+     */
+    public function  canApply(
+        string $candidateId,
+        string $jobId
+    ): bool;
+
+
+    /**Return ids of application */
+    public function getApplicationsIds(string $candidateId): array;
+
+    /**
+     * @return array<int, string>
+     */
+    public function getCandidateApplicationJobIds(string $candidateId): array;
+
+
+    /**
+     * Get all skills related to a candidate.
+     *
+     * @return array<int, BasicSkillModel>
+     */
+    public function getCandidateSkills(string $candidateId): array;
 }

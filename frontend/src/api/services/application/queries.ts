@@ -6,6 +6,12 @@ import type { JobApplicationApiResponse } from "./response";
 
 
 //-- Recruiter
+
+/**
+ * Get applications
+ * @param param0 
+ * @returns 
+ */
 const getApplications = async (
   {
     jobId,
@@ -78,8 +84,51 @@ const getJobPostulationMetrics = async({
     }
 }
 
+/**
+ * Get candidate image
+ * @param param0 
+ * @returns 
+ */
+async function getCandidateProfilImage({
+    candidateId,
+    applicationId
+  }: 
+  {
+    candidateId: string,
+    applicationId: string
+  })
+{
+  try{
+    const blob = await authGet<Blob>(`/users/applications/${applicationId}/candidates/${candidateId}/profile-image`);
+    return blob;
+  }
+  catch(error){
+    throw error;
+  }
+}
 
 
+const  getCandidateResume = async ({
+  candidateId,
+  applicationId
+}:{
+  candidateId: string,
+  applicationId: string
+})=>{
+  try{
+    const blob = authGet<Blob>(`/users/applications/${applicationId}/candidates/${candidateId}/resume`);
+    return blob;
+  }
+  catch(error){
+    throw error;
+  }
+}
+
+/**
+ * Count number of rejected applications
+ * @param jobId 
+ * @returns 
+ */
 const countRejected = async (jobId: string)=>{
   try{
     const response = await authGet<ApiResponse<number>>(`/users/applications/${jobId}/rejected`);
@@ -90,14 +139,21 @@ const countRejected = async (jobId: string)=>{
   }
 }
 
-//-- User
 
+//-------------------------------
+//     Queries
+//-------------------------------
 
 const Queries = { 
   getApplications,
   countRejected,
-  getJobPostulationMetrics
+  
+  getJobPostulationMetrics,
+
+  getCandidateProfilImage,
+  getCandidateResume
 }
+
 
 const ApplicationQueries = intercept<
   typeof Queries,

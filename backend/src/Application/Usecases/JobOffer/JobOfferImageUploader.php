@@ -5,13 +5,11 @@ namespace App\Application\Usecases\JobOffer;
 use App\Application\Usecases\UploadedFileInfo;
 use App\Domain\Company\CompanyRepositoryInterface;
 use App\Domain\File\MediaFactoryInterface;
-use App\Domain\File\MediaOwnerType;
-use App\Domain\File\MediaPurpose;
 
 use App\Domain\File\MediaStorageInterface;
 use App\Domain\JobOffer\JobOfferImage;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
-
+use App\Domain\Shared\AccountStorageParams;
 
 class JobOfferImageUploader
 {
@@ -69,10 +67,10 @@ class JobOfferImageUploader
 
             $this->mediaStorageInterface->store(
                 file: $file,
-                ownerId: (string) $companyId,
-                ownerType: MediaOwnerType::COMPANY,
-                storedFileName: $image->media->name,
-                mediaPurpose: MediaPurpose::JOB_OFFER_IMAGE,
+                params: AccountStorageParams::companyJobImages(
+                    companyId: (string) $companyId,
+                    storedFileName:  $image->media->name
+                ),
                 successCallback: function () use (&$successfulJobImageUpload, $image) {
                     $successfulJobImageUpload[] = $image;
                 },

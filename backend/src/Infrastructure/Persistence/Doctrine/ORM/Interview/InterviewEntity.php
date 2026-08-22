@@ -3,8 +3,10 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Interview;
 
 use App\Domain\Interviews\InterviewStatus;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
+
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -31,6 +33,9 @@ class InterviewEntity
 
     #[ORM\Column(type: Types::STRING)]
     private ?string $url;
+
+    #[ORM\Column(nullable: true, type: Types::BOOLEAN)]
+    private ?bool $confirm = null;
 
     #[ORM\Column(enumType: InterviewStatus::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -163,9 +168,16 @@ class InterviewEntity
         return $this->candidateApproval;
     }
 
+    public function getConfirm()
+    {
+        return $this->confirm;
+    }
+
     public function getRejectionReason(){
         return $this->rejectionReason;
     }
+
+
 
     //======================
     //  SETTERS
@@ -230,6 +242,11 @@ class InterviewEntity
 
     public function setRejectionReason(?string $reason){
         $this->rejectionReason = $reason;
+        return $this;
+    }
+
+    public function  setConfirm(?bool $confirm) : static {
+        $this->confirm = $confirm;
         return $this;
     }
 }

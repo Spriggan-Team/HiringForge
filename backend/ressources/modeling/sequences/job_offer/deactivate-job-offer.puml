@@ -1,0 +1,73 @@
+@startuml
+
+title Deactivate / Expire Job Offer
+
+actor User
+participant AuthChecker
+participant JobOfferDeactivator
+participant JobOfferRepositoryInterface
+database Database
+
+
+=== Deactivate / Expire Offer ==
+
+' Auth checking
+User -> AuthChecker : deactivateOffer(offerId, token)
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+activate AuthChecker
+
+note right
+    Check & ensure
+    the user is authenticated
+end note
+
+' Usecase
+AuthChecker -> JobOfferDeactivator : deactivate(offerId, actorId)
+deactivate AuthChecker
+
+activate JobOfferDeactivator
+
+' Retrieve offer
+JobOfferDeactivator -> JobOfferRepositoryInterface : findById(offerId)
+activate JobOfferRepositoryInterface
+
+JobOfferRepositoryInterface -> Database : SELECT
+activate Database
+
+Database --> JobOfferRepositoryInterface : jobOffer
+
+deactivate Database
+
+JobOfferRepositoryInterface --> JobOfferDeactivator : jobOffer
+deactivate JobOfferRepositoryInterface
+
+
+' Change activity status
+JobOfferDeactivator -> JobOfferRepositoryInterface : setActivityStatus(offerId, EXPIRED)
+activate JobOfferRepositoryInterface
+
+JobOfferRepositoryInterface -> Database : UPDATE activity_status
+activate Database
+
+note right
+    The offer is not physically deleted.
+    Its activity status is changed
+    to EXPIRED / INACTIVE.
+end note
+
+Database --> JobOfferRepositoryInterface : response
+deactivate Database
+
+JobOfferRepositoryInterface --> JobOfferDeactivator : success
+deactivate JobOfferRepositoryInterface
+
+
+' User response
+JobOfferDeactivator --> User : response
+deactivate JobOfferDeactivator
+
+@enduml

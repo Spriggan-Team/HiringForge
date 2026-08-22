@@ -74,8 +74,28 @@ class MediaFactory implements MediaFactoryInterface
 
         $mime = $file->getMimeType() ?? $file->getClientMimeType();
 
-        if (!in_array($mime, $expectedTypes, true)) {
-            throw new \InvalidArgumentException("Not expected type detected for file.");
+        if ($mime === null) {
+            throw new \InvalidArgumentException(
+                'Unable to determine file MIME type.'
+            );
+        }
+
+        if ($expectedTypes !== [] && !in_array($mime, $expectedTypes, true)) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Not expected type detected for file. Detected: "%s". Expected: %s',
+                    $mime,
+                    implode(', ', $expectedTypes)
+                )
+            );
+        }
+
+        $extension = $file->guessExtension();
+
+        if ($extension === null) {
+            throw new \InvalidArgumentException(
+                'Unable to determine file extension.'
+            );
         }
 
         // Generate a cryptographically secure random filename to prevent overwrites and security flaws

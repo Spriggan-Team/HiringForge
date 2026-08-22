@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
@@ -51,7 +52,9 @@ class ApplicationEntity
     #[ORM\Column(type: Types::FLOAT)]
     private ?float $matchScore = null;
     
-    #[ORM\Column(type: 'boolean')]
+
+
+    #[ORM\Column(enumType: JobApplicationStatus::class)]
     private JobApplicationStatus $status = JobApplicationStatus::APPLIED;
 
     #[ORM\Column(type: 'datetime_immutable')]
@@ -69,6 +72,12 @@ class ApplicationEntity
     #[ORM\JoinColumn(nullable: false, name: "candidate_id")]
     private CandidateEntity $candidate;
 
+    #[ORM\ManyToOne(
+        targetEntity: CandidateResumeEntity::class,
+    )]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?CandidateResumeEntity $candidateResume =null;
+
     #[ORM\ManyToOne(inversedBy: 'applications')]
     #[ORM\JoinColumn(nullable: false, name: "job_offer_id")]
     private JobOfferEntity $jobOffer;
@@ -81,17 +90,21 @@ class ApplicationEntity
     //----- Constructing
     //----------------------------
     
-    
+
+
     public function __construct(
         CandidateEntity $candidate,
         JobOfferEntity $jobOffer,
         CompanyEntity $company,
+        ?CandidateResumeEntity $candidateResume = null,
         ?float $matchScore = null
     ) {
         $this->candidate = $candidate;
         $this->jobOffer = $jobOffer;
         $this->matchScore = $matchScore;
         $this->company = $company;
+        $this->candidateResume = $candidateResume;
+
         $this->status = JobApplicationStatus::APPLIED;
         $this->appliedAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
@@ -101,13 +114,15 @@ class ApplicationEntity
         CandidateEntity $candidate,
         JobOfferEntity $jobOffer,
         CompanyEntity $company,
+        ?CandidateResumeEntity $candidateResume =null,
         ?float $matchScore = null
     ): self {
         return new self(
             candidate: $candidate,
             jobOffer: $jobOffer,
             matchScore: $matchScore,
-            company: $company
+            company: $company,
+            candidateResume: $candidateResume
         );
     }
 
@@ -148,6 +163,11 @@ class ApplicationEntity
         return $this->updatedAt;
     }
 
+    public function getCandidateResume(){
+        return $this->candidateResume;
+    }
+
+
     //==========================
     //    SETTERS
     //==========================
@@ -170,4 +190,6 @@ class ApplicationEntity
     {
         $this->updatedAt = new \DateTimeImmutable();
     }
+
+
 }

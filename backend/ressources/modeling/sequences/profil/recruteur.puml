@@ -1,0 +1,97 @@
+@startuml User Profile Management
+
+title "User Profile Management"
+
+actor User
+
+participant AuthChecker
+participant UserModifier
+participant AccountRepository
+participant UserRepository
+participant MediaFactoryInterface
+participant MediaStorageInterface
+
+database Database
+
+
+User -> AuthChecker : updateProfile(dto, token)
+
+ref over AuthChecker
+    Auth Checking ...
+end ref
+
+activate AuthChecker
+
+note right
+    Check & ensure
+    the user is authenticated
+end note
+
+AuthChecker -> UserModifier : changeUser(user, files)
+deactivate AuthChecker
+
+activate UserModifier
+
+
+' Validate account
+UserModifier -> AccountRepository : exist(userId)
+
+activate AccountRepository
+
+AccountRepository -> Database : SELECT account
+
+activate Database
+Database --> AccountRepository : account
+deactivate Database
+
+AccountRepository --> UserModifier : account
+deactivate AccountRepository
+
+
+' Process media
+UserModifier -> MediaFactoryInterface : generateDomainObject(files)
+
+note right
+    Files are converted as:
+    - StaticMedia (images)
+    - TimedMedia (videos)
+end note
+
+activate MediaFactoryInterface
+
+MediaFactoryInterface --> UserModifier : mediaObjects
+
+deactivate MediaFactoryInterface
+
+
+' Store media
+UserModifier -> MediaStorageInterface : save(mediaObjects)
+
+activate MediaStorageInterface
+
+MediaStorageInterface --> UserModifier : storedPaths
+
+deactivate MediaStorageInterface
+
+
+' Update user
+UserModifier -> UserRepository : update(user)
+
+activate UserRepository
+
+UserRepository -> Database : UPDATE user
+
+activate Database
+Database --> UserRepository : response
+deactivate Database
+
+UserRepository --> UserModifier : response
+
+deactivate UserRepository
+
+
+UserModifier --> User : response
+
+deactivate UserModifier
+
+@enduml

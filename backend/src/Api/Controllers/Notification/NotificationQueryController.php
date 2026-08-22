@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
 
-#[Route('/notification')]
+#[Route('/notifications')]
 class NotificationQueryController extends AbstractController
 {
     public function __construct(
@@ -102,7 +102,7 @@ class NotificationQueryController extends AbstractController
     public function getRecentCompanyNotification(Request $request): JsonResponse
     {
         try {
-            /** @var AuthenticatedPerson $user */
+            /** @var AuthenticatedPerson|null $user */
             $user = $this->getUser();
             $companyId = $request->query->get('companyId');
 

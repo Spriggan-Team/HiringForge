@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate;
 
+use App\Domain\Candidate\CandidateStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
@@ -23,9 +24,15 @@ class CandidateEntity extends AccountEntity
     //------------------------
     // Extra  Columns
     //-----------------------
+     
+
+    #[ORM\Column(enumType: CandidateStatus::class)]
+    private CandidateStatus $status = CandidateStatus::ACTIVE;
 
     #[ORM\Column(type: 'integer')]
     private int $searchRadius;
+
+
 
     //---------------------------------
     //-------Relations
@@ -138,6 +145,11 @@ class CandidateEntity extends AccountEntity
         return $this;
     }
 
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
     //--------------------------------
     // Utils
     //--------------------------------
@@ -176,5 +188,9 @@ class CandidateEntity extends AccountEntity
     public function addJobViews(JobOfferViewEntity $jobOfferViews): self{
         $this->jobOfferViews->add($jobOfferViews);
         return $this;
+    }
+
+    public function setStatus(CandidateStatus $status){
+        $this->status = $status;
     }
 }

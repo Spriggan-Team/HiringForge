@@ -2,6 +2,7 @@
 import { useContext } from "react";
 import { AppContext } from "../context/app.context";
 import type { CurrentActor, CurrentAgent, CurrentCandidate, CurrentUser } from "../features/shared/account";
+import { CandidateContext } from "../context/candidate.context";
 
 
 export const useAppContext = () => {
@@ -16,6 +17,22 @@ export const useAppContext = () => {
 };
 
 
+export const useCandidateContext = () => {
+    const context = useContext(CandidateContext);
+    
+    // Sécurité indispensable si le hook est appelé hors du Provider
+    if (!context) {
+        throw new Error("useCandidateContext must be used within an CandidateProvider");
+    }
+    
+    return context;
+};
+
+
+
+//--------------------------------
+//-- USER types
+//--------------------------------
 
 export function useCurrentActor(): CurrentActor {
   const { currentActor } = useAppContext();

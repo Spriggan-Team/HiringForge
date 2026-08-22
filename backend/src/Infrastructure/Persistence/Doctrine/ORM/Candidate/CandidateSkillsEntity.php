@@ -15,6 +15,7 @@ class CandidateSkillsEntity
     #[ORM\Column(length: 20)]
     private string $source = "parsed"; //-- values: parsed, manual
 
+
     //----------------------------
     //--- RELATIONS
     //-------------------------------
@@ -27,7 +28,6 @@ class CandidateSkillsEntity
         name: "candidate_id",
         referencedColumnName: "id",
         nullable: false,
-        onDelete: "CASCADE"
     )]
     private CandidateEntity $candidate;
 
@@ -39,9 +39,17 @@ class CandidateSkillsEntity
     #[ORM\JoinColumn(
         name: "skill_id",
         referencedColumnName: "id",
-        onDelete: "CASCADE"
     )]
     private SkillEntity $skill;
+
+
+    #[ORM\ManyToOne(
+        targetEntity: CandidateResumeEntity::class,
+    )]
+    #[ORM\JoinColumn(
+        nullable: true
+    )]
+    private ?CandidateResumeEntity $candidateResume = null;
 
     //----------------------------
     //- CONSTRUCTING/ BUILDING
@@ -61,13 +69,16 @@ class CandidateSkillsEntity
         CandidateEntity $candidate,
         SkillEntity $skill,
         string $source = "parsed",
+        ?CandidateResumeEntity $candidateResume =null
     )
     {
-        return new self(
+        $entity = new self(
             source: $source,
             skill: $skill,
             candidate: $candidate,
         );
+        $entity->setCandidateResume($candidateResume);
+        return $entity ;
     }
 
     //---------------------
@@ -84,10 +95,15 @@ class CandidateSkillsEntity
         return $this->candidate;
     }
 
+    public function getCandidateResume(){
+        return $this->candidateResume;
+    }
+
     public function getSkill()
     {
         return $this->skill;
     }
+
 
     //------------------------
     //--- SETTERS
@@ -110,4 +126,11 @@ class CandidateSkillsEntity
         $this->skill = $skill;
         return $this;
     }
+
+    public function setCandidateResume(?CandidateResumeEntity $candidateResume){
+        $this->candidateResume = $candidateResume;
+        return $this;
+    }
+
+
 }
