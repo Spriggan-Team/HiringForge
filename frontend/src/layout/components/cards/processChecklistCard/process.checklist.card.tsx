@@ -3,7 +3,7 @@
 import BrandButton, { type BrandButtonProps } from "../../buttons/brand.button";
 
 //-- SVG Components 
-import OKCircleSVG from "../../../../assets/svg/check/ok-circle-svgrepo-com.svg";
+import OKCircleSVG from "../../../../assets/svg/check/ok-circle-svgrepo-com.svg?react";
 
 //-- Styles
 import styles from "./style.module.css"

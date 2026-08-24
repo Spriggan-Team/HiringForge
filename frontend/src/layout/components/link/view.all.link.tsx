@@ -2,7 +2,7 @@
 import { useTranslation } from "react-i18next";
 
 //-- SVG Components
-import RightToLeftArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg';
+import RightToLeftArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg?react';
 
 //-- CSS module
 import styles from "./ViewAllLink.module.css"

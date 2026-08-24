@@ -8,15 +8,13 @@ use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
-use App\Domain\Candidate\CandidateRepositoryInterface;
-use App\Domain\Candidate\CandidateResumeRepositoryInterface;
+
 use App\Domain\Offer\OfferRepositoryInterface;
 use App\Domain\Offer\OfferStatus;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\Account\AccountRole;
 use App\Domain\Shared\AccountStorageParams;
 use App\Domain\Shared\PathResolverInterface;
-use App\Domain\User\UserRepositoryInterface;
 
 
 use Psr\Log\LoggerInterface;
@@ -228,7 +226,7 @@ class UserApplicationQueryController extends AbstractController
                 )->toJsonResponse();
             }
             
-            $fullPath = $pathResolver->resolveTargetDirectory(
+            $fullPath = $pathResolver->resolveStoragePath(
                 params: AccountStorageParams::candidateProfileImage(
                     candidateId: $candidateId,
                     storedFileName: $media->name
@@ -288,7 +286,7 @@ class UserApplicationQueryController extends AbstractController
                 )->toJsonResponse();
             }
             
-            $fullPath = $pathResolver->resolveTargetDirectory(
+            $fullPath = $pathResolver->resolveStoragePath(
                 params: AccountStorageParams::resumes(
                     candidateId: $candidateId,
                     storedFileName: $media->name

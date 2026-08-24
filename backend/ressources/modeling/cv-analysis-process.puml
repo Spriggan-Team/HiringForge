@@ -1,0 +1,59 @@
+@startuml
+skinparam BackgroundColor #F8FAFC
+skinparam TitleFontColor #0F172A
+skinparam TitleFontSize 18
+skinparam TitleFontAttribute bold
+
+' Style global des rectangles / étapes
+skinparam Rectangle {
+    BackgroundColor #FFFFFF
+    BorderColor #CBD5E1
+    BorderThickness 1
+    FontColor #1E293B
+    FontSize 13
+    RoundCorner 12
+    Shadowing true
+}
+
+' Style des sous-groupes (phases)
+skinparam Package {
+    BackgroundColor #F1F5F9
+    BorderColor #94A3B8
+    FontColor #334155
+    FontSize 12
+    FontAttribute bold
+}
+
+' Style des flèches
+skinparam Arrow {
+    Color #64748B
+    FontColor #475569
+    FontSize 11
+    Thickness 2
+}
+
+title Pipeline d'Extraction & Matching CV
+
+package "Phase 1 : Ingestion & Preprocessing" #EFF6FF {
+    rectangle "📄 **Document Source**\n<size:11><color:#64748B>Fichier PDF / DOCX</color></size>" as doc #FFFFFF
+    rectangle "🔤 **Extraction Textuelle**\n<size:11><color:#64748B>Parsing & OCR si besoin</color></size>" as extract #FFFFFF
+    rectangle "🧹 **Nettoyage Lexical**\n<size:11><color:#64748B>Normalisation & Débruitage</color></size>" as clean #FFFFFF
+}
+
+package "Phase 2 : Traitement Intelligent" #F3E8FF {
+    rectangle "🤖 **Analyse Sémantique (IA)**\n<size:11><color:#64748B>Compréhension du contexte</color></size>" as ai #FFFFFF
+    rectangle "🎯 **Extraction des Compétences**\n<size:11><color:#64748B>Isolations des savoir-faire</color></size>" as skills #FFFFFF
+}
+
+package "Phase 3 : Réconciliation" #DCFCE7 {
+    rectangle "🔗 **Matching Référentiel**\n<size:11><color:#64748B>Alignement avec la taxonomie</color></size>" as match #FFFFFF
+}
+
+' Enchaînement du flux
+doc -down-> extract : Texte brut
+extract -down-> clean : Texte à nettoyer
+clean -down-> ai : Texte structuré
+ai -down-> skills : Entités nommées
+skills -down-> match : Mots-clés bruts
+
+@enduml

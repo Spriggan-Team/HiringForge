@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
 //-- SVG - Components
-import BrowserSVG from '/src/assets/svg/net/internet-svgrepo-com.svg';
-import DownArrowSVG from '/src/assets/svg/arrows/down-arrow-5-svgrepo-com.svg';
+import BrowserSVG from '/src/assets/svg/net/internet-svgrepo-com.svg?react';
+import DownArrowSVG from '/src/assets/svg/arrows/down-arrow-5-svgrepo-com.svg?react';
 
 import styles from "./LanguageSelector.module.css"
 

@@ -1,0 +1,25 @@
+@startuml
+skinparam BackgroundColor white
+skinparam ActivityBackgroundColor #f8fafc
+skinparam ActivityBorderColor #2563eb
+skinparam ActivityFontColor #0f172a
+skinparam ArrowColor #64748b
+skinparam ActivityDiamondBackgroundColor #eff6ff
+skinparam ActivityDiamondBorderColor #2563eb
+
+title Parcours Candidat - Analyse CV & Matching
+
+start
+
+:🔑 Connexion;
+:👤 Profil candidat;
+:📄 Ajout / analyse du CV;
+:🔍 Consultation des offres;
+:📋 Détail d'une offre;
+:✉️ Candidature;
+:🤖 Analyse & matching du CV;
+:📊 Calcul du score de correspondance;
+:🔔 Notification;
+
+stop
+@enduml

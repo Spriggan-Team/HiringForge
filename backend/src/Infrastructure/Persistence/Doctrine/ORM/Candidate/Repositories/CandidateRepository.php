@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories;
 
+use App\Api\Responder\ApiResponse;
 use App\Domain\File\StaticMedia;
 use App\Domain\Candidate\Candidate;
 use App\Domain\Candidate\CandidateLightModel;
@@ -27,10 +28,32 @@ class CandidateRepository implements CandidateRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private FileEntityMapper $fileMapper
+        private FileEntityMapper $fileMapper,
+        private CandidateEntityMapper $mapper
     ){}
 
 
+    #[Override]
+    public function getDescription(string $candidateId): string
+    {
+        $result = $this->em->createQueryBuilder()
+            ->select('c.description')
+            ->from(CandidateEntity::class, 'c')
+            ->where('c.id = :candidateId')
+            ->setParameter('candidateId', $candidateId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($result === null) {
+            throw new \DomainException(
+                'Candidate not found.'
+            );
+        }
+
+        return (string) $result['description'];
+    }
+
+    
     #[Override]
     public function getCandidateApplicationJobIds(string $candidateId): array
     {
@@ -146,16 +169,26 @@ class CandidateRepository implements CandidateRepositoryInterface
         if(!$entity){
             throw new RessourceNotFound("Candidate not found");
         }
-        $candidate = CandidateEntityMapper::toDomain($entity);
+        $candidate = $this->mapper->toDomain($entity);
         return $candidate;
     }
 
 
 
-    public function findById(string $uuid): Candidate
+    public function findById(string $uuid): ?Candidate
     {
-        throw new \Exception('Not implemented');
+        $entity = $this->em
+            ->getRepository(CandidateEntity::class)
+            ->find($uuid);
+
+        if ($entity === null) {
+            return null;
+        }
+
+        return $this->mapper->toDomain($entity);
     }
+
+    
 
     #[Override]
     public function getCandidateLightModel(string $candidateId): CandidateLightModel
@@ -201,16 +234,6 @@ class CandidateRepository implements CandidateRepositoryInterface
 
 
 
-    public function save(Candidate $candidate): string
-    {
-        $entity = CandidateEntityMapper::toEntity($candidate);
-        $this->em->persist($entity);
-        $this->em->flush();
-        return $entity->getId();
-    }
-
-
-
     public function delete(string $uuid): void
     {
         throw new \Exception('Not implemented');
@@ -241,7 +264,7 @@ class CandidateRepository implements CandidateRepositoryInterface
         $result = [];
         foreach($resumes as $resume){
             $file = $resume->getFile();
-            $result[] = $this->fileMapper->toStaticDomainMedia($file);
+            $result[$resume->getId()] = $this->fileMapper->toStaticDomainMedia($file);
         }
 
         return $result;
@@ -268,7 +291,7 @@ class CandidateRepository implements CandidateRepositoryInterface
     #[Override]
     public function findResumeById(
         string $candidateId,
-        string $resumeId
+        string $fileId
     ): ?StaticMedia {
         $candidate = $this->em->find(
             CandidateEntity::class,
@@ -286,7 +309,7 @@ class CandidateRepository implements CandidateRepositoryInterface
         /** @var CandidateResumeEntity|null $resume */
         $resume = $repository->findOneBy([
             'candidate' => $candidate,
-            'file' => $resumeId,
+            'file' => $fileId,
         ]);
 
         if (!$resume) {
@@ -316,9 +339,60 @@ class CandidateRepository implements CandidateRepositoryInterface
         return FileEntityMapper::toStaticDomainMedia($found->getFile()); 
     }
 
+
     #[Override]
     public function getCandidateSkills(string $candidateId): array
     {
         throw new \Exception('CandidateRepository::getCandidateSkills Not implemented');
+    }
+
+
+    // public function save(Candidate $candidate): string
+    // {
+    //     $entity = $this->em->getRepository(CandidateEntity::class)->find($candidate->id());
+
+    //     if ($entity === null) {
+    //         $entity = $this->mapper->toEntity($candidate);
+    //         $this->em->persist($entity);
+    //     }
+    //     else {
+    //         $this->mapper->updateEntity(
+    //             entity: $entity,
+    //             domain: $candidate,
+    //         );
+    //     }
+
+    //     $this->em->flush();
+
+    //     return $entity->getId();
+    // }
+
+    public function save(Candidate $candidate): string
+    {
+        $entity = $this->em
+            ->getRepository(CandidateEntity::class)
+            ->find($candidate->id());
+
+        if ($entity === null) {
+            $entity = $this->mapper->toEntity($candidate);
+            $this->em->persist($entity);
+        } else {
+            $this->mapper->updateEntity(
+                entity: $entity,
+                domain: $candidate,
+            );
+        }
+
+        ApiResponse::$logger->error("Exécution du repository");
+        ApiResponse::$logger->error(json_encode([
+            'entity_firstName' => $entity->getFirstName(),
+            'entity_lastName' => $entity->getLastName(),
+            'entity_email' => $entity->getEmail(),
+            'entity_description' => $entity->getDescription(),
+        ]));
+
+        $this->em->flush();
+
+        return $entity->getId();
     }
 }

@@ -26,7 +26,7 @@ import  { DrawerBuilder,  } from "../../../../../layout/components/menu/dropdown
 
 
 //-- SVG Components
-import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg"
+import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg?react"
 
 
 //-- CSS Module

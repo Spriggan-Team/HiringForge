@@ -1,15 +1,38 @@
-import type { NavigateFunction } from "react-router-dom";
+
 import { intercept } from "../../../utils/utils";
 import { authGet,  } from "../../http";
 
-import type { CurrentCandidateContextResponse, GetResumeCollection } from "./responses";
 import type { ApiResponse, ErrorApiResponse } from "../response.types";
+
+import type { CurrentCandidateContextResponse, GetResumeCollection } from "./responses";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
+import type { Skill } from "../../../features/shared/global";
 
 
-//------------------------
-//---- Candidates
-//---------------------------
+
+/**
+ * Get description
+ * @returns 
+ */
+const getCandidateDescription = async ()=>{
+    try{
+        const response = await authGet<ApiResponse<{desc: string}>>(`/candidates/profile/desc`)
+        return response.data.desc;
+    }
+    catch(error){
+        throw error;
+    }
+}
+
+const getCandidateSkills = async()=>{
+    try{
+        const response = await authGet<ApiResponse<Skill[]>>(`/candidates/profile/skills`);
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
 
 /**
  * Retreive job ids
@@ -36,6 +59,11 @@ const getCandidateApplicationJobIds = async ():  Promise<Record<string, boolean>
 }
 
 
+/**
+ * Retreive image profil
+ * @param candidateId 
+ * @returns 
+ */
 const getCandidateProfileImage = async(candidateId: string)=>{
     try{
         const blob = authGet<Blob>(`/candidates/assets/profile`);
@@ -46,6 +74,11 @@ const getCandidateProfileImage = async(candidateId: string)=>{
     }
 }
 
+
+/**
+ * Retreive candidate resume
+ * @returns 
+ */
 const getResumes = async ()=> {
     try{
         const response  = await authGet<GetResumeCollection>(`/candidates/assets/me/resumes`);
@@ -57,6 +90,11 @@ const getResumes = async ()=> {
 }
 
 
+
+/**
+ * Retreive candidate context
+ * @returns 
+ */
 const getCurrentCandidateContext = async()=>{
     try{
         const response = await  authGet<CurrentCandidateContextResponse>(`/candidates`);
@@ -67,6 +105,12 @@ const getCurrentCandidateContext = async()=>{
     }
 }
 
+
+/**
+ * retreive resume ressoruce
+ * @param resumeId 
+ * @returns 
+ */
 const getResumeContent = async (resumeId: string)=>{
     try{
         const blob = await authGet<Blob>(`/candidates/assets/resumes/${resumeId}/content`);
@@ -77,35 +121,25 @@ const getResumeContent = async (resumeId: string)=>{
     }
 }
 
-export class HttpContext {
-  #navigate?: NavigateFunction;
-
-  token?: string;
-  locale?: string;
-  organizationId?: string;
-  
-  setNavigate(fn: NavigateFunction) {
-      this.#navigate = fn;
-  }
-
-  navigate(path: string) {
-      this.#navigate?.(path);
-  }
-}
 
 
-
-export const httpContext = new HttpContext();
-
-
+/**
+ * Queries services
+ */
 const Queries = { 
-    getCurrentCandidateContext,
     getResumes,
     getResumeContent,
     getCandidateProfileImage,
+    
+    getCandidateSkills,
+    getCandidateDescription,
+    getCurrentCandidateContext,
     getCandidateApplicationJobIds
 }
 
+/**
+ * Handler & api request for candidate queries
+ */
 const CandidatesQueries = intercept<
     typeof Queries,
     ApiResponse | ErrorApiResponse

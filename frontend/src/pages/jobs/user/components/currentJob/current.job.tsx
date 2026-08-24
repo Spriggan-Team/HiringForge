@@ -12,7 +12,7 @@ import JobSkill from "../../../components/skills/job.skill";
 import TipTapRenderer from "../../../../../layout/components/editors/tiptap/tiptap.renderer";
 
 //-- Custom SVG Component
-import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-svgrepo-com.svg"
+import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-svgrepo-com.svg?react"
 
 //-- Styles CSS
 import styles from "./CurrentJob.module.css"

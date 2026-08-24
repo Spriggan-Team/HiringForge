@@ -1,4 +1,4 @@
-import CheckSVG from "../../../../assets/svg/check/check-svgrepo-com.svg"
+import CheckSVG from "../../../../assets/svg/check/check-svgrepo-com.svg?react"
 
 //Css styles
 import styles from "./style.module.css"

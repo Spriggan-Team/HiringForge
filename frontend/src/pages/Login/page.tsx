@@ -18,10 +18,10 @@ import { InvalidOTP } from '../../api/services/exceptions';
 import BasicInput from '../../layout/components/form/input/basic.input';
 
 //-- SVG - Components
-import LogoSVG from '/src/assets/custom-logo.svg';
-import EmailSVG from '/src/assets/svg/email/email-1-svgrepo-com.svg';
+import LogoSVG from '/src/assets/custom-logo.svg?react';
+import EmailSVG from '/src/assets/svg/email/email-1-svgrepo-com.svg?react';
 import ConfirmPassword from '../../layout/components/form/input/password/confirm/confirm.password';
-import PasswordSVG from "/src/assets/svg/security/password-protection-privacy-access-verification-code-svgrepo-com.svg"
+import PasswordSVG from "/src/assets/svg/security/password-protection-privacy-access-verification-code-svgrepo-com.svg?react"
 
 //-- CSS - Styles
 import styles from './style.module.css'

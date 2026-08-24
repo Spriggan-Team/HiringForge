@@ -3,7 +3,7 @@ import { useRef,  type InputHTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 
 
-import UploadSVG from "/src/assets/svg/load/export-svgrepo-com.svg"
+import UploadSVG from "/src/assets/svg/load/export-svgrepo-com.svg?react"
 
 import styles from "./style.module.css"
 

@@ -7,8 +7,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyImageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferImageEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\User\UserImageEntity;
+
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -99,7 +98,8 @@ class FileEntity
         return new self()
                     ->setName($name)
                     ->setMime($mime)
-                    ->setSize($size);
+                    ->setSize($size)
+                    ->setOriginalName($originalName);
     }
 
     /* =======================

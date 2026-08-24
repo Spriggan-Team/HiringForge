@@ -30,7 +30,7 @@ rectangle "Hiring Project" {
     (Sélectionner les candidats) as CandidateSelection
     (Planifier un entretien) as PlanInterview
     (Generer une proposition d'embauche) as HiredDemand
-    (Accepter ou refuser une offre d'emploi) as HiredDemandResponse
+    (Accepter ou refuser une offre d'embauche) as HiredDemandResponse
 
     ' Profil recruteur
     (Gérer le profil recruteur) as ManageUserProfile

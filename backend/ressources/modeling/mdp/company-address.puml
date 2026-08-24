@@ -1,0 +1,63 @@
+@startuml
+skinparam linetype ortho
+skinparam monochrome false
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #333333
+    HeaderBackgroundColor #E2E8F0
+}
+
+entity "FILE" as file {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * name : VARCHAR(250)
+    original_name : VARCHAR(250)
+    * mime : CHAR(15)
+    * size : DOUBLE
+    * created_at : DATETIME
+}
+
+entity "ADDRESS" as address {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * country : VARCHAR(255)
+    * postal_code : VARCHAR(255)
+    * city : VARCHAR(255)
+    * street : VARCHAR(255)
+}
+
+entity "COMPANY" as company {
+    * **id** : CHAR(36) [PK]
+    --
+    logo_id : INT [FK]
+    video_presentation_id : INT [FK]
+    * name : VARCHAR(150)
+    * siret : VARCHAR(255)
+    * created_at : DATETIME
+}
+
+entity "COMPANY_ADDRESS" as company_address {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * company_id : CHAR(36) [FK]
+    * address_id : INT [FK]
+}
+
+entity "DEPARTMENT" as department {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * label : VARCHAR(255)
+    parent_id : INT [FK]
+    description : VARCHAR(255)
+    code : VARCHAR(50)
+    external_ref : VARCHAR(255)
+    * company_id : CHAR(36) [FK]
+}
+
+company ||--o{ company_address : "possède"
+address ||--o{ company_address : "est liée à"
+company ||--o| file : "logo (logo_id)"
+company ||--o| file : "vidéo (video_presentation_id)"
+company ||--o{ department : "possède"
+department ||--o{ department : "parent (parent_id)"
+@enduml

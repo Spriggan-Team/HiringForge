@@ -8,8 +8,8 @@ import Link from "@tiptap/extension-link";
 
 
 //- SVG Components
-import ListSVGComponent from "/src/assets/svg/catalog/list-ul-svgrepo-com.svg"
-import LinkSVGComponent from "/src/assets/svg/net/link-alt-svgrepo-com.svg"
+import ListSVGComponent from "/src/assets/svg/catalog/list-ul-svgrepo-com.svg?react"
+import LinkSVGComponent from "/src/assets/svg/net/link-alt-svgrepo-com.svg?react"
 
 //-- CSS Module
 import styles from "./TipTapEditor.module.css"

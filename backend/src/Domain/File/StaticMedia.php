@@ -7,22 +7,31 @@ use App\Domain\Exception\FileSizeExceeded;
 /**
  * This is a DTO only used for define static media schema
  */
-class StaticMedia
+class StaticMedia extends Media
 {
     public function __construct(
         /** @var string $name a uniq name used for uploading; that must be uniq and will represent the one that will be stored in bdd */
-        public string $name,
+         string $name,
         /** @var float $size represents the size of the file in bytes */
-        public float  $size,
+         float  $size,
         /** @var string $mime here is the mime type */
-        public string $mime,
+        string $mime,
 
-        public ?string $originalName = null,
+        ?string $originalName = null,
 
         /**identifiant of the image */
-        public ?int $id = null,
-        public ?\DateTimeImmutable $createdAt = null,
-    ){}
+        ?int $id = null,
+        ?\DateTimeImmutable $createdAt = null,
+    ){
+        parent::__construct(
+            id: $id,
+            name: $name,
+            size: $size,
+            mime: $mime,
+            createdAt: $createdAt,
+            originalName: $originalName,
+        );
+    }
 
     public static function hydrate(
         string $name,

@@ -3,7 +3,7 @@
 namespace App\Domain\Shared\Skill;
 
 
-final readonly class BasicSkillModel
+final readonly class BasicSkillModel  
 {
     public function __construct(
         private string $id,

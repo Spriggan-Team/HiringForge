@@ -3,8 +3,8 @@
 
 
 //--Custom components
-import LeftToRightArrowSVGComponent from "/src/assets/svg/arrows/arrow-left-334-svgrepo-com.svg";
-import RightToLeftArrowSVGComponent from "/src/assets/svg/arrows/arrow-right-333-svgrepo-com.svg";
+import LeftToRightArrowSVGComponent from "/src/assets/svg/arrows/arrow-left-334-svgrepo-com.svg?react";
+import RightToLeftArrowSVGComponent from "/src/assets/svg/arrows/arrow-right-333-svgrepo-com.svg?react";
 
 //-- CSS Modules
 import styles from "./ArrowNavigation.module.css"

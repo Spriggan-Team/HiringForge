@@ -61,7 +61,8 @@ class AccountEntity
     #[ORM\OneToOne(
         inversedBy: "accountImage",
         targetEntity: FileEntity::class,
-        cascade: ['persist']
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
     )]
     protected ?FileEntity $image = null;
 

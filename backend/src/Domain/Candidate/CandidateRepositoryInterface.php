@@ -33,7 +33,7 @@ interface CandidateRepositoryInterface
      * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
      * return the specified actor requested if founded in the bdd storage
      */
-    public function findById(string $uuid): Candidate;
+    public function findById(string $uuid): ?Candidate;
 
 
     
@@ -63,7 +63,7 @@ interface CandidateRepositoryInterface
      * Retreive meta data about an user's resumes
      * @throws \Exception this is thrown whenever something get wrong while exeuting the operation 
      * @throws RessourceNotFound no candidate found
-     * @return array{0: string, 1: StaticMedia}  - returns an array media corresponding to the related cvs 
+     * @return array< StaticMedia>  - returns an array media corresponding to the related cvs 
      */
     public function getResumeFiles(string $candidateId): array;
 
@@ -80,7 +80,7 @@ interface CandidateRepositoryInterface
     public function getResumeFile(string $fileId): ?StaticMedia;
 
 
-    public function findResumeById( string $candidateId, string $resumeId ): ?StaticMedia;
+    public function findResumeById( string $candidateId, string $fileId ): ?StaticMedia;
 
     /**
      * retreive à light model of a connected user
@@ -122,4 +122,10 @@ interface CandidateRepositoryInterface
      * @return array<int, BasicSkillModel>
      */
     public function getCandidateSkills(string $candidateId): array;
+
+    /**
+     * Retreive description about user
+     */
+    public function getDescription(string $candidateId): string;
+
 }

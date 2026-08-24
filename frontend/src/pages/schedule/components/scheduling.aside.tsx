@@ -12,7 +12,7 @@ import Title from "../../../layout/components/text/title/title";
 import Gauge from "../../../layout/components/progress/gauge/gauge";
 
 //-- SVG Components
-import TimeSVG from "/src/assets/svg/time/time-svgrepo-com.svg"
+import TimeSVG from "/src/assets/svg/time/time-svgrepo-com.svg?react"
 
 //-- CSS Modules
 import styles from "./SchedulingAside.module.css"

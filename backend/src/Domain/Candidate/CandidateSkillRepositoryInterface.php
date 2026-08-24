@@ -14,6 +14,11 @@ interface CandidateSkillRepositoryInterface
     ): void;
 
 
+    public function unlink(
+        string $candidateId,
+        string $skillId
+    ): void;
+
     public function resolveSkill(string $candidateId, string $text): ?SkillResolution;
 
     public function hasSkill(string $candidateId, string $skillId): bool;

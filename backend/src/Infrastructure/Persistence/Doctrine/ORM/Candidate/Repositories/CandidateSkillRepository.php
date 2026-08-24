@@ -56,6 +56,31 @@ class CandidateSkillRepository
     }
 
 
+    #[Override]
+    public function unlink(
+        string $candidateId,
+        string $skillId
+    ): void {
+        $em = $this->getEntityManager();
+
+        $candidateSkill = $this->createQueryBuilder('cs')
+            ->where('cs.candidate = :candidateId')
+            ->andWhere('cs.skill = :skillId')
+            ->setParameter('candidateId', $candidateId)
+            ->setParameter('skillId', $skillId)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($candidateSkill === null) {
+            return;
+        }
+
+        $em->remove($candidateSkill);
+        $em->flush();
+    }
+
+    
 
     #[Override]
     public function hasSkill(string $candidateId, string $skillId): bool

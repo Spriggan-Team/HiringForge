@@ -1,0 +1,314 @@
+@startuml
+skinparam linetype ortho
+skinparam monochrome false
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #333333
+    HeaderBackgroundColor #F1F5F9
+}
+
+' --- SÉCURITÉ & ACCÈS ---
+entity "ACCOUNT" as account {
+    * **id** : CHAR(36) [PK]
+    --
+    * email : VARCHAR(255) [UNIQUE]
+    * password : VARCHAR(255)
+    * first_name : VARCHAR(150)
+    * last_name : VARCHAR(150)
+    description : LONGTEXT
+    image_id : INT [FK]
+    * created_at : DATETIME
+    * account_role : VARCHAR(255)
+}
+
+entity "VERIFICATION_TOKEN" as verification_token {
+    * **id** : CHAR(36) [PK]
+    --
+    * code_hash : VARCHAR(255)
+    * purpose : VARCHAR(255)
+    * expired_at : DATETIME
+    * created_at : DATETIME
+}
+
+entity "OTP_VERIFICATION" as otp {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * account_id : CHAR(36) [FK]
+    * email : VARCHAR(255)
+    * attempts : INT
+}
+
+entity "BLACKLISTED_TOKEN" as blacklisted_token {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * jti : VARCHAR(36) [UNIQUE]
+    * expired_at : DATETIME
+    * blacklisted_at : DATETIME
+    * reason : VARCHAR(50)
+}
+
+entity "NOTIFICATION" as notification {
+    * **id** : CHAR(36) [PK]
+    --
+    * account_id : CHAR(36) [FK]
+    * recipient_account_id : CHAR(36) [FK]
+    * type : VARCHAR(255)
+    * data : JSON
+    * is_read : BOOLEAN
+    * created_at : DATETIME
+    read_at : DATETIME
+}
+
+' --- CORE / ACTEURS ---
+entity "USER" as user {
+    * **id** : CHAR(36) [PK]
+    --
+    * company_id : CHAR(36) [FK]
+    * user_role : VARCHAR(255)
+}
+
+entity "CANDIDATE" as candidate {
+    * **id** : CHAR(36) [PK]
+    --
+    address_id : INT [FK, UNIQUE]
+}
+
+entity "COMPANY" as company {
+    * **id** : CHAR(36) [PK]
+    --
+    logo_id : INT [FK]
+    video_presentation_id : INT [FK]
+    * name : VARCHAR(150)
+    * siret : VARCHAR(255)
+    * created_at : DATETIME
+}
+
+entity "ADDRESS" as address {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * country : VARCHAR(255)
+    * postal_code : VARCHAR(255)
+    * city : VARCHAR(255)
+    * street : VARCHAR(255)
+}
+
+entity "COMPANY_ADDRESS" as company_address {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * company_id : CHAR(36) [FK]
+    * address_id : INT [FK]
+}
+
+entity "DEPARTMENT" as department {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * label : VARCHAR(255)
+    parent_id : INT [FK]
+    description : VARCHAR(255)
+    code : VARCHAR(50)
+    external_ref : VARCHAR(255)
+    * company_id : CHAR(36) [FK]
+}
+
+entity "FILE" as file {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * name : VARCHAR(250)
+    original_name : VARCHAR(250)
+    * mime : CHAR(15)
+    * size : DOUBLE
+    * created_at : DATETIME
+}
+
+' --- OFFRES & CANDIDATURES ---
+entity "CONTRACT_TYPE" as contract_type {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * label : VARCHAR(250)
+    country : VARCHAR(2)
+    * default : BOOLEAN
+    organisation_id : CHAR(36) [FK]
+}
+
+entity "JOB_OFFER" as job_offer {
+    * **id** : CHAR(36) [PK]
+    --
+    * user_id : CHAR(36) [FK]
+    * company_id : CHAR(36) [FK]
+    * department_id : INT [FK]
+    * address_id : INT [FK]
+    * contract_type_id : INT [FK]
+    * title : VARCHAR(255)
+    * content : JSON
+    * publication_status : VARCHAR(255)
+    max_salary : DECIMAL(10,2)
+    min_salary : DECIMAL(10,2)
+    currency : VARCHAR(10)
+    * job_work_mode : VARCHAR(255)
+    * activity_status : VARCHAR(255)
+    publication_date : DATE
+    expertise : VARCHAR(255)
+    * created_at : DATETIME
+    * updated_at : DATETIME
+}
+
+entity "JOB_OFFER_IMAGES" as job_offer_images {
+    * **id** : INT [PK]
+    --
+    * job_offer_id : CHAR(36) [FK]
+    * file_id : INT [FK]
+}
+
+entity "JOB_OFFER_VIEWS" as job_offer_views {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * candidate_id : CHAR(36) [FK]
+    * job_offer_id : CHAR(36) [FK]
+    * viewed_at : DATETIME
+}
+
+entity "APPLICATION" as application {
+    * **id** : CHAR(36) [PK]
+    --
+    * candidate_id : CHAR(36) [FK]
+    * job_offer_id : CHAR(36) [FK]
+    * company_id : CHAR(36)
+    candidate_resume_id : VARCHAR(255) [FK]
+    * status : CHAR(255)
+    * match_score : DECIMAL(3,2)
+    * applied_at : DATETIME
+    * updated_at : DATETIME
+}
+
+entity "EMPLOYMENT_OFFER" as employment_offer {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * candidate_id : CHAR(36) [FK]
+    * application_id : CHAR(36) [FK]
+    * user_id : CHAR(36) [FK]
+    * company_id : CHAR(36) [FK]
+    * created_at : DATETIME
+}
+
+entity "INTERVIEW" as interview {
+    * **id** : CHAR(36) [PK]
+    --
+    * candidate_id : CHAR(36) [FK]
+    * job_offer_id : CHAR(36) [FK]
+    * start_date : DATETIME
+    * minutes : INT
+    * status : CHAR(255)
+    title : VARCHAR(255)
+    description : VARCHAR(255)
+    url : VARCHAR(255)
+    confirm : BOOLEAN
+    rejection_reason : TEXT
+}
+
+' --- CV & SKILLS ---
+entity "RESUME" as resume {
+    * **id** : VARCHAR(255) [PK]
+    --
+    * candidate_id : CHAR(36) [FK]
+    * file_id : INT [FK]
+    * has_been_analyzed : BOOLEAN
+}
+
+entity "SKILL" as skill {
+    * **id** : VARCHAR(36) [PK]
+    --
+    eco_uri : VARCHAR(255)
+    onet_code : VARCHAR(255)
+    * is_default : BOOLEAN
+    * canonical_name : VARCHAR(255) [UNIQUE]
+}
+
+entity "CANDIDATE_SKILL" as candidate_skill {
+    * **candidate_id** : CHAR(36) [PK, FK]
+    * **skill_id** : VARCHAR(36) [PK, FK]
+    --
+    candidate_resume_id : VARCHAR(255) [FK]
+}
+
+entity "JOB_OFFER_SKILLS" as job_offer_skills {
+    * **job_offer_id** : CHAR(36) [PK, FK]
+    * **skill_id** : VARCHAR(36) [PK, FK]
+}
+
+entity "SKILL_TRANSLATIONS" as skill_translations {
+    * **id** : INT [PK]
+    --
+    * skill_id : VARCHAR(36) [FK]
+    * language_id : INT [FK]
+    * name : VARCHAR(255)
+    * slug : VARCHAR(255)
+}
+
+entity "SKILL_ALIASES" as skill_aliases {
+    * **id** : INT [PK]
+    --
+    * skill_id : VARCHAR(36) [FK]
+    * alias : VARCHAR(255)
+}
+
+entity "LANGUAGE" as language {
+    * **id** : INT [PK]
+    --
+    * code : VARCHAR(15)
+    * label : VARCHAR(99)
+}
+
+' --- RELATIONS ---
+account ||--o| file : "image_id"
+account ||--o{ notification : "account_id"
+account ||--o{ notification : "recipient_account_id"
+account ||--o{ otp : "account_id"
+
+company ||--o{ user : "company_id"
+company ||--o| file : "logo_id"
+company ||--o| file : "video_presentation_id"
+company ||--o{ company_address : "company_id"
+company ||--o{ department : "company_id"
+company ||--o{ job_offer : "company_id"
+company ||--o{ employment_offer : "company_id"
+
+address ||--o{ candidate : "address_id"
+address ||--o{ company_address : "address_id"
+address ||--o{ job_offer : "address_id"
+
+department ||--o{ department : "parent_id"
+department ||--o{ job_offer : "department_id"
+
+user ||--o{ job_offer : "user_id"
+user ||--o{ employment_offer : "user_id"
+
+contract_type ||--o{ job_offer : "contract_type_id"
+
+job_offer ||--o{ job_offer_images : "job_offer_id"
+job_offer ||--o{ job_offer_views : "job_offer_id"
+job_offer ||--o{ application : "job_offer_id"
+job_offer ||--o{ interview : "job_offer_id"
+job_offer ||--o{ job_offer_skills : "job_offer_id"
+
+file ||--o{ job_offer_images : "file_id"
+file ||--o{ resume : "file_id"
+
+candidate ||--o{ job_offer_views : "candidate_id"
+candidate ||--o{ application : "candidate_id"
+candidate ||--o{ employment_offer : "candidate_id"
+candidate ||--o{ interview : "candidate_id"
+candidate ||--o{ resume : "candidate_id"
+candidate ||--o{ candidate_skill : "candidate_id"
+
+application ||--o| employment_offer : "application_id"
+application ||--o| resume : "candidate_resume_id"
+
+skill ||--o{ candidate_skill : "skill_id"
+skill ||--o{ job_offer_skills : "skill_id"
+skill ||--o{ skill_translations : "skill_id"
+skill ||--o{ skill_aliases : "skill_id"
+
+resume ||--o{ candidate_skill : "candidate_resume_id"
+language ||--o{ skill_translations : "language_id"
+
+@enduml

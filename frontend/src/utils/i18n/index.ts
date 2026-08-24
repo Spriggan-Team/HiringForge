@@ -11,7 +11,7 @@ import jobsFR from "./locales/fr/jobs.json"
 import schedulerFR from "./locales/fr/scheduler.json"
 import applicationFR from './locales/fr/applications.json'
 import interviewsFR from './locales/fr/interviews.json'
-
+import candidateFR from "./locales/fr/candidate.json"
 
 // EN
 import authEN from "./locales/en/auth.json";
@@ -22,6 +22,8 @@ import jobsEN from "./locales/en/jobs.json"
 import schedulerEN from "./locales/en/scheduler.json"
 import applicationEN from './locales/en/applications.json'
 import interviewsEN from './locales/en/interviews.json'
+import candidateEN from "./locales/en/candidate.json"
+
 
 const resources = {
 
@@ -34,7 +36,8 @@ const resources = {
             ...jobsFR,
             ...schedulerFR,
             ...applicationFR,
-            ...interviewsFR
+            ...interviewsFR,
+            ...candidateFR,
         }
     },
 
@@ -47,7 +50,8 @@ const resources = {
             ...jobsEN,
             ...schedulerEN,
             ...applicationEN,
-            ...interviewsEN
+            ...interviewsEN,
+            ...candidateEN
         }
     }
 };
@@ -82,6 +86,7 @@ declare module "i18next" {
                 & typeof schedulerFR
                 & typeof applicationFR
                 & typeof interviewsFR
+                & typeof candidateFR
         };
     }
 }

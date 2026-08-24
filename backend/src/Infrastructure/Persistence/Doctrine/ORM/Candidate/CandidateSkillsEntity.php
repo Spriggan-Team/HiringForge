@@ -11,10 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: "candidate_skills",)]
 class CandidateSkillsEntity
 {
-
     #[ORM\Column(length: 20)]
     private string $source = "parsed"; //-- values: parsed, manual
-
 
     //----------------------------
     //--- RELATIONS
@@ -22,7 +20,8 @@ class CandidateSkillsEntity
 
     #[ORM\Id]
     #[ORM\ManyToOne(
-        targetEntity: CandidateEntity::class
+        targetEntity: CandidateEntity::class,
+        inversedBy: "skills"
     )]
     #[ORM\JoinColumn(
         name: "candidate_id",

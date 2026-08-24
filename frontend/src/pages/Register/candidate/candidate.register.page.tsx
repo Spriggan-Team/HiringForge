@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 //-- Hooks & Services
 import { useSendOTP } from '../../../hooks/handler';
 import { useAppContext } from '../../../hooks/context';
-import { InvalidOTP, RessourceCreationFailed } from '../../../api/services/exceptions';
+import { InvalidOTP, ResourceCreationFailed } from '../../../api/services/exceptions';
 import { AccountAlreadyRegistered, CompanyAlreadyRegistered } from '../../../api/services/auth/exceptions';
 import AuthServices from '../../../api/services/auth/auth';
 import RouteScheme from '../../../route.scheme';
@@ -27,7 +27,7 @@ import ProfileIdentityForm from '../components/profile.identity.form';
 import AddressFields, { type AddressData } from '../components/address.fields';
 
 //-- SVG Components
-import CVFileSVG  from "/src/assets/svg/cv-file-interface-symbol-svgrepo-com.svg"
+import CVFileSVG  from "/src/assets/svg/cv-file-interface-symbol-svgrepo-com.svg?react"
 
 
 //-- Styles
@@ -157,7 +157,7 @@ export const CandidateRegisterPage: React.FC = () => {
           }
           else if(error instanceof AccountAlreadyRegistered)
               setPopup({ status: "warning", message: t("register.apiResponse.registering.warning.accountAlreadyRegistered") })
-          else if(error instanceof RessourceCreationFailed)
+          else if(error instanceof ResourceCreationFailed)
               setPopup({ status: "error", message: t("register.apiResponse.registering.error.failedRegisteration") });
           else if(error instanceof CompanyAlreadyRegistered)
               setPopup({ status: "error", message: t("register.apiResponse.registering.warning.companyAlreadyRegistered") });

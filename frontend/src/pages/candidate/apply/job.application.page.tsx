@@ -20,7 +20,7 @@ import JobSkill from "../../jobs/components/skills/job.skill";
 import  TipTapRenderer from "../../../layout/components/editors/tiptap/tiptap.renderer";
 
 //-- SVG Components
-import CVFileSVG  from "/src/assets/svg/cv-file-interface-symbol-svgrepo-com.svg"
+import CVFileSVG  from "/src/assets/svg/cv-file-interface-symbol-svgrepo-com.svg?react"
 
 //-- Styles
 import styles from "./JobApplicationPage.module.css"
@@ -77,7 +77,9 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
         try {
             const data = await CandidatesQueries.getResumes();
             setResumeFiles(data);
-            if (data.length > 0) setSelectedResumeFileId(data[0].id);
+            if (data.length > 0 && data[0].fileId) {
+                setSelectedResumeFileId(data[0].fileId);
+            }
         }
         catch (err) {
             console.error("Error loading resumes metadata:", err);

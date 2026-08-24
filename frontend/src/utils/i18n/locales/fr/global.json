@@ -209,6 +209,12 @@
 
         "contract":{
             "title": "Contrat"
+        },
+
+        "apiResponse": {
+            "error":{
+                "failedChangeProfil": "Erreur lors de la modification du profil"
+            }
         }
     }
 }

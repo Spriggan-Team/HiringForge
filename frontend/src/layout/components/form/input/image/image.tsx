@@ -1,7 +1,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import ImageSVG from "/src/assets/svg/person/image-combiner-svgrepo-com.svg"
+import ImageSVG from "/src/assets/svg/person/image-combiner-svgrepo-com.svg?react"
 
 //-- CSS styles
 import styles from "./style.module.css"

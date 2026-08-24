@@ -5,6 +5,7 @@ namespace App\Infrastructure\Storage\FileStorage;
 use App\Domain\Shared\RootPath;
 use App\Domain\File\MediaStorageParams;
 use App\Domain\Shared\PathResolverInterface;
+use Override;
 
 class LocalPathResolver implements PathResolverInterface
 {
@@ -22,13 +23,53 @@ class LocalPathResolver implements PathResolverInterface
      * @return string                       This is the new  file path generated
      * @return string return absolute path to the file
      */
-    public function resolveTargetDirectory(
+    public function resolveStoragePath(
         ?string $mimeType,
         MediaStorageParams $params,
         ?string $fileName = null
-    ): string
-    {
+    ): string {
+        $storedFileName = $fileName ?? $params->storedFileName;
 
+        if ($storedFileName !== null) {
+            return $this->resolveFilePath($mimeType, $params, $storedFileName);
+        }
+
+        return $this->resolveDirectoryPath($mimeType, $params);
+    }
+
+
+
+    private function relativePathFrom(
+        string $absolutePath,
+        string $root
+    ): string {
+        $root = rtrim(
+            $root,
+            DIRECTORY_SEPARATOR
+        ) . DIRECTORY_SEPARATOR;
+
+        if (!str_starts_with($absolutePath, $root)) {
+            throw new \RuntimeException(
+                sprintf(
+                    'Path "%s" is outside root "%s".',
+                    $absolutePath,
+                    $root
+                )
+            );
+        }
+
+        return ltrim(
+            substr($absolutePath, strlen($root)),
+            DIRECTORY_SEPARATOR
+        );
+    }
+
+
+    #[Override]
+    public function resolveDirectoryPath(
+        ?string $mimeType,
+        MediaStorageParams $params
+    ): string {
         $base = $this->appendPath(
             $this->projectDir,
             $params->scope->value,
@@ -37,49 +78,48 @@ class LocalPathResolver implements PathResolverInterface
         );
 
         if ($params->ownerType) {
-            $base = $this->appendPath(
-                $base,
-                $params->ownerType->value
-            );
+            $base = $this->appendPath($base, $params->ownerType->value);
         }
 
         $path = match (true) {
-            str_starts_with((string) $mimeType, 'image') => $this->appendPath($base, 'images'),
-            str_starts_with((string) $mimeType, 'video') => $this->appendPath($base, 'videos'),
-            str_starts_with((string) $mimeType, 'audio') => $this->appendPath($base, 'audios'),
+            str_starts_with((string) $mimeType, 'image')           => $this->appendPath($base, 'images'),
+            str_starts_with((string) $mimeType, 'video')           => $this->appendPath($base, 'videos'),
+            str_starts_with((string) $mimeType, 'audio')           => $this->appendPath($base, 'audios'),
             str_starts_with((string) $mimeType, 'application/pdf') => $this->appendPath($base, 'documents'),
-
-            default => $this->appendPath($base, 'others'),
+            default                                                => $this->appendPath($base, 'others'),
         };
 
         if ($params->ownerId) {
-            $path = $this->appendPath(
-                $path,
-                $params->ownerId
-            );
+            $path = $this->appendPath($path, $params->ownerId);
         }
 
         if ($params->purpose) {
-            $path = $this->appendPath(
-                $path,
-                $params->purpose->value
-            );
-        }
-
-        $storedFileName = $fileName ?? $params->storedFileName;
-
-        if ($storedFileName !== null) {
-            $path = $this->appendPath(
-                $path,
-                $storedFileName,
-            );
+            $path = $this->appendPath($path, $params->purpose->value);
         }
 
         return $path;
     }
 
 
-    //Safely Build path
+    #[Override]
+    public function resolveFilePath(
+        ?string $mimeType,
+        MediaStorageParams $params,
+        ?string $fileName = null
+    ): string {
+        $directory = $this->resolveDirectoryPath($mimeType, $params);
+        $storedFileName = $fileName ?? $params->storedFileName;
+
+        if ($storedFileName === null) {
+            throw new \InvalidArgumentException('A file name must be provided to resolve a complete file path.');
+        }
+
+        return $this->appendPath($directory, $storedFileName);
+    }
+
+
+
+    //-- Safely Build path
     public function appendPath(string $base, string ...$segments): string
     {
         return rtrim($base, '/\\')
@@ -90,6 +130,7 @@ class LocalPathResolver implements PathResolverInterface
             ));
     }
 
+    
     /**
      * Resolve relatif & absolute path
      */
@@ -130,33 +171,5 @@ class LocalPathResolver implements PathResolverInterface
                 ),
         };
     }
-
-
-    private function relativePathFrom(
-        string $absolutePath,
-        string $root
-    ): string {
-        $root = rtrim(
-            $root,
-            DIRECTORY_SEPARATOR
-        ) . DIRECTORY_SEPARATOR;
-
-        if (!str_starts_with($absolutePath, $root)) {
-            throw new \RuntimeException(
-                sprintf(
-                    'Path "%s" is outside root "%s".',
-                    $absolutePath,
-                    $root
-                )
-            );
-        }
-
-        return ltrim(
-            substr($absolutePath, strlen($root)),
-            DIRECTORY_SEPARATOR
-        );
-    }
-
-
 
 }

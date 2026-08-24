@@ -23,7 +23,7 @@ trait ApiControllerHelpers
         ?string $fileName = null,
         ?string $mime = null
     ): ?string {
-        $absolutePath = $pathResolver->resolveTargetDirectory(
+        $absolutePath = $pathResolver->resolveStoragePath(
             params: $params,
             mimeType: $mime,
             fileName: $fileName,

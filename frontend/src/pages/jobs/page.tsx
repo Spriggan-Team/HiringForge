@@ -21,9 +21,9 @@ import { Pagination } from "../../layout/components/navigation/pagination/pagina
 
 
 //-- SVG components
-import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg"
-import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.svg"
-import AddSVGComponent from "/src/assets/svg/add/add-svgrepo-com.svg"
+import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg?react"
+import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.svg?react"
+import AddSVGComponent from "/src/assets/svg/add/add-svgrepo-com.svg?react"
 
 //-- CSS styles 
 import styles from "./UserJobPage.module.css"

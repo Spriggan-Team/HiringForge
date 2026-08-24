@@ -1,5 +1,5 @@
 //-- SVG Compoenents
-import CloseSVGComponent from "/src/assets/svg/menu/close-svgrepo-com.svg"
+import CloseSVGComponent from "/src/assets/svg/menu/close-svgrepo-com.svg?react"
 
 //-- CSS Modules
 import styles from "./JobSkill.module.css"

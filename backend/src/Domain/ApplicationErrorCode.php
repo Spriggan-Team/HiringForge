@@ -23,4 +23,7 @@ enum ApplicationErrorCode: string{
     case FILE_MISMATCH_TYPE = "file_mismatch_type";
     case FILE_SIZE_EXCEEDED = "file_size_exceeded";
     case FILE_TIME_EXCEEDED = "file_time_exceeded";
+
+    //-- resume
+    case UNALLOW_RESUME_DELETION = "unallow_deletion_resume";
 }

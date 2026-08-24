@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 // SVG Components
-import CloseSVGComponent from "/src/assets/svg/close-svgrepo-com.svg";
+import CloseSVGComponent from "/src/assets/svg/close-svgrepo-com.svg?react";
 
 // CSS
 import styles from "./EditableTextInput.module.css";

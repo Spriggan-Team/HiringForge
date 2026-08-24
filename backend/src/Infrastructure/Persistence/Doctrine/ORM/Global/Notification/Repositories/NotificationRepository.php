@@ -8,6 +8,7 @@ use App\Domain\Notification\NotificationType;
 use App\Domain\Notification\RecipientType;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
+
 use Override;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Notification\NotificationEntity;

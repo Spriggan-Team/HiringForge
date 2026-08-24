@@ -7,8 +7,8 @@ import SectionHeader from "../../../../../layout/components/sections/sectionHead
 import ViewAllLink from "../../../../../layout/components/link/view.all.link";
 
 //-- SVG Components
-import AlertSVG from "/src/assets/svg/security/alert-rhombus-svgrepo-com.svg"
-import LeftToRightChevronSVG from "/src/assets/svg/arrows/chevron-right-double-svgrepo-com.svg"
+import AlertSVG from "/src/assets/svg/security/alert-rhombus-svgrepo-com.svg?react"
+import LeftToRightChevronSVG from "/src/assets/svg/arrows/chevron-right-double-svgrepo-com.svg?react"
 
 //-- CSS Styles
 import styles from "./PriorityTask.module.css"

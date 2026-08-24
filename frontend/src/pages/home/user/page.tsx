@@ -24,10 +24,10 @@ import StatsChart from "./component/stats/stast.chart";
 
 
 //-- SVG Components
-import JobOfferSVG from "/src/assets/svg/menu/work-svgrepo-com-v2.svg"
-import ReviewJobOfferSVG from "/src/assets/svg/menu/aethersx2-svgrepo-com.svg"
-import InterviewsSVG from "/src/assets/svg/menu/user-speak-rounded-svgrepo-com.svg"
-import HiredSVG from "/src/assets/svg/menu/hire-a-helper-svgrepo-com.svg"
+import JobOfferSVG from "/src/assets/svg/menu/work-svgrepo-com-v2.svg?react"
+import ReviewJobOfferSVG from "/src/assets/svg/menu/aethersx2-svgrepo-com.svg?react"
+import InterviewsSVG from "/src/assets/svg/menu/user-speak-rounded-svgrepo-com.svg?react"
+import HiredSVG from "/src/assets/svg/menu/hire-a-helper-svgrepo-com.svg?react"
 
 //-- CSS Styles
 import styles from "./UserHome.module.css"

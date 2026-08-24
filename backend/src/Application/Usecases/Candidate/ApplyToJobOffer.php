@@ -154,7 +154,7 @@ class ApplyToJobOffer
                     storedFileName: $resume->name
                 );
 
-                $absoluteDirectoryPath = $this->pathResolver->resolveTargetDirectory(
+                $absoluteDirectoryPath = $this->pathResolver->resolveStoragePath(
                     params: $params,
                     mimeType: $resume->mime
                 ); 

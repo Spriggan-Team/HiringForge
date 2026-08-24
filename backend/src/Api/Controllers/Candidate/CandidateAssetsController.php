@@ -5,14 +5,21 @@ namespace App\Api\Controllers\Candidate;
 
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
+use App\Application\Usecases\Candidate\DeleteResume;
+use App\Application\Usecases\Candidate\UploadResume;
+use App\Domain\ApplicationErrorCode;
 use App\Domain\Candidate\CandidateRepositoryInterface;
+use App\Domain\Exception\ResumeDeletionNotAllowedException;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\AccountStorageParams;
 use App\Domain\Shared\PathResolverInterface;
+
 use Psr\Log\LoggerInterface;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
 
@@ -60,7 +67,7 @@ class CandidateAssetsController extends AbstractController
                 storedFileName: $image->name
             );
                 
-            $fullPathFile = $this->pathResolver->resolveTargetDirectory(
+            $fullPathFile = $this->pathResolver->resolveStoragePath(
                 mimeType: $image->mime,
                 params: $params
             );
@@ -97,7 +104,7 @@ class CandidateAssetsController extends AbstractController
 
             foreach($cvs as $cv){
                 $result[]= [
-                    'id' => $cv->id, //Static media cv id
+                    'fileId' => $cv->id, //Static media cv id
                     'name' => $cv->name,
                     'size' => $cv->size,
                     'mimeType' => $cv->mime,
@@ -120,13 +127,13 @@ class CandidateAssetsController extends AbstractController
     }
 
 
-    #[Route('/resumes/{resumeId}/content', methods:['GET'])]
+    #[Route('/resumes/{fileId}/content', methods:['GET'])]
     public function getResumeContent(
-        string $resumeId
+        string $fileId
     )
     {
         try{
-            ApiResponse::$logger->error("ROUTE REACHED ");
+            // ApiResponse::$logger->error("ROUTE REACHED ");
 
             /** @var AuthenticatedPerson|null $candidate */
             $candidate = $this->getUser();
@@ -139,7 +146,7 @@ class CandidateAssetsController extends AbstractController
             }
 
             $candidateId =  $candidate->getId();
-            $resume = $this->candidateRepository->findResumeById(candidateId:$candidateId, resumeId: $resumeId);
+            $resume = $this->candidateRepository->findResumeById(candidateId:$candidateId, fileId: $fileId);
 
             if(!$resume){
                 return ApiResponse::error(
@@ -148,12 +155,12 @@ class CandidateAssetsController extends AbstractController
             }
             
             $params = AccountStorageParams::resumes(candidateId: $candidateId, storedFileName: $resume->name);
-            $fullPathFile = $this->pathResolver->resolveTargetDirectory(
+            $fullPathFile = $this->pathResolver->resolveStoragePath(
                 mimeType: $resume->mime,
                 params: $params
             );
 
-            ApiResponse::$logger->error("FULL PATH " . $fullPathFile);
+            // ApiResponse::$logger->error("FULL PATH " . $fullPathFile);
             return new BinaryFileResponse(
                 $fullPathFile
             );
@@ -164,5 +171,84 @@ class CandidateAssetsController extends AbstractController
                 throwable: $error
             )->toJsonResponse();
         } 
+    }
+
+
+    #[Route("/resumes", methods:["POST"])]
+    public function addResume(
+        Request $request,
+        UploadResume $handler
+    ){
+        try{
+
+            /** @var AuthenticatedPerson|null $candidate */
+            $candidate = $this->getUser();
+
+            if(!$candidate){
+                return ApiResponse::error(
+                    message: "Unauthorize action",
+                    statusCode: 401
+                )->toJsonResponse();
+            }
+            
+            $resume = $request->files->get("resume");
+            $result = $handler->execute(candidateId: $candidate->getId(), file: $resume);
+
+            return ApiResponse::success(
+                message: 'Everything is okay',
+                data: [
+                    "fileId" => $result->media->id,
+                ]
+            )->toJsonResponse();
+        }
+        catch(\Exception $error){
+           return ApiResponse::error(
+                message: "Something went wrong",
+                throwable: $error
+            )->toJsonResponse();
+        }
+    }
+
+
+
+    #[Route("/resumes/{fileId}", methods:["DELETE"])]
+    public function removeResume(
+        string $fileId,
+        DeleteResume $handler
+    )
+    {
+        try{
+            /** @var AuthenticatedPerson|null $candidate */
+            $candidate = $this->getUser();
+
+            if(!$candidate){
+                return ApiResponse::error(
+                    message: "Unauthorize action",
+                    statusCode: 401
+                )->toJsonResponse();
+            }
+
+            $handler->execute(
+                candidateId: $candidate->getId(),
+                fileId: $fileId
+            );
+
+            return ApiResponse::notice(
+                "Everything went wrong"
+            )->toJsonResponse();
+        }
+        catch(ResumeDeletionNotAllowedException $errorDeletion){
+            return ApiResponse::error(
+                code: ApplicationErrorCode::UNALLOW_RESUME_DELETION,
+                message: "Something went wrong",
+                throwable: $errorDeletion
+            )->toJsonResponse();    
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: "Something went wrong",
+                throwable: $error
+            )->toJsonResponse();
+        }
     }
 }

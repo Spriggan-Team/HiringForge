@@ -20,7 +20,7 @@ import JobServices from "../../../api/services/jobs/command";
 import { FailedJobAssetsUpload } from "../../../api/services/jobs/exceptions";
 
 //-- SVG components
-import RightToLeftArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg';
+import RightToLeftArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg?react';
 
 //-- CSS Styles
 import styles from "./CreateJobPage.module.css"

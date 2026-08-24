@@ -4,6 +4,7 @@ namespace App\Application\DTO\Candidate;
 
 use App\Domain\File\StaticMedia;
 use App\Domain\Shared\Address;
+
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 

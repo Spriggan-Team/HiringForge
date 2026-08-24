@@ -1,0 +1,77 @@
+@startuml
+skinparam linetype ortho
+skinparam monochrome false
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #333333
+    HeaderBackgroundColor #E2E8F0
+}
+
+entity "ACCOUNT" as account {
+    * **id** : CHAR(36) [PK]
+    --
+    * email : VARCHAR(255) [UNIQUE]
+    * password : VARCHAR(255)
+    * first_name : VARCHAR(150)
+    * last_name : VARCHAR(150)
+    description : LONGTEXT
+    image_id : INT [FK]
+    * created_at : DATETIME
+    * account_role : VARCHAR(255)
+}
+
+entity "USER" as user {
+    * **id** : CHAR(36) [PK]
+    --
+    * company_id : CHAR(36) [FK]
+    * user_role : VARCHAR(255)
+}
+
+entity "CANDIDATE" as candidate {
+    * **id** : CHAR(36) [PK]
+    --
+    address_id : INT [FK, UNIQUE]
+}
+
+entity "NOTIFICATION" as notification {
+    * **id** : CHAR(36) [PK]
+    --
+    * account_id : CHAR(36) [FK]
+    * recipient_account_id : CHAR(36) [FK]
+    * type : VARCHAR(255)
+    * data : JSON
+    * is_read : BOOLEAN
+    * created_at : DATETIME
+    read_at : DATETIME
+}
+
+entity "VERIFICATION_TOKEN" as verification_token {
+    * **id** : CHAR(36) [PK]
+    --
+    * code_hash : VARCHAR(255)
+    * purpose : VARCHAR(255)
+    * expired_at : DATETIME
+    * created_at : DATETIME
+}
+
+entity "OTP_VERIFICATION" as otp {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * account_id : CHAR(36) [FK]
+    * email : VARCHAR(255)
+    * attempts : INT
+}
+
+entity "BLACKLISTED_TOKEN" as blacklisted_token {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * jti : VARCHAR(36) [UNIQUE]
+    * expired_at : DATETIME
+    * blacklisted_at : DATETIME
+    * reason : VARCHAR(50)
+}
+
+account ||--o{ notification : "génère (account_id)"
+account ||--o{ notification : "reçoit (recipient_account_id)"
+account ||--o{ otp : "concerne"
+@enduml

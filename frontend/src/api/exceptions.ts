@@ -3,8 +3,9 @@ import type { ErrorApiResponse } from "./services/response.types";
 //-- Application Error Code
 export const ApiResponseCode = {
     //-- global
+    RESSOURCE_NOT_FOUND: "ressource_not_found",
     RESSOURCE_CREATION_FAILED: "ressources_creation_failed",
-    
+
     //-- otp
     EXPIRED_OTP: "expired_otp",
     INVALID_OTP: "invalid_otp",
@@ -23,6 +24,10 @@ export const ApiResponseCode = {
     FILE_MISMATCH_TYPE: "file_mismatch_type",
     FILE_SIZE_EXCEEDED: "file_size_exceeded",
     FILE_TIME_EXCEEDED: "file_time_exceeded",
+
+    //-- resume
+    UNALLOW_RESUME_DELETION: "unallow_deletion_resume",
+
 } as const;
 
 

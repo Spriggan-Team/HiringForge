@@ -7,7 +7,7 @@ import BasicInput from "../../../../../layout/components/form/input/basic.input"
 import BrandButton from "../../../../../layout/components/buttons/brand.button";
 
 //-- SVG Components
-import PasswordSVG from "/src/assets/svg/security/password-protection-privacy-access-verification-code-svgrepo-com.svg"
+import PasswordSVG from "/src/assets/svg/security/password-protection-privacy-access-verification-code-svgrepo-com.svg?react"
 
 //-- CSS styles
 import styles from "./style.module.css"

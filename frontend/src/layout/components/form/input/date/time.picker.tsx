@@ -4,8 +4,8 @@ import { useCallback, useState } from "react";
 import type { Time } from "../../../../../features/shared/global";
 
 //-- SVG Compoenenst
-import LeftArrowSVGComponent from "/src/assets/svg/arrows/arrow-left-334-svgrepo-com.svg";
-import RightArrowSVGComponent from "/src/assets/svg/arrows/arrow-right-333-svgrepo-com.svg";
+import LeftArrowSVGComponent from "/src/assets/svg/arrows/arrow-left-334-svgrepo-com.svg?react";
+import RightArrowSVGComponent from "/src/assets/svg/arrows/arrow-right-333-svgrepo-com.svg?react";
 
 //--CSS Module
 import styles from "./TimePicker.module.css"

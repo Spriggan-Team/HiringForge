@@ -9,7 +9,7 @@ use App\Domain\File\StaticMedia;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateResumeEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
-
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\Mapper\FileEntityMapper;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
@@ -29,13 +29,65 @@ class CandidateResumeRepository extends ServiceEntityRepository
         parent::__construct($manager, CandidateResumeEntity::class);
     }
 
-    
+
     #[Override]
-    public function getResumeFile(string $candidateId): ?StaticMedia
+    public function countResume(string $candidateId): int
+    {
+        return parent::count([
+            "candidate" => $candidateId
+        ]);
+    }
+
+
+
+    #[Override]
+    public function getResumeFiles(string $candidateId): array
     {
         throw new \Exception('Not implemented');
     }
 
+    #[Override]
+    public function findOneOrNull(string $candidateId, string $fileId): ?CandidateResume
+    {
+        /**
+         * @var CandidateResumeEntity|null $resume
+         */
+        $resume = $this->findOneBy([
+            "candidate" => $candidateId,
+            "fileId" => $fileId
+        ]);
+
+        if(!$resume){
+            return null;
+        }
+
+        return  CandidateResume::hydrate(
+            id: $resume->getId(),
+            fileId: $fileId,
+            candidateId: $candidateId
+        );
+    }
+
+
+    #[Override]
+    public function findResumeMediaOrNull(string $candidateId, string $fileId): ?StaticMedia
+    {
+        /**
+         * @var CandidateResumeEntity|null $resume
+         */
+        $resume = $this->findOneBy([
+            "candidate" => $candidateId,
+            "file" => $fileId
+        ]);
+
+        if(!$resume){
+            return null;
+        }
+
+        return FileEntityMapper::toStaticDomainMedia(file: $resume->getFile());
+    }
+
+    
     #[Override]
     public function exists(string $candidateId, float $fileId): bool
     {
@@ -107,15 +159,13 @@ class CandidateResumeRepository extends ServiceEntityRepository
     {
         $em = $this->getEntityManager();
 
-        $candidate = $em->getReference(
-            CandidateEntity::class,
-            $candidateResume->candidateId()
-        );
+        //-- Entities references
+        $candidate = $em->find(CandidateEntity::class, $candidateResume->candidateId());
+        $resume = $em->find(FileEntity::class, $candidateResume->fileId());
 
-        $resume = $em->getReference(
-            FileEntity::class,
-            $candidateResume->fileId()
-        );
+        if (!$candidate || !$resume) {
+            throw new \RuntimeException("Candidate or File entity not found in memory.");
+        }
 
         $entity = CandidateResumeEntity::create(
             candidate: $candidate,
@@ -125,6 +175,21 @@ class CandidateResumeRepository extends ServiceEntityRepository
         $em->persist($entity);
         $em->flush();
 
-        return $entity->getId();
+        return (string) $entity->getId();
+    }
+
+
+    #[Override]
+    public function delete(string $candidateId, string $fileId): void
+    {
+        $entity = $this->findOneBy([
+            "file" => $fileId,
+            "candidate" => $candidateId
+        ]);
+        if($entity){
+            $em = $this->getEntityManager();
+            $em->remove($entity);
+            $em->flush();
+        }
     }
 }

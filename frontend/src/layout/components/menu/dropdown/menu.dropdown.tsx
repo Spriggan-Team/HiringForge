@@ -9,7 +9,7 @@ import {
 } from "react";
 
 //-- SVG- Components
-import DownArrowSVG from "/src/assets/svg/arrows/down-arrow-5-svgrepo-com.svg"
+import DownArrowSVG from "/src/assets/svg/arrows/down-arrow-5-svgrepo-com.svg?react"
 
 //-- CSS module
 import styles from "./MenuDrawer.module.css"

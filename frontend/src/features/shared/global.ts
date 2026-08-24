@@ -20,6 +20,11 @@ export interface Language {
 }
 
 
+export interface Skill{
+    id: string;
+    name: string;
+}
+
 export type EntityAction =  "edit" | "duplicate" | "delete" | null
 
 

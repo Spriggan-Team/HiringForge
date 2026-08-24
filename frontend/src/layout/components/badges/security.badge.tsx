@@ -2,8 +2,8 @@
 import { useTranslation } from "react-i18next";
 
 // SVG - COmponents
-import PasswordSVG from "/src/assets/svg/security/password-svgrepo-com.svg"
-import SafeSecureSVG from "/src/assets/svg/security/security-safe-svgrepo-com.svg"
+import PasswordSVG from "/src/assets/svg/security/password-svgrepo-com.svg?react"
+import SafeSecureSVG from "/src/assets/svg/security/security-safe-svgrepo-com.svg?react"
 
 import styles from "./style.module.css"
 

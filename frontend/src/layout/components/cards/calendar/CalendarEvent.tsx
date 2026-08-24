@@ -12,8 +12,8 @@ import MenuDrawer, { MenuDrawerTrigger } from "../../menu/dropdown/menu.dropdown
 import TimePicker from "../../form/input/date/time.picker";
 
 //-- SVG Components
-import CloseSVGComponent from "/src/assets/svg/close-svgrepo-com.svg";
-import AddSVGComponent from "/src/assets/svg/add/add-svgrepo-com.svg"
+import CloseSVGComponent from "/src/assets/svg/close-svgrepo-com.svg?react";
+import AddSVGComponent from "/src/assets/svg/add/add-svgrepo-com.svg?react"
 
 //-- CSS Styles
 import styles from "./CalendarEvent.module.css"

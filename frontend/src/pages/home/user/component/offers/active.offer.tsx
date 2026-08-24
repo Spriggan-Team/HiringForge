@@ -12,7 +12,7 @@ import Title from "../../../../../layout/components/text/title/title";
 import TagList from "../../../../../layout/components/text/tag.list";
 
 //-- SVG Components
-import CandidateSVG from "/src/assets/svg/menu/candidate-for-elections-svgrepo-com.svg"
+import CandidateSVG from "/src/assets/svg/menu/candidate-for-elections-svgrepo-com.svg?react"
 
 //-- Image Object
 import ImagePlaceholder from "/src/assets/images/image-placeholder.png"

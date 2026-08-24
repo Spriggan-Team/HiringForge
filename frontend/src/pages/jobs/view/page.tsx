@@ -27,8 +27,8 @@ import OffersSection from "../components/tables/offer/offer.section";
 import { JobStatisticsSection } from "../components/tables/stats/job.statistics.sections";
 
 //-- SVG Components
-import EditSVG from "/src/assets/svg/menu/edit-2-svgrepo-com.svg"
-import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-svgrepo-com.svg"
+import EditSVG from "/src/assets/svg/menu/edit-2-svgrepo-com.svg?react"
+import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-svgrepo-com.svg?react"
 
 //-- CSS styles
 import styles from "./PrivateJobViewPage.module.css"

@@ -5,8 +5,8 @@ import DownloadButton from "../../../../../layout/components/buttons/download/do
 import BasicInput from "../../../../../layout/components/form/input/basic.input";
 import type { AsideFormState } from "../../page";
 
-import LogoSVG from '/src/assets/custom-logo.svg';
-import AddSVG from "/src/assets/svg/add/add-svgrepo-com.svg";
+import LogoSVG from '/src/assets/custom-logo.svg?react';
+import AddSVG from "/src/assets/svg/add/add-svgrepo-com.svg?react";
 
 import styles from "./style.module.css";
 import type { ParseKeys } from "i18next";

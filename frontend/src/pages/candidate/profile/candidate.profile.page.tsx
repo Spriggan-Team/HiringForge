@@ -1,109 +1,187 @@
-import React, { useEffect, useState, type ChangeEvent } from "react";
-import AddSVGComponent from "/src/assets/svg/add/add-svgrepo-com.svg";
+import { useTranslation } from "react-i18next";
+import React, { useCallback, useEffect, useState, type ChangeEvent } from "react";
+
+import AddSVGComponent from "/src/assets/svg/add/add-svgrepo-com.svg?react";
+
+import { useAppContext, useCurrentCandidate } from "../../../hooks/context";
+import CandidatesQueries from "../../../api/services/candidate/queries";
+
+
+import type { Skill } from "../../../features/shared/global";
+
+import CandidateServices from "../../../api/services/candidate/command";
+import type { CandidateProfile } from "../../../features/candidates/candidates";
+
+
 import styles from "./CandidateProfilPage.module.css";
+import { ResourceNotFound, ResumeDeletionNotAllowedException } from "../../../api/services/exceptions";
 
-export interface Skill {
-  id: string;
-  name: string;
-}
 
-export interface Location {
-  street: string;
-  city: string;
-  country: string;
-  postalCode: string;
-}
-
-export interface Candidate {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  description: string;
-  location: Location;
-  skills: Skill[];
-}
-
-const MOCK_CANDIDATE: Candidate = {
-  id: "cand-123",
-  firstName: "Alexandre",
-  lastName: "Dupont",
-  email: "alexandre.dupont@example.com",
-  description: "Développeur Full Stack passionné par React, Node.js et l'architecture logicielle propre.",
-  location: {
-    street: "12 Rue de la Paix",
-    city: "Paris",
-    country: "France",
-    postalCode: "75002",
-  },
-  skills: [
-    { id: "sk-1", name: "React.js" },
-    { id: "sk-2", name: "TypeScript" },
-    { id: "sk-3", name: "Node.js" },
-    { id: "sk-4", name: "Doctrine ORM" },
-  ],
-};
 
 const CandidateProfilPage: React.FC = () => {
-  const [candidate, setCandidate] = useState<Candidate>(MOCK_CANDIDATE);
+  const { t } = useTranslation();
+  const user = useCurrentCandidate();
+  const { avatarUrl, setAvatarUrl, setPopup, setLoading } = useAppContext();
+
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [candidate, setCandidate] = useState<CandidateProfile | null>(null);
+
   const [newSkillName, setNewSkillName] = useState<string>("");
+  const [resumes, setResumes] = useState<Array<{  fileId?: string; name: string; url: string }>>([]);
 
-  const [avatarUrl, setAvatarUrl] = useState<string>("");
-  const [resumes, setResumes] = useState<Array<{ id: string; name: string; url: string }>>([]);
 
+  //--initialize data
+  useEffect(()=>{
+    const fetchData = async ()=>{
+      try{
+        const skills = await CandidatesQueries.getCandidateSkills();
+        const desc = await CandidatesQueries.getCandidateDescription();
+
+        setCandidate(()=>({
+          id: user.id,
+          lastName: user.lastName,
+          firstName: user.firstName,
+          email: user.email,
+          location: {
+            street: user.location?.street ?? "",
+            country: user.location?.country ?? "",
+            city: user.location?.city ?? "",
+            postalCode: user.location?.postalCode ?? ""
+          },
+
+          description: desc ?? "",
+          skills: skills ?? [],
+        }));
+
+        //-- Resumes
+        const resumesMetaData = await CandidatesQueries.getResumes();
+        
+        const resume = [];
+
+        for (const data of resumesMetaData) {
+          if(!data.fileId)
+            continue;
+          const content = await CandidatesQueries.getResumeContent(data.fileId);
+
+          resume.push({
+            id: data.id,
+            fileId: data.fileId,
+            name: data.originalName ?? data.name,
+            url: URL.createObjectURL(content),
+          });
+        }
+
+        setResumes(resume);
+      }
+      catch(error){
+        console.warn("Something went wrong : ", error)
+      }
+    }
+
+    fetchData();
+
+  },[user])
+
+
+  
   useEffect(() => {
     return () => {
-      if (avatarUrl) URL.revokeObjectURL(avatarUrl);
       resumes.forEach((file) => URL.revokeObjectURL(file.url));
     };
-  }, [avatarUrl, resumes]);
+  }, [ resumes]);
+
+
 
   // Handler champs racines
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setCandidate((prev) => ({ ...prev, [name]: value }));
+    setCandidate((prev) => {
+      if(!prev) return prev;
+      return ({ ...prev, [name]: value });
+    });
   };
 
-  // Handler dédié à la sous-clé location
+
+  // Handler candidate location
   const handleLocationChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setCandidate((prev) => ({
-      ...prev,
-      location: {
-        ...prev.location,
-        [name]: value,
-      },
-    }));
+    setCandidate((prev) => {
+      if(!prev) return prev;
+      return ({
+        ...prev,
+        location: {
+          ...prev.location,
+          [name]: value,
+        },
+      })
+    });
   };
+
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (avatarUrl) URL.revokeObjectURL(avatarUrl);
+      if (avatarUrl) 
+        URL.revokeObjectURL(avatarUrl);
+      setCandidate((prev)=>{
+        if(!prev) return prev;
+        return ({...prev, image: file})
+      })
       setAvatarUrl(URL.createObjectURL(file));
     }
   };
 
-  const handleResumeUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const newFile = {
-        id: `cv-${Date.now()}`,
-        name: file.name,
-        url: URL.createObjectURL(file),
-      };
-      setResumes((prev) => [...prev, newFile]);
+
+  const handleResumeUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    try{
+      if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+
+        const result = await CandidateServices.uploadResume(file);
+
+        const newFile = {
+          fileId: result.fileId,
+          name: file.name,
+          url: URL.createObjectURL(file),
+        };
+        
+        setResumes((prev) => [...prev, newFile]);
+    }
+    }
+    catch(error){
+      console.log("Something went wrong while uploading resume", error)
     }
   };
 
-  const handleRemoveResume = (id: string) => {
-    setResumes((prev) => {
-      const target = prev.find((item) => item.id === id);
-      if (target) URL.revokeObjectURL(target.url);
-      return prev.filter((item) => item.id !== id);
-    });
+
+
+  const handleRemoveResume = async (fileId?: string) => {
+    try{
+      if(!fileId)
+          return;
+      await CandidateServices.removeResume(fileId);
+
+      setResumes((prev) => {
+        const target = prev.find((item) => item.fileId === fileId);
+        if (target) 
+          URL.revokeObjectURL(target.url);
+        return prev.filter((item) => item.fileId !== fileId);
+      });
+    }
+    catch(error){
+      if(error instanceof ResumeDeletionNotAllowedException){
+        setPopup({status: "error", message: t("candidate.apiResonse.error.resumes.likelyInUseByApplication")})
+      }
+      else{
+        setPopup({
+          message: t('candidate.apiResonse.error.resumes.failedToDeleteResume'),
+          status: 'error'
+        });
+      }
+      console.warn("Something went wrong", error)
+    }
   };
+
 
   const handleAddSkill = () => {
     if (!newSkillName.trim()) return;
@@ -111,16 +189,46 @@ const CandidateProfilPage: React.FC = () => {
       id: `sk-${Date.now()}`,
       name: newSkillName.trim(),
     };
-    setCandidate((prev) => ({ ...prev, skills: [...prev.skills, newSkill] }));
+    setCandidate((prev) => {
+      if(!prev) return prev;
+      return  ({ ...prev, skills: [...prev.skills, newSkill] });
+    });
     setNewSkillName("");
   };
 
+
   const handleRemoveSkill = (skillId: string) => {
-    setCandidate((prev) => ({
-      ...prev,
-      skills: prev.skills.filter((sk) => sk.id !== skillId),
-    }));
+    setCandidate((prev) =>{
+      if(!prev) return prev;
+      return  ({
+        ...prev,
+        skills: prev.skills.filter((sk) => sk.id !== skillId),
+      });
+    });
   };
+
+
+  const handleSave = async () => {
+    if (!candidate) 
+      return;
+    setLoading({ state: true })
+    try {
+      await CandidateServices.updateCandidateProfileDetails(candidate);
+      setIsEditing(false);
+    }
+    catch (error) {
+      setPopup({status: 'error' ,message: t("global.apiResponse.error.failedChangeProfil")});
+      console.error("Something went wrong :", error);
+    }
+    finally{
+      setLoading({ state: false })
+    }
+  };
+      
+
+  //-- Protection against null value
+  if(!candidate) 
+    return null;
 
   return (
     <div className={styles.container}>
@@ -128,7 +236,12 @@ const CandidateProfilPage: React.FC = () => {
         <h2>Profil Candidat</h2>
         <button 
           className={isEditing ? styles.saveBtn : styles.editBtn} 
-          onClick={() => setIsEditing(!isEditing)}
+          onClick={() =>{
+            if(isEditing){
+              handleSave();
+            }
+            setIsEditing(!isEditing)
+          }}
         >
           {isEditing ? "Enregistrer" : "Modifier le profil"}
         </button>
@@ -310,13 +423,13 @@ const CandidateProfilPage: React.FC = () => {
             <p className={styles.emptyText}>Aucun CV ajouté pour le moment.</p>
           ) : (
             resumes.map((resume) => (
-              <div key={resume.id} className={styles.resumeItem}>
+              <div key={resume.fileId} className={styles.resumeItem}>
                 <a href={resume.url} target="_blank" rel="noopener noreferrer" className={styles.resumeLink}>
                   📄 {resume.name}
                 </a>
                 <button 
                   type="button" 
-                  onClick={() => handleRemoveResume(resume.id)} 
+                  onClick={() => handleRemoveResume(resume.fileId)} 
                   className={styles.deleteResumeBtn}
                 >
                   Supprimer

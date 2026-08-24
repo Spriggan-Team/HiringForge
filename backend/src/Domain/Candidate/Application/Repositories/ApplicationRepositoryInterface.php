@@ -19,6 +19,11 @@ interface ApplicationRepositoryInterface
 
 
     /**
+     * Verify if a resume id linke to an application
+     */
+    public function hasApplicationsUsingResume(string $candidateId, string $resumeId): bool; 
+
+    /**
      * Verifies that the application belongs to the current candidate.
      *
      * @throws UnauthorizedAction if the application does not belong to the candidate.

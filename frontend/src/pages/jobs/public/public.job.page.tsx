@@ -17,8 +17,8 @@ import BrandButton from "../../../layout/components/buttons/brand.button";
 import BasicInput from "../../../layout/components/form/input/basic.input";
 import TipTapRenderer from "../../../layout/components/editors/tiptap/tiptap.renderer";
 
-import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg";
-import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.svg";
+import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg?react";
+import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.svg?react";
 
 
 import styles from "./PublicJobPage.module.css";

@@ -66,4 +66,6 @@ interface AccountRepositoryInterface
      * @return StaticMedia|null
     */
     public function getProfileImage(string $id): ?StaticMedia;
+
+    public function changeProfileImage(string $accountId, StaticMedia $image): void;
 }

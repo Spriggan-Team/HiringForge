@@ -15,18 +15,6 @@ class DoctrineTransactionManager implements TransactionManagerInterface{
 
     public function execute(callable $callback): mixed
     {
-        $this->em->beginTransaction();
-
-        try {
-            $result = $callback();
-
-            $this->em->flush();
-            $this->em->commit();
-
-            return $result;
-        } catch (\Throwable $e) {
-            $this->em->rollback();
-            throw $e;
-        }
+        return $this->em->wrapInTransaction($callback);
     }
 }

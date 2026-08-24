@@ -8,6 +8,8 @@ use App\Domain\Exception\ApplicationNotFoundException;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 use App\Domain\File\StaticMedia;
+
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateResumeEntity;
@@ -99,6 +101,24 @@ class JobOfferApplicationRepository
                 'The recruiter does not have access to this application.'
             );
         }
+    }
+
+    
+    #[Override]
+    public function hasApplicationsUsingResume(string $candidateId, string $resumeId): bool
+    {
+        $count = (int) $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.candidate = :candidateId')
+            ->andWhere('a.candidateResume = :resumeId')
+            ->setParameters([
+                'candidateId' => $candidateId,
+                'resumeId' => $resumeId,
+            ])
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count > 0;
     }
 
 

@@ -2,6 +2,7 @@
 
 namespace App\Domain\File;
 
+
 /**
 * This class implements functions that take in an object and convert it into domain item.
 * It is responsible to build the bridge between the file infrastructure and the domain related rules.
@@ -18,7 +19,8 @@ interface MediaFactoryInterface
     /**
      * This function convert a static file (such as images and documents...) into a domain file  object
      * that can enforces specific rules
-     * @param mixed $file
+     * @param  mixed $file
+     * @param  array $expectedTypes the expected mime type
      * @throws \DomainException  should be returned when the file is not a static media (image, doc ...ect)
      * @return StaticMedia       The corresponding domain object
      */

@@ -1,0 +1,64 @@
+@startuml
+skinparam BackgroundColor #F8FAFC
+skinparam ComponentStyle rectangle
+skinparam roundcorner 10
+skinparam Shadowing true
+
+' Palette de couleurs
+!define COLOR_CLIENT #E0F2FE
+!define COLOR_API #FFF3E0
+!define COLOR_APP #F3E8FF
+!define COLOR_DOMAIN #FED7AA
+!define COLOR_INFRA #F1F5F9
+!define COLOR_EXT #DCFCE7
+
+cloud "⚛️ React Client" as react COLOR_CLIENT
+
+node "🎼 Application Symfony" {
+
+    package "📡 User Interface / API" {
+        [API Controllers] as api COLOR_API
+    }
+
+    package "⚙️ Application Layer" {
+        [Use Cases / Handlers] as app COLOR_APP
+    }
+
+    package "🏛️ Domain Layer (Cœur Métier)" {
+        component "Entities & Value Objects" as entities
+        component "Domain Services" as domain_services
+        component "Ports / Interfaces\n(Repositories, Storage, AI)" as ports
+    }
+
+    package "🛠️ Infrastructure Layer" {
+        [Doctrine Repositories] as doctrine COLOR_INFRA
+        [Storage Service] as storage COLOR_INFRA
+        [AIService] as ai COLOR_INFRA
+    }
+}
+
+database "🗄️ MariaDB" as db COLOR_EXT
+database "📁 File Storage" as s3 COLOR_EXT
+cloud "🧠 Service IA (LLM)" as llm COLOR_EXT
+
+' Flux de requêtes entrantes (Inbound)
+react ==> api : "HTTP / JSON"
+api --> app : "Appelle"
+api --> entities : "Utilise (DTOs / Entities)"
+
+' Dépendances applicatives vers le Domaine
+app --> entities
+app --> domain_services
+app --> ports : "Utilise"
+
+' Inversion de Dépendance (Infrastructure pointe vers Domain)
+doctrine .up.|> ports : "Implémente"
+storage .up.|> ports : "Implémente"
+ai .up.|> ports : "Implémente"
+
+' Connexions externes de l'Infrastructure
+doctrine --> db
+storage --> s3
+ai --> llm
+
+@enduml

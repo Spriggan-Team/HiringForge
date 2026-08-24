@@ -11,7 +11,7 @@ import BasicInput from "../../../../layout/components/form/input/basic.input";
 import FormWrapper, { FormHint, FormInputs, FormTitle, FormSubmitSection } from "../../../../layout/components/form/form.wrapper";
 
 //-- SVG Components
-import EmailSVG from '/src/assets/svg/email/email-1-svgrepo-com.svg';
+import EmailSVG from '/src/assets/svg/email/email-1-svgrepo-com.svg?react';
 
 //-- Styles
 import styles from "./style.module.css"

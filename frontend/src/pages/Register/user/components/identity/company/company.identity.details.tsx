@@ -10,7 +10,7 @@ import BrandButton from "../../../../../../layout/components/buttons/brand.butto
 
 
 //-- SVG Components
-import PersonSVG from '/src/assets/svg/person/person-2-svgrepo-com.svg';
+import PersonSVG from '/src/assets/svg/person/person-2-svgrepo-com.svg?react';
 
 
 //-- custom styles

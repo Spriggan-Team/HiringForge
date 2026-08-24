@@ -1,19 +1,18 @@
-@startuml
+@startuml Candidate - CV Analysis
 
-title "Candidate Profile - Media Management"
+title "Candidate Profile - CV Analysis"
 
 actor Candidate
 
 participant AuthChecker
 participant CandidateModifier
 participant CandidateRepository
-participant MediaFactoryInterface
-participant MediaStorageInterface
+participant CVParser
 
 database Database
 
 
-Candidate -> AuthChecker : updateProfile( token, image)
+Candidate -> AuthChecker : updateProfile(dto, token, cv)
 
 ref over AuthChecker
     Auth Checking ...
@@ -26,7 +25,7 @@ note right
     the candidate is authenticated
 end note
 
-AuthChecker -> CandidateModifier : changeCandidate(candidate, images)
+AuthChecker -> CandidateModifier : changeCandidate(candidate, cv)
 deactivate AuthChecker
 
 activate CandidateModifier
@@ -48,38 +47,31 @@ CandidateRepository --> CandidateModifier : candidate
 deactivate CandidateRepository
 
 
-' Create media objects
-CandidateModifier -> MediaFactoryInterface : generateDomainObject(imagesOnly)
+' Parse CV
+CandidateModifier -> CVParser : parse(cv)
 
-activate MediaFactoryInterface
+activate CVParser
 
 note right
-    Only StaticMedia allowed.
-    Videos are not supported
-    for Candidate profiles.
+    CV analysis:
+    - extract text
+    - identify experiences
+    - identify skills
+    - identify education
+    - structure extracted data
 end note
 
-MediaFactoryInterface --> CandidateModifier : mediaObjects
+CVParser --> CandidateModifier : parsedCV
 
-deactivate MediaFactoryInterface
-
-
-' Store files
-CandidateModifier -> MediaStorageInterface : save(mediaObjects)
-
-activate MediaStorageInterface
-
-MediaStorageInterface --> CandidateModifier : storedPaths
-
-deactivate MediaStorageInterface
+deactivate CVParser
 
 
-' Update candidate
-CandidateModifier -> CandidateRepository : update(candidate)
+' Save parsed data
+CandidateModifier -> CandidateRepository : save(parsedCV)
 
 activate CandidateRepository
 
-CandidateRepository -> Database : UPDATE candidate
+CandidateRepository -> Database : INSERT / UPDATE resume data
 
 activate Database
 Database --> CandidateRepository : response

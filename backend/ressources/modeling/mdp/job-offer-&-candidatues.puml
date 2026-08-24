@@ -1,0 +1,100 @@
+@startuml
+skinparam linetype ortho
+skinparam monochrome false
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #333333
+    HeaderBackgroundColor #E2E8F0
+}
+
+entity "JOB_OFFER" as job_offer {
+    * **id** : CHAR(36) [PK]
+    --
+    * user_id : CHAR(36) [FK]
+    * company_id : CHAR(36) [FK]
+    * department_id : INT [FK]
+    * address_id : INT [FK]
+    * contract_type_id : INT [FK]
+    * title : VARCHAR(255)
+    * content : JSON
+    * publication_status : VARCHAR(255)
+    max_salary : DECIMAL(10,2)
+    min_salary : DECIMAL(10,2)
+    currency : VARCHAR(10)
+    * job_work_mode : VARCHAR(255)
+    * activity_status : VARCHAR(255)
+    publication_date : DATE
+    expertise : VARCHAR(255)
+    * created_at : DATETIME
+    * updated_at : DATETIME
+}
+
+entity "CONTRACT_TYPE" as contract_type {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * label : VARCHAR(250)
+    country : VARCHAR(2)
+    * default : BOOLEAN
+    organisation_id : CHAR(36) [FK]
+}
+
+entity "JOB_OFFER_IMAGES" as job_offer_images {
+    * **id** : INT [PK]
+    --
+    * job_offer_id : CHAR(36) [FK]
+    * file_id : INT [FK]
+}
+
+entity "JOB_OFFER_VIEWS" as job_offer_views {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * candidate_id : CHAR(36) [FK]
+    * job_offer_id : CHAR(36) [FK]
+    * viewed_at : DATETIME
+}
+
+entity "APPLICATION" as application {
+    * **id** : CHAR(36) [PK]
+    --
+    * candidate_id : CHAR(36) [FK]
+    * job_offer_id : CHAR(36) [FK]
+    * company_id : CHAR(36)
+    candidate_resume_id : VARCHAR(255) [FK]
+    * status : CHAR(255)
+    * match_score : DECIMAL(3,2)
+    * applied_at : DATETIME
+    * updated_at : DATETIME
+}
+
+entity "EMPLOYMENT_OFFER" as employment_offer {
+    * **id** : INT [PK, AUTO_INCREMENT]
+    --
+    * candidate_id : CHAR(36) [FK]
+    * application_id : CHAR(36) [FK]
+    * user_id : CHAR(36) [FK]
+    * company_id : CHAR(36) [FK]
+    * created_at : DATETIME
+}
+
+entity "INTERVIEW" as interview {
+    * **id** : CHAR(36) [PK]
+    --
+    * candidate_id : CHAR(36) [FK]
+    * job_offer_id : CHAR(36) [FK]
+    * start_date : DATETIME
+    * minutes : INT
+    * status : CHAR(255)
+    title : VARCHAR(255)
+    description : VARCHAR(255)
+    url : VARCHAR(255)
+    confirm : BOOLEAN
+    rejection_reason : TEXT
+}
+
+job_offer ||--o{ job_offer_images : "contient"
+job_offer ||--o{ job_offer_views : "est consultée"
+job_offer ||--o{ application : "reçoit"
+contract_type ||--o{ job_offer : "s'applique à"
+application ||--o| employment_offer : "aboutit à"
+application ||--o{ interview : "génère"
+@enduml

@@ -1,0 +1,68 @@
+@startuml
+skinparam linetype ortho
+skinparam monochrome false
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #333333
+    HeaderBackgroundColor #E2E8F0
+}
+
+entity "RESUME" as resume {
+    * **id** : VARCHAR(255) [PK]
+    --
+    * candidate_id : CHAR(36) [FK]
+    * file_id : INT [FK]
+    * has_been_analyzed : BOOLEAN
+}
+
+entity "CANDIDATE_SKILL" as candidate_skill {
+    * **candidate_id** : CHAR(36) [PK, FK]
+    * **skill_id** : VARCHAR(36) [PK, FK]
+    --
+    candidate_resume_id : VARCHAR(255) [FK]
+}
+
+entity "SKILL" as skill {
+    * **id** : VARCHAR(36) [PK]
+    --
+    eco_uri : VARCHAR(255)
+    onet_code : VARCHAR(255)
+    * is_default : BOOLEAN
+    * canonical_name : VARCHAR(255) [UNIQUE]
+}
+
+entity "JOB_OFFER_SKILLS" as job_offer_skills {
+    * **job_offer_id** : CHAR(36) [PK, FK]
+    * **skill_id** : VARCHAR(36) [PK, FK]
+}
+
+entity "SKILL_TRANSLATIONS" as skill_translations {
+    * **id** : INT [PK]
+    --
+    * skill_id : VARCHAR(36) [FK]
+    * language_id : INT [FK]
+    * name : VARCHAR(255)
+    * slug : VARCHAR(255)
+}
+
+entity "SKILL_ALIASES" as skill_aliases {
+    * **id** : INT [PK]
+    --
+    * skill_id : VARCHAR(36) [FK]
+    * alias : VARCHAR(255)
+}
+
+entity "LANGUAGE" as language {
+    * **id** : INT [PK]
+    --
+    * code : VARCHAR(15)
+    * label : VARCHAR(99)
+}
+
+resume ||--o{ candidate_skill : "extrait pour (candidate_resume_id)"
+skill ||--o{ candidate_skill : "possédée par"
+skill ||--o{ job_offer_skills : "requise par"
+skill ||--o{ skill_translations : "est traduite"
+skill ||--o{ skill_aliases : "a des alias"
+language ||--o{ skill_translations : "utilisée dans"
+@enduml

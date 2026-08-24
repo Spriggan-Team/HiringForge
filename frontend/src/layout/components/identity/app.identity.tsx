@@ -1,7 +1,7 @@
 import React from 'react'
 
 //- SVG Components
-import LogoSVG from '/src/assets/custom-logo.svg';
+import LogoSVG from '/src/assets/custom-logo.svg?react';
 
 //-- styles 
 import styles from "./style.module.css"
@@ -16,6 +16,7 @@ const AppIdentity: React.FC<AppIdentityProps>  = ({
     onClick
 }) => {
     const {t} = useTranslation();
+    // console.log("LOGO SVG : ",LogoSVG);
 
     return ( 
         <div 

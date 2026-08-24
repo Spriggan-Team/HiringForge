@@ -6,13 +6,16 @@ use App\Domain\File\StaticMedia;
 use App\Domain\Shared\Account\Account;
 use App\Domain\Shared\Address;
 use App\Domain\Shared\EmailAddress;
+use App\Domain\Shared\Skill\BasicSkillModel;
+use App\Domain\Shared\Skill\SkillsDiff;
 
 class Candidate extends Account
 {
-
-
     /** @var array<int, StaticMedia> $cvs all resume */
     private array $cvs = [];
+
+    /** @var array<int,BasicSkillModel> $skills */
+    private array $skills = [];
 
     private CandidateStatus $status = CandidateStatus::ACTIVE;
 
@@ -21,28 +24,32 @@ class Candidate extends Account
 
 
     private function __construct(
-        string $id, 
         string $firstName,
         string $lastName,
         EmailAddress $email,
         string $passwordHash,
         ?StaticMedia $image = null,
         array $cvs = [],
+        array $skills = [],
+        ?string $id = null, 
         ?Address $address = null,
         ?int $searchRadius = null,
         ?string $description = null
     ){
         $this->id = $id ?? CandidateId::create()->value();
 
-        $this->firstName = $firstName;
-        $this->lastName = $lastName;
-        $this->description = $description;
+        parent::__construct(
+            id: $id,
+            firstName: $firstName,
+            lastName: $lastName,
+            description: $description,
+            email: $email,
+            passwordHash: $passwordHash,
+            image: $image
+        );
 
-        $this->email = $email;
-        $this->passwordHash = $passwordHash;
-
-        $this->image = $image;
         $this->cvs = $cvs;
+        $this->skills = $skills;
 
         $this->address = $address;
         if($searchRadius){
@@ -55,9 +62,11 @@ class Candidate extends Account
         string $lastName,
         EmailAddress $email,
         string $passwordHash,
+        ?string $description = null,
         ?string $id = null, 
         ?StaticMedia $image = null,
         array $cvs = [],
+        array $skills = [],
         ?Address $address = null,
         ?int $searchRadius = null,
     ): self
@@ -69,7 +78,9 @@ class Candidate extends Account
             email: $email,
             passwordHash: $passwordHash,
             image: $image,
+            description: $description,
             cvs: $cvs,
+            skills: $skills,
             address: $address,
             searchRadius: $searchRadius
         );
@@ -98,11 +109,16 @@ class Candidate extends Account
         return $this->address;
     }
 
+
+    public function skills(){
+        return $this->skills;
+    }
+
     //------------------------------------------
     // - Business change --
     //-----------------------------------------
 
-
+    //-- CV
     public function addCV(?StaticMedia $cv): static
     {
         if ($cv === null) {
@@ -133,6 +149,18 @@ class Candidate extends Account
         return $this;
     }
 
+    //-- Status
+
+    public function changeStatus(CandidateStatus $status){
+        $this->status = $status;
+    }
+
+    //-- Addres
+    
+    public function setAddress(Address $address){
+        $this->address = $address;
+        return $this;
+    }
 
     public function setSearchRadius(int $searchRadius): static
     {
@@ -140,7 +168,51 @@ class Candidate extends Account
         return $this;
     }
 
-    public function chanegStatus(CandidateStatus $status){
-        $this->status = $status;
+
+    //-- Skills
+
+    /**
+     * perform adding and removal 
+     * @param BasicSkillModel[] $skills
+     */
+    public function skillsDiff(array $skills): SkillsDiff
+    {
+        $currentSkills = [];
+
+        foreach ($this->skills as $skill) {
+            $currentSkills[$skill->id()] = $skill;
+        }
+
+        $requestedSkills = [];
+
+        foreach ($skills as $skill) {
+            $requestedSkills[$skill->id()] = $skill;
+        }
+
+        $added = [];
+        $removed = [];
+        $unchanged = [];
+
+        // Skills submitted by the user
+        foreach ($requestedSkills as $skillId => $skill) {
+            if (isset($currentSkills[$skillId])) {
+                $unchanged[] = $skill;
+            } else {
+                $added[] = $skill;
+            }
+        }
+
+        // Skills currently included but missing from the new list
+        foreach ($currentSkills as $skillId => $skill) {
+            if (!isset($requestedSkills[$skillId])) {
+                $removed[] = $skill;
+            }
+        }
+
+        return new SkillsDiff(
+            added: $added,
+            removed: $removed,
+            unchanged: $unchanged,
+        );
     }
 }

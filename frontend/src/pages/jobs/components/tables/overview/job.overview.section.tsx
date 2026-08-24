@@ -18,10 +18,10 @@ import DonutChart, { type DonutChartData } from "../../../../../layout/component
 
 
 //-- SVG Components
-import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.svg"
-import ContractSVG  from "/src/assets/svg/menu/signing-the-contract-svgrepo-com.svg"
-import MoneySVG  from "/src/assets/svg/person/money-bag-svgrepo-com.svg"
-import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg"
+import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.svg?react"
+import ContractSVG  from "/src/assets/svg/menu/signing-the-contract-svgrepo-com.svg?react"
+import MoneySVG  from "/src/assets/svg/person/money-bag-svgrepo-com.svg?react"
+import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg?react"
 import TipTapRenderer from "../../../../../layout/components/editors/tiptap/tiptap.renderer";
 import JobSkill from "../../../components/skills/job.skill";
 import RecentAction from "../../../../components/recentAction/recent.action";

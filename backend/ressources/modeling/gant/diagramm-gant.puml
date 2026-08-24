@@ -1,0 +1,37 @@
+@startgantt
+language fr
+printscale monthly
+Project starts 2026-01-01
+
+-- Conception & Design --
+[Analyse / conception] as [AC] requires 30 days
+[AC] starts 2026-01-01
+[UX/UI] as [UI] requires 45 days
+[UI] starts 2026-01-15
+
+-- Architecture & Données --
+[Modélisation BD] as [BDD] requires 30 days
+[BDD] starts 2026-02-15
+[Architecture] as [ARCH] requires 45 days
+[ARCH] starts 2026-02-15
+
+-- Réalisation & Recette --
+[Développement] as [DEV] requires 75 days
+[DEV] starts 2026-03-15
+[Tests] as [TEST] requires 60 days
+[TEST] starts 2026-04-15
+[Déploiement] as [DEP] requires 45 days
+[DEP] starts 2026-05-15
+
+-- Jalons principaux --
+[Projet Finalisé] happens at 2026-06-30
+
+// Couleurs
+[AC] displays on #86efac
+[UI] displays on #86efac
+[BDD] displays on #93c5fd
+[ARCH] displays on #93c5fd
+[DEV] displays on #fdba74
+[TEST] displays on #fde047
+[DEP] displays on #c084fc
+@endgantt

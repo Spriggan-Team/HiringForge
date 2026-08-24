@@ -1,0 +1,12 @@
+{
+    "candidate":{
+        "apiResonse":{
+            "error":{
+                "resumes":{
+                    "failedToDeleteResume": "Impossible de supprimer le CV",
+                    "likelyInUseByApplication": "Probablement déjà utilisé par une candidatures"
+                }
+            }
+        }
+    }
+}

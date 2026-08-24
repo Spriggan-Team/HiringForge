@@ -5,15 +5,31 @@ namespace App\Domain\File;
 use App\Domain\Exception\FileSizeExceeded;
 use App\Domain\Exception\FileTimeExceeded;
 
-class TimedMedia
+
+class TimedMedia extends Media
 {
+    public int  $duration;    //stored in seconds,
+    
     public function __construct(
-        public string $name,        // the name (a uniq generated one)
-        public float  $size,        //stored in bytes
-        public string $mime,        // th mime type of the file
-        public int    $duration,    //stored in seconds,
-        public ?string $originalName = null,
-    ){}
+        string $name,        // the name (a uniq generated one)
+        float  $size,        //stored in bytes
+        string $mime,        // th mime type of the file
+        int  $duration,    //stored in seconds,
+        ?int $id = null,
+        ?string $originalName = null,
+        ?\DateTimeImmutable $createdAt = null,
+
+    ){
+        parent::__construct(
+            id: $id,
+            name: $name,
+            size: $size,
+            mime: $mime,
+            originalName: $originalName,
+            createdAt: $createdAt
+        );
+        $this->duration = $duration;
+    }
     
     /**
      * Enforce time limitation and special type verification for a TimedMedia

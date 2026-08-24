@@ -1,0 +1,126 @@
+@startuml
+
+skinparam BackgroundColor white
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+
+left to right direction
+
+' =========================
+' COMPTES
+' =========================
+
+class Account {
+    id: string
+    email: string
+    firstName: string
+    lastName: string
+}
+
+class Candidate {
+}
+
+class User {
+    role: string
+}
+
+Account "1" -- "0..1" Candidate
+Account "1" -- "0..1" User
+
+' =========================
+' ENTREPRISE
+' =========================
+
+class Company {
+    id: string
+    name: string
+}
+
+User "*" --> "1" Company
+
+' =========================
+' CV
+' =========================
+
+class Resume {
+    id: string
+    analyzed: boolean
+}
+
+Candidate "1" -- "0..*" Resume
+
+' =========================
+' COMPETENCES
+' =========================
+
+class Skill {
+    id: string
+    name: string
+}
+
+class CandidateSkill {
+}
+
+class JobOfferSkill {
+}
+
+Candidate "1" -- "0..*" CandidateSkill
+CandidateSkill "*" --> "1" Skill
+CandidateSkill "*" --> "1" Resume
+
+' =========================
+' OFFRE
+' =========================
+
+class JobOffer {
+    id: string
+    title: string
+    status: string
+}
+
+Company "1" -- "0..*" JobOffer
+User "1" -- "0..*" JobOffer : crée
+JobOffer "1" -- "0..*" JobOfferSkill
+JobOfferSkill "*" --> "1" Skill
+
+' =========================
+' CANDIDATURE
+' =========================
+
+class Application {
+    id: string
+    status: string
+    matchScore: decimal
+    appliedAt: DateTime
+}
+
+Candidate "1" -- "0..*" Application
+JobOffer "1" -- "0..*" Application
+Application "1" --> "1" Resume
+
+' =========================
+' ENTRETIEN
+' =========================
+
+class Interview {
+    id: string
+    status: string
+    startDate: DateTime
+}
+
+Application "1" -- "0..*" Interview
+
+' =========================
+' NOTIFICATIONS
+' =========================
+
+class Notification {
+    id: string
+    type: string
+    isRead: boolean
+}
+
+Account "1" -- "0..*" Notification : reçoit
+
+@enduml

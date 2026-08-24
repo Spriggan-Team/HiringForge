@@ -1,0 +1,23 @@
+@startuml
+skinparam BackgroundColor white
+skinparam ActivityBackgroundColor #f8fafc
+skinparam ActivityBorderColor #0d9488
+skinparam ActivityFontColor #0f172a
+skinparam ArrowColor #64748b
+
+title Parcours Recruteur - Publication & Gestion des Candidatures
+
+start
+
+:🔑 Connexion;
+:📊 Dashboard;
+:📝 Création d'une offre;
+:🎯 Définition des compétences;
+:📢 Publication;
+:📩 Réception d'une candidature;
+:👤 Consultation du candidat;
+:📄 CV + compétences + score;
+:🔔 Notification;
+
+stop
+@enduml

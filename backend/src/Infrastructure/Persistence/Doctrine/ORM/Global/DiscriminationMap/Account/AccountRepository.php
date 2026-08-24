@@ -8,6 +8,7 @@ use App\Domain\Exception\RessourceNotFound;
 use App\Domain\File\StaticMedia;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\Account\AccountRole;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\Mapper\FileEntityMapper;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
@@ -38,6 +39,29 @@ class AccountRepository implements AccountRepositoryInterface
         }
 
         return FileEntityMapper::toStaticDomainMedia($image);
+    }
+
+
+    #[Override]
+    public function changeProfileImage(
+        string $accountId,
+        StaticMedia $image,
+    ): void {
+        /** @var AccountEntity|null $account */
+        $account = $this->em
+            ->getRepository(AccountEntity::class)
+            ->find($accountId);
+
+        if ($account === null) {
+            throw new RessourceNotFound(
+                'Account not found when modifying image.'
+            );
+        }
+
+        $file = FileEntityMapper::toFileEntity($image);
+
+        $account->setImage($file);
+        $this->em->flush();
     }
 
 

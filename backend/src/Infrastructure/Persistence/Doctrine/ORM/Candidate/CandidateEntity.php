@@ -14,7 +14,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-
+use Doctrine\ORM\Mapping\OneToMany;
 
 
 #[ORM\Entity]
@@ -38,6 +38,14 @@ class CandidateEntity extends AccountEntity
     //-------Relations
     //--------------------------------
 
+    #[OneToMany(
+        targetEntity: CandidateSkillsEntity::class,
+        mappedBy: "candidate"
+    )]
+    /**
+     * @var Collection<int,CandidateSkillsEntity> $skills
+     */
+    private Collection $skills;
 
     #[ORM\OneToMany(
         mappedBy: 'candidate',
@@ -48,7 +56,11 @@ class CandidateEntity extends AccountEntity
     private Collection $applications;
 
 
-    #[ORM\OneToOne(targetEntity: AddressEntity::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(
+        targetEntity: AddressEntity::class,
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
     #[ORM\JoinColumn(name: 'address_id', nullable: true)]
     private AddressEntity $address;
 
@@ -84,6 +96,7 @@ class CandidateEntity extends AccountEntity
         $this->applications = new ArrayCollection();
         $this->jobOfferViews = new ArrayCollection();
         $this->resumes = new ArrayCollection();
+        $this->skills = new ArrayCollection();
     }
 
     public static function create()
@@ -122,11 +135,19 @@ class CandidateEntity extends AccountEntity
     public function getJobOfferViews(): Collection{
         return $this->jobOfferViews;
     }
+
+    /**
+     * @return Collection<int,CandidateSkillsEntity>
+     */
+    public function getSkills(){
+        return $this->skills;
+    }
     
     /* =======================
      * SETTERS
      * ======================= */
 
+    //-- basic
 
     public function setLastName(string $lastName): static {
         $this->lastName = $lastName;
@@ -138,6 +159,11 @@ class CandidateEntity extends AccountEntity
         return $this;
     }
 
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
 
     public function setSearchRadius(int $searchRadius): static
     {
@@ -145,10 +171,7 @@ class CandidateEntity extends AccountEntity
         return $this;
     }
 
-    public function getStatus()
-    {
-        return $this->status;
-    }
+
 
     //--------------------------------
     // Utils
@@ -159,6 +182,7 @@ class CandidateEntity extends AccountEntity
         return $this;
     } 
     
+    //-- Resume
     public function addResume(CandidateResumeEntity $resume): static {
         if($this->resumes->contains($resume)){
             return $this;
@@ -176,15 +200,22 @@ class CandidateEntity extends AccountEntity
     }
 
     public function clearResume(){
-
+        return $this;
     }
 
+    //-- Address
     public function attachToAddress(AddressEntity $address):static
     {
         $this->address = $address;
         return $this;
     }
 
+    public function setAddress(AddressEntity $address){
+        $this->address = $address;
+        return $this;
+    }
+
+    //-- JobViews
     public function addJobViews(JobOfferViewEntity $jobOfferViews): self{
         $this->jobOfferViews->add($jobOfferViews);
         return $this;
@@ -192,5 +223,15 @@ class CandidateEntity extends AccountEntity
 
     public function setStatus(CandidateStatus $status){
         $this->status = $status;
+    }
+
+    //-- Skills
+    public function addSkill() : static {
+        return $this;
+    }
+
+    public function removeSkill(): static
+    {
+        return $this;
     }
 }

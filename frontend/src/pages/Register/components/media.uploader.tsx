@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import DownloadButton from '../../../layout/components/buttons/download/download.button';
 
-import LogoSVG from '/src/assets/custom-logo.svg';
+import LogoSVG from '/src/assets/custom-logo.svg?react';
 import PdfIcon from "/src/assets/images/pdf.png";
 
 import styles from './MediaUploader.module.css';

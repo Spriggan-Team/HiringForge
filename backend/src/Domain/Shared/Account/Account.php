@@ -20,11 +20,11 @@ abstract class Account
 
 
     public function __construct(
-        string $id,
         string $firstName,
         string $lastName,
         EmailAddress $email,
         string $passwordHash,
+        ?string $id = null,
         ?string $description = null,
         ?StaticMedia $image = null,
     ) {
@@ -85,15 +85,22 @@ abstract class Account
     // - Business change --
     //-----------------------------------------
 
-    public function setId(string $id): static{
+    public function setId(string $id): static
+    {
         $this->id = $id;
         return $this;
     }
 
     public function rename(string $firstName, string $lastName): static
     {
-        $this->lastName = $lastName;
-        $this->firstName = $firstName;
+        if ($this->firstName != $firstName) {
+            $this->firstName = $firstName;
+        }
+
+        if ($this->lastName != $lastName) {
+            $this->lastName = $lastName;
+        }
+
         return $this;
     }
 
@@ -103,7 +110,15 @@ abstract class Account
         return $this;
     }
 
-    
+    public function changeEmail(?EmailAddress $email)
+    {
+        if($email && $this->email->value() != $email->value()){
+            $this->email = $email;
+        }
+        return $this;
+    }
+
+
     public function setPassword(
         string $passwordHash, 
     ): static

@@ -1,0 +1,61 @@
+@startuml
+
+title "Gestion de l'offre d'embauche"
+
+actor Recruteur
+actor Candidat
+
+participant EmploymentOfferController
+participant EmploymentOfferManager
+participant EmploymentOfferRepository
+participant ApplicationRepository
+database Database
+
+== Génération de l'offre ==
+
+Recruteur -> EmploymentOfferController : createOffer(applicationId, data)
+EmploymentOfferController -> EmploymentOfferManager : create(applicationId, data)
+
+EmploymentOfferManager -> ApplicationRepository : verifyApplication(applicationId)
+ApplicationRepository -> Database : SELECT application
+Database --> ApplicationRepository : application
+ApplicationRepository --> EmploymentOfferManager : valid
+
+EmploymentOfferManager -> EmploymentOfferRepository : save(offer)
+EmploymentOfferRepository -> Database : INSERT employment_offer
+Database --> EmploymentOfferRepository : success
+EmploymentOfferRepository --> EmploymentOfferManager : offer
+
+EmploymentOfferManager --> Recruteur : confirmation
+EmploymentOfferManager -> Candidat : Notification\nNouvelle offre d'embauche
+
+== Réponse du candidat ==
+
+Candidat -> EmploymentOfferController : respond(offerId, decision)
+EmploymentOfferController -> EmploymentOfferManager : respond(offerId, decision)
+
+alt Offre acceptée
+
+    EmploymentOfferManager -> EmploymentOfferRepository : accept(offerId)
+    EmploymentOfferRepository -> Database : UPDATE employment_offer
+    Database --> EmploymentOfferRepository : success
+
+    EmploymentOfferManager -> ApplicationRepository : finalize(applicationId)
+    ApplicationRepository -> Database : UPDATE application
+    Database --> ApplicationRepository : success
+
+    EmploymentOfferManager --> Candidat : Offre acceptée
+    EmploymentOfferManager -> Recruteur : Notification\nOffre acceptée
+
+else Offre refusée
+
+    EmploymentOfferManager -> EmploymentOfferRepository : reject(offerId)
+    EmploymentOfferRepository -> Database : UPDATE employment_offer
+    Database --> EmploymentOfferRepository : success
+
+    EmploymentOfferManager --> Candidat : Offre refusée
+    EmploymentOfferManager -> Recruteur : Notification\nOffre refusée
+
+end
+
+@enduml

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg"
+import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg?react"
 import BasicInput from '../../../../../../layout/components/form/input/basic.input';
 
 import styles from '../ApplicationsTable.module.css';

@@ -88,6 +88,10 @@ services:
     App\Domain\Candidate\CandidateRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\CandidateRepository
 
+    #----- File
+    App\Domain\File\FileRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\File\Repositories\FileRepository
+
     #--- Notification
     App\Domain\Notification\NotificationRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Global\Notification\Repositories\NotificationRepository

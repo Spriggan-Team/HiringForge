@@ -6,8 +6,8 @@ import BasicInput, {
 } from "../basic.input";
 
 //-- Import custom svg
-import CheckSVG from "/src/assets/svg/check/check-svgrepo-com.svg";
-import CloseSVG from "/src/assets/svg/menu/close-svgrepo-com.svg"
+import CheckSVG from "/src/assets/svg/check/check-svgrepo-com.svg?react";
+import CloseSVG from "/src/assets/svg/menu/close-svgrepo-com.svg?react"
 
 import styles from "./style.module.css";
 

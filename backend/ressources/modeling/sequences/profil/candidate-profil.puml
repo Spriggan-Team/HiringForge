@@ -1,18 +1,19 @@
-@startuml Candidate - CV Analysis
+@startuml
 
-title "Candidate Profile - CV Analysis"
+title "Candidate Profile - Media Management"
 
 actor Candidate
 
 participant AuthChecker
 participant CandidateModifier
 participant CandidateRepository
-participant CVParser
+participant MediaFactoryInterface
+participant MediaStorageInterface
 
 database Database
 
 
-Candidate -> AuthChecker : updateProfile(dto, token, cv)
+Candidate -> AuthChecker : updateProfile(dto, token, image)
 
 ref over AuthChecker
     Auth Checking ...
@@ -25,7 +26,7 @@ note right
     the candidate is authenticated
 end note
 
-AuthChecker -> CandidateModifier : changeCandidate(candidate, cv)
+AuthChecker -> CandidateModifier : changeCandidate(candidate, images)
 deactivate AuthChecker
 
 activate CandidateModifier
@@ -47,31 +48,38 @@ CandidateRepository --> CandidateModifier : candidate
 deactivate CandidateRepository
 
 
-' Parse CV
-CandidateModifier -> CVParser : parse(cv)
+' Create media objects
+CandidateModifier -> MediaFactoryInterface : generateDomainObject(imagesOnly)
 
-activate CVParser
+activate MediaFactoryInterface
 
 note right
-    CV analysis:
-    - extract text
-    - identify experiences
-    - identify skills
-    - identify education
-    - structure extracted data
+    Only StaticMedia allowed.
+    Videos are not supported
+    for Candidate profiles.
 end note
 
-CVParser --> CandidateModifier : parsedCV
+MediaFactoryInterface --> CandidateModifier : mediaObjects
 
-deactivate CVParser
+deactivate MediaFactoryInterface
 
 
-' Save parsed data
-CandidateModifier -> CandidateRepository : save(parsedCV)
+' Store files
+CandidateModifier -> MediaStorageInterface : save(mediaObjects)
+
+activate MediaStorageInterface
+
+MediaStorageInterface --> CandidateModifier : storedPaths
+
+deactivate MediaStorageInterface
+
+
+' Update candidate
+CandidateModifier -> CandidateRepository : update(candidate)
 
 activate CandidateRepository
 
-CandidateRepository -> Database : INSERT / UPDATE resume data
+CandidateRepository -> Database : UPDATE candidate
 
 activate Database
 Database --> CandidateRepository : response

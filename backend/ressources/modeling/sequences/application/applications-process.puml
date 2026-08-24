@@ -1,0 +1,76 @@
+@startuml
+
+title "Processus de traitement d'une candidature"
+
+actor Recruteur
+actor Candidat
+
+participant ApplicationController
+participant ApplicationModifier
+participant InterviewPlanificator
+participant EmploymentOfferManager
+participant ApplicationRepository
+participant EmploymentOfferRepository
+database Database
+
+== Réponse du recruteur ==
+
+Recruteur -> ApplicationController : modifierStatus(application, status)
+ApplicationController -> ApplicationModifier : changeStatus(application, status)
+
+ApplicationModifier -> ApplicationRepository : changeStatus(...)
+ApplicationRepository -> Database : UPDATE application
+Database --> ApplicationRepository : success
+ApplicationRepository --> ApplicationModifier : success
+ApplicationModifier --> Recruteur : confirmation
+
+alt Candidature retenue
+
+    == Entretien ==
+
+    Recruteur -> InterviewPlanificator : planInterview(...)
+    InterviewPlanificator -> Database : INSERT interview
+    Database --> InterviewPlanificator : success
+    InterviewPlanificator --> Recruteur : confirmation
+
+    == Offre d'embauche ==
+
+    Recruteur -> EmploymentOfferManager : createOffer(application)
+    EmploymentOfferManager -> EmploymentOfferRepository : save(offer)
+    EmploymentOfferRepository -> Database : INSERT employment_offer
+    Database --> EmploymentOfferRepository : success
+    EmploymentOfferRepository --> EmploymentOfferManager : offer
+    EmploymentOfferManager --> Recruteur : confirmation
+
+    == Réponse du candidat ==
+
+    Candidat -> EmploymentOfferManager : respond(offer, decision)
+
+    alt Offre acceptée
+        EmploymentOfferManager -> EmploymentOfferRepository : accept(offer)
+        EmploymentOfferRepository -> Database : UPDATE employment_offer
+        Database --> EmploymentOfferRepository : success
+
+        EmploymentOfferManager -> ApplicationRepository : finalize(application)
+        ApplicationRepository -> Database : UPDATE application
+        Database --> ApplicationRepository : success
+
+        EmploymentOfferManager --> Candidat : confirmation
+        EmploymentOfferManager --> Recruteur : notification
+
+    else Offre refusée
+        EmploymentOfferManager -> EmploymentOfferRepository : reject(offer)
+        EmploymentOfferRepository -> Database : UPDATE employment_offer
+        Database --> EmploymentOfferRepository : success
+
+        EmploymentOfferManager --> Candidat : confirmation
+        EmploymentOfferManager --> Recruteur : notification
+    end
+
+else Candidature refusée
+
+    ApplicationModifier --> Candidat : notification
+
+end
+
+@enduml

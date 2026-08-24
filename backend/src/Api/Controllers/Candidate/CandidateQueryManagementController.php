@@ -4,7 +4,10 @@ namespace App\Api\Controllers\Candidate;
 
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
+
 use App\Domain\Candidate\CandidateRepositoryInterface;
+use App\Domain\Candidate\CandidateSkillRepositoryInterface;
+
 use App\Domain\Exception\RessourceNotFound;
 use App\Domain\Shared\Account\AccountRole;
 
@@ -30,21 +33,74 @@ class CandidateQueryManagementController extends AbstractController
     ){
         ApiResponse::init($logger);
     }
+    
+    #[Route('/profile/desc', methods: ["GET"])]
+    public function getCandidateDescription(){
+        try{
+            /** @var AuthenticatedPerson|null $candidate */
+            $candidate = $this->getUser();
 
-    /**
-     * This controller allow any connected user to access to its informations
-     */
-    #[Route('/candidate/profile/{candidateId}', methods: ['GET'])]
-    public function getCandidateInformation()
-    {
+            if (!$candidate) {
+                return ApiResponse::error(
+                    message: "Unauthorized action",
+                    statusCode: Response::HTTP_UNAUTHORIZED
+                )->toJsonResponse();
+            }
 
+            $desc = $this->candidateRepository->getDescription($candidate->getId());
+
+            return ApiResponse::success(
+                data: [
+                    "desc" => $desc
+                ]
+            )->toJsonResponse();
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: "An error occurred while processing your request",
+                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR,
+                throwable: $error,
+            )->toJsonResponse();
+        }
     }
 
-    public function changeProfilInformation()
-    {
 
+
+    #[Route("/profile/skills", methods: ["GET"])]
+    public function getCandidateSkills(
+        CandidateSkillRepositoryInterface $candidateSkillRepo
+    ): JsonResponse {
+        try{
+            /** @var AuthenticatedPerson|null $candidate */
+            $candidate = $this->getUser();
+
+            if (!$candidate) {
+                return ApiResponse::error(
+                    message: "Unauthorized action",
+                    statusCode: Response::HTTP_UNAUTHORIZED
+                )->toJsonResponse();
+            }
+
+            $skills = $candidateSkillRepo->getCandidateSkills($candidate->getId()) ?? [];
+
+            $result = array_map(fn($skill) => ([
+                "id" => $skill->id(),
+                "name" => $skill->name()
+            ]) ,$skills);
+
+            // ApiResponse::$logger->error("SKILLS : ". json_encode($result));
+            return ApiResponse::success(
+                data: $result
+            )->toJsonResponse();
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: "An error occurred while processing your request",
+                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR,
+                throwable: $error,
+            )->toJsonResponse();
+        }
     }
-
 
     #[Route("", methods: ["GET"])]
     public function getCandidatesContext(): JsonResponse
@@ -83,5 +139,6 @@ class CandidateQueryManagementController extends AbstractController
             )->toJsonResponse();
         }
     }
+
 
 }

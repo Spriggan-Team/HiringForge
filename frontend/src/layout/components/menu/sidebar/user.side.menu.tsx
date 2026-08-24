@@ -9,15 +9,15 @@ import RouteScheme from "../../../../route.scheme";
 import { navigateTo } from "../../../../App";
 
 //-- SVG Components
-import LogoSVG from '/src/assets/custom-logo.svg';
-import HomeSVG from "/src/assets/svg/menu/home.svg"
-import PostSVG from "/src/assets/svg/menu/work-svgrepo-com.svg"
-import CandidateSVG from "/src/assets/svg/menu/candidate-for-elections-svgrepo-com.svg"
-import InterviewsSVG from "/src/assets/svg/menu/user-speak-rounded-svgrepo-com.svg"
-import StatsSVG from "/src/assets/svg/analytics/analytics-svgrepo-com.svg"
-// import AgentSVG from "/src/assets/svg/menu/illustrations-of-agents-svgrepo-com.svg"
-import ChevronLeftSVG from "/src/assets/svg/menu/chevron-right-double-svgrepo-com.svg"
-import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg"
+import LogoSVG from '/src/assets/custom-logo.svg?react';
+import HomeSVG from "/src/assets/svg/menu/home.svg?react"
+import PostSVG from "/src/assets/svg/menu/work-svgrepo-com.svg?react"
+import CandidateSVG from "/src/assets/svg/menu/candidate-for-elections-svgrepo-com.svg?react"
+import InterviewsSVG from "/src/assets/svg/menu/user-speak-rounded-svgrepo-com.svg?react"
+import StatsSVG from "/src/assets/svg/analytics/analytics-svgrepo-com.svg?react"
+// import AgentSVG from "/src/assets/svg/menu/illustrations-of-agents-svgrepo-com.svg?react"
+import ChevronLeftSVG from "/src/assets/svg/menu/chevron-right-double-svgrepo-com.svg?react"
+import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg?react"
 
 
 //-- CSS- style

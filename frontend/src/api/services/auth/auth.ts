@@ -4,7 +4,7 @@ import { authPost, patch, post } from "../../http";
 import { AccountAlreadyRegistered, AccountNotFound, InvalidCredentials, CompanyAlreadyRegistered } from "./exceptions";
 import { ApiResponseCode, HttpBadResponse } from "../../exceptions";
 import { type ApiResponse, type AccountLoginResponse, type AccountRegisterResponse, type NoticeResponse } from "../response.types";
-import { InvalidOTP, RessourceCreationFailed } from "../exceptions";
+import { InvalidOTP, ResourceCreationFailed } from "../exceptions";
 
 
 
@@ -54,7 +54,7 @@ const performRegister = async (formData: FormData, type: "user" | "candidate" ="
             else if(error.apiCode === ApiResponseCode.ACCOUNT_ALREADY_EXISTS)
                 throw new AccountAlreadyRegistered();
             else if(error.apiCode === ApiResponseCode.RESSOURCE_CREATION_FAILED)
-                throw new RessourceCreationFailed();
+                throw new ResourceCreationFailed();
             else if(error.apiCode === ApiResponseCode.COMPANY_ALREADY_REGISTERED)
                 throw new CompanyAlreadyRegistered();
         }

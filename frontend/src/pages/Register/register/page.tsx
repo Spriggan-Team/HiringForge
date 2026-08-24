@@ -20,11 +20,11 @@ import FeatureBadge from "../../../layout/components/badges/featureBadge/feature
 
 
 //-- SVG Components
-import CompanySVG from "/src/assets/svg/person/company-svgrepo-com.svg"
-import CandidateSVG from "/src/assets/svg/person/candidate-for-elections-svgrepo-com.svg"
-import SecuritySVG from "/src/assets/svg/security/secure-svgrepo-com.svg"
-import ConfigSVG from "/src/assets/svg/menu/config-svgrepo-com.svg"
-import SimpleHandLikeSVG from "/src/assets/svg/check/simple-like-hand-line-drawing-svgrepo-com.svg"
+import CompanySVG from "/src/assets/svg/person/company-svgrepo-com.svg?react"
+import CandidateSVG from "/src/assets/svg/person/candidate-for-elections-svgrepo-com.svg?react"
+import SecuritySVG from "/src/assets/svg/security/secure-svgrepo-com.svg?react"
+import ConfigSVG from "/src/assets/svg/menu/config-svgrepo-com.svg?react"
+import SimpleHandLikeSVG from "/src/assets/svg/check/simple-like-hand-line-drawing-svgrepo-com.svg?react"
 
 
 //--Images

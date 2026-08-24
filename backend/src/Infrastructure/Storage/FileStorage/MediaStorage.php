@@ -10,10 +10,12 @@ use App\Domain\File\MediaStorageScope;
 use App\Domain\File\MediaUploadResult;
 use App\Domain\Shared\PathResolverInterface;
 
+use Override;
 
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 
@@ -51,7 +53,7 @@ class MediaStorage implements MediaStorageInterface
             throw new \Exception("[MediaStorage::strore] Such a class of file is not supported yet!!");
         }
         $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($file->getPathname());
-        $path = $this->pathResolver->resolveTargetDirectory(
+        $path = $this->pathResolver->resolveStoragePath(
             mimeType: $mime, 
             params: $params,
         );
@@ -86,6 +88,7 @@ class MediaStorage implements MediaStorageInterface
     }
 
 
+
     public function read(string $name, ?string $id = null, ?MediaOwnerType $ownerType = null, ?MediaPurpose $purpose = null): mixed
     {
         throw new \Exception('Not implemented');
@@ -97,12 +100,15 @@ class MediaStorage implements MediaStorageInterface
      */
     public function remove(
         MediaStorageParams $params,
+        ?string $fileName = null,
         ?string $mimeType = null,
         bool $recursive = false,
         ?callable $successCallback = null, 
         ?callable $errorCallback = null,
     ): void {
         try {
+            $targetFileName = $fileName ?? $params->storedFileName;
+
             //-- Determine mime if not provided
             if ($mimeType === null) {
                 $extension = strtolower(pathinfo($params->storedFileName, PATHINFO_EXTENSION));
@@ -115,23 +121,20 @@ class MediaStorage implements MediaStorageInterface
                 };
             }
 
-            $directoryPath = $this->pathResolver->resolveTargetDirectory(
-                mimeType: $mimeType, 
+            // Idempotent Handling of Missing Files
+            $fullFilePath = $this->pathResolver->resolveFilePath(
+                mimeType: $mimeType,
                 params: $params,
+                fileName: $targetFileName
             );
 
-            $fullFilePath = $directoryPath . '/' . $params->storedFileName;
+            if ($this->filesystem->exists($fullFilePath)) {
+                $this->filesystem->remove($fullFilePath);
 
-            if (!$this->filesystem->exists($fullFilePath)) {
-                throw new \Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException(
-                    sprintf('File "%s" not found in path "%s"', $params->storedFileName, $directoryPath)
-                );
-            }
-
-            //-- local deletion
-            $this->filesystem->remove($fullFilePath);
-            if($recursive){
-                $this->removeEmptyParentDirectories( $directoryPath, $params->scope );
+                if ($recursive) {
+                    $directoryPath = dirname($fullFilePath);
+                    $this->removeEmptyParentDirectories($directoryPath, $params->scope);
+                }
             }
 
             //-- sucess callback
@@ -196,4 +199,72 @@ class MediaStorage implements MediaStorageInterface
         }
     }
 
+    
+
+    /** Strore temp file */
+    #[Override]
+    public function storeTemp(mixed $file, ?string $storedFileName = null): string
+    {
+        if (!$file instanceof UploadedFile) {
+            throw new \InvalidArgumentException("[MediaStorage::storeTemp] Unsupported file class.");
+        }
+
+        $sysTempDir = sys_get_temp_dir() . '/app_uploads';
+        if (!$this->filesystem->exists($sysTempDir)) {
+            $this->filesystem->mkdir($sysTempDir, 0775);
+        }
+
+        $extension = $file->guessExtension() ?: 'bin';
+        $tempFileName = ($storedFileName ?? Uuid::v4()->toRfc4122()) . '.' . $extension;
+        $targetPath = $sysTempDir . '/' . $tempFileName;
+
+        // Deplace file to temporary folder
+        $file->move($sysTempDir, $tempFileName);
+
+        return $targetPath;
+    }
+    
+
+    /** Delete temp path */
+    #[Override]
+    public function deleteTemp(string $path): void
+    {
+        if ($this->filesystem->exists($path)) {
+            $this->filesystem->remove($path);
+        }
+    }
+
+
+    #[Override]
+    public function moveToFinal(string $tempPath, MediaStorageParams $params): void
+    {
+        if (!$this->filesystem->exists($tempPath)) {
+            throw new FileNotFoundException("Temporary file missing: {$tempPath}");
+        }
+
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($tempPath);
+
+        //-- Determine directory path 
+        $finalDirectory = $this->pathResolver->resolveDirectoryPath(
+            mimeType: $mime,
+            params: $params
+        );
+
+        //-- Determine path
+        $fileName = $params->storedFileName ?? basename($tempPath);
+
+        $finalPath = $this->pathResolver->resolveFilePath(
+            mimeType: $mime,
+            params: $params,
+            fileName: $fileName
+        );
+
+        // 2. Création du dossier parent si nécessaire
+        if (!$this->filesystem->exists($finalDirectory)) {
+            $this->filesystem->mkdir($finalDirectory, 0775);
+        }
+
+        // 3. Déplacement du fichier
+        $this->filesystem->rename($tempPath, $finalPath, true);
+    }
 }

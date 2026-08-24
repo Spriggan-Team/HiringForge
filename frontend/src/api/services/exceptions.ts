@@ -1,7 +1,8 @@
 import { ExceptionWithPayload } from "../exceptions";
 
 //--- Global
-export class RessourceCreationFailed extends ExceptionWithPayload{};
+export class ResourceCreationFailed extends ExceptionWithPayload{};
+export class ResourceNotFound extends ExceptionWithPayload{};
 
 //--OTP
 export class InvalidOTP extends ExceptionWithPayload {}
@@ -9,3 +10,6 @@ export class InvalidOTP extends ExceptionWithPayload {}
 //--File
 export class FileSizeExceeded extends ExceptionWithPayload{};
 export class FileTimeExceeded extends ExceptionWithPayload{};
+
+//--  Resume
+export class ResumeDeletionNotAllowedException extends ExceptionWithPayload{};

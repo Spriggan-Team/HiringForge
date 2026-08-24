@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import Separator from "../../../../../layout/components/separator/separator";
 
 //-- SVG Components
-import RightToLeftArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg';
+import RightToLeftArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg?react';
 
 
 //-- CSS Styles

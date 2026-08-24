@@ -11,11 +11,11 @@ import RouteScheme from "../../../route.scheme";
 //-- Custom Components
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/dropdown/menu.dropdown";
 import BasicInput from "../../../layout/components/form/input/basic.input";
-import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg"
-import NotificationRingSVGComponent from "/src/assets/svg/menu/alarm-alert-bell-notification-warning-svgrepo-com.svg"
+import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg?react"
+import NotificationRingSVGComponent from "/src/assets/svg/menu/alarm-alert-bell-notification-warning-svgrepo-com.svg?react"
 
 //-- SVG Components
-// import DownArrowSVGComponent from "/src/assets/svg/menu/down-arrow-5-svgrepo-com.svg"
+// import DownArrowSVGComponent from "/src/assets/svg/menu/down-arrow-5-svgrepo-com.svg?react"
 
 //-- CSS Styles
 import styles from "./UserNavBar.module.css"

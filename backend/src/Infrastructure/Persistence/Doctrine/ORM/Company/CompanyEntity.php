@@ -157,6 +157,11 @@ class CompanyEntity
         return $this->recruiters;
     }
 
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
     //--------------------------------
     // Utils / SETTERS
     //--------------------------------
@@ -226,6 +231,12 @@ class CompanyEntity
             return $this;
         }
         $this->videoPresentation = $video;
+        return $this;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description;
         return $this;
     }
 }

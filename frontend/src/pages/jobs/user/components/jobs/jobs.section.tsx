@@ -13,7 +13,7 @@ import InfoPill, { type InfoPillProps } from "../../../../../layout/components/b
 import { SelectionContainer } from "../../../../../layout/components/form/input/selection/selection";
 
 //-- SVG Compoenents
-import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.svg"
+import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.svg?react"
 
 //-- CSS module
 import styles from "./JobSection.module.css"

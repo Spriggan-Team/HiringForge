@@ -49,6 +49,10 @@ interface AppContextProps{
     currentActor: CurrentActor | null;
     setCurrentActor: (param: CurrentActor | null) => void;
 
+    /** Actor profi limage */
+    avatarUrl: string ;
+    setAvatarUrl: (param: string)=>void;
+
     //------ Job
     /**
      * Current job overview used across the application
@@ -95,6 +99,7 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
     const [navbar, setNavbar] = useState<UserAppNavBarProps | null>(null);
 
     const [currentActor, setCurrentActor] = useState<CurrentActor | null>(null);
+    const [avatarUrl, setAvatarUrl] = useState<string>("")
 
     const [jobOverview, setJobOverview ] = useState<JobOverview | null>(null);
     const [currentJob, setCurrentJob] = useState<JobView>(INITIAL_JOB_VIEW);
@@ -125,7 +130,8 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
             }
             else if(role === AccountRole.CANDIDATE){
                 const data = await CandidatesQueries.getCurrentCandidateContext();
-                console.log("DATA", data);
+                // console.log("DATA", data);
+                
                 setCurrentActor({
                     type: "candidate",
                     id: data.id,
@@ -139,8 +145,11 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
                         country: data.address.country,
                         postalCode: data.address.postalCode,
                         street: data.address.street ?? null
-                    }
+                    },
                 });
+
+                const image = await CandidatesQueries.getCandidateProfileImage(data.id);
+                setAvatarUrl(URL.createObjectURL(image))
             }
         }
         catch (error) {
@@ -149,6 +158,13 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
         }
         finally {
           setIsAppInitializing(false);
+        }
+
+        //--  On disposal
+        return ()=>{
+            if(avatarUrl){
+                URL.revokeObjectURL(avatarUrl)
+            }
         }
     }, [setCurrentActor]);
 
@@ -200,6 +216,9 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
 
             currentActor,
             setCurrentActor,
+
+            avatarUrl,
+            setAvatarUrl,
 
             jobOverview,
             setJobOverview,

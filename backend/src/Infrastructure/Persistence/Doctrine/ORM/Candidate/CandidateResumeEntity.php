@@ -21,14 +21,13 @@ class CandidateResumeEntity
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $hasbeenAnalyzed = false;
 
-
     //--------------------------------------
     // Relations
     //---------------------------------------
 
     #[ORM\ManyToOne(
         targetEntity: CandidateEntity::class,
-        inversedBy: "resumes"
+        inversedBy: "resumes",
     )]
     #[ORM\JoinColumn(nullable: false)]
     private CandidateEntity $candidate;
@@ -53,8 +52,6 @@ class CandidateResumeEntity
         $this->file = $file;
         $this->id = $id;
     }
-
-
 
 
     public static function create(CandidateEntity $candidate, FileEntity $file): static

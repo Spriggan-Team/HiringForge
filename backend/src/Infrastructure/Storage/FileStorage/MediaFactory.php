@@ -47,7 +47,7 @@ class MediaFactory implements MediaFactoryInterface
 
         // Fallback to client-provided MIME type if server-side detection fails
         if ($mime === null) {
-            $mime = $file->getClientMimeType();
+            $mime = $file->getMimeType() ?? $file->getClientMimeType();
         }
 
         if ($mime === null) {

@@ -22,7 +22,7 @@ import RegisterationSteps, { type StepItem } from "../components/registeration.s
 import AuthServices from "../../../api/services/auth/auth";
 import { objectToFormData } from "../../../utils/convertor";
 import { AccountAlreadyRegistered, CompanyAlreadyRegistered } from "../../../api/services/auth/exceptions";
-import { InvalidOTP, RessourceCreationFailed } from "../../../api/services/exceptions";
+import { InvalidOTP, ResourceCreationFailed } from "../../../api/services/exceptions";
 import { navigateTo } from "../../../App";
 
 //-- hooks
@@ -153,7 +153,7 @@ const UserRegister = () => {
                 }
                 else if(error instanceof AccountAlreadyRegistered)
                     setPopup({ status: "warning", message: t("register.apiResponse.registering.warning.accountAlreadyRegistered") })
-                else if(error instanceof RessourceCreationFailed)
+                else if(error instanceof ResourceCreationFailed)
                     setPopup({ status: "error", message: t("register.apiResponse.registering.error.failedRegisteration") });
                 else if(error instanceof CompanyAlreadyRegistered)
                     setPopup({ status: "error", message: t("register.apiResponse.registering.warning.companyAlreadyRegistered") });

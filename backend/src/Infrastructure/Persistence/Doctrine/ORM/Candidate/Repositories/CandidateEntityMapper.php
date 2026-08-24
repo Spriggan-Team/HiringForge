@@ -2,10 +2,12 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories;
 
+use App\Api\Responder\ApiResponse;
 use App\Domain\Candidate\Candidate as Domain;
 use App\Domain\Candidate\CandidateId;
-
+use App\Domain\Candidate\CandidateSkillRepositoryInterface;
 use App\Domain\File\StaticMedia;
+use App\Domain\Shared\Address;
 use App\Domain\Shared\EmailAddress;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
@@ -15,11 +17,18 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 
 class CandidateEntityMapper
 {
-    public static function toDomain(CandidateEntity $entity): Domain
+    public function __construct(
+        private CandidateSkillRepositoryInterface $candidateSkillRepo,
+    ) {}
+
+    public  function toDomain(
+        CandidateEntity $entity,
+    ): Domain
     {
         $candidateId = CandidateId::hydrate($entity->getId());
         $staticImage = null;
         
+        //-- Images
         $image = $entity->getImage() ;
         if($image){
             $staticImage = new StaticMedia(
@@ -29,8 +38,13 @@ class CandidateEntityMapper
             );
         }
 
+        //-- Skills
+        $skills = $this->candidateSkillRepo->getCandidateSkills($entity->getId());
+
+        //-- Resumes
         $cvs = [];
         $candidateResumes = $entity->getResumes();
+
         foreach($candidateResumes as $cv){
             $resume = $cv->getFile();
             $cvs =  StaticMedia::hydrate(
@@ -43,6 +57,19 @@ class CandidateEntityMapper
             );
         }
 
+        //-- Address
+        $address = null;
+        $addressEntity = $entity->getAddress();
+        if($addressEntity){
+            $address = Address::hydrate(
+                id: $addressEntity->getId(),
+                city: $addressEntity->getCity(),
+                street: $addressEntity->getStreet(),
+                country: $addressEntity->getCountry(),
+                postalCode: $addressEntity->getPostalCode(),
+            );
+        }
+
         return Domain::create(
             id: $candidateId->value(),
             firstName: $entity->getFirstName(),
@@ -51,13 +78,15 @@ class CandidateEntityMapper
             passwordHash: $entity->getPassword(),
             image: $staticImage,
             cvs: $cvs,
+            address: $address,
+            skills: $skills,
             searchRadius: $entity->getSearchRadius()
         );
     }
 
 
 
-    public static function toEntity(Domain $candidate): CandidateEntity
+    public  function toEntity(Domain $candidate): CandidateEntity
     {
         $entity = new CandidateEntity();
         $entity->setId($candidate->id())
@@ -109,5 +138,44 @@ class CandidateEntityMapper
         return $entity;
     }
 
+
+
+    public function updateEntity(
+        Domain $domain,
+        CandidateEntity $entity,
+    ): CandidateEntity {
+        // Basic data
+        $entity
+            ->setLastName($domain->lastName())
+            ->setFirstName($domain->firstName())
+            ->setEmail($domain->email())
+            ->setDescription($domain->description());
+
+        // Address
+        $addressDomain = $domain->address();
+
+        if ($addressDomain !== null) {
+            $address = $entity->getAddress();
+
+            if ($address === null) {
+                $address = AddressEntity::create(
+                    city: $addressDomain->city,
+                    country: $addressDomain->country,
+                    postalCode: $addressDomain->postalCode,
+                    street: $addressDomain->street,
+                );
+
+                $entity->setAddress($address);
+            } else {
+                $address
+                    ->setCity($addressDomain->city)
+                    ->setCountry($addressDomain->country)
+                    ->setPostalCode($addressDomain->postalCode)
+                    ->setStreet($addressDomain->street);
+            }
+        }
+
+        return $entity;
+    }
 
 }

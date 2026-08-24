@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import BasicInput, { type BasicInputProps } from '../../basic.input';
 
 //-- SVG Components
-import OKCircleSVG from '../../../../../../assets/svg/check/ok-circle-svgrepo-com.svg';
+import OKCircleSVG from '../../../../../../assets/svg/check/ok-circle-svgrepo-com.svg?react';
 
 //-- CSS Styles
 import styles from './styles.module.css'

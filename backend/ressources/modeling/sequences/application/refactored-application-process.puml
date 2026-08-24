@@ -1,0 +1,29 @@
+@startuml
+
+title "Processus d'offre d'embauche"
+
+actor Recruteur
+actor Candidat
+
+participant "Gestion des candidatures" as Application
+participant "Gestion des offres d'embauche" as Offer
+participant "Notification" as Notification
+
+Recruteur -> Application : Retenir la candidature
+Application -> Offer : Générer l'offre d'embauche
+Offer -> Notification : Notifier le candidat
+Notification -> Candidat : Nouvelle offre
+
+Candidat -> Offer : Accepter / Refuser
+
+alt Acceptation
+    Offer -> Application : Mettre à jour la candidature
+    Offer -> Notification : Notifier le recruteur
+    Notification -> Recruteur : Offre acceptée
+else Refus
+    Offer -> Application : Mettre à jour la candidature
+    Offer -> Notification : Notifier le recruteur
+    Notification -> Recruteur : Offre refusée
+end
+
+@enduml
