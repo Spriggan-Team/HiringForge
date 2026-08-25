@@ -199,7 +199,7 @@ class ApplyToJobOffer
                 // -------------------------------------------------
 
                 $candidateSkills = $this->candidateSkillRepository->getCandidateSkills(
-                        candidateId: $candidateId,
+                    candidateId: $candidateId,
                 );
 
                 $requiredSkillIds = array_fill_keys(
