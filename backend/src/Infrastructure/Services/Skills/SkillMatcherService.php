@@ -97,7 +97,12 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
             threshold: $threshold,
         );
 
-        //-- Check if Qdrant result already belongs to candidate
+        // Check match vectoriel
+        if ($match === null) {
+            return null;
+        }
+
+        // Access key
         if (!$this->candidateSkillRepository->hasSkill(
             candidateId: $candidateId,
             skillId: $match['skill_id'],
@@ -105,17 +110,13 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
             return null;
         }
 
-        if ($match === null) {
-            return null;
-        }
-
+        //-- Callback on vector search
         if ($onUnlinkedVectorSkill !== null) {
             $onUnlinkedVectorSkill(
                 $match['skill_id'],
                 $match['score'],
             );
         }
-
 
         return new SkillMatch(
             skillId: $match['skill_id'],

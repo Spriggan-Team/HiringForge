@@ -19,7 +19,7 @@ interface CandidateSkillRepositoryInterface
         string $skillId
     ): void;
 
-    public function resolveSkill(string $candidateId, string $text): ?SkillResolution;
+    public function resolveSkill(string $candidateId, string $text, ?string $locale = null): ?SkillResolution;
 
     public function hasSkill(string $candidateId, string $skillId): bool;
 

@@ -10,6 +10,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateResumeEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\Mapper\FileEntityMapper;
+
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
@@ -114,25 +115,23 @@ class CandidateResumeRepository extends ServiceEntityRepository
         return $result['id'] ?? null;
     }
 
-
+    
     #[Override]
     public function markAsParsed(string $candidateResumeId): void
     {
+        /** @var CandidateResumeEntity|null $resume */
         $resume = $this->find($candidateResumeId);
 
         if ($resume === null) {
-            throw new \DomainException(
-                'Candidate resume not found.'
-            );
+            throw new \DomainException('Candidate resume not found.');
         }
 
-        $resume->markAsParsed();
-
-        $this->entityManager->flush();
+        $resume->markAsAnalyzed(true);
+        $this->getEntityManager()->flush();
     }
-    
 
     
+
     #[Override]
     public function hasBeenAnalyzed(
         string $candidateId,

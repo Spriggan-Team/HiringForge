@@ -8,9 +8,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { navigateTo } from "../../../App";
 import RouteScheme from "../../../route.scheme";
 import CandidatesQueries from "../../../api/services/candidate/queries";
+
 import type { ResumeFileMetada } from "../../../features/candidates/candidates";
 import type { PublicJobOfferDetailsModel } from "../../../api/services/public/responses";
 import { useAppContext, useCandidateContext, useCurrentCandidate } from "../../../hooks/context";
+
 import PublicJobQueries from "../../../api/services/public/queries";
 import CandidateServices from "../../../api/services/candidate/command";
 
