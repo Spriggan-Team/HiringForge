@@ -122,9 +122,11 @@ class LoginAuthenticatorController extends AbstractAuthenticator
     
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
+        $this->logger->error("Something went wrong");
         return ApiResponse::error(
             message: $exception->getMessage() ?: "Identifiants invalides, veuillez réessayer.",
-            code: ApplicationErrorCode::INVALID_CREDENTIALS
+            code: ApplicationErrorCode::INVALID_CREDENTIALS,
+            throwable: $exception
         )->toJsonResponse();
     }
 }

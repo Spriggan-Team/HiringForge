@@ -7,6 +7,7 @@ enum NotificationType: string
 {
     case JOB_APPLIED = 'JOB_APPLIED';
 
+    case JOB_APPLICATIONS_STATUS_SHIFT = 'job_status_shift';
     //-- Recipient: Candidate
     case INTERVIEW_SCHEDULED = 'INTERVIEW_SCHEDULED';
     case CANDIDATE_REJECTED = 'CANDIDATE_REJECTED';

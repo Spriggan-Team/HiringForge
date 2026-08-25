@@ -19,6 +19,7 @@ use App\Domain\Candidate\CandidateResumeRepositoryInterface;
 use App\Domain\Candidate\CandidateSkillRepositoryInterface;
 
 use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface;
+use App\Domain\Candidate\Application\CVParserInterface;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
 
 use App\Domain\Notification\JobAppliedNotificationData;
@@ -47,8 +48,7 @@ class ApplyToJobOffer
         private PathResolverInterface $pathResolver,
         private DocumentExtractorInterface $docExtractor,
         
-        private ResumeAiParserInterface $resumeAiParser,
-        private ResumeLexicalParserInterface $resumeLexicalParser,
+        private CVParserInterface $cvParser,
         private SkillMatcherServiceInterface $skillMatcherServices,
         private SkillScoreCalculator $skillScoreCalculator,
 
@@ -117,6 +117,7 @@ class ApplyToJobOffer
         $companyId = $this->jobRepository->getCompanyId($offerId);
         ApiResponse::$logger->error("OFFER ID: ". $offerId);
         ApiResponse::$logger->error("COMPANY ID: ". $companyId);
+        ApiResponse::$logger->error("Message (fielId): ". $fileId);
 
         // ---------------------------------------------------------
         //-- Get required skills for the job
@@ -146,7 +147,7 @@ class ApplyToJobOffer
  
             if(!$hasBeenAnalyzed){
                 // -------------------------------------------------
-                //-- Extract cv
+                //-- Extract & Parse cv
                 // -------------------------------------------------
 
                 $params = AccountStorageParams::resumes(
@@ -154,34 +155,12 @@ class ApplyToJobOffer
                     storedFileName: $resume->name
                 );
 
-                $absoluteDirectoryPath = $this->pathResolver->resolveStoragePath(
+                $absoluteFilePath = $this->pathResolver->resolveFilePath(
                     params: $params,
                     mimeType: $resume->mime
                 ); 
 
-                $absoluteFilePath = rtrim(
-                        $absoluteDirectoryPath,
-                        DIRECTORY_SEPARATOR
-                    ) 
-                    . DIRECTORY_SEPARATOR 
-                    . $resume->name;
-
-
-                $plainText = $this->docExtractor->extract(
-                    absolutePath: $absoluteFilePath,
-                );
-
-                // -------------------------------------------------
-                // Lexical parsing
-                // -------------------------------------------------
-
-                $clearDocument  = $this->resumeLexicalParser->parse($plainText);
-                
-                // -------------------------------------------------
-                // AI parsing
-                // -------------------------------------------------
-                
-                $artefact = $this->resumeAiParser->parse($clearDocument);
+                $artefact = $this->cvParser->parse($absoluteFilePath);
 
                 // -------------------------------------------------
                 // Mark  resume as analysized
@@ -213,7 +192,6 @@ class ApplyToJobOffer
                     );
                 }
 
-
             }
             else{
                 // -------------------------------------------------
@@ -221,7 +199,7 @@ class ApplyToJobOffer
                 // -------------------------------------------------
 
                 $candidateSkills = $this->candidateSkillRepository->getCandidateSkills(
-                        candidateId: $candidateId,
+                    candidateId: $candidateId,
                 );
 
                 $requiredSkillIds = array_fill_keys(

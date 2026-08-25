@@ -31,37 +31,4 @@ class JobApplicationController extends AbstractController
         ApiResponse::init($logger);
     }
 
-    /**
-     * Here, we make an application for candidate to a particular job
-     */
-    #[Route('/', methods: ['POST'], name: 'candidate_application')]
-    function apply(
-        Request $request,
-        string $offerId,
-        ApplyToJobOffer $usecase
-    ): JsonResponse
-    {
-        try{
-            /** @var AuthenticatedPerson **/
-            $candidate = $this->getUser();
-            // $usecase->execute(candidateId: $candidate->getId(), offerId: $offerId);
-            return ApiResponse::notice("Everything went smoothly")->toJsonResponse();
-        }
-        catch(Exception $exception)
-        {
-            return ApiResponse::error(message: "Something went wrong while applying", throwable: $exception)->toJsonResponse();
-        }
-    }
-
-    
-    public function uploadCV()
-    {
-
-    }
-    
-    /**
-     * Here we undone an application made by a candidate depending on bisuness conditions
-     */
-    #[Route('/undone')]
-    public function retire(){}
 }

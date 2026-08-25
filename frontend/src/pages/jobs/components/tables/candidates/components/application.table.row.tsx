@@ -1,8 +1,10 @@
 import React from 'react';
 import type { TFunction } from 'i18next';
 
+
 import MatchScoreCircle from '../../../../../../layout/components/progress/circle/match.circle';
 import type { Application, ApplicationStatusValue } from '../../../../../../features/application/application';
+
 
 import { StatusDropdown } from './status.dropdown';
 import { EyeIcon } from '../../../../../../layout/components/icons/eye.icon';

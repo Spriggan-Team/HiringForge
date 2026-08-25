@@ -199,7 +199,7 @@ export const authPatch = async<T>(
   data?: RequestData,
   headers?: HeadersInit
 )=>{
-  return patch<T>(endpoint, data, headers);
+  return patch<T>(endpoint, data, generateAuthorizationBearerHeader(headers));
 }
 
 

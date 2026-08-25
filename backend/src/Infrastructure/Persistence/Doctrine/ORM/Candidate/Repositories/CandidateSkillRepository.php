@@ -85,17 +85,16 @@ class CandidateSkillRepository
     #[Override]
     public function hasSkill(string $candidateId, string $skillId): bool
     {
-        $result = $this->createQueryBuilder('cs')
-            ->select('cs.id')
+        $count = (int) $this->createQueryBuilder('cs')
+            ->select('COUNT(cs.candidate)')
             ->where('cs.candidate = :candidateId')
             ->andWhere('cs.skill = :skillId')
             ->setParameter('candidateId', $candidateId)
             ->setParameter('skillId', $skillId)
-            ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getSingleScalarResult();
 
-        return $result !== null;
+        return $count > 0;
     }
 
 
@@ -103,10 +102,10 @@ class CandidateSkillRepository
     public function resolveSkill(
         string $candidateId,
         string $text,
-        string $locale = 'fr',
+        ?string $locale = null,
     ): ?SkillResolution {
-        //  Exact match : name / slug
-        $result = $this->createQueryBuilder('cs')
+        // 1. Exact match : name / slug
+        $qb = $this->createQueryBuilder('cs')
             ->select('s.id AS skillId')
             ->innerJoin('cs.skill', 's')
             ->leftJoin('s.translations', 'st')
@@ -115,11 +114,17 @@ class CandidateSkillRepository
                 'LOWER(st.name) = LOWER(:text)
                 OR LOWER(st.slug) = LOWER(:text)'
             )
-            ->andWhere('st.locale = :locale')
             ->setParameter('candidateId', $candidateId)
-            ->setParameter('text', $text)
-            ->setParameter('locale', $locale)
-            ->setMaxResults(1)
+            ->setParameter('text', $text);
+
+        // if local provided we search within that range
+        if ($locale !== null) {
+            $qb->leftJoin('st.language', 'l')
+            ->andWhere('l.code = :locale')
+            ->setParameter('locale', $locale);
+        }
+
+        $result = $qb->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
 

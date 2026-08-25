@@ -1,6 +1,6 @@
 .dropdownContainer {
     position: relative;
-    display: inline-block;
+    display: inline-flex;
 }
 
 /* -------------------------------------------------
@@ -81,6 +81,7 @@
     top: calc(100% + 4px);
     z-index: 50;
 
+    z-index: 1000;
     min-width: 200px;
 
     background: #ffffff;

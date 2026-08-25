@@ -8,6 +8,7 @@ services:
     volumes:
       - ollama_storage:/root/.ollama
     
+
     # Configuration  GPU NVIDIA
     deploy:
       resources:

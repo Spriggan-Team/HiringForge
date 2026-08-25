@@ -4,7 +4,6 @@ namespace App\Domain\Interviews;
 
 enum InterviewStatus: string
 {
-    case CANCEL = "cancel";
     case CLOSED = "closed";
     case MISSED = "missed";
     case SCHEDULED = "scheduled";

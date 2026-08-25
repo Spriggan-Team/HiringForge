@@ -6,6 +6,8 @@ namespace App\Api\Controllers\Application;
 use App\Api\Controllers\Helpers\ApiControllerHelpers;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
+use App\Application\Usecases\Application\BulkApplicationStatusChange;
+use App\Application\Usecases\Application\ChangeApplicationStatus;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 
@@ -40,6 +42,92 @@ class UserApplicationQueryController extends AbstractController
     )
     {
         ApiResponse::init($logger);
+    }
+
+
+    #[Route('/status/change/bulk', methods: ["PATCH"])]
+    public function bulkChangeApplicationStatus(
+        Request $request,
+        BulkApplicationStatusChange $handler
+    ){
+        try{
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
+            if(!$user){
+                return ApiResponse::error(
+                    message: 'Unauthorized action',
+                    statusCode: 403
+                )->toJsonResponse();
+            }
+
+            $body = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+            $ids = $body["ids"];
+
+            if(!is_array($ids)){
+                throw new \InvalidArgumentException();
+            }
+            
+            $newStatus = JobApplicationStatus::from($body["newStatus"]);
+
+            $handler->execute(
+                ids: $ids,
+                userId: $user->getId(),
+                newStatus: $newStatus
+            );
+
+            return ApiResponse::notice(
+                "Something "
+            )->toJsonResponse();
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: 'Something went wrong while changing (bulk) candidate application',
+                statusCode: 400,
+                verbose: true,
+                throwable: $error
+            )->toJsonResponse();
+        }
+    }
+
+    /**
+     * Chane status of an application
+     */
+    #[Route('/{applicationId}/status/change', methods: ["PATCH"])]
+    public function changeApplicationStatus(
+        Request $request,
+        string $applicationId,
+        ChangeApplicationStatus $changeAppStatus
+    )
+    {
+        try{
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
+            if(!$user){
+                return ApiResponse::error(
+                    message: 'Unauthorized action',
+                    statusCode: 403
+                )->toJsonResponse();
+            }
+
+            $body = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            
+            $changeAppStatus->execute(
+                userId: $user->getId(),
+                applicationId: $applicationId,
+                newStatus: JobApplicationStatus::from($body['newStatus'])
+            );
+
+            return ApiResponse::notice("Everything went successfully")->toJsonResponse();
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: 'Something went wrong while changing candidate application',
+                statusCode: 400,
+                verbose: true,
+                throwable: $error
+            )->toJsonResponse();
+        }
     }
     
 
@@ -286,13 +374,14 @@ class UserApplicationQueryController extends AbstractController
                 )->toJsonResponse();
             }
             
-            $fullPath = $pathResolver->resolveStoragePath(
+            $fullPath = $pathResolver->resolveFilePath(
                 params: AccountStorageParams::resumes(
                     candidateId: $candidateId,
                     storedFileName: $media->name
                 ),
                 mimeType: $media->mime
             );
+
             return new BinaryFileResponse($fullPath);
         }
         catch(\Exception $error){

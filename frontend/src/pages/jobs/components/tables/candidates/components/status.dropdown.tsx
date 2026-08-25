@@ -20,7 +20,6 @@ const NON_MANUAL_STATUSES: ApplicationStatusValue[] = [
     JobApplicationStatus.IN_INTERVIEW,
     JobApplicationStatus.APPLIED,
     JobApplicationStatus.WITHDRAWN,
-    JobApplicationStatus.REJECTED,
     JobApplicationStatus.OFFER_DECLINED,
     JobApplicationStatus.OFFER_PENDING,
     JobApplicationStatus.OFFER_ACCEPTED,
