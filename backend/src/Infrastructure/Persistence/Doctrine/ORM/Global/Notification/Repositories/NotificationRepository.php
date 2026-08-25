@@ -359,4 +359,50 @@ class NotificationRepository extends ServiceEntityRepository
 
         return $entity->getId();
     }
+
+
+    
+    #[Override]
+    /**
+     * @param array<int, Notification> $notifications
+     */
+    public function saveAll(array $notifications): void
+    {
+        if (empty($notifications)) {
+            return;
+        }
+
+        $em = $this->getEntityManager();
+
+        foreach ($notifications as $notification) {
+            $owner = $em->getReference(AccountEntity::class, $notification->accountId());
+
+            $recipientAccount = null;
+            if ($notification->recipientId() !== null) {
+                $recipientAccount = $em->getReference(
+                    AccountEntity::class,
+                    $notification->recipientId()
+                );
+            }
+
+            $recipientCompany = null;
+            if ($notification->recipientCompanyId() !== null) {
+                $recipientCompany = $em->getReference(
+                    CompanyEntity::class,
+                    $notification->recipientCompanyId()
+                );
+            }
+
+            $entity = NotificationEntityMapper::toEntity(
+                owner: $owner,
+                domain: $notification,
+                recipientAccount: $recipientAccount,
+                recipientCompany: $recipientCompany
+            );
+
+            $em->persist($entity);
+        }
+
+        $em->flush();
+    }
 }

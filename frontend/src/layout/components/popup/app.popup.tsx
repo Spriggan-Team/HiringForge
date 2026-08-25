@@ -3,11 +3,10 @@ import styles from "./styles.module.css";
 import { useAppContext } from "../../../hooks/context";
 
 interface AppPopupProps {
-    children: React.ReactNode;
     timeout?: number; // Optionnel, exprimé en secondes
 }
 
-const AppPopup: React.FC<AppPopupProps> = ({ children, timeout = 3 }) => {
+const AppPopup: React.FC<AppPopupProps> = ({  timeout = 3 }) => {
     const { popup, setPopup } = useAppContext();
 
     const [shouldRender, setShouldRender] = useState(false);
@@ -60,8 +59,6 @@ const AppPopup: React.FC<AppPopupProps> = ({ children, timeout = 3 }) => {
 
     return (
         <>
-            {children}
-
             <div className={styles.container}>
                 {shouldRender && (
                     <div className={`

@@ -24,18 +24,14 @@ import AppModal from './layout/components/modal/app.modal.tsx'
 
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <div>
-      <AppContextProvider>
-          <AppPopup>
-            <AppSpinner>
-              <BrowserRouter>
-                  <AppRoutes />
-              </BrowserRouter>
-            </AppSpinner>
-          <AppModal />
-          </AppPopup>
-      </AppContextProvider>
-    </div>
-  </StrictMode>,
+<StrictMode>
+    <AppContextProvider>
+        <AppPopup />
+        <AppSpinner />
+        <AppModal />
+        <BrowserRouter>
+            <AppRoutes />
+        </BrowserRouter>
+    </AppContextProvider>
+</StrictMode>
 )

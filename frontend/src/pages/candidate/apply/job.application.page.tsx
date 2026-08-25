@@ -72,7 +72,6 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
         }
     }, [id]);
 
-
  
     // -- Fetch resumes metadata ---
     const loadResumesMetaData = useCallback(async () => {
@@ -91,14 +90,21 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
  
     // --- Init --
     useEffect(() => {
-        loadResumesMetaData();
-        fetchJobDetails();
+        console.log("INIT APPLIED");
+
+        const init = async () => {
+            await loadResumesMetaData();
+            await fetchJobDetails();
+        };
+
+        init();
         return () => {
             blobCache.current.forEach(url => URL.revokeObjectURL(url));
             blobCache.current.clear();
         };
-    }, [loadResumesMetaData, fetchJobDetails]);
+    }, [id]);
 
+    
  
     // -- Load resume blob (with cache) --
     useEffect(() => {
@@ -118,9 +124,11 @@ const JobApplicationPage: React.FC<JobApplicationPageProps> = () => {
                     blobCache.current.set(selectedResumeFileId, url);
                     setCurrentResumeUrl(url);
                 }
-            } catch (err) {
+            }
+            catch (err) {
                 console.error("Failed to load resume content:", err);
-            } finally {
+            }
+            finally {
                 if (alive) setIsResumeLoading(false);
             }
         };

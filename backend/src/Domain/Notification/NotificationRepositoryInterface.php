@@ -84,4 +84,10 @@ interface NotificationRepositoryInterface
 
     
     public function save(Notification $notification): string;
+
+
+    /**
+     * @param array<int,Notification> $notifications
+     */
+    public function saveAll(array $notifications): void;
 }

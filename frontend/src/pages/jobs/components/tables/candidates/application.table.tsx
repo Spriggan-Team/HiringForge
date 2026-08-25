@@ -1,6 +1,5 @@
-import { formatDate } from "date-fns";
 import { Trans, useTranslation } from "react-i18next";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 
 import ApplicationQueries from "../../../../../api/services/application/queries";
@@ -17,6 +16,7 @@ import { ApplicationDetailModal } from "../../../components/application/applicat
 
 
 import styles from "./ApplicationsTable.module.css";
+import ApplicationServices from "../../../../../api/services/application/command";
 
 
 
@@ -62,10 +62,9 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
 
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
+
   const [activeApplication, setActiveApplication] = useState<{applicationId: string; candidateId: string} | null>(null);
   const [candidateProfilImages, setCandidateProfilImages] = useState<Record<string, string>>({});
-  const [candidateResumes, setCandidateResume] = useState<Record<string, string>>({});
-
 
   // -- Pagination / Hot loading
   const [skip, setSkip] = useState(0);
@@ -127,7 +126,22 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
           newController.signal
         );
 
-        setApplications(freshData);
+        const ids = freshData
+            .filter(({ status }) => status === JobApplicationStatus.APPLIED)
+            .map(({ id }) => id);
+
+        await ApplicationServices.updateApplicationsStatus(
+            ids,
+            JobApplicationStatus.RECEIVED
+        );
+
+        setApplications(
+          freshData.map(application => ({
+            ...application,
+            status: JobApplicationStatus.RECEIVED,
+          }))
+        );
+
         setHasMore(freshData.length === PAGE_SIZE);
         handleCandidateProfilImage(freshData);
       }
@@ -143,15 +157,16 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
     },
     [jobId, companyId]
   );
+
   
 
-  // Pagination
+  //--  Pagination
   const handleFetchMore = useCallback(async () => {
     if (isLoadingMore || !hasMore)
       return;
 
-    setIsLoadingMore(true);
     loadedRef.current = true;
+    setIsLoadingMore(true);
 
     const nextSkip = skip + PAGE_SIZE;
 
@@ -164,13 +179,40 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
         search: debouncedSearch || undefined,
       });
 
-      setApplications((prev) => [...prev, ...moreData]);
+      //-- Mark job as received
+      const ids = moreData
+          .filter(({ status }) => status === JobApplicationStatus.APPLIED)
+          .map(({ id }) => id);
+
+      await ApplicationServices.updateApplicationsStatus(
+          ids,
+          JobApplicationStatus.RECEIVED
+      );
+
+      //-- update applications pag
+      setApplications(prev => {
+        const existingIds = new Set(prev.map(app => app.id));
+
+        const newApplications = moreData
+          .filter(app => !existingIds.has(app.id))
+          .map(app => ({
+            ...app,
+            status: JobApplicationStatus.RECEIVED,
+          }));
+
+        return [...prev, ...newApplications];
+      });
+
       setSkip(nextSkip);
       setHasMore(moreData.length === PAGE_SIZE);
+      
       handleCandidateProfilImage(moreData);
     } 
     catch (error) {
-      console.error('Erreur lors du chargement de la suite des candidatures:', error);
+      console.error(
+        'Erreur lors du chargement de la suite des candidatures:',
+        error
+      );
     }
     finally {
       setIsLoadingMore(false);
@@ -180,7 +222,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
 
 
 
-  // load candidate image
+  //--  load candidate image
   const handleCandidateProfilImage = useCallback(async (data: Application[]) => {
       for (const application of data) {
         const applicationId = application.id;
@@ -222,15 +264,11 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
   },[]);
 
 
+  //-- Get CV file
   const handleCandidateResume = useCallback(async ({candidateId, applicationId}: {candidateId: string, applicationId: string})=>{
     const cachedUrl = resumeUrlCache.current.get(applicationId);
 
     if (cachedUrl) {
-      setCandidateResume((prev) => ({
-        ...prev,
-        [applicationId]: cachedUrl,
-      }));
-
       return;
     }
 
@@ -242,10 +280,17 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
 
       const url = URL.createObjectURL(blob);
       resumeUrlCache.current.set(applicationId, url);
-      setCandidateResume((prev)=>({...prev, [applicationId]: url}));
+
+      console.log("URL : ", url);
+      console.log("Resume blob : ", blob);
+
+      return url;
     }
     catch(error){
-      console.log("Something went wrong while fetching candidates resume")
+      console.log(
+        "Something went wrong while fetching candidates resume"
+      );
+      return undefined;
     }
   },[])
 
@@ -276,6 +321,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
   },[hasMore, handleFetchMore]);
 
 
+
   // Utility Initials
   const getInitials = (name: string) => {
     return name
@@ -287,23 +333,25 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
   };
 
 
-  // --- Handlers of statut & actions ---
+
+
+
+  // --- Handlers change of statut & actions ---
   const handleStatusChange = async (
-    id: string,
+    applicationId: string,
     currentStatus: ApplicationStatusValue,
     newStatus: ApplicationStatusValue
   ) => {
+    console.log("Transition : ", currentStatus, ' -> ' , newStatus, "; can transit : ", canTransitionStatus(currentStatus, newStatus))
     if (!canTransitionStatus(currentStatus, newStatus)) {
       console.warn(`Transition non autorisée de ${currentStatus} vers ${newStatus}`);
       return;
     }
 
-    setIsUpdating(id);
+    setIsUpdating(applicationId);
     try {
-      // TODO: API Call -> await api.updateStatus(id, newStatus);
-      setApplications((prev) =>
-        prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
-      );
+      await ApplicationServices.updateStatus(applicationId, newStatus);
+      setApplications((prev) => prev.map((app) => (app.id === applicationId ? { ...app, status: newStatus } : app)));
     }
     catch (error) {
       console.error('Erreur lors de la mise à jour du statut', error);
@@ -312,6 +360,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
       setIsUpdating(null);
     }
   };
+
 
 
   const handleRequestStatusChange = (
@@ -373,7 +422,11 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
 
 
 
-  const handleConsult = (application: Application, onCloseCallback?: () => void) => {
+  const handleConsult = (
+    application: Application,
+    onCloseCallback?: () => void,
+    resumeUrl?: string
+  ) => {
     const handleClose = () => {
       setModal(null);
       if (onCloseCallback) {
@@ -388,25 +441,31 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
                   onClose={handleClose}
                   application={application}
                   imageUrl={candidateProfilImages[application.id]}
-                  resumeUrl={candidateResumes[application.id]}
+                  resumeUrl={resumeUrl}
                />,
       onClose: handleClose,
     });
   };
 
 
-  const handleToggleEye = (application: Application) => {
+  const handleToggleEye = async (application: Application) => {
     if (activeApplication?.applicationId === application.id) {
       setModal(null);
       setActiveApplication(null);
-    } else {
+    }
+    else {
       setActiveApplication({
         applicationId: application.id,
         candidateId: application.candidateId
       });
+      const resumeUrl = await handleCandidateResume({
+        candidateId: application.candidateId,
+        applicationId: application.id,
+      });
+
       handleConsult(application, () => {
         setActiveApplication(null);
-      });
+      }, resumeUrl);
     }
   };
 
@@ -425,24 +484,14 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
     };
   },[])
 
+  
+
   // Reset trigger (search or change of props)
   useEffect(() => {
     handleResetAndFetch(debouncedSearch);
   }, [debouncedSearch, jobId, companyId, handleResetAndFetch]);
 
 
-  useEffect(()=>{
-    if(
-      activeApplication?.applicationId &&
-      activeApplication.candidateId
-    ){
-
-      handleCandidateResume({
-        candidateId: activeApplication.candidateId,
-        applicationId: activeApplication.applicationId
-      });
-    }
-  },[activeApplication])
 
 
   return (

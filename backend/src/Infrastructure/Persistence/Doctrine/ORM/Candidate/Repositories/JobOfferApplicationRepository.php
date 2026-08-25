@@ -21,6 +21,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 use DomainException;
+use LDAP\Result;
 use Override;
 
 
@@ -57,6 +58,26 @@ class JobOfferApplicationRepository
         }
     }
 
+    #[Override]
+    public function assertRecruiterHasAccessToApplicationCollection(string $recruiterId, array $applicationIds): void
+    {
+        $count = $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->innerJoin('a.jobOffer', 'job')
+            ->where('a.id IN (:applicationIds)')
+            ->andWhere('job.user = :recruiterId')
+            ->setParameter('applicationIds', $applicationIds)
+            ->setParameter('recruiterId', $recruiterId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        if ((int) $count !== count($applicationIds)) {
+            throw new \DomainException(
+                'The recruiter does not have access to all applications.'
+            );
+        }
+    }
+
 
     #[Override]
     public function assertApplicationBelongsToCandidate(string $candidateId, string $applicationId): void
@@ -78,21 +99,28 @@ class JobOfferApplicationRepository
     }
 
 
+
     #[Override]
     public function assertRecruiterHasAccessToApplication(
         string $recruiterId,
         string $applicationId,
-        string $candidateId
+        ?string $candidateId = null
     ): void {
-        $relation = $this->createQueryBuilder('a')
+        $queryBuilder = $this->createQueryBuilder('a')
             ->select('1')
             ->innerJoin('a.jobOffer', 'job')
             ->where('a.id = :applicationId')
-            ->andWhere('a.candidate = :candidateId')
             ->andWhere('job.user = :recruiterId')
             ->setParameter('applicationId', $applicationId)
-            ->setParameter('candidateId', $candidateId)
-            ->setParameter('recruiterId', $recruiterId)
+            ->setParameter('recruiterId', $recruiterId);
+
+        if ($candidateId !== null) {
+            $queryBuilder
+                ->andWhere('a.candidate = :candidateId')
+                ->setParameter('candidateId', $candidateId);
+        }
+
+        $relation = $queryBuilder
             ->getQuery()
             ->getOneOrNullResult();
 
@@ -102,6 +130,7 @@ class JobOfferApplicationRepository
             );
         }
     }
+
 
     
     #[Override]
@@ -119,6 +148,77 @@ class JobOfferApplicationRepository
             ->getSingleScalarResult();
 
         return $count > 0;
+    }
+
+
+    public function getApplicationIdentity(string $applicationId): ?array
+    {
+        return $this->createQueryBuilder('a')
+            ->select(
+                'a.id AS applicationId',
+                'IDENTITY(a.candidate) AS candidateId',
+                'IDENTITY(a.company) AS companyId',
+                'IDENTITY(j.user) AS recruiterId'
+            )
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('a.id = :id')
+            ->setParameter('id', $applicationId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+
+    #[Override]
+    public function getCandidateIdentity(string $applicationId): string
+    {
+        return (string) $this->createQueryBuilder('a')
+            ->select('IDENTITY(a.candidate)')
+            ->where('a.id = :applicationId')
+            ->setParameter('applicationId', $applicationId)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    
+    #[Override]
+    public function getApplicationStatus(string $applicationId): JobApplicationStatus
+    {
+        $status = $this->createQueryBuilder('a')
+            ->select('a.status')
+            ->where('a.id = :applicationId')
+            ->setParameter('applicationId', $applicationId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return JobApplicationStatus::from($status);
+    }
+
+
+    #[Override]
+    public function getStatusesByIds(array $applicationIds): array
+    {
+        if ($applicationIds === []) {
+            return [];
+        }
+
+        $result = $this->createQueryBuilder('a')
+            ->select('a.id, a.status')
+            ->where('a.id IN (:applicationIds)')
+            ->setParameter('applicationIds', $applicationIds)
+            ->getQuery()
+            ->getArrayResult();
+
+        $response = [];
+
+        foreach ($result as $row) {
+            $status = $row['status'];
+            
+            $response[$row['id']] = $status instanceof JobApplicationStatus 
+                ? $status 
+                : JobApplicationStatus::from($status);
+        }
+
+        return $response;
     }
 
 
@@ -593,11 +693,9 @@ class JobOfferApplicationRepository
             ));
         }
 
-        // Mise à jour effective
+        // update
         $application->setStatus($newStatus);
-        
-        $this->entityManager->persist($application);
-        $this->entityManager->flush();
+        $this->getEntityManager()->flush();
     }
 
 
@@ -638,5 +736,25 @@ class JobOfferApplicationRepository
         $em->flush();
 
         return $entity->getId();
+    }
+
+
+    #[Override]
+    public function bulkChangeStatus(
+        array $applicationIds,
+        JobApplicationStatus $newStatus
+    ): void {
+        if ($applicationIds === []) {
+            return;
+        }
+
+        $this->createQueryBuilder('a')
+            ->update()
+            ->set('a.status', ':status')
+            ->where('a.id IN (:applicationIds)')
+            ->setParameter('status', $newStatus->value)
+            ->setParameter('applicationIds', $applicationIds)
+            ->getQuery()
+            ->execute();
     }
 }

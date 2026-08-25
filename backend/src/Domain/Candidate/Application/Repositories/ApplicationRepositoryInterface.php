@@ -31,6 +31,28 @@ interface ApplicationRepositoryInterface
     public function assertApplicationBelongsToCandidate(string $candidateId, string $applicationId): void;
 
 
+    /**
+     * @param array<int,string> $applicationIds
+     * @return array<string,JobApplicationStatus> array<id, status>
+     */
+    public function getStatusesByIds(array $applicationIds): array;
+
+
+    /**
+     * @return array{
+     *  applicationId: string,
+     *  candidateId: string,
+     *  companyId: string,
+     *  recruiterId: string
+     * }
+     */
+    public function getApplicationIdentity(string $applicationId): ?array;
+
+    /**
+     * Get candidates idntity
+     */
+    public function getCandidateIdentity(string $applicationid):string;
+
     /** 
      * Counts applications matching criteria. If no status is provided, all applications are counted.
      *
@@ -105,6 +127,16 @@ interface ApplicationRepositoryInterface
     
 
     /**
+     * Change job offer status
+     * @param array<int,string> $applicationIds
+     * @param JobApplicationStatus  $newStatus
+     * @return void
+     */
+    public function bulkChangeStatus(array $applicationIds, JobApplicationStatus $newStatus): void;
+
+
+
+    /**
      * Counts applications created within a specific date range, optionally filtered by job offer.
      */
     public function countApplicationsInPeriod(
@@ -163,8 +195,21 @@ interface ApplicationRepositoryInterface
     public function assertRecruiterHasAccessToApplication(
         string $recruiterId,
         string $applicationId,
-        string $candidateId
+        ?string $candidateId = null
     ): void;
+
+
+    /**
+     * Check if an list of applications is linked to an user (recruiter)
+     */
+    public function assertRecruiterHasAccessToApplicationCollection(string $recruiterId, array $applicationIds): void;
+
+    
+
+    /**
+     * Get status og a user
+     */
+    public function getApplicationStatus(string $applicationId): JobApplicationStatus;
 
     /**
      * Retreive information about the resume file that has been

@@ -3,6 +3,7 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
+    height: 100%;
 }
 
 /* Container Carte */
@@ -11,9 +12,16 @@
     border-radius: 12px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
-    overflow: hidden;
+
+    position: relative;
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
 }
 
+
+/** header **/
 .tableHeader {
     display: flex;
     align-items: center;
@@ -21,6 +29,9 @@
     padding: 1.25rem 1.5rem;
     background: #ffffff;
     border-bottom: 1px solid #f1f5f9;
+
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
 }
 
 .tableHeader h2 {
@@ -63,16 +74,48 @@
 
 
 /* Table Structure */
+
 .tableContainer {
     width: 100%;
+    height: 100%;
     overflow-x: auto;
+
+    flex: 1;
+    
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
 }
+
+/* Chrome, Edge, Safari */
+.tableContainer::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+
+.tableContainer::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.tableContainer::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 9999px;
+    transition: background-color 0.2s ease;
+}
+
+.tableContainer::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8; 
+}
+
+/** Application table **/
 
 .applicationsTable {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
     font-size: 0.875rem;
+
+    padding-bottom: 140px; 
+    margin-bottom: -140px;
 }
 
 .applicationsTable th {

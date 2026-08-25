@@ -36,16 +36,13 @@ export default Spinner;
 
 
 interface AppSpinnerProps{
-    children: React.ReactNode
 }
 
-export const AppSpinner: React.FC<AppSpinnerProps> = ({ children }) => {
+export const AppSpinner: React.FC<AppSpinnerProps> = () => {
     const { loading } = useAppContext();
 
     return (
         <>
-            {children}
-
             {loading && loading.state && (
                 <div className={styles.overlay}>
                     <Spinner width={40} height={40} />
