@@ -1,29 +1,33 @@
 <?php
 
-namespace  App\Domain\Offer;
+namespace  App\Domain\EmploymentOffer;
 
-class Offer{
+
+class EmploymentOffer
+{
     private ?string $id = null;
-    private ?string $title = null;
     private ?string $message = null;
-    private ?float $salary = null;
+    private ?float  $salary = null;
     
     private string $applicationId;
     private string $candidateId;
 
-    private OfferStatus $status = OfferStatus::SENT;
+    private ?bool $confirm = null;
+    private ?string $rejectionReason = null;
 
-    private \DateTimeImmutable $sentAt;
+    private EmploymentOfferStatus $status = EmploymentOfferStatus::SENT;
+
     private \DateTimeImmutable $expiredAt;
+    private \DateTimeImmutable $createdAt;
 
 
     public function __construct(
         string $candidateId,
-        string $applicationId
+        string $applicationId,
     ) {
         $this->candidateId = $candidateId;
         $this->applicationId = $applicationId;
-        $this->sentAt = new \DateTimeImmutable();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
 
@@ -31,7 +35,6 @@ class Offer{
         string $candidateId,
         string $applicationId,
         \DateTimeImmutable $expiredAt,
-        ?string $title = null,
         ?float $salary = null,
         ?string $message = null
     ): self {
@@ -40,10 +43,10 @@ class Offer{
             applicationId: $applicationId
         );
         
-        $domain->setTitle($title)
-               ->setSalary($salary)
+        $domain->setSalary($salary)
                ->setMessage($message)
-               ->setExpiredAt($expiredAt);
+               ->setExpiredAt($expiredAt)
+               ->setCreatedAt(new \DateTimeImmutable());
 
         return $domain;
     }
@@ -53,8 +56,10 @@ class Offer{
         string $id,
         string $candidateId,
         string $applicationId,
+        bool $confirm,
+        string $rejectionReason,
         \DateTimeImmutable $expiredAt,
-        ?float $title,
+        \DateTimeImmutable $createdAt,
         ?string $salary,
         ?string $message,
     )
@@ -65,10 +70,12 @@ class Offer{
         );
 
         $domain->id = $id;
-        $domain->title = $title;
+        $domain->confirm =$confirm;
+        $domain->rejectionReason = $rejectionReason;
         $domain->message = $message;
         $domain->salary = $salary;
         $domain->expiredAt = $expiredAt;
+        $domain->createdAt = $createdAt;
     }
 
     
@@ -80,10 +87,6 @@ class Offer{
         return $this->id;
     }
 
-    public function title()
-    {
-        return $this->title;
-    }
 
     public function status()
     {
@@ -109,15 +112,31 @@ class Offer{
         return $this->applicationId;
     }
 
-    public function sentAt()
-    {
-        return $this->sentAt;
-    }
+
 
     public function expiredAt()
     {
         return $this->expiredAt;
     }
+
+
+    public function createdAt(){
+        return $this->createdAt;
+    }
+
+
+
+    public function confirm()
+    {
+        return $this->confirm;
+    }
+
+
+    public function rejectionReason(){
+        return $this->rejectionReason;
+    }
+
+
 
     //------------------------------
     //--- SETTERS
@@ -128,13 +147,7 @@ class Offer{
         return $this->id;
     }
 
-    public function setTitle(?string $title)
-    {
-        $this->title = $title;
-        return $this;
-    }
-
-    public function changeStatus(OfferStatus $status)
+    public function changeStatus(EmploymentOfferStatus $status)
     {
         $this->status = $status;
         return $this;
@@ -158,4 +171,23 @@ class Offer{
         return $this;
     }
 
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static{
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+
+    public function approve(): static
+    {
+        $this->confirm = true;
+        return $this;
+    }
+
+
+    public function reject(string $rejectionReason): static
+    {
+        $this->rejectionReason = $rejectionReason;
+        $this->confirm = false;
+        return $this;
+    }
 }

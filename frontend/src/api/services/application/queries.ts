@@ -2,10 +2,9 @@ import { intercept } from "../../../utils/utils"
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
 import { authGet } from "../../http"
 import type { ApiResponse, ErrorApiResponse } from "../response.types";
-import type { JobApplicationApiResponse } from "./response";
+import type { CandidateApplicationListResponse, JobApplicationApiResponse } from "./response";
 
 
-//-- Recruiter
 
 /**
  * Get applications
@@ -51,6 +50,22 @@ const getApplications = async (
 };
 
 
+/**
+ * Search candidates withing the system using application as root
+ * @param query 
+ */
+const searchCandidateByApplication = async (query: string) => {
+  try {
+    // Transmettre la query à l'API
+    const response = await authGet<CandidateApplicationListResponse>(
+      `/users/applications/candidates/search?query=${encodeURIComponent(query)}`
+    ); 
+    return response.data ?? [];
+  }
+  catch (error) {
+    throw error;
+  }
+};
 
 /**
  * Retreive postulation metrics about job(s)
@@ -149,6 +164,7 @@ const Queries = {
   countRejected,
   
   getJobPostulationMetrics,
+  searchCandidateByApplication,
 
   getCandidateProfilImage,
   getCandidateResume

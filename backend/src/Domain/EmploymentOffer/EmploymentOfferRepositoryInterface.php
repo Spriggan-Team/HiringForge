@@ -1,10 +1,10 @@
 <?php
 
-namespace  App\Domain\Offer;
+namespace  App\Domain\EmploymentOffer;
 
 use  App\Domain\Candidate\Application\JobApplicationStatus;
 
-interface OfferRepositoryInterface
+interface EmploymentOfferRepositoryInterface
 {
     /**
      * Returns an array of offers related to a recruiter.
@@ -19,7 +19,6 @@ interface OfferRepositoryInterface
      *                       offers from all jobs are considered.
     * @param array{
     *      'id'?: bool,
-    *      'title'?: bool,
     *      'message'?: bool,
     *      'salary'?: bool,
     *      'status'?: bool,
@@ -52,9 +51,9 @@ interface OfferRepositoryInterface
      * Creates an offer after verifying that the user is associated with the related job.
      *
      * @param string $userId The unique identifier of the user.
-     * @param Offer $offer Domain object containing the data required to create an offer.
+     * @param EmploymentOffer $offer Domain object containing the data required to create an offer.
      */
-    public function save(string $userId,  Offer $offer): void;
+    public function save(string $userId,  EmploymentOffer $offer): void;
 
 
     /**
@@ -68,4 +67,15 @@ interface OfferRepositoryInterface
      * @return int
      */
     public function countOffers(array $criteria): int;
+
+
+    /**
+     * check if an it is possible to generate employment offer 
+     * for an specirfic emplyement
+     */
+    public function canCreateEmploymentOfferForApplication(
+        string $recuiterId,
+        string $applicationId,
+        string $candidateId
+    ): bool;
 }

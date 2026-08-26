@@ -8,11 +8,12 @@ use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Application\Usecases\Application\BulkApplicationStatusChange;
 use App\Application\Usecases\Application\ChangeApplicationStatus;
+use App\Application\Usecases\Application\GetCandidateByApplication;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 
-use App\Domain\Offer\OfferRepositoryInterface;
-use App\Domain\Offer\OfferStatus;
+use App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface;
+use App\Domain\EmploymentOffer\EmploymentOfferStatus;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\Account\AccountRole;
 use App\Domain\Shared\AccountStorageParams;
@@ -38,11 +39,56 @@ class UserApplicationQueryController extends AbstractController
     public function __construct(
         private LoggerInterface $logger,
         private ApplicationRepositoryInterface $applicationRepository,
-        private OfferRepositoryInterface $offerRepository
     )
     {
         ApiResponse::init($logger);
     }
+
+
+    /**
+     * Route : /users/applications/candidates/search?query=string
+     * Search candidates withing the system using application as root
+     */
+    #[Route('/candidates/search', methods: ['GET'])]
+    public function search(
+        Request $request,
+        GetCandidateByApplication $handler
+    ){
+        try{
+            /** @var AuthenticatedPerson $user */
+            $user = $this->getUser();
+            if(!$user){
+                return ApiResponse::error(
+                    message: 'Unauthorized action',
+                    statusCode: 403
+                )->toJsonResponse();
+            }
+
+            $result = [];
+            $search = $request->query->get('query', null);
+
+            if($search !== null && trim($search) !== ''){
+                ApiResponse::$logger->error("Candidats: ". json_encode($result) );
+                $result = $handler->execute(
+                    userId: $user->getId(),
+                    query: $search
+                );
+            }
+
+            return ApiResponse::success(
+                message: "Not implemeneted",
+                data: $result
+            )->toJsonResponse();
+        }
+        catch(\Exception $error)
+        {
+            return ApiResponse::error(
+                message: "Something went wrong",
+                throwable: $error
+            )->toJsonResponse();
+        }
+    }
+
 
 
     #[Route('/status/change/bulk', methods: ["PATCH"])]
@@ -167,29 +213,7 @@ class UserApplicationQueryController extends AbstractController
     }
 
 
-    /**
-     * /applications/serach?text=string&status=string&candidate
-     */
-    #[Route('/search', methods: ['GET'])]
-    public function search(){
-        try{
-            /** @var AuthenticatedPerson $user */
-            $user = $this->getUser();
-            if(!$user){
-                return ApiResponse::error(
-                    message: 'Unauthorized action',
-                    statusCode: 403
-                )->toJsonResponse();
-            }
-            return ApiResponse::notice(message: "Not implemeneted");
-        }
-        catch(\Exception $error)
-        {
-            return ApiResponse::error(
-                message: "Something went wrong"
-            )->toJsonResponse();
-        }
-    }
+   
 
 
     /**
@@ -394,123 +418,7 @@ class UserApplicationQueryController extends AbstractController
 
 
     /**
-     * Route: users/applications/kpis?jobId=string
-     * Obtained kpis about job(s), if jobId is specified then the calcul is done only within the scope 
-     * of the targeted job offer
-     */
-    #[Route('/kpis', methods: ['GET'])]
-    public function getJobKpis(
-        Request $request
-    ): JsonResponse
-    {
-        try {
-            /** @var AuthenticatedPerson|null $user */
-            $user = $this->getUser();
-
-            if (!$user) {
-                return ApiResponse::error(
-                    message: 'Unauthorized action',
-                    statusCode: 401
-                )->toJsonResponse();
-            }
-
-            $userId = $user->getId();
-            $jobOfferId = $request->query->get('jobId', null);
-
-            //-- Dynamic construction of search criteria
-            $baseCriteria = array_filter([
-                'userId'     => $userId,
-                'jobOfferId' => $jobOfferId,
-            ], fn($value) => $value !== null);
-
-            //  Total number of applications associated with this job posting and this user
-            $totalApplications = $this->applicationRepository->countApplications($baseCriteria);
-
-            // Candidates Not Selected for This Position
-            $rejectedCandidatesCount = $this->applicationRepository->countApplications(array_merge($baseCriteria,[
-                'status'     => JobApplicationStatus::REJECTED,
-            ]));
-
-            $rejectionRate = $totalApplications > 0
-                ? (int) round(($rejectedCandidatesCount / $totalApplications) * 100)
-                : 0;
-
-            //  Bids generated and accepted for this specific bid
-            $offersDeclined = $this->offerRepository->countOffers(array_merge($baseCriteria,[
-                'status'     => OfferStatus::DECLINED,
-            ]));
-
-
-            $offersAccepted = $this->offerRepository->countOffers(array_merge($baseCriteria,[
-                'status'     => OfferStatus::ACCEPTED,
-            ]));
-
-            $offersGenerated = $this->offerRepository->countOffers($baseCriteria);
-
-
-            //  Delay in hiring
-            $avgTimeToHireDays = $this->applicationRepository->getAvgTimeToHireDays(
-                jobOfferId: $jobOfferId,
-                userId: $userId
-            );
-            $userAvgTimeToHireDays = $this->applicationRepository->getUserAvgTimeToHireDays($userId);
-
-            //-- If no job is provided the difference is null
-            $avgTimeToHireDiffDays = $jobOfferId !== null 
-                ? ($avgTimeToHireDays - $userAvgTimeToHireDays) 
-                : 0;
-
-            // Weekly increase specific to this offer
-            $now = new \DateTimeImmutable();
-            $startOfThisWeek = $now->modify('monday this week 00:00:00');
-            $startOfLastWeek = $startOfThisWeek->modify('-7 days');
-            $endOfLastWeek   = $startOfThisWeek->modify('-1 second');
-
-            $thisWeekCount = $this->applicationRepository->countApplicationsInPeriod(
-                userId: $userId,
-                start: $startOfThisWeek,
-                end: $now,
-                jobOfferId: $jobOfferId
-            );
-
-            $lastWeekCount = $this->applicationRepository->countApplicationsInPeriod(
-                userId: $userId,
-                start: $startOfLastWeek,
-                end: $endOfLastWeek,
-                jobOfferId: $jobOfferId
-            );
-
-            $applicationIncreaseThisWeek = $lastWeekCount > 0
-                        ? (int) round((($thisWeekCount - $lastWeekCount) / $lastWeekCount) * 100)
-                        : ($thisWeekCount > 0 ? 100 : 0);
-
-            return ApiResponse::success(
-                data: [
-                    'totalApplications'           => $totalApplications,
-                    'applicationIncreaseThisWeek' => $applicationIncreaseThisWeek,
-                    'rejectionRate'               => $rejectionRate,
-                    'rejectedCandidatesCount'     => $rejectedCandidatesCount,
-                    'offersDeclined'              => $offersDeclined,
-                    'offersAccepted'              => $offersAccepted,
-                    'offersGenerated'             => $offersGenerated,
-                    'avgTimeToHireDays'           => $avgTimeToHireDays,
-                    'avgTimeToHireDiffDays'       => $avgTimeToHireDiffDays,
-                ],
-                message: 'Job KPIs retrieved successfully'
-            )->toJsonResponse();
-
-        }
-        catch (\Exception $error) {
-            return ApiResponse::error(
-                message: 'Failed to fetch job KPIs: ' . $error->getMessage(),
-                statusCode: 500
-            )->toJsonResponse();
-        }
-    }
-
-
-    /**
-     * Route: /candidates/stats?jobId=string&timeframe=month|week
+     * Route: users/job_offer/stats?jobId=string&timeframe=month|week
      * if jobId noot specified the resarch is done within all offers related to an user
      */
     #[Route('/stats', methods: ['GET'])]
@@ -543,13 +451,12 @@ class UserApplicationQueryController extends AbstractController
 
         } catch (\Throwable $error) {
             return ApiResponse::error(
-                message: 'Something went wrong while fetching candidate statistics',
+                message: 'Something went wrong while fetching candidate statistics (postualtion metrics)',
                 statusCode: 400,
                 throwable: $error,
                 verbose: true
             )->toJsonResponse();
         }
     }
-    
 
 }

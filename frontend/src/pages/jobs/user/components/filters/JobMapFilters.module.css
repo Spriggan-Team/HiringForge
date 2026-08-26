@@ -1,12 +1,14 @@
 
 /** Filters Section **/
 
-.container{
+.container {
     gap: 15px;
     display: flex;
     flex-direction: column;
-    width: 325px;
+    width: 100%;
+    min-width: 0;
 }
+
 
 .filterBox{
     width: 100%;

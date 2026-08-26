@@ -2,11 +2,14 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories;
 
+use App\Api\Responder\ApiResponse;
 use App\Domain\Candidate\Application\Application;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
 use App\Domain\Exception\ApplicationNotFoundException;
 use App\Domain\Candidate\Application\JobApplicationStatus;
+use App\Domain\Candidate\Application\Repositories\ApplicationContext;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
+use App\Domain\Candidate\Application\Repositories\CandidateApplication;
 use App\Domain\File\StaticMedia;
 
 
@@ -21,7 +24,6 @@ use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 use DomainException;
-use LDAP\Result;
 use Override;
 
 
@@ -148,6 +150,38 @@ class JobOfferApplicationRepository
             ->getSingleScalarResult();
 
         return $count > 0;
+    }
+
+    #[Override]
+    public function getApplicationContext(string $applicationId): ApplicationContext
+    {
+        $data = $this->createQueryBuilder('a')
+            ->select(
+                'a.id AS applicationId',
+                'IDENTITY(a.candidate) AS candidateId',
+                'j.title AS jobTitle',
+                'c.name AS companyName',
+                'u.id AS recruiterId' 
+            )
+            ->innerJoin('a.company', 'c')
+            ->innerJoin('a.jobOffer', 'j')
+            ->innerJoin('j.user', 'u')
+            ->where('a.id = :applicationId')
+            ->setParameter('applicationId', $applicationId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if (!$data) {
+            throw new \DomainException("Application with ID {$applicationId} was not found.");
+        }
+
+        return new ApplicationContext(
+            applicationId: $data['applicationId'],
+            candidateId: $data['candidateId'],
+            jobTitle: $data['jobTitle'],
+            companyName: $data['companyName'],
+            recruiterId: $data['recruiterId']
+        );
     }
 
 
@@ -491,10 +525,52 @@ class JobOfferApplicationRepository
 
         return array_values($metrics); //r teurn an array (index 0-6)
     }
+    
 
     //-------------------------------------
     //--------- Entity & Collection fetch 
     //------------------------------------
+
+    #[Override]
+    public function findCandidateApplicationsBySearchTerm(string $recruiterId, string $query): array
+    {
+        $qb = $this->createQueryBuilder('a')
+            // Direct instantiation of the DTO in the DQL query
+            ->select(sprintf(
+                'NEW %s(
+                    a.id,
+                    c.id,
+                    c.firstName,
+                    c.lastName,
+                    j.id,
+                    c.email,
+                    j.title
+                )',
+                CandidateApplication::class
+            ))
+            ->innerJoin('a.candidate', 'c')
+            ->innerJoin('a.jobOffer', 'j')
+            ->innerJoin('j.user', 'u')
+            ->where('u.id = :recruiterId')
+            ->setParameter('recruiterId', $recruiterId);
+
+        // Apply the search filter, if provided
+        $cleanQuery = trim($query);
+        if ($cleanQuery !== '') {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    'LOWER(c.firstName) LIKE :term',
+                    'LOWER(c.lastName) LIKE :term',
+                    'LOWER(j.title) LIKE :term',
+                    "LOWER(CONCAT(c.firstName, ' ', c.lastName)) LIKE :term"
+                )
+            )->setParameter('term', '%' . mb_strtolower($cleanQuery) . '%');
+        }
+
+        ApiResponse::$logger->error("Query : " . $cleanQuery);
+
+        return $qb->getQuery()->getResult();
+    }
 
  
     #[Override]

@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './OfferDetailModal.module.css';
-import type { FlatOffer } from '../../../../features/offer/offer';
+import type { FlatOffer } from '../../../../features/employment/offer';
 
 interface OfferDetailModalProps {
   offer: FlatOffer;

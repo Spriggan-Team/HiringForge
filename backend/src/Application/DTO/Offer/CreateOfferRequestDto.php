@@ -13,17 +13,19 @@ final readonly class CreateOfferRequestDto
         #[Assert\NotBlank]
         public string $applicationId,
 
-        #[Assert\NotBlank]
-        #[Assert\DateTime]
+        #[Assert\NotNull]
+        #[Assert\Type(\DateTimeInterface::class)]
+        #[Assert\GreaterThan('now')]
         public string $expiredAt,
 
         #[Assert\Length(max: 255)]
         public ?string $title = null,
 
+        public string $jobTitle,
+
         #[Assert\Positive]
         public ?float $salary = null,
-
+        
         public ?string $message = null,
-    ) {
-    }
+    ) {}
 }

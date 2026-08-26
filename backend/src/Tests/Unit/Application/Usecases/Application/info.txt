@@ -1,0 +1,2 @@
+The parent repository here : Application
+refer to a postulation (result born out of an user applying to an job offer)

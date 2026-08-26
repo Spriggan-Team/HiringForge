@@ -7,6 +7,17 @@ import {  type ApiResponse, type ContractTypeResponse, type ErrorApiResponse } f
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
 
+/**
+ * 
+ */
+const getEmploymentOffer = ()=>{
+    
+}
+
+/**
+ * Contract type
+ * @returns 
+ */
 
 const getContractType = async ()=>{
     try{
@@ -21,7 +32,6 @@ const getContractType = async ()=>{
         throw error;
     }
 }
-
 
 
 const ContractQueries = intercept<

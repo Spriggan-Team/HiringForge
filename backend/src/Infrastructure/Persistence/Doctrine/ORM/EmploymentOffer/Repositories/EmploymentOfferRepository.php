@@ -1,27 +1,55 @@
 <?php
 
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\Offer\Repositories;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer\Repositories;
 
-use App\Domain\Offer\Offer;
-use App\Domain\Offer\OfferRepositoryInterface;
-use App\Infrastructure\Persistence\Doctrine\ORM\Offer\OfferEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Offer\Repositories\OfferRepositoryMapper as RepositoriesOfferRepositoryMapper;
+use App\Domain\EmploymentOffer\EmploymentOffer as DomainEmploymentOffer;
+use App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface;
+use App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer\EmploymentOfferEntity;
+
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use OfferRepositoryMapper;
+
 use Override;
 
 
-class OfferRepository extends ServiceEntityRepository 
-    implements OfferRepositoryInterface
+class EmploymentOfferRepository extends ServiceEntityRepository 
+    implements EmploymentOfferRepositoryInterface
 {
     public function __construct(
         private ManagerRegistry $registry,
-        private RepositoriesOfferRepositoryMapper $mapper
+        private EmploymentOfferRepositoryMapper $mapper
     ){
-        parent::__construct($registry, OfferEntity::class);
+        parent::__construct($registry, EmploymentOfferEntity::class);
     }
+
+
+    #[Override]
+    public function canCreateEmploymentOfferForApplication(
+        string $recruiterId,
+        string $applicationId,
+        string $candidateId
+    ): bool {
+        $now = new \DateTimeImmutable();
+
+        $activeOffersCount = (int) $this->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->innerJoin('e.application', 'a')
+            ->innerJoin('e.candidate', 'c')
+            ->where('a.id = :applicationId')
+            ->andWhere('c.id = :candidateId')
+            ->andWhere('e.expiredAt > :now')
+            ->andWhere('e.confirm IS NULL OR e.confirm = true') // not false, not rejected
+            ->setParameter('applicationId', $applicationId)
+            ->setParameter('candidateId', $candidateId)
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        //-- no employment offer active
+        return $activeOffersCount === 0;
+    }
+
 
     #[Override]
     public function countOffers(array $criteria): int
@@ -68,7 +96,7 @@ class OfferRepository extends ServiceEntityRepository
 
     
     #[Override]
-    public function save(string $userId, Offer $offer): void
+    public function save(string $userId, DomainEmploymentOffer $offer): void
     {
         $em = $this->getEntityManager();
 
@@ -91,7 +119,7 @@ class OfferRepository extends ServiceEntityRepository
 
 
     #[Override]
-/**
+    /**
      * Returns an array of offers related to a recruiter.
      *
      * @param ?string $userId The unique identifier of the user.
@@ -113,8 +141,8 @@ class OfferRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('o');
         $selects = [];
 
-        // 1. Projection Offer (Champs direct de l'entité o)
-        $offerFields = ['id', 'title', 'message', 'salary', 'status', 'expiredAt', 'sentAt'];
+        // 1. Projection Offer (Champs corrects de EmploymentOfferEntity)
+        $offerFields = ['id', 'message', 'salary', 'status', 'expiredAt', 'createdAt']; // 👈 'sentAt' remplacé par 'createdAt'
         foreach ($offerFields as $field) {
             if (!empty($scheme[$field])) {
                 $selects[] = "o.$field AS $field";
@@ -136,23 +164,20 @@ class OfferRepository extends ServiceEntityRepository
             if (!empty($imageScheme)) {
                 $qb->leftJoin('c.image', 'img');
                 foreach (array_keys($imageScheme) as $field) {
-                    $dbField = ($field === 'mime') ? 'mime' : $field;
-                    $selects[] = "img.$dbField AS candidate_image_$field";
+                    $selects[] = "img.$field AS candidate_image_$field";
                 }
             }
         }
 
         // 3. Application & JobOffer
         $qb->leftJoin('o.application', 'a')
-           ->leftJoin('a.jobOffer', 'j');
+        ->leftJoin('a.jobOffer', 'j');
 
-        // Projection Application
         $applicationScheme = array_filter($scheme['application'] ?? []);
         if (!empty($applicationScheme['id'])) {
             $selects[] = 'a.id AS application_id';
         }
 
-        // Projection JobOffer
         $jobOfferScheme = array_filter($scheme['jobOffer'] ?? []);
         if (!empty($jobOfferScheme)) {
             foreach (['id', 'title'] as $field) {
@@ -162,14 +187,13 @@ class OfferRepository extends ServiceEntityRepository
             }
         }
 
-        // Secours si aucun champ sélectionné
         if (empty($selects)) {
             $selects[] = 'o.id AS id';
         }
 
         $qb->select($selects);
 
-        // 4. Gestion propre des filtres WHERE (Résout le bug du SQL invalide)
+        // 4. Conditions de filtrage
         $conditions = [];
 
         if (!empty($companyId)) {
@@ -189,13 +213,13 @@ class OfferRepository extends ServiceEntityRepository
             $qb->where(...$conditions);
         }
 
-        // 5. Pagination & Exécution
+        // 5. Pagination
         $qb->setFirstResult($skip)
-           ->setMaxResults($limit);
+        ->setMaxResults($limit);
 
         $results = $qb->getQuery()->getArrayResult();
 
-        // 6. Reformatage de la structure imbriquée
+        // 6. Restructuration des clés pour l'output DTO/JSON
         return array_map(function (array $row) {
             $formatted = [];
             

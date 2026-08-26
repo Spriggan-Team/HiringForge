@@ -48,6 +48,9 @@ interface ApplicationRepositoryInterface
      */
     public function getApplicationIdentity(string $applicationId): ?array;
 
+
+    public function getApplicationContext(string $applicationId): ApplicationContext;
+
     /**
      * Get candidates idntity
      */
@@ -65,6 +68,12 @@ interface ApplicationRepositoryInterface
      */
     public function countApplications(array $criteria): int;
 
+
+    /**
+     * Candidate search result with applications
+     * @return array<int,CandidateApplication>
+     */
+    public function findCandidateApplicationsBySearchTerm(string $recruiterId, string $query): array;
 
 
     /**

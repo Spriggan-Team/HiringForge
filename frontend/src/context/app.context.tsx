@@ -69,7 +69,6 @@ export const AppContext = createContext<AppContextProps | null>(null);
 
 
 
-
 interface AppContextProviderProps{
     children: React.ReactNode
 }
@@ -230,15 +229,17 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
         }),
         [
             popup,
+            modal,
+            countdown,
+            isAppInitializing,
             loading,
             navbar,
-            countdown,
             currentActor,
+            avatarUrl,
             jobOverview,
             currentJob,
-            modal,
-            isAppInitializing,
             initializeData,
+            handleSetCountdown,
         ]
     );
 

@@ -1,13 +1,15 @@
 import { intercept } from "../../../utils/utils";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
-import type { ApiResponseError } from "../../exceptions";
+
 import { authGet } from "../../http";
+import type { ApiResponseError } from "../../exceptions";
+
 import { type ApiResponse, } from "../response.types";
-import type {  UserOfferQueryResponse } from "./response";
+import type {  EmploymentOfferQueryResponse } from "./response";
 
 
 //-- Recruiters
-const getUserJobOffers = async(
+const getUserEmploymentOffer = async(
     { 
         jobId,
         skip = 0, 
@@ -29,7 +31,7 @@ const getUserJobOffers = async(
         if (skip !== undefined) params.set('skip', String(skip));
         if (limit !== undefined) params.set('limit', String(limit));
 
-        const response = await authGet<UserOfferQueryResponse>(`/offers/user/jobs${
+        const response = await authGet<EmploymentOfferQueryResponse>(`/users/employment_offers/jobs${
             params.toString() ? `?${params.toString()}` : ''
         }`);
 
@@ -41,15 +43,19 @@ const getUserJobOffers = async(
 }
 
 
-const OffersQueries = intercept<
-    {
-        getUserJobOffers: typeof getUserJobOffers
-    },
+
+const Queries =  {
+    getUserEmploymentOffer
+}
+
+
+const EmploymentOffersQueries = intercept<
+   typeof Queries,
     ApiResponse | ApiResponseError
 >(
-    { getUserJobOffers },
+    Queries,
     undefined,
     (method, response) => handleGenericApiResponseAfter(method, response)
 )
 
-export default OffersQueries;
+export default EmploymentOffersQueries;

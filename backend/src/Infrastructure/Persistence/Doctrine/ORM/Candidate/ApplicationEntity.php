@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
@@ -72,15 +71,18 @@ class ApplicationEntity
     #[ORM\JoinColumn(nullable: false, name: "candidate_id")]
     private CandidateEntity $candidate;
 
+    
     #[ORM\ManyToOne(
         targetEntity: CandidateResumeEntity::class,
     )]
     #[ORM\JoinColumn(nullable: true)]
     private ?CandidateResumeEntity $candidateResume =null;
 
+    
     #[ORM\ManyToOne(inversedBy: 'applications')]
     #[ORM\JoinColumn(nullable: false, name: "job_offer_id")]
     private JobOfferEntity $jobOffer;
+
     
     #[ORM\ManyToOne()]
     #[ORM\JoinColumn(nullable: false, name: "company_id")]

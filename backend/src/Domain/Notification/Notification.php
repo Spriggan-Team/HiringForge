@@ -11,7 +11,6 @@ final class Notification
         private readonly string $accountId,
         private readonly NotificationType $type,
         private NotificationDataInterface $data,
-        private bool $isRead,
         private ?DateTimeImmutable $readAt,
         private readonly DateTimeImmutable $createdAt,
         private ?string $id = null,
@@ -37,7 +36,6 @@ final class Notification
             targetUrl: $targetUrl,
             data: $data,
             recipientCompanyId: $recipientCompanyId,
-            isRead: false,
             readAt: null,
             recipientId: $recipientId,
             createdAt: new DateTimeImmutable(),
@@ -60,7 +58,6 @@ final class Notification
             type: $type,
             targetUrl: $targetUrl,
             data: $data,
-            isRead: $isRead,
             readAt: $readAt,
             createdAt: $createdAt,
         );
@@ -68,18 +65,10 @@ final class Notification
 
     public function markAsRead(): void
     {
-        if ($this->isRead) {
-            return;
-        }
-
-        $this->isRead = true;
         $this->readAt = new DateTimeImmutable();
     }
 
-    public function isRead(): bool
-    {
-        return $this->isRead;
-    }
+
 
     public function id(): string
     {

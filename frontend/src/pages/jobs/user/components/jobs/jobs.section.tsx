@@ -63,6 +63,7 @@ const JobsSection: React.FC<JobsSectionProps> = ({
             <div className={`${styles.items} scrollbar`}>
               <SelectionContainer
                 showCheckbox
+                
                 className={styles.selectionContainer}
               >
                 {data.map((job) => (

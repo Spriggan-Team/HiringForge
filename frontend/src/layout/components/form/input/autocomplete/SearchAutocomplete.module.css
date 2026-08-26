@@ -1,0 +1,200 @@
+/* Conteneur principal */
+.container {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* --- VIEW OF SELECTED ITEM  --- */
+.selectedCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.selectedContent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #cbd5e1;
+  flex-shrink: 0;
+}
+
+.avatarFallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #e0e7ff;
+  color: #4338ca;
+  font-weight: 600;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.selectedLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clearButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  transition: all 0.15s ease;
+}
+
+.clearButton:hover {
+  background-color: #e2e8f0;
+  color: #475569;
+}
+
+/* --- SEARCH INPUT --- */
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  font-size: 14px;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #0f172a;
+  outline: none;
+  flex: 1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input::placeholder {
+  color: #94a3b8;
+}
+
+.input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* --- DROPDOWN MENU / RESULTS --- */
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 6px;
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  z-index: 50;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.noResults {
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.section {
+  padding: 4px 0;
+}
+
+.sectionHeader {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  background-color: #f8fafc;
+}
+
+/* --- RESULTS ROW--- */
+.itemRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.itemRow:hover {
+  background-color: #f0fdf4; /* Teinte discrète style ATS */
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.itemLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemSublabel {
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.svgIcon {
+  width: 18px;
+  height: 18px;
+}

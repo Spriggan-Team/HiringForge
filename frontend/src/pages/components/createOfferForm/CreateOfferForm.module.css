@@ -12,16 +12,19 @@
   flex: 1;
 }
 
+
 .formRow {
   display: flex;
   gap: 16px;
 }
+
 
 .label {
   font-size: 0.875rem;
   font-weight: 500;
   color: #334155;
 }
+
 
 .input,
 .select,
@@ -44,6 +47,10 @@
 .textarea:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.autocompleteInput{
+  width: 100%;
 }
 
 .textarea {

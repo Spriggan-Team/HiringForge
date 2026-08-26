@@ -4,38 +4,36 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 
 /**  Services */
 import { useAppContext } from "../../../../../hooks/context";
-import type { FlatOffer, OfferStatus } from "../../../../../features/offer/offer";
-import OffersQueries from "../../../../../api/services/offer/queries";
+import type { FlatOffer, EmploymentOfferStatus } from "../../../../../features/employment/offer";
+import EmploymentOffersQueries from "../../../../../api/services/employment/queries";
 
 //-- Custom Components
 import { CreateOfferForm } from "../../../../components/createOfferForm/create.offer.form";
-
-//-- Offers Services
-import OffersServices from "../../../../../api/services/offer/command";
-
-//-- Styles
-import styles from "./OffersSection.module.css";
 import { OfferDetailModal } from "../../offer/offer.details.modal";
 import { EyeIcon } from "../../../../../layout/components/icons/eye.icon";
 
+//-- Employment Offers Services
+import EmploymentOffersServices from "../../../../../api/services/employment/command";
 
-
-
+//-- Styles
+import styles from "./EmploymentOffersSection.module.css";
 
 
 interface OffersSectionProps{
     jobId?: string
 }
 
+
 const LIMIT = 17;
 
-export default function OffersSection({
+
+export default function EmploymentOffersSection({
     jobId
 }: OffersSectionProps) {
     const { setModal } = useAppContext();
 
     //-- Offers
-    const [offers, setOffers] = useState<FlatOffer[]>([]);
+    const [employmentOffers, setEmploymentOffers] = useState<FlatOffer[]>([]);
     const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
     //-- Pagination
@@ -50,7 +48,7 @@ export default function OffersSection({
 
         setIsLoadingMore(true);
         try {
-            const rawData = await OffersQueries.getUserJobOffers({
+            const rawData = await EmploymentOffersQueries.getUserEmploymentOffer({
                 jobId, 
                 skip: currentSkip, 
                 limit: LIMIT 
@@ -72,7 +70,7 @@ export default function OffersSection({
                 avatarUrl: data.candidate.image?.name // optional avatar path
             }));
 
-            setOffers(prev => (currentSkip === 0 ? mappedOffers : [...prev, ...mappedOffers]));
+            setEmploymentOffers(prev => (currentSkip === 0 ? mappedOffers : [...prev, ...mappedOffers]));
         }
         catch (error) {
             console.error("Failed to load offers", error);
@@ -83,14 +81,12 @@ export default function OffersSection({
     }, [jobId, hasMore, isLoadingMore]);
 
 
-
     //-- Intializing data (Fetching first batch)
     useEffect(() => {
         setSkip(0);
         setHasMore(true);
         fetchOffers(0);
     }, [jobId]);
-
 
 
     // Function triggered when the user scrolls to the bottom sentinel element
@@ -102,13 +98,12 @@ export default function OffersSection({
         }
     };
 
-
     // Handle Delete/Cancel offer
     const handleDelete = async (id: string) => {
         setIsUpdating(id);
         try {
-            await OffersServices.deleteOffer(id);
-            setOffers((prev) => prev.filter((item) => item.id !== id));
+            await EmploymentOffersServices.deleteOffer(id);
+            setEmploymentOffers((prev) => prev.filter((item) => item.id !== id));
         }
         catch (error) {
             console.error("Erreur lors de la suppression de l'offre", error);
@@ -118,12 +113,11 @@ export default function OffersSection({
         }
     };
 
-
     const handleCancel = useCallback(async (id: string) => {
         try {
-            await OffersServices.cancelOffer(id);
+            await EmploymentOffersServices.cancelOffer(id);
 
-            setOffers(currentOffers =>
+            setEmploymentOffers(currentOffers =>
                 currentOffers.map(offer =>
                     offer.id === id
                         ? { ...offer, status: 'CANCELLED' }
@@ -145,9 +139,22 @@ export default function OffersSection({
             title: "Créer une offre d'embauche",
             content: (
                 <CreateOfferForm
-                    applications={[]}
                     onSubmit={async (payload) => {
-                        await OffersServices.create(payload);
+                        const data = await EmploymentOffersServices.create(payload);
+                        setEmploymentOffers((prevOffers) => [
+                            {
+                                id: data.id,
+                                email: payload.candiate.email,
+                                status: data.status, // Assure-toi que status est bien présent dans EmploymentSaved si nécessaire
+                                candidate: `${payload.candiate.firstName} ${payload.candiate.lastName}`,
+                                salary: payload.salary,
+                                avatarUrl: payload.avatarUrl,
+                                createdAt: data.createdAt,
+                                jobTitle: payload.jobTitle,
+                                expiresAt: payload.expiredAt,
+                            },
+                            ...prevOffers,
+                        ]);
                     }}
                 />
             ),
@@ -178,13 +185,12 @@ export default function OffersSection({
     };
 
 
-
     return (
         <div className={styles.tableCard}>
             <div className={styles.tableHeader}>
                 <div className={styles.headerTitleGroup}>
                     <h2>Propositions d'embauche (Offres)</h2>
-                    <span className={styles.badgeCount}>{offers.length} au total</span>
+                    <span className={styles.badgeCount}>{employmentOffers.length} au total</span>
                 </div>
                 <button onClick={handleOpenCreateModal} className={styles.btnPrimary}>
                     + Générer une offre
@@ -192,7 +198,7 @@ export default function OffersSection({
             </div>
 
             <OfferTable  
-                offers={offers}
+                employmentOffers={employmentOffers}
                 onDelete={handleDelete}
                 onCancel={handleCancel}
                 onView={handleConsult}
@@ -206,11 +212,14 @@ export default function OffersSection({
 }
 
 
+//---------------------------
+//--- TABLES
+//----------------------------
 
 
 
 interface OffersTableProps {
-    offers: FlatOffer[];
+    employmentOffers: FlatOffer[];
     onDelete: (offerId: string) => void;
     onCancel: (offerId: string) => void;
     onView: (offer: FlatOffer, onCloseCallback?: () => void) => void;
@@ -222,7 +231,7 @@ interface OffersTableProps {
 
 
 const OfferTable: React.FC<OffersTableProps> = ({
-    offers,
+    employmentOffers,
     onDelete,
     onCancel,
     onView,
@@ -300,8 +309,8 @@ const OfferTable: React.FC<OffersTableProps> = ({
 
 
     //-- Dynamic static badge color
-    const renderStatusBadge = (status: OfferStatus) => {
-        const statusConfig: Record<OfferStatus, { label: string; className: string }> = {
+    const renderStatusBadge = (status: EmploymentOfferStatus) => {
+        const statusConfig: Record<EmploymentOfferStatus, { label: string; className: string }> = {
             DRAFT: { label: "Brouillon", className: styles.statusDraft },
             SENT: { label: "En attente", className: styles.statusSent },
             ACCEPTED: { label: "Acceptée", className: styles.statusAccepted },
@@ -333,14 +342,14 @@ const OfferTable: React.FC<OffersTableProps> = ({
                 </thead>
 
                 <tbody>
-                    {offers.length === 0 ? (
+                    {employmentOffers.length === 0 ? (
                         <tr>
                             <td colSpan={7} className={styles.emptyState}>
                                 Aucune offre enregistrée.
                             </td>
                         </tr>
                     ) : (
-                        offers.map((offer) => (
+                        employmentOffers.map((offer) => (
                             <tr
                                 key={offer.id}
                                 className={isUpdating === offer.id ? styles.rowDisabled : ""}
@@ -373,17 +382,17 @@ const OfferTable: React.FC<OffersTableProps> = ({
                                     <span className={styles.jobTitle}>{offer.jobTitle}</span>
                                 </td>
 
-                                {/* Salaire */}
+                                {/* Salary */}
                                 <td data-label="Rémunération">
                                     <span className={styles.salaryText}>
-                                        {formatSalary(offer.salary)}/an
+                                        {offer.salary ? formatSalary(offer.salary) : 'None'}/an
                                     </span>
                                 </td>
 
-                                {/* Date d'envoi */}
+                                {/* Sent date */}
                                 <td data-label="Date d'envoi">
-                                    {offer.sentAt
-                                        ? new Date(offer.sentAt).toLocaleDateString("fr-FR", {
+                                    {offer.createdAt
+                                        ? new Date(offer.createdAt).toLocaleDateString("fr-FR", {
                                               day: "numeric",
                                               month: "short",
                                               year: "numeric",
@@ -402,15 +411,15 @@ const OfferTable: React.FC<OffersTableProps> = ({
                                         : "—"}
                                 </td>
 
-                                {/* Statut : Affichage strict (Badge) */}
+                                {/* Statut : Display strict (Badge) */}
                                 <td data-label="Statut">
                                     {renderStatusBadge(offer.status)}
                                 </td>
 
-                                {/* Actions conditionnelles */}
+                                {/* Conditional Actions  */}
                                     <td data-label="Actions" className={styles.actionsCell}>
                                     <div className={styles.actionGroup}>
-                                        {/* 1. Bouton "Voir" transformé en bouton Œil intéractif */}
+                                        {/* “View” button changed to an interactive eye button */}
                                         <button
                                             type="button"
                                             onClick={() => handleToggleEye(offer)}
@@ -420,7 +429,7 @@ const OfferTable: React.FC<OffersTableProps> = ({
                                             <EyeIcon isOpen={!!activeOfferId} />
                                         </button>
 
-                                        {/* Boutons Annuler et Supprimer inchangés */}
+                                        {/* Cancel & delete */}
                                         {offer.status === "SENT" && (
                                             <button
                                                 type="button"
@@ -450,7 +459,7 @@ const OfferTable: React.FC<OffersTableProps> = ({
                         ))
                     )}
                     {
-                        offers.length > 0 && hasMore && (
+                        employmentOffers.length > 0 && hasMore && (
                             <tr ref={observerTarget} className={styles.loadingRow}>
                                 <td
                                     colSpan={7}

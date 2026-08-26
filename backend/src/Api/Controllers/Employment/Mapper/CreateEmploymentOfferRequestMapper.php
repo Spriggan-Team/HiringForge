@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Api\Controllers\Offer\Mapper;
+namespace App\Api\Controllers\Employment\Mapper;
 
 use App\Application\DTO\Offer\CreateOfferRequestDto;
 
-class CreateOfferRequestMapper
+class CreateEmploymentOfferRequestMapper
 {
     /**
      * @param array{

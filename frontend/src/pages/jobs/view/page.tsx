@@ -23,7 +23,7 @@ import InfoPill, { type InfoPillProps } from "../../../layout/components/badges/
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/dropdown/menu.dropdown";
 import CandidatesViewSection from "../components/tables/candidates/application.table";
 import InterviewsSection from "../components/tables/interviews/interviews.section";
-import OffersSection from "../components/tables/offer/offer.section";
+import OffersSection from "../components/tables/employment/employment.offer.section";
 import { JobStatisticsSection } from "../components/tables/stats/job.statistics.sections";
 
 //-- SVG Components

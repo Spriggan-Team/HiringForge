@@ -6,7 +6,8 @@ namespace App\Domain\Notification;
 enum NotificationType: string
 {
     case JOB_APPLIED = 'JOB_APPLIED';
-
+    case EMPLOYMENT_OFFER_RECEIVED = "EMPLOYMENT_OFFER_RECEIVED";
+    
     case JOB_APPLICATIONS_STATUS_SHIFT = 'job_status_shift';
     //-- Recipient: Candidate
     case INTERVIEW_SCHEDULED = 'INTERVIEW_SCHEDULED';

@@ -1,8 +1,8 @@
 <?php
 
-namespace  App\Domain\Offer;
+namespace  App\Domain\EmploymentOffer;
 
-enum OfferStatus: string
+enum EmploymentOfferStatus: string
 {
     case DRAFT = 'DRAFT';
     case SENT = 'SENT';

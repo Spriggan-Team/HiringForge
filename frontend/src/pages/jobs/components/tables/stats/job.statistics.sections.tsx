@@ -109,7 +109,7 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
 
                 const [jobKpi, statsData, postulationMetricsData] = await Promise.all(
                      [
-                        JobQueries.getJobApplicationKpis(jobId),
+                        JobQueries.getJobKpis(jobId),
                         JobQueries.getJobOffersOverview(jobId),
                         ApplicationQueries.getJobPostulationMetrics({ jobId, timeframe }),
                     ]
@@ -211,7 +211,7 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
                 <div className={styles.kpiCard}>
                     <span className={styles.kpiLabel}>Total Postulations</span>
                     <span className={styles.kpiValue}>{jobKpisData.totalApplications}</span>
-                    <span className={`${styles.kpiBadge} ${styles.positive}`}>+{jobKpisData.applicationIncreaseThisWeek} {t('global.dates.thisWeek')}</span>
+                    <span className={`${styles.kpiBadge} ${styles.positive}`}>+{jobKpisData.applicationIncreaseThisWeek}% {t('global.dates.thisWeek')}</span>
                 </div>
                 <div className={styles.kpiCard}>
                     <span className={styles.kpiLabel}>Offres Générées</span>
@@ -244,7 +244,7 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
                                 dataset={applicationsOverTimeData}
                                 animate={{ duration: 1000, ease: "easeCubicOut" }}
                                 axisSettings={{
-                                    axisFormat: { x: "day" },
+                                    axisFormat: { x: timeframe === "week" ? "day" : "month" },
                                 }}
                                 tickSettings={{
                                     xTickVisibility: true,

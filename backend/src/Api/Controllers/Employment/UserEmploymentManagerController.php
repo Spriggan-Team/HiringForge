@@ -1,33 +1,34 @@
 <?php
 
 
-namespace App\Api\Controllers\Offer;
+namespace App\Api\Controllers\Employment;
 
-use App\Api\Controllers\Offer\Maper\CreateOfferRequestMapper;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Application\DTO\Offer\CreateOfferRequestDto;
 use App\Application\Usecases\Offer\CreateOffer;
-use App\Domain\Offer\OfferRepositoryInterface;
-
+use App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 
-#[Route('/offers/user')]
-class UserOffersController extends AbstractController
+
+#[Route('/users/employment_offers')]
+class UserEmploymentManagerController extends AbstractController
 {
     public function __construct(
         LoggerInterface $logger,
         private ValidatorInterface $validator,
-        private OfferRepositoryInterface $offerRepository
+        private EmploymentOfferRepositoryInterface $offerRepository
     ){
         ApiResponse::init($logger);
     }
@@ -36,7 +37,7 @@ class UserOffersController extends AbstractController
     /**
      * Route /offers/user/jobs?jobId=string&limit=number&skip=number&companyId=number
      */
-    #[Route('/jobs/', methods: ['GET'])]
+    #[Route('/jobs', methods: ['GET'])]
     public function getOfferForUser(Request $request): JsonResponse
     {
         try {
@@ -57,7 +58,6 @@ class UserOffersController extends AbstractController
             
             $scheme = [
                 'id' => true,
-                'title' => true,
                 'status' => true,
                 'sentAt' => true,
                 'expiredAt' => true,
@@ -100,15 +100,16 @@ class UserOffersController extends AbstractController
         catch (\Throwable $error) {
             return ApiResponse::error(
                 message: 'Something wrong happened',
-                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR
+                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR,
+                throwable: $error
             )->toJsonResponse();
         }
     }
 
 
 
-    #[Route('/', methods: ['POST'])]
-    public function createOffer(
+    #[Route('/create', methods: ['POST'])]
+    public function createEmploymentOffer(
         #[MapRequestPayload] CreateOfferRequestDto $command,
         CreateOffer $usecase
     ): JsonResponse {
@@ -141,7 +142,10 @@ class UserOffersController extends AbstractController
             $result = $usecase->execute(userId: $user->getId() ,command: $command);
             
             return ApiResponse::success(
-                data: $result,
+                data:[
+                    "id" =>  $result->id(),
+                    "createdAt" => $result->createdAt()
+                ],
                 message: 'Offer created successfully',
                 statusCode: Response::HTTP_CREATED
             )->toJsonResponse();
@@ -149,8 +153,9 @@ class UserOffersController extends AbstractController
         }
         catch (\Throwable $error) {
             return ApiResponse::error(
-                message: 'Something went wrong: ' . $error->getMessage(),
-                statusCode: Response::HTTP_BAD_REQUEST
+                message: 'Something went wrong while create employement offer ',
+                statusCode: Response::HTTP_BAD_REQUEST,
+                throwable: $error
             )->toJsonResponse();
         }
     }

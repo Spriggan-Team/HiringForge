@@ -14,7 +14,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Department\DepartmentEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Contract\ContractTypeEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillEntity;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 

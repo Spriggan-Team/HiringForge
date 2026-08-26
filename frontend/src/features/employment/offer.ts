@@ -1,5 +1,5 @@
 
-export const OfferStatus = {
+export const EmploymentOfferStatus = {
   SENT: 'SENT',
   ACCEPTED: 'ACCEPTED',
   DECLINED: 'DECLINED',
@@ -9,7 +9,7 @@ export const OfferStatus = {
 } as const;
 
 
-export type OfferStatus = typeof OfferStatus[keyof typeof OfferStatus];
+export type EmploymentOfferStatus = typeof EmploymentOfferStatus[keyof typeof EmploymentOfferStatus];
 
 
 export type OfferSummary = {
@@ -17,7 +17,7 @@ export type OfferSummary = {
     title: string | null;
     message: string | null;
     salary: number | null;
-    status: OfferStatus;
+    status: EmploymentOfferStatus;
     sentAt: string;
     expiredAt: string;
     application: {
@@ -42,17 +42,17 @@ export type RecruiterOffer = OfferSummary & {
 export interface CreateOfferPayload {
     applicationId: string;
     candidateId: string;
-    title: string;
     message: string;
     salary: number;
     expiredAt: string;
+    jobTitle: string;
 }
 
-export const canDeleteOffer = (status: OfferStatus): boolean => {
+export const canDeleteOffer = (status: EmploymentOfferStatus): boolean => {
     return status === 'DRAFT'; //Only draft can be deleted
 };
 
-export const canCancelOffer = (status: OfferStatus): boolean => {
+export const canCancelOffer = (status: EmploymentOfferStatus): boolean => {
     return status === 'SENT'; // Offer sent but not accepted yet!!
 };
 
@@ -62,10 +62,11 @@ export interface FlatOffer {
     candidate: string;
     email: string;
     jobTitle: string;
-    salary: number; // Ex: 45000 (en €/an)
-    sentAt?: string;
+    salary?: number; // Ex: 45000 (en €/an)
+    createdAt?: string;
     expiresAt?: string;
-    status: OfferStatus;
-    avatarUrl?: string;
+    status: EmploymentOfferStatus;
+    avatarUrl?: string | null;
 }
+
 
