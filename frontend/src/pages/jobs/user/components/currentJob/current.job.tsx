@@ -2,7 +2,11 @@
 import { useTranslation } from "react-i18next";
 
 //-- Services
-import type { JobActivityStatus, JobEngagementMetrics, JobPublicationStatus, JobStatus, JobView, VisibilityStatus } from "../../../../../features/jobs/JobOffer";
+import type { CompleteJobView, JobActivityStatus, JobEngagementMetrics, JobPublicationStatus, JobStatus, JobView } from "../../../../../features/jobs/JobOffer";
+import { useAppContext } from "../../../../../hooks/context";
+import { ConfirmModal } from "../../../../../layout/components/conform.box";
+import JobServices from "../../../../../api/services/jobs/command";
+import RouteScheme from "../../../../../route.scheme";
 
 //--Custom Components
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../../layout/components/menu/dropdown/menu.dropdown";
@@ -16,6 +20,7 @@ import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-s
 
 //-- Styles CSS
 import styles from "./CurrentJob.module.css"
+import { useAppNavigate } from "../../../../../hooks/navigation";
 
 
 interface CurrentJobProps{
@@ -31,6 +36,8 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
     onInvalidateCache,
 }) => {
     const {t} = useTranslation();
+    const naviagate = useAppNavigate();
+    const { setModal, setLoading } = useAppContext();
 
     const handleAction = (actionType: string) => {
         if (actionType === 'edit' || actionType === 'delete') {
@@ -70,6 +77,70 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
         return renderVisibilityStatus(publicationStatus);
     };
 
+    
+    /**
+     * Trun job into draft if necessary
+     */
+    const handleEditClick = () => {
+        if (job.publicationStatus === 'published') {
+            setModal({
+                isOpen: true,
+                content: (
+                    <ConfirmModal 
+                        title={t("global.modals.authorizationTitle", "Autorisation")}
+                        message={<ChangeJobOfferToDraftWarning />}
+                        confirmText={t("global.actions.confirm", "Êtes-vous sûr ?")}
+                        cancelText={t("global.actions.cancel", "Annuler")}
+                        variant="warning"
+                        onConfirm={() => {
+                            handleEditJob(job);
+                            setModal(null);
+                        }}
+                        onCancel={() => {
+                            setModal(null);
+                        }}
+                    />
+                )
+            });
+        }
+        else {
+            // redirecting...
+            handleEditJob(job);
+        }
+    };
+
+
+    /**  
+     * Redirect to editing page
+    */
+    const handleEditJob = async (job: CompleteJobView)=>{
+        try{
+            setLoading({ state: true, subtitle: t('jobs.messages.turnJobOfferIntoDraft') });
+            if(job.publicationStatus === 'published'){
+                await JobServices.setJobAsDraft(job.id);
+            }
+
+            naviagate(RouteScheme.modifyJob, { 
+                params: { id: job.id },
+                from: RouteScheme.modifyJob
+            });
+        }
+        catch(error){
+            console.log("Something went wrong while turning job into draft")
+        }
+        finally{
+            setLoading({ state: false });
+        }
+    }
+
+
+    /**
+     * Check requirement before deleting job
+     */
+    const handleDeleteClick = ()=>{
+
+    }
+
 
     return (
         <div 
@@ -102,7 +173,11 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
                         action={
                             <MenuDrawer
                                 onChange={(value)=>{
-                                    console.log("VALUE", value)
+                                    if (value === "edit") {
+                                        handleEditClick();
+                                    } else if (value === "delete") {
+                                        handleDeleteClick(); // Optionnel : à extraire de la même façon
+                                    }
                                 }}
                             >
                                 <MenuDrawerTrigger displayArrowDown={false}>
@@ -113,7 +188,7 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
 
                                 <MenuDrawerBody>
                                     {
-                                    job.publicationStatus != 'closed' ?  (
+                                        job.publicationStatus != 'closed' && job.applications === 0  ?  (
                                             <MenuDrawerItem 
                                                 value="edit"
                                             >
@@ -122,7 +197,6 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
                                         ) 
                                         : null
                                     }
-                                    <MenuDrawerItem value="duplicate">{t("global.actions.duplicate")}</MenuDrawerItem>
                                     <MenuDrawerItem value="delete">{t("global.actions.delete")}</MenuDrawerItem>
                                 </MenuDrawerBody>
                             </MenuDrawer>
@@ -208,3 +282,16 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
 export default CurrentJob;
 
 
+
+const ChangeJobOfferToDraftWarning = () => {
+    const { t } = useTranslation();
+
+    return (
+        <div className={styles.draftWarningModalContent}>
+            {t(
+                "jobs.warnings.changeToDraft",
+                "Cette offre deviendra un brouillon. Les brouillons ne sont pas visibles par les candidats et ne peuvent pas recevoir de candidatures."
+            )}
+        </div>
+    );
+};

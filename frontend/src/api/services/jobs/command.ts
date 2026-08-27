@@ -6,13 +6,18 @@ import { id } from "date-fns/locale";
 import type { JobView } from "../../../features/jobs/JobOffer"
 import { intercept } from "../../../utils/utils";
 import { HttpBadResponse } from "../../exceptions";
-import { authPost, post } from "../../http";
+import { authPatch, authPost, post } from "../../http";
 
 import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import { FailedJobAssetsUpload } from "./exceptions";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
 
+/**
+ * Create new job
+ * @param currentJob 
+ * @returns 
+ */
 const createJob = async(
     currentJob: JobView
 )=>{
@@ -56,6 +61,11 @@ const createJob = async(
 }
 
 
+/**
+ * Upload job assets (image, ...)
+ * @param jobId 
+ * @param images 
+ */
 const uploadJobAssets = async (
   jobId: string, 
   images: { file: File; isMain: boolean }[]
@@ -85,11 +95,32 @@ const uploadJobAssets = async (
 };
 
 
+/**
+ * Set job as draft
+ * @param jobId 
+ */
+const setJobAsDraft = async (jobId: string) => {
+  try{
+    await authPatch(`/job_offers/offers/${jobId}/draft`);
+  }
+  catch(error){
+    throw error;
+  }
+}
+
+
+
+//---------------------
 //--- Service
+//-----------------------
+
 const Services = { 
   createJob,
-  uploadJobAssets
+  uploadJobAssets,
+
+  setJobAsDraft
 }
+
 
 
 const JobServices = intercept<

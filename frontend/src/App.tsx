@@ -23,8 +23,6 @@ import CandidateRegister from './pages/Register/candidate/candidate.register.pag
 import DirectorRegister from './pages/Register/director/director.register'
 import UserHome from './pages/home/user/page'
 import UserJobsPage from './pages/jobs/page'
-
-import CreateJobPage from './pages/jobs/create/create.job.page'
 import PrivateJobViewPage from './pages/jobs/view/page'
 import SchedulingWorkspace from './pages/schedule/scheduling.workspace'
 import CandidatesPage from './pages/user/candidates/candidates.page'
@@ -38,6 +36,8 @@ import CandidateInterviewsPage from './pages/candidate/interviews/candidate.inte
 import CandidateOfferPage from './pages/candidate/offers/candidate.offer.page'
 import CandidateProfilPage from './pages/candidate/profile/candidate.profile.page'
 import CandidateContextProvider from './context/candidate.context'
+import CreateJobPage from './pages/jobs/form/create.job.page'
+import ModifyJobPage from './pages/jobs/form/modify.job.page'
 
 
 
@@ -66,13 +66,16 @@ function App() {
               />
           </Route>
 
-          {/** Registering  */}
+          {/** REGISTERING  */}
           <Route path={RouteScheme.login} element={<Login />} />
           <Route path={RouteScheme.register} element={<RegisterationEntry />} />
 
           <Route element={<PublicAppLayout backgroundColor='transparent' />}>
+            {/** RECRUTEUR REGISTERING  */}
             <Route path={RouteScheme.userRegister} element={<UserRegister />} />
+            {/** CANIDATE REGISTERING  */}
             <Route path={RouteScheme.candidateRegister} element={<CandidateRegister />} />
+            {/** RH DIRECTOR REGISTERING  */}
             <Route path={RouteScheme.directorRegister}  element={<DirectorRegister />} />
           </Route>
 
@@ -90,6 +93,8 @@ function App() {
                 <Route path={RouteScheme.userJobView} element={<PrivateJobViewPage />}/>
                 { /** CREATE JOB  */  }
                 <Route path={RouteScheme.createJob} element={<CreateJobPage /> }/>
+                {/** Modify JOB */}
+                <Route path={RouteScheme.modifyJob} element={<ModifyJobPage /> }/>
                 {/** SCHEDULE PAGE */}
                 <Route path={RouteScheme.userSchedule} element={<SchedulingWorkspace />} />
                 {/** CANDIDATES */}
@@ -98,12 +103,11 @@ function App() {
                 <Route path={RouteScheme.userOffer} element={<UserOffersPage />} />
                 {/** STATS */}
                 <Route path={RouteScheme.userStats} element={<UserStatsPage />}/>
-
-                <Route  />
             </Route>
 
             {/** EXCLUSIVE CANDIDATES */}
             <Route element={<PublicAppLayout />}>
+                {/** APPLICATIONS */}
                 <Route 
                   path={RouteScheme.JobApplication}
                   element={
@@ -112,9 +116,13 @@ function App() {
                     </CandidateContextProvider>
                   }
                 />
+                {/** MY APPLICATIONS */}
                 <Route path={RouteScheme.candidateApplications} element={<CandidateApplicationPage />} />
+                {/** MY INTERVIEWS */}
                 <Route path={RouteScheme.candidateInterviews} element={<CandidateInterviewsPage />} />
+                {/** MY EMPLOYMENT OFFERS */}
                 <Route path={RouteScheme.candidateOffers} element={<CandidateOfferPage />} />
+                {/** MY  PROFIL */}
                 <Route path={RouteScheme.candidateProfile} element={<CandidateProfilPage />} />
             </Route>
 
@@ -177,6 +185,7 @@ type NavigateFn = (path: string, params?: any) => void;
 interface NavigateOptions {
   params?: Record<string, any>;
   menuId?: string;
+  queries?: Record<string, string>;
   persistMenu?: boolean;
   state?: {
         from?: string;
@@ -192,7 +201,8 @@ export const navigateTo = (
     params,
     menuId,
     persistMenu = true,
-    state
+    state,
+    queries
   } = options;
 
   let finalRoute = route;
@@ -206,6 +216,22 @@ export const navigateTo = (
       );
     }
   }
+
+
+  if (queries) {
+    const searchParams = new URLSearchParams();
+    Object.entries(queries).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const queryString = searchParams.toString();
+    if (queryString) {
+      finalRoute += `?${queryString}`;
+    }
+  }
+
 
   navigate(finalRoute, {
     state

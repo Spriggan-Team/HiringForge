@@ -2,10 +2,6 @@
 
 namespace App\Domain\JobOffer;
 
-use App\Domain\Department\Department;
-use App\Domain\Shared\LanguageLevel;
-use App\Domain\Shared\Contract\ContractType;
-
 use App\Domain\Shared\Skill\Skill;
 use App\Domain\Shared\Language\Language;
 
@@ -32,6 +28,10 @@ final class JobOffer
     private ?int $departmentId = null;
     private ?JobWorkMode $jobWorkMode = null;
 
+    /** applications */
+    /** @var array<int,string>  $applications : int => id - */
+    private array $applications = [];
+
     //-- status & visibility
     private ?JobActivityStatus $activityStatus = null;
     private JobPublicationStatus $publicationStatus;
@@ -57,6 +57,7 @@ final class JobOffer
     private DateTimeImmutable $createdAt;
     private DateTimeImmutable $updatedAt;
     private ?DateTimeImmutable $publicationDate = null;
+
 
 
     private function __construct(
@@ -103,9 +104,8 @@ final class JobOffer
         string $title,
         array $content,
 
-        array $categories = [],
         array $images = [],
-        ?int $locationId = null,
+        array $categories = [],
 
         ?JobActivityStatus $activityStatus = null,
         JobPublicationStatus $publicationStatus = JobPublicationStatus::DRAFT,
@@ -151,6 +151,66 @@ final class JobOffer
             publicationStatus: $publicationStatus
         );
     }
+    
+
+    /**
+     * Hydrate a JobOffer instance directly from individual parameters
+     */
+    public static function hydrate(
+        string $id,
+        string $companyId,
+        string $title,
+        array $content,
+        DateTimeImmutable $createdAt,
+        DateTimeImmutable $updatedAt,
+        JobPublicationStatus $publicationStatus,
+        JobOfferVisibilityStatus $visibilityStatus = JobOfferVisibilityStatus::PUBLIC,
+        ?JobActivityStatus $activityStatus = null,
+        array $categories = [],
+        array $images = [],
+        ?int $locationId = null,
+        ?int $departmentId = null,
+        ?JobWorkMode $jobWorkMode = null,
+        array $applications = [],
+        array $skillsId = [],
+        array $languages = [],
+        ?JobOfferExpertise $expertise = null,
+        ?int $contractId = null,
+        ?float $minSalary = null,
+        ?float $maxSalary = null,
+        ?string $currency = null,
+        ?DateTimeImmutable $publicationDate = null
+    ): self {
+        $jobOffer = new self(
+            id: $id,
+            companyId: $companyId,
+            title: $title,
+            content: $content,
+            categories: $categories,
+            images: $images,
+            createdAt: $createdAt,
+            updatedAt: $updatedAt,
+            visibilityStatus: $visibilityStatus,
+            activityStatus: $activityStatus,
+            publicationStatus: $publicationStatus
+        );
+
+        $jobOffer->locationId = $locationId;
+        $jobOffer->departmentId = $departmentId;
+        $jobOffer->jobWorkMode = $jobWorkMode;
+        $jobOffer->applications = $applications;
+        $jobOffer->skillsId = $skillsId;
+        $jobOffer->languages = $languages;
+        $jobOffer->expertise = $expertise;
+        $jobOffer->contractId = $contractId;
+        $jobOffer->minSalary = $minSalary;
+        $jobOffer->maxSalary = $maxSalary;
+        $jobOffer->currency = $currency;
+        $jobOffer->publicationDate = $publicationDate;
+
+        return $jobOffer;
+    }
+
 
 
     // -------------------- Getters --------------------
@@ -488,10 +548,7 @@ final class JobOffer
             }
         }
 
-
         $this->languages[] = $reqLanguage;
-
-
         $this->touch();
     }
     
@@ -537,5 +594,24 @@ final class JobOffer
 
         $this->publicationDate = $publicationDate;
         $this->touch();
+    }
+
+    public function changePublicationStatus(JobPublicationStatus $pubStatus): void
+    {
+        if (!$this->publicationStatus->canTransition($pubStatus)) {
+            throw new \LogicException(sprintf(
+                'It is not possible to change from status “%s” to status “%s”.',
+                $this->publicationStatus->value,
+                $pubStatus->value
+            ));
+        }
+
+        //-- Specific domain rule
+        if ($pubStatus === JobPublicationStatus::DRAFT && count($this->applications) > 0) {
+            throw new \LogicException('A job posting with applications can no longer be set to draft status.');
+        }
+
+        //-- Apply new status
+        $this->publicationStatus = $pubStatus;
     }
 }

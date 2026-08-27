@@ -4,35 +4,37 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
 //--Custom Comoponents
-import BreadCrumbs from "../../../layout/components/navigation/auth/link/bread.crumbs";
-import InfoBoxSection from "./components/infoBoxSection/info.box.section";
-import OptionBoxSection from "./components/optionBoxSection/option.box.section";
-import ImageInput from "../../../layout/components/form/input/image/image";
-import InputLabel from "../../../layout/components/form/input/input.label";
+import InfoBoxSection from "./infoBoxSection/info.box.section";
+import OptionBoxSection from "./optionBoxSection/option.box.section";
+import ImageInput from "../../../../layout/components/form/input/image/image";
+import InputLabel from "../../../../layout/components/form/input/input.label";
 
 //-- Services
-import { navigateTo } from "../../../App";
-import RouteScheme from "../../../route.scheme";
-import { useAppContext } from "../../../hooks/context";
-import JobContextProvider  from "../../../context/job.context";
-import { INITIAL_JOB_VIEW, type JobView } from "../../../features/jobs/JobOffer";
-import JobServices from "../../../api/services/jobs/command";
-import { FailedJobAssetsUpload } from "../../../api/services/jobs/exceptions";
+import { navigateTo } from "../../../../App";
+import RouteScheme from "../../../../route.scheme";
+import { useAppContext } from "../../../../hooks/context";
+import { INITIAL_JOB_VIEW, type JobView } from "../../../../features/jobs/JobOffer";
+import JobServices from "../../../../api/services/jobs/command";
+import { FailedJobAssetsUpload } from "../../../../api/services/jobs/exceptions";
+import { validateSalary } from "../../../../utils/validators";
+import type { UserAppNavBarProps } from "../../../../context/context.type";
 
 //-- SVG components
 import RightToLeftArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg?react';
 
 //-- CSS Styles
-import styles from "./CreateJobPage.module.css"
-import { validateSalary } from "../../../utils/validators";
+import styles from "./JobFormPage.module.css"
 
 
 
+interface CreateJobPageProps{
+    navBar: UserAppNavBarProps | null
+}
 
-interface CreateJobPageProps{}
 
-
-const CreateJobPage: React.FC<CreateJobPageProps> = () => {
+const JobFormPage: React.FC<CreateJobPageProps> = ({
+    navBar
+}) => {
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { setNavbar, setLoading, setPopup, setCurrentJob } = useAppContext();
@@ -42,15 +44,7 @@ const CreateJobPage: React.FC<CreateJobPageProps> = () => {
 
     //  Navbar 
     useEffect(() => {
-        const linkData = [
-            { route: RouteScheme.userJobs,  text: t("jobs.jobs"),           current: false },
-            { route: RouteScheme.createJob, text: t("jobs.buttons.create"), current: true  },
-        ];
-        
-        setNavbar({
-            title: t("jobs.buttons.create"),
-            description: <BreadCrumbs overlayColor="#4338CA" links={linkData} />,
-        });
+        setNavbar(navBar);
 
         setCurrentJob(INITIAL_JOB_VIEW);
 
@@ -149,45 +143,40 @@ const CreateJobPage: React.FC<CreateJobPageProps> = () => {
     );
 
 
-
-
-
     // Render 
     return (
-        <JobContextProvider>
-            <main className={styles.container}>
-                {/* Side rail */}
-                <aside className={styles.side}>
-                    <button
-                        className={`${styles.backButton} card`}
-                        onClick={() => navigateTo(navigate, RouteScheme.userJobs)}
-                        aria-label={t("global.buttons.back")} 
-                    >
-                        <RightToLeftArrowSVG width={15} height={15} />
-                    </button>
-                </aside>
+        <main className={styles.container}>
+            {/* Side rail */}
+            <aside className={styles.side}>
+                <button
+                    className={`${styles.backButton} card`}
+                    onClick={() => navigateTo(navigate, RouteScheme.userJobs)}
+                    aria-label={t("global.buttons.back")} 
+                >
+                    <RightToLeftArrowSVG width={15} height={15} />
+                </button>
+            </aside>
 
-                {/* Content */}
-                <section className={styles.content}>
-                    <div className={styles.columns}>
-                        <div className={styles.mainInfoBox}>
-                            <InfoBoxSection />
-                        </div>
-                        <div className={`${styles.image} card`}>
-                            <InputLabel label="Main image" />
-                            <ImageInput
-                                onChange={(file)=> setImage(file)}
-                            />
-                        </div>
-                        <div className={styles.paramBox}>
-                            <OptionBoxSection onComplete={handleSave} />
-                        </div>
+            {/* Content */}
+            <section className={styles.content}>
+                <div className={styles.columns}>
+                    <div className={styles.mainInfoBox}>
+                        <InfoBoxSection />
                     </div>
-                </section>
-            </main>
-        </JobContextProvider>
+                    <div className={`${styles.image} card`}>
+                        <InputLabel label="Main image" />
+                        <ImageInput
+                            onChange={(file)=> setImage(file)}
+                        />
+                    </div>
+                    <div className={styles.paramBox}>
+                        <OptionBoxSection onComplete={handleSave} />
+                    </div>
+                </div>
+            </section>
+        </main>
     );
 };
 
 
-export default CreateJobPage ;
+export default JobFormPage ;

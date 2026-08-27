@@ -2,7 +2,9 @@
     "jobs":{
         "jobs": "Jobs",
         "title": "Job title",
-        "modifyJob": "Modifier le job",
+        
+        "modifyJob": "Modifier l'offre",
+
         "department": "Departement",
         "expertiseLevel": "Niveau d'expérience",
         "requireLanguage": "Langue requise",
@@ -10,6 +12,9 @@
 
         "empty": "vide",
 
+        "warning":{
+            "changeToDraft": "Cette offre deviendra un brouillon. Les brouillons ne sont pas visibles par les candidats et ne peuvent pas recevoir de candidatures."
+        },
         "buttons":{
             "create": "Créer une offre",
             "cancel": "Annuler",
@@ -36,7 +41,8 @@
         },
 
         "messages":{
-            "failedToLoadJob": "Impossible de charger l'offre d'emploi."
+            "failedToLoadJob": "Impossible de charger l'offre d'emploi.",
+            "turnJobOfferIntoDraft": "Changement d'une offre d'emploi en brouillon ..."
         },
         "candidateStatuses":{
             "preselected" : "Préselectionné",

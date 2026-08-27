@@ -19,13 +19,13 @@ export interface LinkData {
     text: string;
     route: string;
     current?: boolean;
+    onClick?: ()=> void;
 }
 
 
 const BreadCrumbs: React.FC<BreadCrumbsProps> = ({
     links,
     onClick,
-
     color,
     overlayColor,
     className,
@@ -42,9 +42,8 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = ({
             className={`${styles.container}`}
         >
             <ol className={styles.list}>
-                {links.map(({ text, route, current }, index) => {
-                    const normalizedRoute =
-                        route.startsWith("/") ? route : `/${route}`;
+                {links.map(({ text, route, current, onClick: priorityOnclick }, index) => {
+                    const normalizedRoute = route.startsWith("/") ? route : `/${route}`;
 
                     return (
                         <li
@@ -61,7 +60,7 @@ const BreadCrumbs: React.FC<BreadCrumbsProps> = ({
                             ) : (
                                 <>
                                     <Link
-                                        onClick={onClick}
+                                        onClick={priorityOnclick ?? onClick}
                                         to={normalizedRoute}
                                         className={styles.link}
                                     >

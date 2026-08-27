@@ -1,3 +1,4 @@
 Folder description/info/purposes... : 
 
-
+The current root path contains usecases 
+for handling user(recruiter) action

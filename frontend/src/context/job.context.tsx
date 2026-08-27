@@ -1,5 +1,5 @@
-import { createContext, useContext, useState } from "react";
-import { INITIAL_JOB_VIEW, type JobStatus, type JobView } from "../features/jobs/JobOffer";
+import { createContext, useContext } from "react";
+import { type JobView } from "../features/jobs/JobOffer";
 
 
 /** ----------------------------------------------------------------
@@ -43,8 +43,6 @@ interface JobContextProviderProps{
 const JobContextProvider: React.FC<JobContextProviderProps> = ({
     children
 }) => {
-
-
     return (
         <JobContext.Provider value={null}>
             {children}

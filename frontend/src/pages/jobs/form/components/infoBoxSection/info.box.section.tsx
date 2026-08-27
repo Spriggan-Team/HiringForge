@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 //-- Services
-import { useJob } from "../../../../../context/job.context";
 import type { Department } from "../../../../../features/jobs/JobOffer";
 import type { ContractType } from "../../../../../features/contract/contract";
 import { useAppContext, useCurrentUser } from "../../../../../hooks/context";

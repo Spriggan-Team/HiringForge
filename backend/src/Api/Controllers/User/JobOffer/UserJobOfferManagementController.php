@@ -194,7 +194,7 @@ class UserJobOfferManagementController extends AbstractController
 
 
 
-    #[Route('/offers/{offerId}/draft', methods: ['POST'])]
+    #[Route('/offers/{offerId}/draft', methods: ['PATCH'])]
     public function defineJobOfferAsDraft(
         string $offerId,
         MarkJobOfferAsDraft $usecase
@@ -204,15 +204,28 @@ class UserJobOfferManagementController extends AbstractController
         {
             /** @var AuthenticatedPerson **/
             $user = $this->getUser();
+            if(!$user){
+                return ApiResponse::error(
+                    message: "Unauthorize action",
+                    statusCode: 404
+                )->toJsonResponse();
+            }
+
             $usecase->execute(
                 accountId: $user->getId(),
                 offerId: $offerId
             );
-            return ApiResponse::success("Everything went smothly")->toJsonResponse();
+
+            return ApiResponse::notice(
+                    message: "Everything went smothly"
+            )->toJsonResponse();
         }
         catch(Exception $exception)
         {
-            return ApiResponse::error("Something went wrong")->toJsonResponse();
+            return ApiResponse::error(
+                message: "Something went wrong",
+                throwable: $exception
+            )->toJsonResponse();
         }
     }
 

@@ -34,6 +34,7 @@ const RouteScheme = {
 
     //-- User (recruteur) & Agents
     createJob: "/jobs/create",
+    modifyJob: "/jobs/create/:id",
 
     //-- USER JOB SCHEDULER/INTERVIEWS
     userSchedule: "/user/schedule",
@@ -53,3 +54,7 @@ export const PublicRoutes = [
     RouteScheme.login,
     RouteScheme.jobs
 ];
+
+
+export type AppRoute = typeof RouteScheme[keyof typeof RouteScheme];
+export type RouteKey = keyof typeof RouteScheme;

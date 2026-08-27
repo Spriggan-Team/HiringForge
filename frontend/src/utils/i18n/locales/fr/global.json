@@ -164,7 +164,8 @@
             "edit": "Editer",
             "duplicate": "Dupliquer",
             "delete": "Supprimer",
-            "reject": "Rejecte"
+            "reject": "Rejecte",
+            "confirm": "Êtes-vous sûr ?"
         },
 
         "filters":{

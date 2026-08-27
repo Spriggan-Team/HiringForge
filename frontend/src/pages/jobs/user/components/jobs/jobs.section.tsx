@@ -20,13 +20,12 @@ import styles from "./JobSection.module.css"
 
 
 
-
-
 interface JobsSectionProps{
     data: JobSummary[];
     className?: string;
     onClick?: (id: string) => void;
 }
+
 
 
 const JobsSection: React.FC<JobsSectionProps> = ({
@@ -140,10 +139,14 @@ const JobItem: React.FC<JobItemProps> = ({
     >
       <div className={styles.informations}>
         <span className={styles.title}>{title}</span>
-        <div className={styles.locationRow}>
-          <LocationSVGComponent height={15} width={15}/>
-          <span>{address}</span>
-        </div>
+        {
+          address && (
+            <div className={styles.locationRow}>
+              <LocationSVGComponent height={15} width={15}/>
+              <span>{address}</span>
+            </div>
+          )
+        }
         <InfoPill {...infoPillSettings}/>
       </div>
 

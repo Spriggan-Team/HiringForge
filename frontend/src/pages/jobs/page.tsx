@@ -1,7 +1,9 @@
 
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+
 
 //-- Services
 import RouteScheme from "../../route.scheme";
@@ -25,9 +27,9 @@ import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg?reac
 import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.svg?react"
 import AddSVGComponent from "/src/assets/svg/add/add-svgrepo-com.svg?react"
 
+
 //-- CSS styles 
 import styles from "./UserJobPage.module.css"
-
 
 
 
@@ -42,7 +44,6 @@ const DEFAULT_FILTERS: FilterState = {
     searchText: '',
     searchAddress: '',
 };
-
 
 
 const UserJobsPage: React.FC<{}> = () => {

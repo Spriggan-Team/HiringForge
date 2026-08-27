@@ -3,102 +3,131 @@
 skinparam dpi 300
 left to right direction
 
-actor "Recruteur" as User
+actor "Recruteur" as Recruiter
 actor "Candidat" as Candidate
 
-rectangle "Hiring Project" {
+rectangle "HiringForge" {
 
-    ' Consultation des offres
+    ' ============================================================
+    ' OFFRES D'EMPLOI
+    ' ============================================================
+
     (Consulter les offres d'emploi) as ConsultJobOfferList
     (Consulter une offre d'emploi) as ConsultJobOffer
     (Filtrer les offres) as FilterJobOffer
 
-    ' Profil candidat
-    (Gérer le profil candidat) as ManageCandidateProfile
+    FilterJobOffer ..> ConsultJobOfferList : <<extend>>
+
+
+    ' ============================================================
+    ' PROFIL CANDIDAT
+    ' ============================================================
+
     (Modifier les informations personnelles) as ModifyCandidateInformation
     (Modifier l'adresse) as ModifyCandidateAddress
     (Importer un CV) as ImportCV
 
-    ' Candidature
+
+    ' ============================================================
+    ' CANDIDATURE
+    ' ============================================================
+
     (Postuler à une offre d'emploi) as ApplyJobOffer
 
-    ' Candidatures recruteur
+
+    ' ============================================================
+    ' CANDIDATURES - RECRUTEUR
+    ' ============================================================
+
     (Consulter les candidatures) as ConsultCandidateList
     (Consulter une candidature) as ConsultCandidate
     (Filtrer les candidatures) as FilterCandidate
-    (Gérer les candidatures) as ManageCandidates
-    (Sélectionner les candidats) as CandidateSelection
-    (Planifier un entretien) as PlanInterview
-    (Generer une proposition d'embauche) as HiredDemand
-    (Accepter ou refuser une offre d'embauche) as HiredDemandResponse
 
-    ' Profil recruteur
-    (Gérer le profil recruteur) as ManageUserProfile
+    FilterCandidate ..> ConsultCandidateList : <<extend>>
+
+    (Sélectionner les candidats) as CandidateSelection
+
+
+    ' ============================================================
+    ' ENTRETIENS
+    ' ============================================================
+
+    (Planifier un entretien) as PlanInterview
+    (Accepter un entretien) as AcceptInterview
+    (Refuser un entretien) as RejectInterview
+
+
+    ' ============================================================
+    ' PROPOSITION D'EMBAUCHE
+    ' ============================================================
+
+    (Générer une proposition d'embauche) as GenerateHiringOffer
+    (Accepter ou refuser une proposition d'embauche) as RespondToHiringOffer
+
+
+    ' ============================================================
+    ' PROFIL RECRUTEUR
+    ' ============================================================
+
     (Modifier les informations personnelles du recruteur) as ModifyUserInformation
-    (Modifier le information de l'entreprise) as ChangeCompanyInformation
+    (Modifier les informations de l'entreprise) as ChangeCompanyInformation
     (Modifier les identifiants de connexion) as ChangeAuthCredential
     (Téléverser une vidéo de présentation) as UploadVideo
 
-    ' Gestion des offres
-    (Gérer les offres d'emploi) as ManageJobOffer
+
+    ' ============================================================
+    ' GESTION DES OFFRES
+    ' ============================================================
+
     (Créer une offre) as CreateOffer
     (Modifier une offre) as ModifyOffer
     (Publier une offre) as PublishJobOffer
-    (Manipuler le status d'une offre) as StatusOffer
+    (Modifier le statut d'une offre) as ChangeOfferStatus
     (Supprimer une offre) as DeleteJobOffer
-
-    'Interviews
-    (Planification d'un entretien) as CreateInterviews
-    (Acceptation d'un entretien) as AcceptInterviews
-    (Refus d'un intretien) as RejectInterviews
 }
 
-' --- Candidat ---
+
+' ================================================================
+' CANDIDAT
+' ================================================================
 
 Candidate --> ConsultJobOfferList
 Candidate --> ConsultJobOffer
-Candidate --> FilterJobOffer
-
-Candidate --> ManageCandidateProfile
-Candidate -right-> ChangeAuthCredential
-ManageCandidateProfile ..> ModifyCandidateInformation : <<include>>
-ManageCandidateProfile ..> ModifyCandidateAddress : <<include>>
-ManageCandidateProfile ..> ImportCV : <<include>>
-
 Candidate --> ApplyJobOffer
-Candidate -> AcceptInterviews
-Candidate -> RejectInterviews
 
-Candidate -> HiredDemandResponse
+Candidate --> ModifyCandidateInformation
+Candidate --> ModifyCandidateAddress
+Candidate --> ImportCV
 
-' --- Recruteur ---
+Candidate --> AcceptInterview
+Candidate --> RejectInterview
 
-User --> ConsultJobOfferList
-User --> ConsultJobOffer
-User --> FilterJobOffer
+Candidate --> RespondToHiringOffer
 
-User --> ConsultCandidateList
-ConsultCandidateList ..> ConsultCandidate : <<include>>
-ConsultCandidateList ..> FilterCandidate : <<include>>
 
-User --> ManageCandidates
-ManageCandidates ..> CandidateSelection : <<include>>
-ManageCandidates ..> PlanInterview : <<include>>
+' ================================================================
+' RECRUTEUR
+' ================================================================
 
-User --> ManageUserProfile
-User -> ModifyUserInformation
-ManageUserProfile ..> ChangeAuthCredential : <<include>>
-ManageUserProfile ..> UploadVideo : <<include>>
+Recruiter --> ConsultJobOfferList
+Recruiter --> ConsultJobOffer
 
-User --> ManageJobOffer
-ManageJobOffer ..> CreateOffer : <<include>>
-ManageJobOffer ..> ModifyOffer : <<include>>
-ManageJobOffer ..> PublishJobOffer : <<include>>
-ManageJobOffer ..> StatusOffer : <<include>>
-ManageJobOffer ..> DeleteJobOffer : <<include>>
+Recruiter --> ConsultCandidateList
+Recruiter --> ConsultCandidate
+Recruiter --> CandidateSelection
 
-User ->CreateInterviews
-User -> HiredDemand
-User -right-> ChangeCompanyInformation 
+Recruiter --> PlanInterview
+Recruiter --> GenerateHiringOffer
+
+Recruiter --> ModifyUserInformation
+Recruiter --> ChangeCompanyInformation
+Recruiter --> ChangeAuthCredential
+Recruiter --> UploadVideo
+
+Recruiter --> CreateOffer
+Recruiter --> ModifyOffer
+Recruiter --> PublishJobOffer
+Recruiter --> ChangeOfferStatus
+Recruiter --> DeleteJobOffer
 
 @enduml

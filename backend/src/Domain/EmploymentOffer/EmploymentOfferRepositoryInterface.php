@@ -52,7 +52,7 @@ interface EmploymentOfferRepositoryInterface
 
     /**
      * Creates an offer after verifying that the user is associated with the related job.
-     * It is able  to handle update
+     * It can be used to handle update
      * @param string $userId The unique identifier of the user.
      * @param EmploymentOffer $offer Domain object containing the data required to create an offer.
      */

@@ -7,8 +7,9 @@ import { BrowserRouter } from 'react-router-dom'
 //--Services
 import AppContextProvider from './context/app.context'
 
-//-- Custom Compoenents
+//-- Custom Compoennts
 import { AppSpinner } from './layout/components/indicators/spinner/spinner'
+import AppModal from './layout/components/modal/app.modal.tsx'
 import AppPopup from './layout/components/popup/app.popup'
 
 
@@ -20,7 +21,8 @@ import './utils/i18n/index.ts'
 
 //-- Styles
 import './index.css'
-import AppModal from './layout/components/modal/app.modal.tsx'
+import './variable.css'
+
 
 
 createRoot(document.getElementById('root')!).render(
