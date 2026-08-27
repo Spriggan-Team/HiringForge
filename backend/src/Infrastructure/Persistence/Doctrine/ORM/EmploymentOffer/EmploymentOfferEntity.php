@@ -7,7 +7,6 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
-use Ramsey\Uuid\Uuid;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
@@ -15,14 +14,14 @@ use Symfony\Bridge\Doctrine\Types\UuidType;
 
 
 #[ORM\Entity]
-#[ORM\Table(name: 'emploment_offer')]
+#[ORM\Table(name: 'employment_offer')]
 class EmploymentOfferEntity
 {
     #[ORM\Id]
-    #[ORM\Column(type: UuidType::NAME, unique: true)]
+    #[ORM\Column]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
-    private ?Uuid $id = null;
+    private ?string $id = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $message = null;
@@ -35,9 +34,6 @@ class EmploymentOfferEntity
     )]
     private EmploymentOfferStatus $status = EmploymentOfferStatus::SENT;
 
-
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-    private ?bool $confirm = null;
     
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $rejectionReason = null;
@@ -127,9 +123,7 @@ class EmploymentOfferEntity
         return $this->createdAt;
     }
 
-    public function getConfirmation(){
-        return $this->confirm;
-    }
+
 
     public function getRejectionReason(){
         return $this->rejectionReason;
@@ -166,7 +160,7 @@ class EmploymentOfferEntity
     public function setSalary(float $salary)
     {
         $this->salary = $salary;
-        return $this->salary;
+        return $this;
     }
 
 
@@ -191,14 +185,10 @@ class EmploymentOfferEntity
         return $this;
     }
 
-    public function setConfirm(?bool $confirm = null) {
-        $this->confirm = $confirm;
-    }
-
-
-    public function reject(string $rejectionReason){
-        $this->confirm = false;
+    public function setRejectionReason(?string $rejectionReason): self
+    {
         $this->rejectionReason = $rejectionReason;
+        return $this;
     }
 
 }

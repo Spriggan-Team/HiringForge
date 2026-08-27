@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 
 /**  Services */
 import { useAppContext } from "../../../../../hooks/context";
-import type { FlatOffer, EmploymentOfferStatus } from "../../../../../features/employment/offer";
+import { type FlatOffer, EmploymentOfferStatus } from "../../../../../features/employment/offer";
 import EmploymentOffersQueries from "../../../../../api/services/employment/queries";
 
 //-- Custom Components
@@ -17,6 +17,10 @@ import EmploymentOffersServices from "../../../../../api/services/employment/com
 
 //-- Styles
 import styles from "./EmploymentOffersSection.module.css";
+import { useTranslation } from "react-i18next";
+import { formatDateSafely, getInitials } from "../../../../../utils/format";
+import type { EmploymentOfferQueryData } from "../../../../../api/services/employment/response";
+import ApplicationQueries from "../../../../../api/services/application/queries";
 
 
 interface OffersSectionProps{
@@ -30,7 +34,8 @@ const LIMIT = 17;
 export default function EmploymentOffersSection({
     jobId
 }: OffersSectionProps) {
-    const { setModal } = useAppContext();
+    const {t} = useTranslation();
+    const { setModal, setLoading, setPopup } = useAppContext();
 
     //-- Offers
     const [employmentOffers, setEmploymentOffers] = useState<FlatOffer[]>([]);
@@ -41,46 +46,82 @@ export default function EmploymentOffersSection({
     const [hasMore, setHasMore] = useState<boolean>(true);
     const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
+    //- Lock
+    const isLoadingRef = useRef(false);
+    const imageURLsCache = useRef<Record<string, string>>({}); //employment : id => url-image
 
     const fetchOffers = useCallback(async (currentSkip: number) => {
         // Secure calls
-        if (isLoadingMore || (!hasMore && currentSkip !== 0)) return;
+        if (isLoadingRef.current || (!hasMore && currentSkip !== 0)) return;
 
+        isLoadingRef.current = true;
         setIsLoadingMore(true);
+
         try {
             const rawData = await EmploymentOffersQueries.getUserEmploymentOffer({
-                jobId, 
-                skip: currentSkip, 
-                limit: LIMIT 
+                jobId,
+                skip: currentSkip,
+                limit: LIMIT,
             });
 
-            // Stop pagination if back-end returns fewer items than requested LIMIT
             if (rawData.length < LIMIT) {
                 setHasMore(false);
             }
 
-            const mappedOffers: FlatOffer[] = rawData.map((data: any) => ({
-                id: data.id,
-                candidate: `${data.candidate.firstName} ${data.candidate.lastName}`,
-                email: data.candidate.email,
-                jobTitle: data.jobOffer.title,
-                salary: data.salary,
-                expiresAt: format(new Date(data.expiredAt), 'dd MMMM yyyy'),
-                status: data.status,
-                avatarUrl: data.candidate.image?.name // optional avatar path
-            }));
+            const offersPromises = rawData.map(async (data: EmploymentOfferQueryData): Promise<FlatOffer> => {
+                let avatarUrl: string | null = null;
+                const cache = imageURLsCache.current;
 
+                if (cache[data.id]) {
+                    avatarUrl = cache[data.id];
+                }
+                else if (data.candidate.image?.name) {
+                    // Optionnel : ne charger l'image que si le candidat en a vraiment une
+                    try {
+                        const blob = await ApplicationQueries.getCandidateProfilImage({
+                            candidateId: data.candidate.id,
+                            applicationId: data.application.id
+                        });
+                        const url = URL.createObjectURL(blob);
+                        cache[data.id] = url;
+                        avatarUrl = url;
+                    } catch (error) {
+                        console.error(`Impossible de charger l'image pour ${data.candidate.id}`, error);
+                    }
+                }
+
+                const payload: FlatOffer = {
+                    id: data.id,
+                    candidate: `${data.candidate.firstName} ${data.candidate.lastName}`,
+                    email: data.candidate.email,
+                    jobTitle: data.jobOffer.title,
+                    salary: data.salary,
+                    expiresAt: data.expiredAt.date,
+                    createdAt: data.createdAt.date, 
+                    status: data.status,
+                    avatarUrl: avatarUrl,
+                    message: data.message
+                }
+
+                return payload;
+            });
+
+            //-- Produce successfull result and error
+            const mappedOffers = await Promise.all(offersPromises);
             setEmploymentOffers(prev => (currentSkip === 0 ? mappedOffers : [...prev, ...mappedOffers]));
-        }
+        }  
         catch (error) {
             console.error("Failed to load offers", error);
         }
         finally {
+            isLoadingRef.current = false;
             setIsLoadingMore(false);
         }
-    }, [jobId, hasMore, isLoadingMore]);
+    }, [jobId]);
 
 
+
+    
     //-- Intializing data (Fetching first batch)
     useEffect(() => {
         setSkip(0);
@@ -133,28 +174,47 @@ export default function EmploymentOffersSection({
 
     //-- Open Modal for creating offer
     const handleOpenCreateModal = () => {
-        console.log("Open modal")
         setModal({
             isOpen: true,
             title: "Créer une offre d'embauche",
             content: (
                 <CreateOfferForm
                     onSubmit={async (payload) => {
-                        const data = await EmploymentOffersServices.create(payload);
-                        setEmploymentOffers((prevOffers) => [
-                            {
-                                id: data.id,
-                                email: payload.candiate.email,
-                                status: data.status, // Assure-toi que status est bien présent dans EmploymentSaved si nécessaire
-                                candidate: `${payload.candiate.firstName} ${payload.candiate.lastName}`,
-                                salary: payload.salary,
-                                avatarUrl: payload.avatarUrl,
-                                createdAt: data.createdAt,
-                                jobTitle: payload.jobTitle,
-                                expiresAt: payload.expiredAt,
-                            },
-                            ...prevOffers,
-                        ]);
+                        setLoading({ state: true, subtitle: t("employmentOffer.messages.loading.employmentOfferGeneration") });
+                        try{
+                            const data = await EmploymentOffersServices.create(payload);
+                            setEmploymentOffers((prevOffers) => {
+                                const name = `${payload.candiate.firstName} ${payload.candiate.lastName}`;
+                                return ([
+                                    {
+                                        id: data.id,
+                                        email: payload.candiate.email,
+                                        status: data.status, // Assure-toi que status est bien présent dans EmploymentSaved si nécessaire
+                                        candidate: name,
+                                        salary: payload.salary ? payload.salary : undefined,
+                                        avatarUrl: payload.avatarUrl,
+                                        jobTitle: payload.jobTitle,
+                                        message: payload.message,
+                                        expiresAt: payload.expiredAt,
+                                        createdAt: data.createdAt,
+                                    },
+                                    ...prevOffers,
+                                ]);
+                            });
+                            setLoading({ state: false })
+                            setPopup({
+                                status: 'success',
+                                message:  t("employmentOffer.apiResponse.employmentGenerationSucceed")
+                            })
+                        }
+                        catch(error){
+                            console.log("Something went wrong while saving employment offer", error)
+                            setLoading({state: false})
+                            setPopup({
+                                status: 'error',
+                                message: t("employmentOffer.apiResponse.employmentGenerationFailed")
+                            })
+                        }
                     }}
                 />
             ),
@@ -184,6 +244,14 @@ export default function EmploymentOffersSection({
         });
     };
 
+    //-- Cleaning up
+    useEffect(()=>{
+        return ()=>{
+            Object.values(imageURLsCache.current).forEach((url)=>{
+                URL.revokeObjectURL(url);
+            })
+        }
+    },[])
 
     return (
         <div className={styles.tableCard}>
@@ -230,6 +298,7 @@ interface OffersTableProps {
 }
 
 
+
 const OfferTable: React.FC<OffersTableProps> = ({
     employmentOffers,
     onDelete,
@@ -269,7 +338,6 @@ const OfferTable: React.FC<OffersTableProps> = ({
 
         const observer = new IntersectionObserver(
             (entries) => {
-                // Trigger load-more when sentinel becomes visible
                 if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
                     onLoadMore();
                 }
@@ -282,7 +350,7 @@ const OfferTable: React.FC<OffersTableProps> = ({
         return () => {
             if (target) observer.unobserve(target);
         };
-    }, [onLoadMore, hasMore, isLoadingMore]);
+    }, [hasMore, isLoadingMore]);
 
 
 
@@ -349,114 +417,105 @@ const OfferTable: React.FC<OffersTableProps> = ({
                             </td>
                         </tr>
                     ) : (
-                        employmentOffers.map((offer) => (
-                            <tr
-                                key={offer.id}
-                                className={isUpdating === offer.id ? styles.rowDisabled : ""}
-                            >
-                                {/* Candidat */}
-                                <td data-label="Candidat">
-                                    <div className={styles.candidateCell}>
-                                        {offer.avatarUrl ? (
-                                            <img
-                                                src={offer.avatarUrl}
-                                                alt={offer.candidate}
-                                                className={styles.avatar}
-                                            />
-                                        ) : (
-                                            <div className={styles.avatarFallback}>
-                                                {getInitials(offer.candidate)}
+                        employmentOffers.map((offer) => {
+                            const disableDeletion = new Date() > new Date(offer.expiresAt) || offer.status === EmploymentOfferStatus.DECLINED;
+                            return (
+                                <tr
+                                    key={offer.id}
+                                    className={isUpdating === offer.id ? styles.rowDisabled : ""}
+                                >
+                                    {/* Candidat */}
+                                    <td data-label="Candidat">
+                                        <div className={styles.candidateCell}>
+                                            {offer.avatarUrl ? (
+                                                <img
+                                                    src={offer.avatarUrl}
+                                                    alt={offer.candidate}
+                                                    className={styles.avatar}
+                                                />
+                                            ) : (
+                                                <div className={styles.avatarFallback}>
+                                                    {getInitials(offer.candidate)}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <span className={styles.candidateName}>
+                                                    {offer.candidate}
+                                                </span>
+                                                <span className={styles.emailText}>{offer.email}</span>
                                             </div>
-                                        )}
-                                        <div>
-                                            <span className={styles.candidateName}>
-                                                {offer.candidate}
-                                            </span>
-                                            <span className={styles.emailText}>{offer.email}</span>
                                         </div>
-                                    </div>
-                                </td>
+                                    </td>
 
-                                {/* Poste */}
-                                <td data-label="Poste">
-                                    <span className={styles.jobTitle}>{offer.jobTitle}</span>
-                                </td>
+                                    {/* Poste */}
+                                    <td data-label="Poste">
+                                        <span className={styles.jobTitle}>{offer.jobTitle}</span>
+                                    </td>
 
-                                {/* Salary */}
-                                <td data-label="Rémunération">
-                                    <span className={styles.salaryText}>
-                                        {offer.salary ? formatSalary(offer.salary) : 'None'}/an
-                                    </span>
-                                </td>
+                                    {/* Salary */}
+                                    <td data-label="Rémunération">
+                                        <span className={styles.salaryText}>
+                                            {offer.salary ? formatSalary(offer.salary) : 'Aucune'}
+                                        </span>
+                                    </td>
 
-                                {/* Sent date */}
-                                <td data-label="Date d'envoi">
-                                    {offer.createdAt
-                                        ? new Date(offer.createdAt).toLocaleDateString("fr-FR", {
-                                              day: "numeric",
-                                              month: "short",
-                                              year: "numeric",
-                                          })
-                                        : "—"}
-                                </td>
+                                    {/* Sent date */}
+                                    <td data-label="Date d'envoi">
+                                        {formatDateSafely(offer.createdAt)}
+                                    </td>
 
-                                {/* Expiration */}
-                                <td data-label="Expiration">
-                                    {offer.expiresAt
-                                        ? new Date(offer.expiresAt).toLocaleDateString("fr-FR", {
-                                              day: "numeric",
-                                              month: "short",
-                                              year: "numeric",
-                                          })
-                                        : "—"}
-                                </td>
+                                    {/* Expiration */}
+                                    <td data-label="Expiration">
+                                        {formatDateSafely(offer.expiresAt)}
+                                    </td>
 
-                                {/* Statut : Display strict (Badge) */}
-                                <td data-label="Statut">
-                                    {renderStatusBadge(offer.status)}
-                                </td>
+                                    {/* Statut : Display strict (Badge) */}
+                                    <td data-label="Statut">
+                                        {renderStatusBadge(offer.status)}
+                                    </td>
 
-                                {/* Conditional Actions  */}
-                                    <td data-label="Actions" className={styles.actionsCell}>
-                                    <div className={styles.actionGroup}>
-                                        {/* “View” button changed to an interactive eye button */}
-                                        <button
-                                            type="button"
-                                            onClick={() => handleToggleEye(offer)}
-                                            className={styles.btnSecondary}
-                                            title={activeOfferId ? "Masquer les détails" : "Voir les détails"}
-                                        >
-                                            <EyeIcon isOpen={!!activeOfferId} />
-                                        </button>
-
-                                        {/* Cancel & delete */}
-                                        {offer.status === "SENT" && (
+                                    {/* Conditional Actions  */}
+                                        <td data-label="Actions" className={styles.actionsCell}>
+                                        <div className={styles.actionGroup}>
+                                            {/* “View” button changed to an interactive eye button */}
                                             <button
                                                 type="button"
-                                                onClick={() => onCancel(offer.id)}
-                                                className={styles.btnWarning}
-                                                title="Annuler l'offre envoyée"
-                                                disabled={isUpdating === offer.id}
+                                                onClick={() => handleToggleEye(offer)}
+                                                className={styles.btnSecondary}
+                                                title={activeOfferId ? "Masquer les détails" : "Voir les détails"}
                                             >
-                                                Annuler
+                                                <EyeIcon isOpen={!!activeOfferId} />
                                             </button>
-                                        )}
 
-                                        {offer.status === "DRAFT" && (
-                                            <button
-                                                type="button"
-                                                onClick={() => onDelete(offer.id)}
-                                                className={styles.btnDanger}
-                                                title="Supprimer le brouillon"
-                                                disabled={isUpdating === offer.id}
-                                            >
-                                                Supprimer
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))
+                                            {/* Cancel & delete */}
+                                            {offer.status === "SENT" && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onCancel(offer.id)}
+                                                    className={styles.btnDeactivate}
+                                                    title="Annuler l'offre envoyée"
+                                                    disabled={isUpdating === offer.id || disableDeletion}
+                                                >
+                                                    Annuler
+                                                </button>
+                                            )}
+
+                                            {offer.status === "DRAFT" && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onDelete(offer.id)}
+                                                    className={styles.btnDanger}
+                                                    title="Supprimer le brouillon"
+                                                    disabled={isUpdating === offer.id}
+                                                >
+                                                    Supprimer
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            )
+                        })
                     )}
                     {
                         employmentOffers.length > 0 && hasMore && (

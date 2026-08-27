@@ -5,6 +5,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer\Repositori
 
 use App\Domain\EmploymentOffer\EmploymentOffer as DomainEmploymentOffer;
 use App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface;
+use App\Domain\EmploymentOffer\EmploymentOfferStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer\EmploymentOfferEntity;
 
 use Doctrine\Persistence\ManagerRegistry;
@@ -25,8 +26,44 @@ class EmploymentOfferRepository extends ServiceEntityRepository
 
 
     #[Override]
+    public function findById(string $employmentId): ?DomainEmploymentOffer
+    {
+        /** @var EmploymentOfferEntity|null $employment */
+        $entity = $this->findOneBy(["id" => $employmentId]);
+        if(!$employment){
+            return null;
+        }
+        $domain = $this->mapper->toDomain($entity);
+        return $domain;
+    }
+
+
+
+    #[Override]
+    public function findEmploymentOfferForRecruiter(string $recruiterId, string $employmentOfferId): ?DomainEmploymentOffer
+    {
+        $qb = $this->createQueryBuilder('o')
+            ->innerJoin('o.application', 'a')
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('o.id = :employmentOfferId')
+            ->andWhere('j.user = :recruiterId')
+            ->setParameter('employmentOfferId', $employmentOfferId)
+            ->setParameter('recruiterId', $recruiterId);
+
+        /** @var EmploymentOfferEntity|null $entity */
+        $entity = $qb->getQuery()->getOneOrNullResult();
+
+        if ($entity === null) {
+            return null;
+        }
+
+        return $this->mapper->toDomain($entity);
+    }
+
+
+
+    #[Override]
     public function canCreateEmploymentOfferForApplication(
-        string $recruiterId,
         string $applicationId,
         string $candidateId
     ): bool {
@@ -39,7 +76,11 @@ class EmploymentOfferRepository extends ServiceEntityRepository
             ->where('a.id = :applicationId')
             ->andWhere('c.id = :candidateId')
             ->andWhere('e.expiredAt > :now')
-            ->andWhere('e.confirm IS NULL OR e.confirm = true') // not false, not rejected
+            ->andWhere('e.status NOT IN (:closedStatuses)')
+            ->setParameter('closedStatuses', [
+                EmploymentOfferStatus::DECLINED,
+                EmploymentOfferStatus::EXPIRED,
+            ])
             ->setParameter('applicationId', $applicationId)
             ->setParameter('candidateId', $candidateId)
             ->setParameter('now', $now)
@@ -115,7 +156,46 @@ class EmploymentOfferRepository extends ServiceEntityRepository
 
         //  Flush
         $em->flush();
+
+        if ($offer->id() === null && $entity->getId() !== null) {
+            $offer->setId((string) $entity->getId());
+        }
     }
+
+
+    /** DELETION */
+    #[Override]
+    public function delete(string $employmentId): void
+    {
+        $rowsAffected = $this->createQueryBuilder('o')
+            ->delete()
+            ->where('o.id = :id')
+            ->setParameter('id', $employmentId)
+            ->getQuery()
+            ->execute();
+
+        if ($rowsAffected === 0) {
+            throw new \RuntimeException(
+                sprintf('Employment offer with ID "%s" not found for deletion.', $employmentId)
+            );
+        }
+    }
+
+
+    public function update(DomainEmploymentOffer $employmentOffer): void
+    {
+        $existingEntity = $this->find($employmentOffer->id());
+
+        if ($existingEntity === null) {
+            throw new \RuntimeException(
+                sprintf('Employment offer with ID "%s" not found for update.', $employmentOffer->id())
+            );
+        }
+
+        $this->mapper->toEntity($employmentOffer, $existingEntity);
+        $this->getEntityManager()->flush();
+    }
+
 
 
     #[Override]
@@ -141,15 +221,18 @@ class EmploymentOfferRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('o');
         $selects = [];
 
-        // 1. Projection Offer (Champs corrects de EmploymentOfferEntity)
-        $offerFields = ['id', 'message', 'salary', 'status', 'expiredAt', 'createdAt']; // 👈 'sentAt' remplacé par 'createdAt'
+        //  Projection Offer (Champs corrects de EmploymentOfferEntity)
+        $offerFields = [
+            'id', 'message', 'salary', 'status', 'expiredAt', 'createdAt'
+        ];
+        
         foreach ($offerFields as $field) {
             if (!empty($scheme[$field])) {
                 $selects[] = "o.$field AS $field";
             }
         }
 
-        // 2. Candidate & Image
+        //  Candidate & Image
         $candidateScheme = $scheme['candidate'] ?? [];
         if (!empty($candidateScheme)) {
             $qb->leftJoin('o.candidate', 'c');
@@ -169,7 +252,7 @@ class EmploymentOfferRepository extends ServiceEntityRepository
             }
         }
 
-        // 3. Application & JobOffer
+        //  Application & JobOffer
         $qb->leftJoin('o.application', 'a')
         ->leftJoin('a.jobOffer', 'j');
 
@@ -193,7 +276,7 @@ class EmploymentOfferRepository extends ServiceEntityRepository
 
         $qb->select($selects);
 
-        // 4. Conditions de filtrage
+        //  Conditions de filtrage
         $conditions = [];
 
         if (!empty($companyId)) {
@@ -213,13 +296,13 @@ class EmploymentOfferRepository extends ServiceEntityRepository
             $qb->where(...$conditions);
         }
 
-        // 5. Pagination
+        //  Pagination
         $qb->setFirstResult($skip)
         ->setMaxResults($limit);
 
         $results = $qb->getQuery()->getArrayResult();
 
-        // 6. Restructuration des clés pour l'output DTO/JSON
+        //  Restructuration des clés pour l'output DTO/JSON
         return array_map(function (array $row) {
             $formatted = [];
             

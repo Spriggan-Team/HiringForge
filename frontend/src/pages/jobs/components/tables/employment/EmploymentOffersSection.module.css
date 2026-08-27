@@ -127,20 +127,29 @@
   color: #111827;
 }
 
-    /* Cancel button color */
-.btnWarning {
-  background-color: #fffbeb;
-  color: #b45309;
-  border-color: #fde68a;
+/* Cancel button color */
+.btnDeactivate {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
 }
 
-.btnWarning:hover:not(:disabled) {
-  background-color: #fef3c7;
-  border-color: #fcd34d;
-  color: #92400e;
+.btnDeactivate:hover:not(:disabled) {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+  color: #b91c1c;
 }
 
-    /* Delete Buttons */
+/* Optionnel : État désactivé commun */
+.btnDeactivate:disabled,
+.btnWarning:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+
+/* Delete Buttons */
 .btnDanger {
   background-color: #fef2f2;
   color: #b91c1c;

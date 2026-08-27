@@ -20,6 +20,7 @@ export const OfferDetailModal: React.FC<OfferDetailModalProps> = ({
 
   return (
     <div className={styles.container}>
+      {/** Avatar */}
       <div className={styles.header}>
         {offer.avatarUrl ? (
           <img
@@ -41,26 +42,30 @@ export const OfferDetailModal: React.FC<OfferDetailModalProps> = ({
 
       <hr className={styles.separator} />
 
+      {/** Poste */}
       <div className={styles.details}>
         <div className={styles.detailItem}>
           <strong>Poste :</strong>
           <p className={styles.detailValue}>{offer.jobTitle}</p>
         </div>
 
+        {/** Rebumération */}
         <div className={styles.detailItem}>
           <strong>Rémunération :</strong>
           <p className={styles.detailValue}>
-            {formatSalary(offer.salary)} / an
+            {offer.salary ? formatSalary(offer.salary) : "Aucune"} 
           </p>
         </div>
 
+        {/** Created - At */}
         <div className={styles.detailItem}>
           <strong>Date d'envoi :</strong>
           <p className={styles.detailValue}>
-            {offer.sentAt || '—'}
+            {offer.createdAt || '—'}
           </p>
         </div>
 
+        {/** Expired - At */}
         <div className={styles.detailItem}>
           <strong>Expiration :</strong>
           <p className={styles.detailValue}>
@@ -68,12 +73,20 @@ export const OfferDetailModal: React.FC<OfferDetailModalProps> = ({
           </p>
         </div>
 
+        {/** Status */}
         <div className={styles.detailItem}>
           <strong>Statut :</strong>
           <p className={styles.detailValue}>
             {offer.status}
           </p>
         </div>
+        
+        {offer.message && (
+          <div className={styles.messageBox}>
+            <strong>Message :</strong>
+            <p className={styles.messageContent}>{offer.message}</p>
+          </div>
+        )}
       </div>
 
       <div className={styles.actions}>

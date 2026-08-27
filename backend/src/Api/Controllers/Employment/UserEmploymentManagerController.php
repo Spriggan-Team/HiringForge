@@ -3,17 +3,17 @@
 
 namespace App\Api\Controllers\Employment;
 
+use App\Api\Controllers\Employment\Mapper\CreateEmploymentOfferMapper;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
-use App\Application\DTO\Offer\CreateOfferRequestDto;
-use App\Application\Usecases\Offer\CreateOffer;
+use App\Application\Usecases\EmploymentOffer\CancelEmploymentOffer;
+use App\Application\Usecases\EmploymentOffer\CreateEmploymentOffer;
 use App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,9 +35,9 @@ class UserEmploymentManagerController extends AbstractController
 
 
     /**
-     * Route /offers/user/jobs?jobId=string&limit=number&skip=number&companyId=number
+     * Route /users/employment_offers/user?jobId=string&limit=number&skip=number&companyId=number
      */
-    #[Route('/jobs', methods: ['GET'])]
+    #[Route('', methods: ['GET'])]
     public function getOfferForUser(Request $request): JsonResponse
     {
         try {
@@ -60,14 +60,17 @@ class UserEmploymentManagerController extends AbstractController
                 'id' => true,
                 'status' => true,
                 'sentAt' => true,
-                'expiredAt' => true,
                 'salary' => true,
+                'expiredAt' => true,
+                'createdAt' => true,
+                'message' => true,
                 'candidate' => [
                     'id' => true,
                     'firstName' => true,
                     'lastName' => true,
                     'email' => true,
                     'image' => [
+                        'id' => true,
                         'name' => true,
                         'mime' => true
                     ]
@@ -106,12 +109,14 @@ class UserEmploymentManagerController extends AbstractController
         }
     }
 
+    
 
 
     #[Route('/create', methods: ['POST'])]
     public function createEmploymentOffer(
-        #[MapRequestPayload] CreateOfferRequestDto $command,
-        CreateOffer $usecase
+        Request $request,
+        CreateEmploymentOffer $usecase,
+        CreateEmploymentOfferMapper $mapper
     ): JsonResponse {
         try {
             /** @var AuthenticatedPerson $user */
@@ -124,6 +129,7 @@ class UserEmploymentManagerController extends AbstractController
                 )->toJsonResponse();
             }
 
+            $command = $mapper->mapRequestToDto($request);
             $errors = $this->validator->validate($command);
 
             if (count($errors) > 0) {
@@ -160,4 +166,37 @@ class UserEmploymentManagerController extends AbstractController
         }
     }
 
+
+
+    #[Route('/{employmentOfferId}/cancel', methods: ['DELETE'])]
+    public function cancel(
+        string $employmentOfferId,
+        CancelEmploymentOffer $handler
+    ){
+        try{
+            /** @var AuthenticatedPerson $user */
+            $user = $this->getUser();
+            
+            if (!$user) {
+                return ApiResponse::error(
+                    message: 'Unauthorized',
+                    statusCode: Response::HTTP_UNAUTHORIZED
+                )->toJsonResponse();
+            }
+
+            $handler->execute(
+                recruiterId: $user->getId(),
+                employmentOfferId: $employmentOfferId
+            );
+
+            return ApiResponse::notice(message: "Everything went successfully")->toJsonResponse();
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: 'Something went wrong while create employement offer ',
+                statusCode: Response::HTTP_BAD_REQUEST,
+                throwable: $error
+            )->toJsonResponse();
+        }
+    }
 }

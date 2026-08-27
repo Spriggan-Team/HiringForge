@@ -51,6 +51,11 @@ export interface FilterState {
     searchAddress: string;
 }
 
+export interface SymfonyDateTime {
+  date: string;          // ex: "2026-08-26 18:24:38.000000"
+  timezone: string;      // ex: "UTC"
+  timezone_type: number; // ex: 3
+}
 
 export interface JobPublishedState {
     draft: boolean;

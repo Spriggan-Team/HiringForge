@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\DTO\Offer;
+namespace App\Application\DTO\EmploymentOffer;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -13,17 +13,15 @@ final readonly class CreateOfferRequestDto
         #[Assert\NotBlank]
         public string $applicationId,
 
-        #[Assert\NotNull]
         #[Assert\Type(\DateTimeInterface::class)]
         #[Assert\GreaterThan('now')]
-        public string $expiredAt,
+        public ?\DateTimeImmutable $expiredAt = null,
 
         #[Assert\Length(max: 255)]
         public ?string $title = null,
 
         public string $jobTitle,
 
-        #[Assert\Positive]
         public ?float $salary = null,
         
         public ?string $message = null,

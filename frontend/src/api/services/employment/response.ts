@@ -1,4 +1,5 @@
 import type {  EmploymentOfferStatus } from "../../../features/employment/offer";
+import type { SymfonyDateTime } from "../../../features/shared/global";
 import type { ApiResponse } from "../response.types";
 
 /** Response */
@@ -9,23 +10,28 @@ export type EmploymentSavedResponse = ApiResponse<EmploymentSaved>;
 export type EmploymentOfferQueryData = {
   id: string;
   status: EmploymentOfferStatus;
-  sentAt: string;
-  expiredAt: string;
   salary: number;
   candidate: {
     id: string;
     firstName: string;
     lastName: string;
     email: string;
-    image: string //url
+    image: {
+      id: string;
+      mime?: string;
+      name?: string
+    }
   };
+  message?: string | null;
   application: {
     id: string;
   };
   jobOffer:{
     id: string;
     title: string;
-  }
+  },
+  expiredAt: SymfonyDateTime;
+  createdAt: SymfonyDateTime;
 };
 
 

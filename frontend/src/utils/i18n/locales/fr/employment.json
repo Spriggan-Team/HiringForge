@@ -1,0 +1,13 @@
+{
+   "employmentOffer":{
+        "messages":{
+            "loading":{
+                "employmentOfferGeneration": "Création d'une offre d'embauche"
+            }
+        },
+        "apiResponse":{
+            "employmentGenerationFailed": "Echech de la génération d'une offre d'embacuhe",
+            "employmentGenerationSucceed": "Succès de la création de l'offre d'embauche"
+        }
+    }
+}

@@ -12,7 +12,6 @@ class EmploymentOffer
     private string $applicationId;
     private string $candidateId;
 
-    private ?bool $confirm = null;
     private ?string $rejectionReason = null;
 
     private EmploymentOfferStatus $status = EmploymentOfferStatus::SENT;
@@ -54,15 +53,15 @@ class EmploymentOffer
 
     public static function hydrate(
         string $id,
-        string $candidateId,
-        string $applicationId,
-        bool $confirm,
-        string $rejectionReason,
-        \DateTimeImmutable $expiredAt,
+        EmploymentOfferStatus $status,
         \DateTimeImmutable $createdAt,
-        ?string $salary,
-        ?string $message,
-    )
+        \DateTimeImmutable $expiredAt,
+        ?string $candidateId = null,
+        ?string $applicationId = null,
+        ?float $salary = null,
+        ?string $message = null,
+        ?string $rejectionReason = null
+    ): self
     {
         $domain = new self(
             applicationId: $applicationId,
@@ -70,12 +69,14 @@ class EmploymentOffer
         );
 
         $domain->id = $id;
-        $domain->confirm =$confirm;
+        $domain->status = $status;
         $domain->rejectionReason = $rejectionReason;
         $domain->message = $message;
         $domain->salary = $salary;
         $domain->expiredAt = $expiredAt;
         $domain->createdAt = $createdAt;
+
+        return $domain;
     }
 
     
@@ -126,11 +127,6 @@ class EmploymentOffer
 
 
 
-    public function confirm()
-    {
-        return $this->confirm;
-    }
-
 
     public function rejectionReason(){
         return $this->rejectionReason;
@@ -144,7 +140,8 @@ class EmploymentOffer
 
     public function setId(string $id)
     {
-        return $this->id;
+        $this->id = $id;
+        return $this;
     }
 
     public function changeStatus(EmploymentOfferStatus $status)
@@ -176,18 +173,16 @@ class EmploymentOffer
         return $this;
     }
 
-
-    public function approve(): static
+    
+    /** Check if domain allow cancellation */
+    public function isCancellable(): bool
     {
-        $this->confirm = true;
-        return $this;
-    }
+        $now = new \DateTimeImmutable();
 
+        if ($this->expiredAt < $now) {
+            return false;
+        }
 
-    public function reject(string $rejectionReason): static
-    {
-        $this->rejectionReason = $rejectionReason;
-        $this->confirm = false;
-        return $this;
+        return $this->status === EmploymentOfferStatus::SENT;
     }
 }

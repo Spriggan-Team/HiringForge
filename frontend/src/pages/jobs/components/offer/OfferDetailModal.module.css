@@ -69,3 +69,25 @@
   padding: 0.5rem 1rem;
   cursor: pointer;
 }
+
+
+/* Message box */
+.messageBox {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: #f9fafb;
+  border-left: 3px solid #6b7280;
+  border-radius: 4px;
+}
+
+.messageContent {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #374151;
+  line-height: 1.5;
+  white-space: pre-line;
+}

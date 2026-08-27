@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import RouteScheme from "../../route.scheme";
 import { useAppContext, useCurrentUser } from "../../hooks/context";
 import JobQueries from "../../api/services/jobs/queries";
-import type {  JobSummary, JobView } from "../../features/jobs/JobOffer";
+import type {  CompleteJobView, JobEngagementMetrics, JobSummary, JobView } from "../../features/jobs/JobOffer";
 
 
 //-- Custom Components
@@ -51,7 +51,7 @@ const UserJobsPage: React.FC<{}> = () => {
     const user = useCurrentUser();
 
     // -- Memory cache
-    const jobViewCache = useRef<Map<string, JobView>>(new Map());
+    const jobViewCache = useRef<Map<string, CompleteJobView>>(new Map());
 
     // -- Listes & Pagination
     const [jobDataSummary, setJobDataSummary] = useState<JobSummary[]>([]);
@@ -61,7 +61,7 @@ const UserJobsPage: React.FC<{}> = () => {
 
     // -- Selected Offre
     const [currentJobId, setCurrentJobId] = useState<string | null>(null);
-    const [currentJobView, setCurrentJobView] = useState<JobView | null>(null);
+    const [currentJobView, setCurrentJobView] = useState<CompleteJobView  | null>(null);
     const [isJobLoading, setIsJobLoading] = useState<boolean>(false);
 
     // -- Filtres & Search
@@ -71,6 +71,16 @@ const UserJobsPage: React.FC<{}> = () => {
         () => Math.ceil(totalJobCount / PAGE_SIZE),
         [totalJobCount]
     );
+
+
+    //-- Cache invalidation (to be called after a modification/edit)
+    const invalidateJobCache = (jobId?: string) => {
+        if (jobId) {
+            jobViewCache.current.delete(jobId);
+        } else {
+            jobViewCache.current.clear();
+        }
+    };
 
 
     //-- Loading
@@ -90,9 +100,11 @@ const UserJobsPage: React.FC<{}> = () => {
             setTotalJobCount(total);
 
             //  Auto-select if no offer is selected
-            if (data.length > 0 && !currentJobId) {
-                setCurrentJobId(data[0].id);
-            }
+            setCurrentJobId((prevId) => {
+                if (data.length === 0) return null;
+                const exists = data.some((job) => job.id === prevId);
+                return exists ? prevId : data[0].id;
+            });
         }
         catch (error) {
             console.error("Erreur récupération offres:", error);
@@ -100,10 +112,11 @@ const UserJobsPage: React.FC<{}> = () => {
         finally {
             setIsLoading(false);
         }
-    }, [user?.id, currentJobId]);
+    }, [user?.id]);
 
 
-    // Filter Debounce
+
+    // Filter Debounce Time
     useEffect(() => {
         const timer = setTimeout(() => {
             setCurrentPage(0);
@@ -115,18 +128,32 @@ const UserJobsPage: React.FC<{}> = () => {
 
 
 
+    //-- Pagination
     const handlePageChange = (newPage: number) => {
         setCurrentPage(newPage);
         fetchJobs(newPage, filters);
     };
 
+
     //--- Load Details
     useEffect(() => {
         if (!currentJobId) return;
 
+        //-- Reteive metrics from job summary
+        const summaryItem = jobDataSummary.find((item) => item.id === currentJobId);
+        const summaryCardinal = summaryItem?.cardinal;
+
         //-- Verify cache
         if (jobViewCache.current.has(currentJobId)) {
-            setCurrentJobView(jobViewCache.current.get(currentJobId)!);
+            const cachedView = jobViewCache.current.get(currentJobId)!;
+            
+            setCurrentJobView({
+                ...cachedView,
+                applications: summaryItem?.cardinal.candidates ?? cachedView.applications,
+                views:  cachedView.views ?? 0,
+                cardinal: summaryItem?.cardinal ?? cachedView.cardinal,
+            });
+
             setIsJobLoading(false);
             return;
         }
@@ -138,9 +165,20 @@ const UserJobsPage: React.FC<{}> = () => {
         JobQueries.getJobView(currentJobId)
             .then((view) => {
                 if (isSubscribed) {
+                    //-- Construct metrics
+
+                    const mergedView: CompleteJobView = {
+                        ...view,
+                        applications: summaryItem?.cardinal.candidates ?? (view as any).applications ?? 0,
+                        views:  (view as any).views ?? 0,
+                        cardinal: summaryItem?.cardinal ?? view.cardinal,
+                    };
+
                     // Save in cache
-                    jobViewCache.current.set(currentJobId, view);
-                    setCurrentJobView(view);
+                    jobViewCache.current.set(currentJobId, mergedView);
+                    setCurrentJobView(mergedView);
+
+                    console.log("COMPLETE JOB OFFER : ", mergedView)
                 }
             })
             .catch((err) => {
@@ -156,21 +194,15 @@ const UserJobsPage: React.FC<{}> = () => {
         };
     }, [currentJobId]);
 
-    //-- Cache invalidation (to be called after a modification/edit)
-    const invalidateJobCache = (jobId?: string) => {
-        if (jobId) {
-            jobViewCache.current.delete(jobId);
-        } else {
-            jobViewCache.current.clear();
-        }
-    };
 
-    // Handlers
+
+    //-- Handlers
     const handleSearchTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilters((prev) => ({ ...prev, searchText: e.target.value }));
     };
 
 
+    //-- Address search
     const handleSearchAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilters((prev) => ({ ...prev, searchAddress: e.target.value }));
     };
@@ -233,6 +265,7 @@ const UserJobsPage: React.FC<{}> = () => {
                         currentJobView && (
                             <CurrentJob
                                 job={currentJobView}
+                                onInvalidateCache={invalidateJobCache}
                                 onClick={(id) => {
                                     navigate(RouteScheme.userJobView.replace(':id', id));
                                 }}

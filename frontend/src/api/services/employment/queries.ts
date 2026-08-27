@@ -31,7 +31,7 @@ const getUserEmploymentOffer = async(
         if (skip !== undefined) params.set('skip', String(skip));
         if (limit !== undefined) params.set('limit', String(limit));
 
-        const response = await authGet<EmploymentOfferQueryResponse>(`/users/employment_offers/jobs${
+        const response = await authGet<EmploymentOfferQueryResponse>(`/users/employment_offers${
             params.toString() ? `?${params.toString()}` : ''
         }`);
 
@@ -49,7 +49,7 @@ const Queries =  {
 }
 
 
-const EmploymentOffersQueries = intercept<
+const EmploymentOffersQueries =intercept<
    typeof Queries,
     ApiResponse | ApiResponseError
 >(

@@ -5,7 +5,7 @@ import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
 import type { ApiResponseError } from "../../exceptions";
 import type { ApiResponse } from "../response.types";
-import { authPost } from "../../http";
+import { authDel, authPost } from "../../http";
 import type { EmploymentSavedResponse } from "./response";
 
 
@@ -14,13 +14,24 @@ import type { EmploymentSavedResponse } from "./response";
 //--- Recruiter
 //-------------------
 
+const accept = async()=>{
+    try{
+
+    }
+    catch(error){
+        throw error;
+    }
+}
+
 const create = async(employment: CreateOfferPayload)=>{
     try{
         const body = {
             ...employment
         };
         
-        const response = await authPost<EmploymentSavedResponse>('/users/employment_offers/create', body);
+        const response = await authPost<EmploymentSavedResponse>(
+            '/users/employment_offers/create', body
+        );
         const result = response.data;
 
         return {
@@ -36,9 +47,9 @@ const create = async(employment: CreateOfferPayload)=>{
 }
 
 
-const cancelOffer = async (offerId: string)=>{
+const cancelOffer = async (employmentOfferId: string)=>{
     try{
-
+        await authDel(`/users/employment_offers/${employmentOfferId}/cancel`);
     }
     catch(error)
     {
@@ -58,7 +69,12 @@ const deleteOffer = async (id: string)=>{
 
 
 //-- Services
-const Services = { create, cancelOffer , deleteOffer}
+const Services = { 
+    create, 
+    cancelOffer ,
+    deleteOffer,
+    accept
+}
 
 const EmploymentOffersServices = intercept<
     typeof Services,

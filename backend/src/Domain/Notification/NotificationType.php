@@ -6,13 +6,17 @@ namespace App\Domain\Notification;
 enum NotificationType: string
 {
     case JOB_APPLIED = 'JOB_APPLIED';
-    case EMPLOYMENT_OFFER_RECEIVED = "EMPLOYMENT_OFFER_RECEIVED";
+    case JOB_APPLICATIONS_STATUS_SHIFT = 'JOB_APPLICATIONS_STATUS_SHIFT';
+
+    //-- Employment
+    case EMPLOYMENT_OFFER_GENERATED = "EMPLOYMENT_OFFER_GENERATED";
+    case EMPLOYMENT_OFFER_CANCELLED  = "EMPLOYMENT_OFFER_CANCELLED";
     
-    case JOB_APPLICATIONS_STATUS_SHIFT = 'job_status_shift';
-    //-- Recipient: Candidate
+
+    //-- Interviews
     case INTERVIEW_SCHEDULED = 'INTERVIEW_SCHEDULED';
     case CANDIDATE_REJECTED = 'CANDIDATE_REJECTED';
     
-    //-- Recipeint  HYBRID/GENERAL
+    //--   HYBRID/GENERAL
     case SYSTEM_ALERT = 'SYSTEM_ALERT';
 }

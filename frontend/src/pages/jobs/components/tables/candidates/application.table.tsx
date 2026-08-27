@@ -17,6 +17,7 @@ import { ApplicationDetailModal } from "../../../components/application/applicat
 
 import styles from "./ApplicationsTable.module.css";
 import ApplicationServices from "../../../../../api/services/application/command";
+import { getInitials } from "../../../../../utils/format";
 
 
 
@@ -319,19 +320,6 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
         }
       };
   },[hasMore, handleFetchMore]);
-
-
-
-  // Utility Initials
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
 
 
 

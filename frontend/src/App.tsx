@@ -216,3 +216,8 @@ export const navigateTo = (
     localStorage.setItem("menu", menuId);
   }
 };
+
+
+export const navigateAndReload = (url: string) => {
+  window.location.href = url;
+};

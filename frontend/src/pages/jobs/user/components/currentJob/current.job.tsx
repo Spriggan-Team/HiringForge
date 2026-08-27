@@ -2,7 +2,7 @@
 import { useTranslation } from "react-i18next";
 
 //-- Services
-import type { JobView } from "../../../../../features/jobs/JobOffer";
+import type { JobActivityStatus, JobEngagementMetrics, JobPublicationStatus, JobStatus, JobView, VisibilityStatus } from "../../../../../features/jobs/JobOffer";
 
 //--Custom Components
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../../../layout/components/menu/dropdown/menu.dropdown";
@@ -19,20 +19,57 @@ import styles from "./CurrentJob.module.css"
 
 
 interface CurrentJobProps{
-    job: JobView;
     onClick: (id: string) => void;
+    job: JobView & JobEngagementMetrics;
+    onInvalidateCache?: (jobId?: string) => void;
 }
-
 
 
 const CurrentJob: React.FC<CurrentJobProps> = ({
     job,
-    onClick
+    onClick,
+    onInvalidateCache,
 }) => {
     const {t} = useTranslation();
-    // useEffect(()=>{
-    //     console.log({job})
-    // },[job])
+
+    const handleAction = (actionType: string) => {
+        if (actionType === 'edit' || actionType === 'delete') {
+            // Invalidations du cache pour la mise à jour
+            onInvalidateCache?.(job.id);
+        }
+    };
+
+    const renderVisibilityStatus = (status: JobStatus): string => {
+        switch (status) {
+            case 'published':
+                return t('global.jobs.publicationState.published');
+            case 'draft':
+                return t('global.jobs.publicationState.draft');
+            case 'active':
+                return t('global.jobs.offerStatus.active');
+            case 'closed':
+                return t('global.jobs.publicationState.closed');
+            case 'pending':
+                return t('global.jobs.offerStatus.pending');
+            default:
+                return t('global.jobs.publicationState.published');
+        }
+    };
+
+    const displayStatus = (
+        publicationStatus: JobPublicationStatus, 
+        activityStatus?: JobActivityStatus
+    ): string => {
+        if (
+            publicationStatus === 'published' && 
+            (activityStatus === 'active' || activityStatus === 'pending')
+        ) {
+            return renderVisibilityStatus(activityStatus);
+        }
+
+        return renderVisibilityStatus(publicationStatus);
+    };
+
 
     return (
         <div 
@@ -46,9 +83,14 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
                     className={styles.image}
                 />
 
+                {/* Option A : Si overlay et badge sont frères */}
                 <div className={styles.imageOverlay} />
-                    <div className={styles.badgeOverlay}>
-                    <InfoPill text="Published" indicator />
+                <div className={styles.badgeOverlay}>
+                    <InfoPill 
+                        className={styles.infoPill} 
+                        text={displayStatus(job.publicationStatus, job.activityStatus)} 
+                        indicator 
+                    />
                 </div>
             </div>
 
@@ -58,7 +100,11 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
                     <SectionHeader
                         title={job.title}
                         action={
-                            <MenuDrawer>
+                            <MenuDrawer
+                                onChange={(value)=>{
+                                    console.log("VALUE", value)
+                                }}
+                            >
                                 <MenuDrawerTrigger displayArrowDown={false}>
                                 {() => (
                                     <VerticalOptionsSVGComponent width={18} height={18} />
@@ -66,7 +112,16 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
                                 </MenuDrawerTrigger>
 
                                 <MenuDrawerBody>
-                                    <MenuDrawerItem value="edit">{t("global.actions.edit")}</MenuDrawerItem>
+                                    {
+                                    job.publicationStatus != 'closed' ?  (
+                                            <MenuDrawerItem 
+                                                value="edit"
+                                            >
+                                                {t("global.actions.edit")}
+                                            </MenuDrawerItem>
+                                        ) 
+                                        : null
+                                    }
                                     <MenuDrawerItem value="duplicate">{t("global.actions.duplicate")}</MenuDrawerItem>
                                     <MenuDrawerItem value="delete">{t("global.actions.delete")}</MenuDrawerItem>
                                 </MenuDrawerBody>
@@ -123,7 +178,7 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
             {/* CONTENT SCROLLABLE */}
             <div className={styles.contentWrapper}>
                 <div className={`${styles.content} scrollbar`}>
-                    <TipTapRenderer content={job.content} />
+                    <TipTapRenderer key={job.id} content={job.content} />
                 </div>
                 <div className={`${styles.fadeBottom} fadeBottom`} />
             </div>
@@ -132,7 +187,7 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
             <div className={styles.footer}>
                 <div className={styles.footerLeft}>
                     <span className={styles.views}>{job.views} {t("global.views.viewsLabel", {count: job.views ?? 0})}</span>
-                    <span className={styles.applicants}>🧑‍💻 {job.applications} {t("global.candidate.candidateLabel", {count: job.applications ?? 0})}</span>
+                    <span className={styles.applicants}>🧑‍💻 {job.applications} {t("global.candidate.candidateLabel", { count: job.applications ?? 0 })}</span>
                 </div>
                 {/** SEE MORE BUTTON */}
                 <button 

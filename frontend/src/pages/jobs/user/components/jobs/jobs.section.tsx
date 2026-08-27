@@ -61,18 +61,18 @@ const JobsSection: React.FC<JobsSectionProps> = ({
         {/** JOB ITEMS */}
         <div className={styles.itemsWrapper}>
             <div className={`${styles.items} scrollbar`}>
-              <SelectionContainer
+              {/* <SelectionContainer
                 showCheckbox
                 
                 className={styles.selectionContainer}
-              >
+              > */}
                 {data.map((job) => (
                   <JobItem 
                       key={job.id} {...job}
                       onClick={onClick}
                   />
                 ))}
-              </SelectionContainer>
+              {/* </SelectionContainer> */}
             </div>
             <div className={`${styles.fadeBottom} fadeBottom`}/>
         </div>

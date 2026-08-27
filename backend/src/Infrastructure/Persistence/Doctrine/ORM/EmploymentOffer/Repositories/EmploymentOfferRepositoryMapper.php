@@ -18,6 +18,21 @@ class EmploymentOfferRepositoryMapper
         private EntityManagerInterface $em
     ){}
 
+    public function toDomain(EmploymentOfferEntity $entity): EmploymentOffer
+    {
+        return EmploymentOffer::hydrate(
+            id: $entity->getId(),
+            candidateId: $entity->getCandidate()?->getId(),
+            applicationId: $entity->getApplication()?->getId(),
+            message: $entity->getMessage(),
+            salary: $entity->getSalary(),
+            status: $entity->getStatus(),
+            expiredAt: $entity->getExpiredAt(),
+            createdAt: $entity->getCreatedAt(),
+            rejectionReason: $entity->getRejectionReason()
+        );
+    }
+
     public function toEntity(EmploymentOffer $domain, ?EmploymentOfferEntity $existingEntity = null): EmploymentOfferEntity
     {
         if ($existingEntity === null) {
@@ -47,8 +62,7 @@ class EmploymentOfferRepositoryMapper
         $entity->setSalary($domain->salary());
         $entity->setStatus($domain->status());
         $entity->setExpiredAt($domain->expiredAt());
-        $entity->setConfirm($domain->confirm());
-        $entity->reject($domain->rejectionReason());
+        $entity->setRejectionReason($domain->rejectionReason());
 
         return $entity;
     }

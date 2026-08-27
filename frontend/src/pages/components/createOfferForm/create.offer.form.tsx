@@ -7,11 +7,10 @@ import type { CreateOfferPayload } from "../../../features/employment/offer";
 import { SearchAutocomplete, type Item as AutoCompleteSearchResultItem } from "../../../layout/components/form/input/autocomplete/search.autocomplete";
 import ApplicationQueries from "../../../api/services/application/queries";
 
-/** Style */
-import styles from "./CreateOfferForm.module.css";
 import type { CandidateApplication } from "../../../api/services/application/response";
 
-
+/** Style */
+import styles from "./CreateOfferForm.module.css";
 
 
 interface CreateOfferFormProps {
@@ -94,7 +93,7 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({  onSubmit }) =
                 jobTitle: selectedCandidateApplicationEntity.jobTitle as string,
                 avatarUrl: avatarUrl,
             };
-            
+
             console.log("GEN Employment: ", payload)
             await onSubmit(payload);
             setModal(null);
@@ -125,31 +124,30 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({  onSubmit }) =
                     const cacheKey = `${value.candidateId}_${value.applicationId}`;
                     let image: string | null = null;
 
-                    if(image)if (imageCache.current[cacheKey]) {
+                    if (imageCache.current[cacheKey]) {
                         image = imageCache.current[cacheKey];
-                    }
-                    else{
+                    } 
+                    else {
                         try {
                             const blob = await ApplicationQueries.getCandidateProfilImage({
                                 candidateId: value.candidateId,
                                 applicationId: value.applicationId
                             });
-    
-                            if (blob) {
+
+                            if (blob && blob.size > 0) {
                                 const url = URL.createObjectURL(blob);
                                 image = url;
                                 imageCache.current[cacheKey] = url;
                             }
-                        }
-                        catch (error) {
-                            console.warn("Erreur lors de la récupération de l'image du candidat");
+                        } catch (error) {
+                            console.warn(`Erreur de récupération image pour le candidat ${value.candidateId}:`, error);
                         }
                     }
 
                     return {
                         ...value,
                         id: value.candidateId,
-                        image: image ?? undefined,
+                        image: image ?? undefined, 
                         jobTitle: value.jobTitle,
                         label: `${value.firstName} ${value.lastName}`,
                         sublabel: value.jobTitle,

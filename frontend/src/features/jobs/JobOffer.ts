@@ -113,18 +113,23 @@ export interface Department{
  * ---------------------------------------------------------------- */
 
 
-export interface RecruiterJobView {
+export type RecruiterJobData = RecruiterJobView & JobEngagementMetrics;
+
+export  type RecruiterJobView  =  {
     activityStatus: JobActivityStatus;
     publicationStatus: JobPublicationStatus;
 
     visibilityStatus: VisibilityStatus;
 
-    views: number;
-    applications: number;
     expertise?: string;
     cardinal: JobCardinal;
 
     department?: Department | null;
+} 
+
+export interface JobEngagementMetrics {
+    views: number;
+    applications: number;
 }
 
 
@@ -134,6 +139,7 @@ export interface RecruiterJobView {
 
 
 export type JobView = PublicJobView & RecruiterJobView;
+export type CompleteJobView =  PublicJobView & RecruiterJobView & JobEngagementMetrics;
 
 
 export type JobWorkMode = "remote" | "onsite" | "hybrid";
@@ -162,7 +168,7 @@ export type LanguageLevel =
  */
 
 
-export const INITIAL_JOB_VIEW: PublicJobView & RecruiterJobView = {
+export const INITIAL_JOB_VIEW: PublicJobView & RecruiterJobData = {
     /** PublicJobView */
     id: "",
 

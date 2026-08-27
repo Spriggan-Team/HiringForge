@@ -8,6 +8,7 @@ export interface InfoPillProps{
     indicator?: boolean;
     
     txtColor?: string;
+    className?: string;
     backgroundColor?: string;
     borderRadius?: string | number;
 }
@@ -17,6 +18,7 @@ export interface InfoPillProps{
 const InfoPill: React.FC<InfoPillProps> = ({
     text,
     indicator,
+    className,
 
     txtColor,
     borderRadius,
@@ -27,7 +29,7 @@ const InfoPill: React.FC<InfoPillProps> = ({
     
     return (
         <div 
-            className={styles.container}
+            className={`${styles.container} ${className}`}
             style={{
                 ["--txtColor" as string]: txtColor ?? "#264FEB",
                 ["--backgroundColor" as string]: backgroundColor ?? "#E3EDFE",

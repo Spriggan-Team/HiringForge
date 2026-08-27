@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Application\Usecases\Offer;
+namespace App\Application\Usecases\EmploymentOffer;
 
-use App\Application\DTO\Offer\CreateOfferRequestDto;
+use App\Application\DTO\EmploymentOffer\CreateOfferRequestDto;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 use App\Domain\EmploymentOffer\EmploymentOffer;
 
@@ -14,7 +14,7 @@ use App\Domain\Notification\NotificationRepositoryInterface;
 use App\Domain\Notification\NotificationType;
 
 
-class CreateOffer
+class CreateEmploymentOffer
 {
     public function __construct(
         private EmploymentOfferRepositoryInterface $employementOfferRepository,
@@ -22,12 +22,11 @@ class CreateOffer
         private ApplicationRepositoryInterface $applicationRepository
     ){}
 
+
     public function execute(string $userId, CreateOfferRequestDto $command): EmploymentOffer
     {
-        $expiredAt = new \DateTimeImmutable($command->expiredAt);
-        
+        // Verify
         if (!$this->employementOfferRepository->canCreateEmploymentOfferForApplication(
-            recuiterId: $userId,
             applicationId: $command->applicationId,
             candidateId: $command->candidateId
         )) {
@@ -39,7 +38,7 @@ class CreateOffer
         $employementOffer = EmploymentOffer::create(
             message: $command->message,
             salary: $command->salary,
-            expiredAt: $expiredAt,
+            expiredAt: $command->expiredAt,
             candidateId: $command->candidateId,
             applicationId: $command->applicationId
         );
@@ -54,22 +53,27 @@ class CreateOffer
             applicationId: $command->applicationId
         ); 
 
-        $notificationData = new EmploymentOfferNotificationData(
-            employmentOfferId: $employementOffer->id(),
-            jobTitle: $applicationIdentity['jobTitle'] ?? $command->jobTitle, 
-            companyName: $applicationContext->companyName, 
-            salary: $command->salary,
-            expiresAt: $expiredAt->format(\DateTimeInterface::ATOM)
-        );
+        //-- Slient notification update
+        try{
+            // notification Data
+            $notificationData = new EmploymentOfferNotificationData(
+                employmentOfferId: $employementOffer->id(),
+                jobTitle: $applicationContext->jobTitle ?? $command->jobTitle, 
+                companyName: $applicationContext->companyName, 
+                salary: $command->salary,
+                expiresAt: $command->expiredAt?->format(\DateTimeInterface::ATOM)
+            );
 
-        $notification = Notification::create(
-            accountId: $command->candidateId,
-            recipientId: $command->candidateId,
-            type: NotificationType::EMPLOYMENT_OFFER_RECEIVED,
-            data: $notificationData
-        );
+            $notification = Notification::create(
+                accountId: $applicationContext->recruiterId,
+                recipientId: $command->candidateId,
+                type: NotificationType::EMPLOYMENT_OFFER_GENERATED,
+                data: $notificationData
+            );
 
-        $this->notificationRepository->save($notification);
+            $this->notificationRepository->save($notification);
+        }
+        catch(\Exception $error){}
 
         return $employementOffer;
     }

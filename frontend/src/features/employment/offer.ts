@@ -63,10 +63,11 @@ export interface FlatOffer {
     email: string;
     jobTitle: string;
     salary?: number; // Ex: 45000 (en €/an)
-    createdAt?: string;
-    expiresAt?: string;
+    createdAt: string;
+    expiresAt: string;
     status: EmploymentOfferStatus;
     avatarUrl?: string | null;
+    message?: string | null;
 }
 
 

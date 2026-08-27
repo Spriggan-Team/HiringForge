@@ -23,13 +23,16 @@ interface EmploymentOfferRepositoryInterface
     *      'salary'?: bool,
     *      'status'?: bool,
     *      'expiredAt'?: bool,
+    *      'createdAt'?: bool,
     *      'sentAt'?: bool,
+    *      'message'?: bool,
     *      'candidate'?: array{
     *          'id'?: bool,
     *          'firstName'?: bool,
     *          'lastName'?: bool,
     *          'email'?: bool,
     *          'image'?: array{
+    *              'id'?: bool,
     *              'name'?: bool,
     *              'size'?: bool,
     *              'mime'?: bool
@@ -49,7 +52,7 @@ interface EmploymentOfferRepositoryInterface
 
     /**
      * Creates an offer after verifying that the user is associated with the related job.
-     *
+     * It is able  to handle update
      * @param string $userId The unique identifier of the user.
      * @param EmploymentOffer $offer Domain object containing the data required to create an offer.
      */
@@ -74,8 +77,25 @@ interface EmploymentOfferRepositoryInterface
      * for an specirfic emplyement
      */
     public function canCreateEmploymentOfferForApplication(
-        string $recuiterId,
         string $applicationId,
         string $candidateId
     ): bool;
+
+
+    /**
+     * find employment offer by id
+     */
+    public function findById(string $employmentId): ?EmploymentOffer;
+
+    /**
+     * Check relation and return employment offer
+     */
+    public function findEmploymentOfferForRecruiter(string $recruiterId, string $employmentOfferId): ?EmploymentOffer ;
+
+
+    /**
+     * Delete offer
+     */
+    public function delete(string $employmentId): void;
+
 }

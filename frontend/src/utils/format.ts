@@ -1,9 +1,34 @@
+import { format } from "date-fns";
 import type { Time } from "../features/shared/global";
+
+
+/**
+ * Format name
+ * @param name 
+ * @returns 
+ */
+export const getInitials = (name: string) => {
+return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+};
 
 
 /**
  * Format date
  */
+
+//-- Format date
+export const formatDateSafely = (dateString: string | null | undefined): string => {
+    if (!dateString) return "—";
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? "—" : format(date, 'dd MMMM yyyy');
+};
+
+
 export function formatRemainingTime(
     input: number | string | Date, 
     isCountdown: boolean = false
@@ -89,6 +114,8 @@ export const getElapsedTime = (start: Time, end: Time): string => {
 
     return `${hours}h ${minutes}min`;
 };
+
+
 
 
 
