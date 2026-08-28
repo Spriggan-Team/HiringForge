@@ -43,7 +43,8 @@
             "more": "Plus",
             "seeMore": "Voir plus",
             "logoutSuccess": "Deconnexion réussie",
-            "loading": "Chargement"
+            "loading": "Chargement",
+            "unexpectedErrorReload": "Une erreur inattendue est survenue. Veuillez recharger la page."
         },
 
 

@@ -13,6 +13,7 @@ import { useAppNavigate } from "../../../hooks/navigation";
 import { useParams } from "react-router-dom";
 import JobQueries from "../../../api/services/jobs/queries";
 import JobServices from "../../../api/services/jobs/command";
+import type { JobView } from "../../../features/jobs/JobOffer";
 
 
 
@@ -73,7 +74,9 @@ const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
 
         const fetchCurrentJobView = async ()=>{
             try{
-                const view = await JobQueries.getJobView(jobId);
+                const id = jobId ?? currentJob.id;
+                const view = await JobQueries.getJobView(id);
+                
                 setCurrentJob(view);
                 console.log({view})
             }
@@ -87,9 +90,17 @@ const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
         fetchCurrentJobView();
     },[]);
 
+    
+    useEffect(()=>{
+        if(!jobId && !currentJob.id){
+            setPopup({ status: 'error', message: t('global.messages.unexpectedErrorReload') })
+            return;
+        }
+    },[currentJob])
 
-    const handleUpdateJob = async ()=>{
-        await JobServices.updateJob(currentJob);
+    const handleUpdateJob = async (job: JobView)=>{
+        console.log("UPDATED JOB: ",job)
+        await JobServices.updateJob(job);
         return { offerId: currentJob.id }; //jobId
     }
 
@@ -100,9 +111,13 @@ const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
             isMain: boolean;
         }[]
     )=>{
+        const ids = [currentJob?.mainImageFileId].filter(
+            (id): id is string => Boolean(id)
+        );
         await JobServices.updateJobAssets(
             jobId,
-            images
+            images,
+            ids
         );
     }
 

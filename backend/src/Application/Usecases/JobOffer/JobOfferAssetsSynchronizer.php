@@ -44,50 +44,96 @@ class JobOfferAssetsSynchronizer
             throw new \DomainException("Job offer is not editable");
         }
 
+        
         if (!empty($removeIds) && !$this->jobOfferImageRepository->isImagesAssociatedWithJob(offerId: $jobId, images: $removeIds)) {
             throw new \DomainException("One of the removed images doesn't match requirements");
         }
 
-        // new domain object
+
+        // Company storage parameters context
+        $companyId = $this->userRepository->getOrganizationId($userId);
+        $params = AccountStorageParams::companyImages(companyId: $companyId);
+
+
+        //  Physical upload of new files + Domain Object instantiation
         /** @var JobOfferImage[] $newImages */
         $newImages = [];
-        foreach ($files as $index => $file) {
-            $staticMedia = $this->mediaFactory->createStaticMedia($file);
-            $newImages[] = new JobOfferImage(
-                media: $staticMedia,
-                isMain: ($index === $mainIndex)
-            );
+        /** @var JobOfferImage[] $uploadedImagesTrack */
+        $uploadedImagesTrack = [];
+
+        try{
+            foreach ($files as $index => $file) {
+                $staticMedia = $this->mediaFactory->createStaticMedia($file);
+                
+                // Store physical file
+                $this->mediaStorage->store(
+                    params: $params,
+                    file: $file,
+                    storedFileName: $staticMedia->name
+                );
+
+                $image[] = new JobOfferImage(
+                    media: $staticMedia,
+                    isMain: ($index === $mainIndex)
+                );
+
+                $newImages[] = $image;
+                $uploadedImagesTrack[] = $image;
+            }
         }
+        catch(\Exception $e){
+            foreach ($uploadedImagesTrack as $uploadedImage) {
+                $this->mediaStorage->remove(
+                    params: $params,
+                    mimeType: $uploadedImage->media->mime,
+                    fileName: $uploadedImage->media->name
+                );
+            }
+            throw $e;
+        }
+
+
 
         // purge file meta data
         $deletedFiles = [];
-
-        // Atomomic BDD Execurion
-        $this->transactionManager->execute(function () use ($jobId, $removeIds, $mainIndex, $newImages, &$deletedFiles) {
-            // Bdd deletion
-            if (!empty($removeIds)) {
-                $deletedFiles = $this->jobOfferImageRepository->removeImagesFromJob(offerId: $jobId, images: $removeIds);
-            }
-
-            // Update main image
-            if ($mainIndex !== null && !empty($newImages)) {
-                $currentMain = $this->jobOfferImageRepository->getMainImage($jobId);
-                if ($currentMain !== null) {
-                    $this->jobOfferImageRepository->unsetMainImage($jobId);
+        try{
+            // Atomomic BDD Execurion
+            $this->transactionManager->execute(function () use ($jobId, $removeIds, $mainIndex, $newImages, &$deletedFiles) {
+                // BDD deletion
+                if (!empty($removeIds)) {
+                    $deletedFiles = $this->jobOfferImageRepository->removeImagesFromJob(offerId: $jobId, images: $removeIds);
                 }
-            }
 
-            // Save new image
-            if (!empty($newImages)) {
-                $this->jobOfferImageRepository->associateImagesWithJob(offerId: $jobId, images: $newImages);
-            }
-        });
+                // Update main image flag
+                if ($mainIndex !== null && !empty($newImages)) {
+                    $currentMain = $this->jobOfferImageRepository->getMainImage($jobId);
+                    if ($currentMain !== null) {
+                        $this->jobOfferImageRepository->unsetMainImage($jobId);
+                    }
+                }
 
-        // Purge Bdd physics data
+                // Save new images metadata in BDD
+                if (!empty($newImages)) {
+                    $this->jobOfferImageRepository->associateImagesWithJob(offerId: $jobId, images: $newImages);
+                }
+            });
+        }
+        catch(\Exception $e)
+        {
+            foreach ($uploadedImagesTrack as $uploadedImage) {
+                $this->mediaStorage->remove(
+                    params: $params,
+                    mimeType: $uploadedImage->media->mime,
+                    fileName: $uploadedImage->media->name
+                );
+            }
+            throw $e;
+        }
+
+
+
+        // Purging physical data of removed images (Only after successful DB commit)
         if (!empty($deletedFiles)) {
-            $companyId = $this->userRepository->getOrganizationId($userId);
-            $params = AccountStorageParams::companyImages(companyId: $companyId);
-
             foreach ($deletedFiles as $fileData) {
                 $this->mediaStorage->remove(
                     params: $params,

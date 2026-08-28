@@ -582,7 +582,7 @@ final class JobOffer
     }
 
 
-    public function schedulePublication(?DateTimeImmutable $publicationDate=null){
+    public function schedulePublication(?DateTimeImmutable $publicationDate = null){
         if ($this->isPublished()) {
             throw new DomainException("Published job offers cannot set a publication date as they are already published");
         }
@@ -596,8 +596,13 @@ final class JobOffer
         $this->touch();
     }
 
+
     public function changePublicationStatus(JobPublicationStatus $pubStatus): void
     {
+        if ($this->publicationStatus === $pubStatus) {
+            return;
+        }
+
         if (!$this->publicationStatus->canTransition($pubStatus)) {
             throw new \LogicException(sprintf(
                 'It is not possible to change from status “%s” to status “%s”.',

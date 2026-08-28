@@ -55,9 +55,11 @@
 
         "createJob":{
             "messages":{
-                "creatingJob": "Création de l'offre d'emploi",
+                "creatingJobAction": "Création de l'offre d'emploi",
+                "modifyJobAction": "Modification de l'offre d'emploi",
                 "uploadingImage": "Envoi de l'image en cours...",
-                "jobCreate": "L'offre a été crée avec succès",
+                "successfulJobCreation": "L'offre a été crée avec succès",
+                "successfulJobModification": "L'offre a été mis à jours avec success",
                 "failToCreateJob": "La crétion de l'offre à échoué",
                 "failedUploadMainImage": "L'image de l'offre à échoué sa sauvegarde"
             },

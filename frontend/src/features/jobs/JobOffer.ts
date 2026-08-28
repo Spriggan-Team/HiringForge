@@ -68,6 +68,7 @@ export interface PublicJobView {
     location?: Partial<Location>;
     
     mainImage?: string;
+    mainImageFileId?: string;
     jobWorkMode?: JobWorkMode;
     
     createdAt?: Date;

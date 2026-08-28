@@ -346,7 +346,6 @@ class UserJobOfferManagementController extends AbstractController
 
 
 
-
     #[Route("/job_offer/{offerId}", methods: ['DELETE'] ,name: "job_offer_delete")]
     public function deleteJobOffer(
         string $offerId,

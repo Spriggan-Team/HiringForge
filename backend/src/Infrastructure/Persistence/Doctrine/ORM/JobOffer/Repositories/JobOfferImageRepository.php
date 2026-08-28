@@ -4,6 +4,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories;
 
 use App\Domain\JobOffer\JobOfferImage;
 use App\Domain\JobOffer\JobOfferImageRepositoryInterface;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\Mapper\FileEntityMapper;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
@@ -39,7 +40,7 @@ class JobOfferImageRepository extends ServiceEntityRepository implements JobOffe
         ->execute();
     }
 
-    
+
     #[Override]
     public function associateImagesWithJob(string $offerId, array $images): void
     {
@@ -95,15 +96,18 @@ class JobOfferImageRepository extends ServiceEntityRepository implements JobOffe
     }
 
 
+
     #[Override]
-    public function removeImagesFromJob(string $offerId, array $images): void
+    public function removeImagesFromJob(string $offerId, array $images): array
     {
         if (empty($images)) {
-            return;
+            return [];
         }
 
+        /** @var JobOfferImageEntity[] $entities */
         $entities = $this->createQueryBuilder('joi')
             ->innerJoin('joi.file', 'f')
+            ->addSelect('f')
             ->where('joi.jobOffer = :offerId')
             ->andWhere('f.id IN (:fileIds)')
             ->setParameter('offerId', $offerId)
@@ -111,11 +115,22 @@ class JobOfferImageRepository extends ServiceEntityRepository implements JobOffe
             ->getQuery()
             ->getResult();
 
+        $removedFilesData = [];
+
         foreach ($entities as $entity) {
+            $file = $entity->getFile();
+            $removedFilesData[] = [
+                'name' => $file->getName(),
+                'mime' => $file->getMime(),
+            ];
+
+            // Supprime l'entité de jonction (et FileEntity via cascade orphanRemoval)
             $this->em->remove($entity);
         }
 
         $this->em->flush();
+
+        return $removedFilesData;
     }
 
 

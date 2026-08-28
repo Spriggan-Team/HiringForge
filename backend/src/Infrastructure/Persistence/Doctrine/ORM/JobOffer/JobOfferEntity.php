@@ -97,7 +97,7 @@ class JobOfferEntity
 
     #[ORM\ManyToOne(
         targetEntity: DepartmentEntity::class,
-        inversedBy: "jobOffers"
+        inversedBy: "jobOffers",
     )]
     private ?DepartmentEntity $department = null;
 
@@ -360,7 +360,7 @@ class JobOfferEntity
         return $this->minSalary;
     }
 
-    public function getContractType(): ?string
+    public function getContractType(): ?ContractTypeEntity
     {
         return $this->contractType;
     }

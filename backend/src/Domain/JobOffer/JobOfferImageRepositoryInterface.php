@@ -35,7 +35,10 @@ interface JobOfferImageRepositoryInterface
      * Remove images from a job
      *
      * @param string $offerId
-     * @param array<int, string> $images File IDs
+     * @param array<int,array{
+     *       name: string,
+     *       mime: string
+     * }> $images File IDs
      */
-    public function removeImagesFromJob(string $offerId, array $images): void;
+    public function removeImagesFromJob(string $offerId, array $images): array;
 }

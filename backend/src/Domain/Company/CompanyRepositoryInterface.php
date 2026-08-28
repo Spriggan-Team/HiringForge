@@ -44,7 +44,7 @@ interface CompanyRepositoryInterface{
     /**
      * @param array $scheme returned data porjection
      *                      ex: [
-     *                              'id'? => bool
+     *                              'id'? => bool //Company adderess
      *                              'name'? => bool
      *                              'siret'? => bool
      *                              'address[id]'?=> bool
@@ -54,7 +54,7 @@ interface CompanyRepositoryInterface{
      *                              'address[address][limit:1]'? => bool (ex : ici limit le result qu'au premier)
      *                          ]
      * @return array<string, mixed>|null
-     *  eample of returned value
+     *  example of returned value
      *                 [
      *                     'name' => 'Tech Solutions SAS',
      *                     'address' => [

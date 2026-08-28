@@ -3,7 +3,6 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories;
 
 use App\Domain\File\StaticMedia;
-use App\Domain\Shared\CustomUUID;
 use App\Domain\JobOffer\JobOfferImage;
 use App\Domain\JobOffer\JobOffer as DomainEntity;
 use App\Domain\Company\CompanyRepositoryInterface;

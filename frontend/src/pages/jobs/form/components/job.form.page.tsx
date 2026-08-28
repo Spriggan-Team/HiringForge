@@ -14,7 +14,6 @@ import { navigateTo } from "../../../../App";
 import RouteScheme from "../../../../route.scheme";
 import { useAppContext } from "../../../../hooks/context";
 import { INITIAL_JOB_VIEW, type JobView } from "../../../../features/jobs/JobOffer";
-import JobServices from "../../../../api/services/jobs/command";
 import { FailedJobAssetsUpload } from "../../../../api/services/jobs/exceptions";
 import { validateSalary } from "../../../../utils/validators";
 import type { UserAppNavBarProps } from "../../../../context/context.type";
@@ -96,7 +95,14 @@ const JobFormPage: React.FC<JobFormProps> = ({
             }
 
             try {
-                setLoading({ state: true, subtitle: t("jobs.createJob.messages.creatingJob") });
+                setLoading({ 
+                    state: true, 
+                    subtitle: t(
+                        formType === "create" ?
+                            "jobs.createJob.messages.creatingJobAction"
+                            : "jobs.createJob.messages.modifyJobAction"
+                        )
+                    });
 
                 // -- Create or Retrieve offer ID
                 let offerId = savedJobOffer.current?.offerId;
@@ -133,7 +139,14 @@ const JobFormPage: React.FC<JobFormProps> = ({
                 }
 
                 // -- Total Success  & Redirection
-                setPopup({ status: "success", message: t("jobs.createJob.messages.jobCreate") });
+                setPopup({ 
+                    status: "success",
+                    message: t(
+                        formType === "create" ? 
+                                "jobs.createJob.messages.successfulJobCreation"
+                                : "jobs.createJob.messages.successfulJobModification"
+                            )
+                });
                 setLoading({ state: false, subtitle: undefined });
 
                 setTimeout(() => {
