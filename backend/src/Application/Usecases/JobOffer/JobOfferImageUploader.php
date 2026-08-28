@@ -8,8 +8,10 @@ use App\Domain\File\MediaFactoryInterface;
 
 use App\Domain\File\MediaStorageInterface;
 use App\Domain\JobOffer\JobOfferImage;
+use App\Domain\JobOffer\JobOfferImageRepositoryInterface;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
 use App\Domain\Shared\AccountStorageParams;
+
 
 class JobOfferImageUploader
 {
@@ -17,6 +19,7 @@ class JobOfferImageUploader
         private CompanyRepositoryInterface $companyRepository,
         private JobOfferRepositoryInterface $jobOfferRepository,
         private MediaFactoryInterface $mediaFactoryInterface,
+        private JobOfferImageRepositoryInterface $jobOfferImageRepository,
         private MediaStorageInterface $mediaStorageInterface,
     )
     {}
@@ -86,7 +89,7 @@ class JobOfferImageUploader
         }
 
         if (!empty($successfulJobImageUpload)) {
-            $this->jobOfferRepository->associateImagesWithJob($offerId, $successfulJobImageUpload);
+            $this->jobOfferImageRepository->associateImagesWithJob($offerId, $successfulJobImageUpload);
         }
 
         return [

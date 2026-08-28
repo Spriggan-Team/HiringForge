@@ -1,3 +1,4 @@
+```plantuml
 @startuml UML - Classe - Processus de recrutement
 
 skinparam dpi 300
@@ -10,6 +11,7 @@ skinparam ranksep 80
 skinparam linetype ortho
 
 left to right direction
+
 
 '========================================================
 ' ACTORS
@@ -50,9 +52,17 @@ class Application {
     - updatedAt: DateTime
 }
 
-Candidate "1" -- "0..*" Application
-JobOffer "1" -- "0..*" Application
-Application "*" --> "1" Company
+' Une candidature appartient à un seul candidat.
+' Un candidat peut avoir plusieurs candidatures.
+Candidate "1" --> "0..*" Application : applications
+
+' Une candidature concerne une seule offre.
+' Une offre peut recevoir plusieurs candidatures.
+JobOffer "1" --> "0..*" Application : applications
+
+' Une candidature est rattachée à l'entreprise qui recrute.
+' L'entreprise existe indépendamment des candidatures.
+Application "*" --> "1" Company : company
 
 
 '========================================================
@@ -64,7 +74,10 @@ class Resume {
     - hasBeenAnalyzed: boolean
 }
 
-Application "1" --> "1" Resume
+' Le CV utilisé pour une candidature est une partie
+' de la candidature dans ce modèle.
+' Si la candidature est supprimée, le CV associé l'est également.
+Application "1" *-- "1" Resume : resume
 
 
 '========================================================
@@ -75,7 +88,7 @@ class Interview {
     - id: string
     - startDate: DateTime
     - minutes: int
-    - status: string
+    - status: InterviewStatus
     - title: string
     - description: string
     - url: string
@@ -83,7 +96,9 @@ class Interview {
     - rejectionReason: string
 }
 
-Application "1" -- "0..*" Interview
+' Une candidature peut avoir plusieurs entretiens.
+' Un entretien appartient à une seule candidature.
+Application "1" *-- "0..*" Interview : interviews
 
 
 '========================================================
@@ -95,10 +110,21 @@ class EmploymentOffer {
     - reason: string [nullable]
 }
 
-Candidate "1" -- "0..*" EmploymentOffer
-User "1" -- "0..*" EmploymentOffer : creates
-Company "1" -- "0..*" EmploymentOffer
-Application "1" -- "0..1" EmploymentOffer
+' Une offre d'embauche est destinée à un candidat.
+' Le candidat existe indépendamment de l'offre.
+Candidate "1" <-- "0..*" EmploymentOffer : receives
+
+' L'utilisateur qui crée l'offre d'embauche
+' existe indépendamment de celle-ci.
+User "1" --> "0..*" EmploymentOffer : creates
+
+' L'entreprise émet plusieurs offres d'embauche.
+' L'entreprise existe indépendamment des offres.
+Company "1" --> "0..*" EmploymentOffer : issues
+
+' Une candidature peut aboutir à au maximum une offre d'embauche.
+' L'offre d'embauche dépend de la candidature.
+Application "1" *-- "0..1" EmploymentOffer : results in
 
 
 '========================================================
@@ -114,3 +140,4 @@ enum InterviewStatus {
 }
 
 @enduml
+```

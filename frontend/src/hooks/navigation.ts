@@ -2,7 +2,6 @@ import { useLocation, useMatches, useNavigate } from 'react-router-dom';
 import RouteScheme, { type AppRoute } from '../route.scheme';
 
 
-
 export interface NavigateOptions {
   params?: Record<string, string | number | boolean>;
   queries?: Record<string, string | number | boolean | undefined | null>;
@@ -16,7 +15,6 @@ export interface NavigateOptions {
 export const useAppNavigate = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const matches = useMatches();
 
   const navigateTo = (route: AppRoute | (string & {}), options: NavigateOptions = {}) => {
     const {
@@ -54,8 +52,7 @@ export const useAppNavigate = () => {
     }
 
     // Current route values (Pattern & Location réelle)
-    const currentMatch = matches[matches.length - 1];
-    const routePattern = from ?? currentMatch?.pathname;
+    const routePattern = from ?? location.pathname;
 
     const navigationState = {
       from: routePattern,

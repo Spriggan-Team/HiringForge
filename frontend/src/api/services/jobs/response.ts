@@ -33,7 +33,10 @@ export type JobOfferViewDataResponse = {
   title: string;
   content: Record<string, any>;
   jobWorkMode?: JobWorkMode;
+  
   mainImage?: string | null;
+  mainImageFileId?: string | null;
+
   viewsCount?: number;
   createdAt?: string;
   updatedAt?: string;

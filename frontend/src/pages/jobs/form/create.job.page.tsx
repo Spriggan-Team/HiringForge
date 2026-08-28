@@ -4,12 +4,12 @@ import { useTranslation } from "react-i18next";
 
 //-- services
 import RouteScheme from "../../../route.scheme";
+import JobServices from "../../../api/services/jobs/command";
+import JobContextProvider from "../../../context/job.context";
 
 //-- Components
 import JobFormPage from "./components/job.form.page";
 import BreadCrumbs from "../../../layout/components/navigation/auth/link/bread.crumbs";
-import JobContextProvider from "../../../context/job.context";
-
 
 
 
@@ -50,12 +50,16 @@ const CreateJoPageContent: React.FC<CreateJoPageContentProps> = ({}) => {
     
     return (
         <>
-            <JobFormPage navBar={
-                {
-                    title: t("jobs.buttons.create"),
-                    description: <BreadCrumbs overlayColor="#4338CA" links={linkData} />,
-                }
-            } />
+            <JobFormPage 
+                navBar={
+                    {
+                        title: t("jobs.buttons.create"),
+                        description: <BreadCrumbs overlayColor="#4338CA" links={linkData} />,
+                    }
+                } 
+                handleJob={(currentJob)=> JobServices.createJob(currentJob)}
+                handleUploadImage={(offerId, files)=> JobServices.uploadJobAssets(offerId, files)}
+            />
         </>
     );
 }

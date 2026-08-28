@@ -3,16 +3,12 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories;
 
 use App\Domain\JobOffer\JobOffer;
-use App\Domain\Shared\Account\AccountId;
 use App\Domain\Exception\RessourceNotFound;
-use App\Domain\JobOffer\JobOfferImage;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
 use App\Domain\JobOffer\JobOfferVisibilityStatus;
 use App\Domain\JobOffer\JobPublicationStatus;
 
-use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferImageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,7 +19,6 @@ use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
 class JobOfferRepository implements JobOfferRepositoryInterface
 {
-
     public function __construct(
         private EntityManagerInterface $manager,
         private JobOfferEntityMapper $mapper
@@ -108,7 +103,6 @@ class JobOfferRepository implements JobOfferRepositoryInterface
     }
 
 
-
     #[Override]
     public function canDefineAsDraft(JobOffer|string $job): bool
     {
@@ -136,7 +130,6 @@ class JobOfferRepository implements JobOfferRepositoryInterface
         return $applicationsCount === 0;
     }
 
-
     public function assertRelationWithUser(string $accountId, string $offerId): void
     {
         $count = (int) $this->manager->createQueryBuilder()
@@ -159,43 +152,6 @@ class JobOfferRepository implements JobOfferRepositoryInterface
     }
 
 
-    /**
-     * @param string $offerId
-     * @param JobOfferImage[] $images
-     */
-    #[Override]
-    public function associateImagesWithJob(string $offerId, array $images): void
-    {
-        if (empty($images)) {
-            return;
-        }
-
-        $repository = $this->manager->getRepository(JobOfferEntity::class);
-        /** @var  JobOfferEntity | null*/
-        $jobOffer = $repository->find($offerId);
-
-        if (!$jobOffer) {
-            throw new \DomainException(sprintf('L\'offre d\'emploi ID "%s" n\'existe pas.', $offerId));
-        }
-
-        foreach ($images as $image) {
-            $file =  FileEntity::create(
-                        name: $image->media->name,
-                        mime: $image->media->mime,
-                        size: $image->media->size,
-                        originalName: $image->media->originalName
-            );
-            $jobOffer->addImage(
-                new JobOfferImageEntity(
-                    jobOffer: $jobOffer,
-                    file: $file,
-                    isMain: $image->isMain
-                )
-            );
-        }
-
-        $this->manager->flush();
-    }
 
 
     /**
@@ -300,6 +256,29 @@ class JobOfferRepository implements JobOfferRepositoryInterface
     }
 
 
+    #[Override]
+    public function isEditable(string $jobId): bool
+    {
+        $result = $this->manager->createQuery(
+            'SELECT j.publicationStatus 
+            FROM App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity j 
+            WHERE j.id = :id'
+        )
+        ->setParameter('id', $jobId)
+        ->getOneOrNullResult();
+
+        if ($result === null) {
+            return false;
+        }
+
+        $status = $result['publicationStatus'];
+
+        return !in_array($status, [
+            JobPublicationStatus::PUBLISHED,
+            JobPublicationStatus::CLOSED,
+        ], true);
+    }
+
 
     #[Override]
     public function publish(string $offerId, string $userId): void
@@ -332,16 +311,14 @@ class JobOfferRepository implements JobOfferRepositoryInterface
     }
 
 
-
-
     
     #[Override]
-    public function save(JobOffer $offer, AccountId $userId): void
+    public function save(JobOffer $offer, string $userId): void
     {
         $entity = $this->manager->find(JobOfferEntity::class, $offer->id());
 
         if (!$entity) {
-            $user = $this->manager->getReference(UserEntity::class, $userId->value());
+            $user = $this->manager->getReference(UserEntity::class, $userId);
             $entity = $this->mapper->toDoctrine($offer, $user);
             $this->manager->persist($entity);
         }
@@ -391,17 +368,6 @@ class JobOfferRepository implements JobOfferRepositoryInterface
     }
 
 
-    #[Override]
-    public function change(JobOffer $jobOffer, string $offerId, string $accountId): void
-    {
-        throw new \Exception('Not implemented');
-    }
-
-
-    public function removeImageFromJob(string $offerId, string $fileName): void
-    {
-        throw new \Exception('Not implemented');
-    }
 
 
     #[Override]

@@ -279,6 +279,7 @@ class JobOfferQueryManagement extends AbstractController
                 'content' => true,
                 'jobWorkMode' => true,
                 'mainImage' => true,
+                'mainImageFileId' => true,
                 'viewsCount' => true,
                 'createdAt' => true,
                 'updatedAt' => true,

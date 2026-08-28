@@ -17,6 +17,7 @@
         },
         "buttons":{
             "create": "Créer une offre",
+            "modify": "Modifie l'offre",
             "cancel": "Annuler",
             "search": "Rechercher une offre",
             "applyNow": "Postuler"

@@ -27,13 +27,25 @@ import styles from "./JobFormPage.module.css"
 
 
 
-interface CreateJobPageProps{
-    navBar: UserAppNavBarProps | null
+export interface JobFormProps{
+    navBar: UserAppNavBarProps | null;
+    handleJob: (currentJob: JobView) => Promise<{ offerId: string }>; //return id
+    formType?: "create" | "modify";
+    handleUploadImage: (
+        jobId: string, 
+        images: {
+            file: File;
+            isMain: boolean;
+        }[]
+    ) => Promise<void>;
 }
 
 
-const JobFormPage: React.FC<CreateJobPageProps> = ({
-    navBar
+const JobFormPage: React.FC<JobFormProps> = ({
+    navBar,
+    handleJob,
+    handleUploadImage,
+    formType = "create",
 }) => {
     const navigate = useNavigate();
     const { t } = useTranslation();
@@ -90,7 +102,7 @@ const JobFormPage: React.FC<CreateJobPageProps> = ({
                 let offerId = savedJobOffer.current?.offerId;
 
                 if (!offerId) {
-                    const response = await JobServices.createJob(currentJob);
+                    const response = await handleJob(currentJob);
                     offerId = response.offerId;
                     
                     //-- update saved
@@ -106,7 +118,7 @@ const JobFormPage: React.FC<CreateJobPageProps> = ({
                 if (image) {
                     setLoading({ state: true, subtitle: t("jobs.createJob.messages.uploadingImage") }); 
                     try {
-                        await JobServices.uploadJobAssets(offerId, [{ file: image, isMain: true }]);
+                        await handleUploadImage(offerId, [{ file: image, isMain: true }]);
                     }
                     catch (error) {
                         setLoading({ state: false, subtitle: undefined });
@@ -170,7 +182,10 @@ const JobFormPage: React.FC<CreateJobPageProps> = ({
                         />
                     </div>
                     <div className={styles.paramBox}>
-                        <OptionBoxSection onComplete={handleSave} />
+                        <OptionBoxSection 
+                            formType={formType}
+                            onComplete={handleSave}
+                        />
                     </div>
                 </div>
             </section>

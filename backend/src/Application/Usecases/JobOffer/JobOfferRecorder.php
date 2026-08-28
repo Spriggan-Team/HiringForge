@@ -52,14 +52,10 @@ final class JobOfferRecorder
         CreateJobOfferRequest $command
     ): string
     {
-        /** * Account owner */
-        $accountId = AccountId::create($accountId);
-
-
         /*** Validate categories existence  */
         $categories = $this->categoryRepository->getExistingByIds($command->categories);
 
-        $company = $this->companyRepository->fetchUserCompanyProjection($accountId->value());
+        $company = $this->companyRepository->fetchUserCompanyProjection($accountId);
         if(!$company['id']){
             throw new \DomainException("No company related to the current account was found");
         }
@@ -169,7 +165,7 @@ final class JobOfferRecorder
 
         /** Location */
         if($command->location && $this->companyRepository->isAddressOwnedByUserCompany(
-            addressId: $command->location["id"], userId: $accountId->value())
+            addressId: $command->location["id"], userId: $accountId)
         ){
             $offer->changeLocation($command->location["id"]);
         }
@@ -184,8 +180,8 @@ final class JobOfferRecorder
 
         /*** Persist **/
         $this->repository->save(
-            $offer,
-            $accountId
+            offer: $offer,
+            userId: $accountId
         );
 
         return $offer->id();

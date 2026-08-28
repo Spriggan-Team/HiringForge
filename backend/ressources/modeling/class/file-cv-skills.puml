@@ -11,6 +11,7 @@ skinparam linetype ortho
 
 left to right direction
 
+
 '========================================================
 ' MEDIA
 '========================================================
@@ -38,8 +39,8 @@ class Resume {
     - hasBeenAnalyzed: boolean
 }
 
-Candidate "1" -- "0..*" Resume
-Resume "1" --> "1" File
+Candidate "1" *-- "0..*" Resume
+Resume "1" --> "1" File : file
 
 
 '========================================================
@@ -75,13 +76,28 @@ class CandidateSkill {
     - candidateResumeId: string
 }
 
-Candidate "1" -- "0..*" CandidateSkill
+
+'========================================================
+' CANDIDATE SKILLS
+'========================================================
+
+Candidate "1" *-- "0..*" CandidateSkill
 CandidateSkill "*" --> "1" Skill
 CandidateSkill "*" --> "0..1" Resume
 
-Skill "1" -- "0..*" SkillTranslation
+
+'========================================================
+' SKILL TRANSLATIONS
+'========================================================
+
+Skill "1" *-- "0..*" SkillTranslation
 SkillTranslation "*" --> "1" Language
 
-Skill "1" -- "0..*" SkillAlias
+
+'========================================================
+' SKILL ALIASES
+'========================================================
+
+Skill "1" *-- "0..*" SkillAlias
 
 @enduml

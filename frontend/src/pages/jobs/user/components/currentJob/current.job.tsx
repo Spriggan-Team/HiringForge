@@ -35,9 +35,9 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
     onClick,
     onInvalidateCache,
 }) => {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const naviagate = useAppNavigate();
-    const { setModal, setLoading } = useAppContext();
+    const { setModal, setLoading, setCurrentJob } = useAppContext();
 
     const handleAction = (actionType: string) => {
         if (actionType === 'edit' || actionType === 'delete') {
@@ -120,17 +120,19 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
                 await JobServices.setJobAsDraft(job.id);
             }
 
+            setLoading({ state: false });
+            setCurrentJob(() => job as JobView);
+
             naviagate(RouteScheme.modifyJob, { 
                 params: { id: job.id },
                 from: RouteScheme.modifyJob
             });
         }
         catch(error){
+            setLoading({ state: false });
             console.log("Something went wrong while turning job into draft")
         }
-        finally{
-            setLoading({ state: false });
-        }
+
     }
 
 

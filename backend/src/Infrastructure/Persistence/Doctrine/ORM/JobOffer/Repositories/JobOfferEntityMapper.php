@@ -40,43 +40,59 @@ class JobOfferEntityMapper
         private EntityManagerInterface $em
     ){}
 
+
     public static function toDomain(JobOfferEntity $entity): DomainEntity
     {
+        //  Mapping cat
         $categories = [];
-        foreach($entity->getJobCategories() as $jobCatItem){
-            $catItem = $jobCatItem->getCategory();
-            $categories[] = [
-                "id" => $catItem->getId(),
-                "label" => $catItem->getLabel()
-            ];
+        foreach ($entity->getJobCategories() as $jobCatItem) {
+            if ($catItem = $jobCatItem->getCategory()) {
+                $categories[] = [
+                    'id' => $catItem->getId(),
+                    'label' => $catItem->getLabel(),
+                ];
+            }
         }
 
+        // Mapping des images
         $images = [];
-        foreach($entity->getImages() as $jobImages){
-            $img = $jobImages->getFile();
-            $images[] =  JobOfferImage::create(
-                media: StaticMedia::hydrate(
-                    id: $img->getId(),
-                    name: $img->getName(),
-                    size: $img->getSize(),
-                    mime: $img->getMime(),
-                    originalName: $img->getOriginalName(),
-                    createdAt: $img->getCreatedAt()
-                ),
-                isMain: $jobImages->getIsMain()
-            );
+        foreach ($entity->getImages() as $jobImage) {
+            if ($img = $jobImage->getFile()) {
+                $images[] = JobOfferImage::create(
+                    media: StaticMedia::hydrate(
+                        id: $img->getId(),
+                        name: $img->getName(),
+                        size: $img->getSize(),
+                        mime: $img->getMime(),
+                        originalName: $img->getOriginalName(),
+                        createdAt: $img->getCreatedAt()
+                    ),
+                    isMain: $jobImage->getIsMain()
+                );
+            }
         }
 
-        return  DomainEntity::create(
+        // Hydratation complète de l'objet du Domaine
+        return DomainEntity::hydrate(
             id: $entity->getId(),
+            companyId: $entity->getCompany()->getId(),
             title: $entity->getTitle(),
             content: $entity->getContent(),
+            createdAt: $entity->getCreatedAt(),
+            updatedAt: $entity->getUpdatedAt(),
+            publicationStatus: $entity->getPublicationStatus(),
+            visibilityStatus: $entity->getVisibilityStatus(),
+            activityStatus: $entity->getActivityStatus(),
             categories: $categories,
             images: $images,
-            companyId: $entity->getCompany()->getId(),
-            activityStatus: $entity->getActivityStatus(),
-            visibilityStatus: $entity->getVisibilityStatus(),
-            publicationStatus: $entity->getPublicationStatus()
+            locationId: $entity->getAddress()?->getId(),
+            departmentId: $entity->getDepartment()?->getId(),
+            jobWorkMode: $entity->getJobWorkMode(),
+            contractId: $entity->getContractType()?->getId(),
+            minSalary: $entity->getMinSalary(),
+            maxSalary: $entity->getMaxSalary(),
+            currency: $entity->getCurrency(),
+            publicationDate: $entity->getPublicationDate()
         );
     }
 
@@ -174,33 +190,51 @@ class JobOfferEntityMapper
 
 
 
-    public  function copy(
+    public function copy(
         DomainEntity $offer,
-        JobOfferEntity $doctrine,
-    )
-    {
-        $department = null;
-
-        if($offer->departmentId()){
-            $department = $this->em->getReference(DepartmentEntity::class, $offer->id());
-            $doctrine->setDepartment($department);
-        }
-
-        if($offer->contractId()){
-            $doctrine->setContractType($this->em->getReference(ContractTypeEntity::class, $offer->contractId()));
-        }
-
-        if($offer->currency()){
-            $doctrine->setCurrency($offer->currency());
-            $doctrine->setMaxSalary($offer->maxSalary());
-            $doctrine->setMinSalary($offer->minSalary());
-        }
-
+        JobOfferEntity $doctrine
+    ): void {
+        // Basics fields
         $doctrine->setTitle($offer->title())
-                 ->setContent($offer->content())
-                 ->setActivityStatus($offer->getActivityStatus())
-                 ->setExpertise($offer->expertise())
-                 ->setJobWorkMode($offer->jobWorkMode())
-                 ->setUpdatedAt(new DateTimeImmutable());
+            ->setContent($offer->content())
+            ->setActivityStatus($offer->getActivityStatus())
+            ->setPublicationStatus($offer->publicationStatus())
+            ->setVisibilityStatus($offer->visibilityStatus())
+            ->setJobWorkMode($offer->jobWorkMode())
+            ->setExpertise($offer->expertise())
+            ->setUpdatedAt($offer->updatedAt());
+
+        // publication date
+        if ($offer->publicationDate()) {
+            $doctrine->setPublicationDate($offer->publicationDate());
+        }
+
+        // definir salary
+        $doctrine->setCurrency($offer->currency());
+        $doctrine->setMinSalary($offer->minSalary());
+        $doctrine->setMaxSalary($offer->maxSalary());
+
+        // Relationships by Doctrine References(Proxy)
+        if ($offer->departmentId()) {
+            $doctrine->setDepartment(
+                $this->em->getReference(DepartmentEntity::class, $offer->departmentId())
+            );
+        } else {
+            $doctrine->setDepartment(null);
+        }
+
+        if ($offer->contractId()) {
+            $doctrine->setContractType(
+                $this->em->getReference(ContractTypeEntity::class, $offer->contractId())
+            );
+        } else {
+            $doctrine->setContractType(null);
+        }
+
+        if ($offer->locationId()) {
+            $doctrine->setAddress(
+                $this->em->getReference(AddressEntity::class, $offer->locationId())
+            );
+        }
     }
 }

@@ -11,6 +11,7 @@ skinparam linetype ortho
 
 left to right direction
 
+
 '========================================================
 ' CORE ACCOUNT
 '========================================================
@@ -34,8 +35,13 @@ class Candidate {
     - id: string
 }
 
-Account "1" -up- "0..1" User
-Account "1" -- "0..1" Candidate
+
+'========================================================
+' HERITAGE
+'========================================================
+
+Account <|-- User
+Account <|-- Candidate
 
 
 '========================================================
@@ -49,7 +55,7 @@ class Company {
     - createdAt: DateTime
 }
 
-User "*" --> "1" Company
+Company "1" -- "0..*" User : employs / manages
 
 
 '========================================================
@@ -64,7 +70,8 @@ class Address {
     - street: string
 }
 
-Candidate "1" --> "0..1" Address
-Company "1" -- "0..*" Address
+Candidate "1" *-right- "0..1" Address : address
+Company "1" *-- "0..*" Address : addresses
+
 
 @enduml

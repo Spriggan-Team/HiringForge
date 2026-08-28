@@ -5,7 +5,7 @@ namespace App\Application\DTO\JobOffer;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
-final class CreateJobOfferRequest
+class CreateJobOfferRequest
 {
     public function __construct(
 

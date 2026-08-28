@@ -6,7 +6,7 @@ import { id } from "date-fns/locale";
 import type { JobView } from "../../../features/jobs/JobOffer"
 import { intercept } from "../../../utils/utils";
 import { HttpBadResponse } from "../../exceptions";
-import { authPatch, authPost, post } from "../../http";
+import { authPatch, authPost, authPut, post } from "../../http";
 
 import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import { FailedJobAssetsUpload } from "./exceptions";
@@ -62,6 +62,20 @@ const createJob = async(
 
 
 /**
+ * Update job offer
+ */
+const updateJob = async (job: JobView)=>{
+  try{
+    await authPut(`/job_offers/${job.id}/update`, job);
+  }
+  catch(error){
+    throw error;
+  }
+}
+
+
+
+/**
  * Upload job assets (image, ...)
  * @param jobId 
  * @param images 
@@ -95,6 +109,52 @@ const uploadJobAssets = async (
 };
 
 
+
+/**
+ * UPDATE JOB ASSETS
+ */
+const updateJobAssets = async (
+  jobId: string, 
+  newImages: { file: File; isMain: boolean }[],
+  removeImages: string[] = []
+): Promise<void> => {
+  const hasChanges = newImages.length > 0 || removeImages.length > 0;
+
+  if (!hasChanges) {
+    return;
+  }
+
+  const formData = new FormData();
+
+  // new file & main image detection
+  let mainIndex: number | null = null;
+
+  newImages.forEach((img, index) => {
+    formData.append("newImages[]", img.file);
+
+    if (img.isMain && mainIndex === null) {
+      mainIndex = index;
+    }
+  });
+
+  if (mainIndex !== null) {
+    formData.append("mainIndex", String(mainIndex));
+  }
+
+  // Ids to delete
+  removeImages.forEach((id) => {
+    formData.append("removeImages[]", id);
+  });
+
+  // Api Call
+  await authPatch<{ successIds: string[] }>(
+    `/job_offers/${jobId}/assets/uploads/update`, 
+    formData
+  );
+};
+
+
+
 /**
  * Set job as draft
  * @param jobId 
@@ -116,7 +176,10 @@ const setJobAsDraft = async (jobId: string) => {
 
 const Services = { 
   createJob,
+  updateJob,
+
   uploadJobAssets,
+  updateJobAssets,
 
   setJobAsDraft
 }

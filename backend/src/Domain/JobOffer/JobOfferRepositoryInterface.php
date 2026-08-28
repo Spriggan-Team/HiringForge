@@ -3,7 +3,6 @@
 namespace App\Domain\JobOffer;
 
 use App\Domain\JobOffer\JobOffer;
-use App\Domain\Shared\Account\AccountId;
 
 interface JobOfferRepositoryInterface
 {  
@@ -14,12 +13,14 @@ interface JobOfferRepositoryInterface
      */
     public function canAcceptApplications(string $jobOfferId): bool;
 
+
     /**
      * Verifies that a job offer exists in the database and is linked to an existing user (recruiter).
      * @param string $accountId the id of the user (recuiter)
      * @throws \DomainException|\Exception If the offer does not exist or the relation is invalid.
      */
     public function assertRelationWithUser(string $accountId, string $offerId): void;
+
 
     /** Check if a job's scheduled publication date has passed */
     public function hasPublicationDatePassed(string $id): bool;
@@ -37,6 +38,8 @@ interface JobOfferRepositoryInterface
      */
     public function isPublicationPending(string $id): bool;
 
+
+    public function isEditable(string $jobId): bool;
 
     /**
      * Checks whether a job posting can be set to or reset to draft status.
@@ -60,19 +63,17 @@ interface JobOfferRepositoryInterface
     public function getTitle(string $jobId): string;
 
 
-    public function change(JobOffer $jobOffer, string $offerId, string $accountId): void;
-
-
     /**
      * Status update
      * 
      */
     public function updatePublicationStatusDirectly(string $jobId, JobPublicationStatus $prevStatus, JobPublicationStatus $newStatus);
 
+
     /**
-     * Save job
+     * Save & update - job
      */
-    public function save(JobOffer $offer, AccountId $accountId): void;
+    public function save(JobOffer $offer, string $userId): void;
 
     
     public function delete(string $uuid, string $accountId): void;
@@ -86,15 +87,6 @@ interface JobOfferRepositoryInterface
      */
     public function publish(string $offerId, string $userId): void;
 
-
-    /**
-     * @param string $offerId
-     * @param array<int, JobOfferImage> $images
-     */
-    public function associateImagesWithJob(string $offerId, array $images): void;
-    
-
-    public function removeImageFromJob(string $offerId, string $fileName): void;
 
 
     /**

@@ -7,12 +7,11 @@ use DomainException;
 
 use App\Api\Responder\ApiResponse;
 
-use App\Domain\Shared\Account\AccountRole;
+
 use App\Application\DTO\Auth\AuthenticatedPerson;
-use App\Application\DTO\JobOffer\ChangeJobOffferRequest;
 use App\Api\Controllers\User\JobOffer\Mapper\CreateJobOfferRequestMapper;
-
-
+use App\Api\Controllers\User\JobOffer\Mapper\UpdateJobOfferRequestMapper;
+use App\Application\Usecases\JobOffer\JobOfferAssetsSynchronizer;
 use App\Application\Usecases\JobOffer\JobOfferEraser;
 use App\Application\Usecases\JobOffer\JobOfferModifier;
 use App\Application\Usecases\JobOffer\JobOfferRecorder;
@@ -84,12 +83,45 @@ class UserJobOfferManagementController extends AbstractController
     }
 
 
+    /**
+     * Update job offer 
+     */
+    #[Route("/{jobOfferId}/update", methods: ["PUT"], name: "update_job_offer" )]
+    public function updateJobOffer(
+        Request $request,
+        JobOfferModifier $handler,
+        UpdateJobOfferRequestMapper $mapper
+    ): JsonResponse
+    {
+        try{
+            /** @var AuthenticatedPerson */
+            $user = $this->getUser();
+
+            $body = json_decode($request->getContent(), true);
+            $command = $mapper->fromArray(body: $body);
+
+            $handler->execute(
+                userId: $user->getId(),
+                command: $command
+            );
+            
+            return ApiResponse::success("Everything went smoothly")->toJsonResponse();
+        }
+        catch(Exception $ex){
+            $this->logger->error("Caught Exception: ". $ex->getMessage(), ['exception'=> $ex]);
+            return ApiResponse::error(
+                message: "Something wrong happenned",
+                throwable: $ex
+            )->toJsonResponse();
+        }
+    }
+
 
     /**
      * Handles the upload of one or more images for a specific job offer,
      * validating and attaching them to the corresponding offer.
      */
-    #[Route('/{offerId}/assets/uploads', methods: ['POST'])]
+    #[Route('/{offerId}/assets/uploads', methods: ['POST'], name: 'uploads_assets' )]
     public function uploadJobOfferAssets(
         Request $request,
         string $offerId,
@@ -137,16 +169,73 @@ class UserJobOfferManagementController extends AbstractController
                 message: $domainException->getMessage() ?: 'Something went wrong',
                 throwable: $domainException
             )->toJsonResponse();
-        } catch (Exception $e) {
+        }
+        catch (Exception $e) {
+            return ApiResponse::error(
+                message: 'Something went wrong', 
+                throwable: $e
+            )->toJsonResponse();
+        }
+    }
 
-            return ApiResponse::error('Something went wrong', throwable: $e)->toJsonResponse();
+
+    /**
+     * Update job offer assets (add or remove images herer)
+     */
+    #[Route('/{jobId}/assets/uploads/update', methods: ['PATCH'], name: "update_job_assets")]
+    public function updateJoOfferAssets(
+        string $jobId,
+        Request $request,
+        JobOfferAssetsSynchronizer $handler,
+    ){
+        try{
+            /** @var AuthenticatedPerson */
+            $user = $this->getUser();
+
+            $files = $request->files->get("newImages");
+            $rawMainIndex = $request->request->get('mainIndex');
+
+            $mainImageIndex = null;
+            if ($rawMainIndex !== null && $rawMainIndex !== '') {
+                if (!ctype_digit((string) $rawMainIndex)) {
+                    return ApiResponse::error('Your mainIndex must be a valid integer')->toJsonResponse();
+                }
+                $mainImageIndex = (int) $rawMainIndex;
+            }
+
+            $removeImages = json_decode(
+                $request->request->get("removeImages"),
+                true,
+                512,
+                JSON_THROW_ON_ERROR
+            );
+
+            $handler->execute(
+                userId: $user->getId(), 
+                jobId: $jobId,
+                files: $files, 
+                removeIds: $removeImages, 
+                mainIndex: $mainImageIndex
+            );
+
+            return ApiResponse::success(
+                data: [ "successIds"  ]
+            );
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: 'Something went wrong', 
+                throwable: $error
+            )->toJsonResponse();
         }
     }
 
 
 
-
-    #[Route('/offers/{offerId}/assets/remove', methods: ['POST'])]
+    /**
+     * Not manually tested yet
+     */
+    #[Route('/offers/{offerId}/assets/remove', methods: ['POST'], name: 'remove_job_uploads')]
     public function removeJobOfferAssets(
         Request $request,
         string $offerId,
@@ -194,7 +283,7 @@ class UserJobOfferManagementController extends AbstractController
 
 
 
-    #[Route('/offers/{offerId}/draft', methods: ['PATCH'])]
+    #[Route('/offers/{offerId}/draft', methods: ['PATCH'], name: 'set_job_as_draft')]
     public function defineJobOfferAsDraft(
         string $offerId,
         MarkJobOfferAsDraft $usecase
@@ -231,18 +320,8 @@ class UserJobOfferManagementController extends AbstractController
 
 
     
-    #[Route('/offers/{offerId}/pipeline/{pipelineId}', methods: ['POST'])]
-    public function TogglePipeline(
-        Request $request,
-        string $offerId
-    )
-    {
-        
-    }
 
-
-
-    #[Route("/publish/{offerId}", methods: ['POST'])]
+    #[Route("/publish/{offerId}", methods: ['POST'], name: 'publish_job_offer')]
     public function publish(
         string $offerId,
         JobOffferPublisher $handler,
@@ -264,38 +343,6 @@ class UserJobOfferManagementController extends AbstractController
     }
 
 
-
-
-
-    #[Route("/change", methods: ['PATCH'] ,name: "change_job_offer")]
-    public function changeJobOffer(
-        Request $request,
-        JobOfferModifier $handler
-    ): JsonResponse
-    {
-        try{
-            /** @var AuthenticatedPerson */
-            $user = $this->getUser();
-
-            $body = json_decode($request->getContent(), true);
-            $command = new ChangeJobOffferRequest(
-                    uuid: $body['uuid'],
-                    title: $body['title'],
-                    content: $body['content'],
-            );
-
-            $handler->execute(
-                userId: $user->getId(),
-                command: $command
-            );
-            
-            return ApiResponse::success("Everything went smoothly")->toJsonResponse();
-        }
-        catch(Exception $ex){
-            $this->logger->error("Caught Exception: ". $ex->getMessage(), ['exception'=> $ex]);
-            return ApiResponse::error( "Something wrong happenned" )->toJsonResponse();
-        }
-    }
 
 
 

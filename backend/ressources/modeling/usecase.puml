@@ -3,6 +3,12 @@
 skinparam dpi 300
 left to right direction
 
+
+' Augmente la limite de taille à 12000 pixels
+!pragma graphviz_dot_limit 12000
+skinparam dpi 300
+left to right direction
+
 actor "Recruteur" as Recruiter
 actor "Candidat" as Candidate
 

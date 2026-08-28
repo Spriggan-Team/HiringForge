@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 //-- Services
@@ -10,6 +10,9 @@ import JobFormPage from "./components/job.form.page";
 import BreadCrumbs, { type LinkData } from "../../../layout/components/navigation/auth/link/bread.crumbs";
 import { useAppContext } from "../../../hooks/context";
 import { useAppNavigate } from "../../../hooks/navigation";
+import { useParams } from "react-router-dom";
+import JobQueries from "../../../api/services/jobs/queries";
+import JobServices from "../../../api/services/jobs/command";
 
 
 
@@ -35,13 +38,13 @@ export default ModifyJobPage;
  */
 
 interface ModifyJobPageContentProps
-{
-
-}
+{}
 
 const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
     const { t } = useTranslation()
-    const { currentJob } = useAppContext();
+    const { currentJob, setPopup, setCurrentJob } = useAppContext();
+
+    const { id: jobId } = useParams<{id: string}>();
     const navigate = useAppNavigate();
 
     const linkData = useMemo(()=>{
@@ -62,13 +65,57 @@ const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
         return (links);
     }, [currentJob]);
 
+
+    //-- Initalize
+    useEffect(()=>{
+        if(!jobId)
+            return;
+
+        const fetchCurrentJobView = async ()=>{
+            try{
+                const view = await JobQueries.getJobView(jobId);
+                setCurrentJob(view);
+                console.log({view})
+            }
+            catch(error){
+                console.log("Something went wrong while loading job: ", error);
+                setPopup({status: 'error', message: t('global.messages.error')});
+                navigate(RouteScheme.userJobs, { from: RouteScheme.modifyJob });
+            }
+        }
+
+        fetchCurrentJobView();
+    },[]);
+
+
+    const handleUpdateJob = async ()=>{
+        await JobServices.updateJob(currentJob);
+        return { offerId: currentJob.id }; //jobId
+    }
+
+    const handleUdateAssets = async (
+        jobId: string, 
+        images: {
+            file: File;
+            isMain: boolean;
+        }[]
+    )=>{
+        await JobServices.updateJobAssets(
+            jobId,
+            images
+        );
+    }
+
     return (
         <>
-            <JobFormPage 
+            <JobFormPage
                 navBar={{
                     title: t("jobs.modifyJob"),
                     description: <BreadCrumbs overlayColor="#4338CA" links={linkData} />,
-                }} 
+                }}
+                handleJob={handleUpdateJob}
+                handleUploadImage={handleUdateAssets}
+                formType="modify"
             />
         </>
     );

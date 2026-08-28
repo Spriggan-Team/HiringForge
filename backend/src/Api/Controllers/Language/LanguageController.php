@@ -70,7 +70,8 @@ class LanguageController extends AbstractController
         catch(\Exception $error){
            return ApiResponse::error(
                 message: "Something went wrong",
-                statusCode: Response::HTTP_BAD_REQUEST
+                statusCode: Response::HTTP_BAD_REQUEST,
+                throwable: $error
             )->toJsonResponse();
         }
     }

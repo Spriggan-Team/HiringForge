@@ -1,4 +1,5 @@
-@startuml
+```plantuml
+@startuml UML - Classe - Modèle global
 
 skinparam BackgroundColor white
 skinparam classAttributeIconSize 0
@@ -7,9 +8,10 @@ skinparam linetype ortho
 
 left to right direction
 
-' =========================
+
+' ========================================================
 ' COMPTES
-' =========================
+' ========================================================
 
 class Account {
     id: string
@@ -25,34 +27,37 @@ class User {
     role: string
 }
 
-Account "1" -- "0..1" Candidate
-Account "1" -- "0..1" User
+Account <|-- Candidate
+Account <|-- User
 
-' =========================
+
+' ========================================================
 ' ENTREPRISE
-' =========================
+' ========================================================
 
 class Company {
     id: string
     name: string
 }
 
-User "*" --> "1" Company
+Company "1" <-- "0..*" User : employees
 
-' =========================
+
+' ========================================================
 ' CV
-' =========================
+' ========================================================
 
 class Resume {
     id: string
     analyzed: boolean
 }
 
-Candidate "1" -- "0..*" Resume
+Candidate "1" *-- "0..*" Resume : resumes
 
-' =========================
+
+' ========================================================
 ' COMPETENCES
-' =========================
+' ========================================================
 
 class Skill {
     id: string
@@ -65,13 +70,14 @@ class CandidateSkill {
 class JobOfferSkill {
 }
 
-Candidate "1" -- "0..*" CandidateSkill
-CandidateSkill "*" --> "1" Skill
-CandidateSkill "*" --> "1" Resume
+Resume "1" *-- "0..*" CandidateSkill : skills
 
-' =========================
+CandidateSkill "*" --> "1" Skill : skill
+
+
+' ========================================================
 ' OFFRE
-' =========================
+' ========================================================
 
 class JobOffer {
     id: string
@@ -79,14 +85,19 @@ class JobOffer {
     status: string
 }
 
-Company "1" -- "0..*" JobOffer
-User "1" -- "0..*" JobOffer : crée
-JobOffer "1" -- "0..*" JobOfferSkill
-JobOfferSkill "*" --> "1" Skill
 
-' =========================
+Company "1" <-- "0..*" JobOffer : offers
+
+User "1" --> "0..*" JobOffer : creates
+
+
+JobOffer "1" *-- "0..*" JobOfferSkill : skills
+JobOfferSkill "*" --> "1" Skill : skill
+
+
+' ========================================================
 ' CANDIDATURE
-' =========================
+' ========================================================
 
 class Application {
     id: string
@@ -95,13 +106,16 @@ class Application {
     appliedAt: DateTime
 }
 
-Candidate "1" -- "0..*" Application
-JobOffer "1" -- "0..*" Application
-Application "1" --> "1" Resume
+Candidate "1" --> "0..*" Application : applications
 
-' =========================
+JobOffer "1" --> "0..*" Application : applications
+
+Application "*" --> "1" Resume : uses
+
+
+' ========================================================
 ' ENTRETIEN
-' =========================
+' ========================================================
 
 class Interview {
     id: string
@@ -109,11 +123,12 @@ class Interview {
     startDate: DateTime
 }
 
-Application "1" -- "0..*" Interview
+Application "1" *-- "0..*" Interview : interviews
 
-' =========================
+
+' ========================================================
 ' NOTIFICATIONS
-' =========================
+' ========================================================
 
 class Notification {
     id: string
@@ -121,6 +136,8 @@ class Notification {
     isRead: boolean
 }
 
-Account "1" -- "0..*" Notification : reçoit
+Account "1" <-- "0..*" Notification : receives
+
 
 @enduml
+```

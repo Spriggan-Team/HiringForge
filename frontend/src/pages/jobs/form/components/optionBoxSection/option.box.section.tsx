@@ -31,6 +31,7 @@ import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg?react
 
 //-- CSS Module
 import styles from "./OptionBoxSection.module.css"
+import type { JobFormProps } from "../job.form.page";
 
 
 
@@ -38,6 +39,7 @@ interface OptionBoxSectionProps{
     onClose?: ()=>void;
     onComplete?: (job: JobView)=>void;
     className?: string;
+    formType: JobFormProps['formType']
 }
 
 
@@ -46,6 +48,7 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
     onClose,
     onComplete,
     className,
+    formType
 }) => {
     const { t }      = useTranslation();
     const navigate   = useNavigate();
@@ -103,25 +106,35 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
                 <Title title={t("jobs.createJob.publicationSettingsSection.title")} />
 
                 {/* Publication state */}
-                <div className={styles.contentBox}>
+                <div 
+                    className={styles.contentBox}
+                >
                     <span className={styles.title}>{t("global.jobs.publicationState.title")}</span>
                     <div className={styles.checkboxSection}>
-                        {(["published", "draft", "closed"] as const).map(status => (
-                            <CheckBoxInput
-                                key={status}
-                                borderRadius="100%"
-                                checked={currentJob.publicationStatus === status}
-                                text={t(`global.jobs.publicationState.${status}`)}
-                                onChange={() =>
-                                    setCurrentJob(prev => ({ ...prev, publicationStatus: status }))
-                                }
-                            />
-                        ))}
+                        {(["published", "draft", "closed"] as const).map(status =>{
+                            if(formType === "create" && status === "closed" ){
+                                return null;
+                            } 
+
+                            return (
+                                <CheckBoxInput
+                                    key={status}
+                                    borderRadius="100%"
+                                    checked={currentJob.publicationStatus === status}
+                                    text={t(`global.jobs.publicationState.${status}`)}
+                                    onChange={() =>
+                                        setCurrentJob(prev => ({ ...prev, publicationStatus: status }))
+                                    }
+                                />
+                            )
+                        })}
                     </div>
                 </div>
 
                 {/* Visibility state */}
-                <div className={styles.contentBox}>
+                <div 
+                    className={styles.contentBox}
+                >
                     <span className={styles.title}>{t("global.jobs.visibilityStatus.title")}</span>
                     <div className={styles.checkboxSection}>
                         {(["public", "private"] as const).map(vis => (
@@ -273,8 +286,8 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
                 />
                 <SimpleButton
                     className={styles.complete}
-                    text={t("jobs.buttons.create")}
                     onClick={() => onComplete?.(currentJob)}
+                    text={t(formType === "create" ? "jobs.buttons.create" : "jobs.buttons.modify")}
                 />
             </div>
         </div>

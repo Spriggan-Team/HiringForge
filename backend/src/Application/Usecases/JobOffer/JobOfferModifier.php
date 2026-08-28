@@ -2,35 +2,101 @@
 
 namespace App\Application\Usecases\JobOffer;
 
+use App\Application\DTO\JobOffer\UpdateJobOfferRequest;
+use App\Domain\JobOffer\JobOfferExpertise;
 
-use App\Application\DTO\JobOffer\ChangeJobOffferRequest;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
+use App\Domain\JobOffer\JobOfferVisibilityStatus;
+use App\Domain\JobOffer\JobPublicationStatus;
+use App\Domain\JobOffer\JobWorkMode;
 
 
 class JobOfferModifier
 {
     public function __construct(private JobOfferRepositoryInterface $repository){}
 
+ 
     /**
-     * This function is a usecase that allow any user to change information about a job stored in the bdd
-     * @throws RessourceNotFound|\DomainException
-     * @return void;
+     * Usecase: Update job offer information
+     * @throws RessourceNotFound|\DomainException|\LogicException
      */
     public function execute(
         string $userId,
-        ChangeJobOffferRequest $command
-    ):void
-    {
-        $offer = $this->repository->findById($userId, $command->uuid);
+        UpdateJobOfferRequest $command
+    ): void {
+        //--------------------------
+        //-- Check validity
+        //--------------------------
+        $this->repository->assertRelationWithUser(accountId: $userId, offerId: $command->id);
 
-        if($command->title){
+        //------------------------
+        //-- Updating
+        //-------------------------
+
+        //  Aggregate Recovery
+        $offer = $this->repository->findById($userId, $command->id);
+
+        // Updating Textual Information
+        if (!empty($command->title)) {
             $offer->rename($command->title);
         }
 
-        if($command->content){
+        if (!empty($command->content)) {
             $offer->changeContent($command->content);
         }
 
-        $this->repository->change($offer, $command->uuid, $userId);
+        // Updating Relationships & Characteristics
+        if (!empty($command->location['id'])) {
+            $offer->changeLocation((int) $command->location['id']);
+        }
+
+        if ($command->departmentId !== null) {
+            $offer->changeDepartment($command->departmentId);
+        }
+
+        if ($command->contractTypeId !== null) {
+            $offer->changeContractType((int) $command->contractTypeId);
+        }
+
+        if ($command->workMode !== null) {
+            $offer->changeWorkMode(JobWorkMode::from($command->workMode));
+        }
+
+        if ($command->expertise !== null) {
+            $offer->changeExpertise(JobOfferExpertise::from($command->expertise));
+        }
+
+        //  Payroll Management
+        if ($command->salary !== null) {
+            $offer->changeSalary(
+                minSalary: $command->salary->min,
+                maxSalary: $command->salary->max,
+                currency: $command->salary->currency
+            );
+        }
+
+        // Cat & Skills
+        if (!empty($command->categories)) {
+            $offer->changeCategories($command->categories);
+        }
+
+        // Statuts & Visibility
+        if ($command->visibilityStatus !== null) {
+            $offer->changeVisibilityStatus(JobOfferVisibilityStatus::from($command->visibilityStatus));
+        }
+
+        if ($command->publicationStatus !== null) {
+            $offer->changePublicationStatus(JobPublicationStatus::from($command->publicationStatus));
+        }
+
+        if ($command->publicationDate !== null) {
+            $offer->schedulePublication($command->publicationDate);
+        }
+
+        // 7. Persistance
+        $this->repository->save(
+            offer: $offer,
+            userId: $userId
+        );
     }
 }

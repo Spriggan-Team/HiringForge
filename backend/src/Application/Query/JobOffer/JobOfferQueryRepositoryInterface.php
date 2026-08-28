@@ -159,54 +159,62 @@ interface JobOfferQueryRepositoryInterface
 
 
     /**
-     * This function is a very powerful/flexible one that helps a user retrieve 
-     * dynamically targeted data fields about a specific job offer.
+     * Retrieves a dynamically defined projection of a job offer.
      *
-     * @param string $jobOfferId The target job offer ID
-     * @param string $userId The ID of the related user (recruiter) 
-     * @param array  $scheme An array that describes the output data shape
-     *   ex: [
-     *       'id'? => bool,
-     *       'title'? => bool,
-     *       'content'? => bool,
-     *       'jobWorkMode'? => bool,
-     *       'viewsCount'? => bool,       // Returns the total number of views
-     *       'mainImage'? => bool,        // Returns the image name
-     *       'createdAt'? => bool,
-     *       'updatedAt'? => bool,
-     *       'salary'? => [
-     *           'devise'? => bool,
-     *           'min'? => bool,
-     *           'max'? => bool,
-     *       ],
-     *       'location'? => [
-     *           'id'? => bool,
-     *           'street'? => bool,
-     *           'city'? => bool,
-     *           'country'? => bool,
-     *       ],
-     *       'department'? => [
-     *           'id'? => bool,
-     *           'label'? => bool,
-     *       ],
-     *       'contract'? => [
-     *           'id'? => bool,
-     *           'label'? => bool,
-     *       ],
-     *       'skills'? => [               // Produces an array of skills
-     *           'id'? => bool,
-     *           'name'? => bool,
-     *           'local'? => string,
-     *       ],
-     *       'languages'? => [            // Produces an array of languages
-     *           'label'? => bool,
-     *           'level'? => bool,
-     *       ],
-     *      'publicationStatus'? => bool,
-     *      'activityStatus'? => bool,
-     *      'visibilityStatus' =>bool
-     *   ]
-     * @return array
+     * The requested fields are defined by the provided schema, allowing callers
+     * to retrieve only the data they need, including nested related entities
+     * such as location, department, contract, skills, and languages.
+     *
+     * @param string $jobOfferId The ID of the job offer to retrieve.
+     * @param string $userId The ID of the related recruiter/user.
+     * @param array<string, bool|array<string, mixed>> $scheme
+     *        Defines the shape of the returned data.
+     *
+     *        Example:
+     *        [
+     *            'id' => true,
+     *            'title' => true,
+     *            'content' => true,
+     *            'jobWorkMode' => true,
+     *            'viewsCount' => true,          // Total number of views.
+     *            'mainImage' => true,           // Image name.
+     *            'mainImageId' => true,
+     *            'createdAt' => true,
+     *            'updatedAt' => true,
+     *            'salary' => [
+     *                'currency' => true,
+     *                'min' => true,
+     *                'max' => true,
+     *            ],
+     *            'location' => [
+     *                'id' => true,
+     *                'street' => true,
+     *                'city' => true,
+     *                'country' => true,
+     *            ],
+     *            'department' => [
+     *                'id' => true,
+     *                'label' => true,
+     *            ],
+     *            'contract' => [
+     *                'id' => true,
+     *                'label' => true,
+     *            ],
+     *            'skills' => [
+     *                'id' => true,
+     *                'name' => true,
+     *                'local' => true,
+     *            ],
+     *            'languages' => [
+     *                'label' => true,
+     *                'level' => true,
+     *            ],
+     *            'publicationStatus' => true,
+     *            'activityStatus' => true,
+     *            'visibilityStatus' => true,
+     *        ]
+     *
+     * @return array<string, mixed> The job offer data matching the requested schema.
      */
     public function fetchJobOfferProjection(string $jobOfferId, string $userId, array $scheme = []): array;
 

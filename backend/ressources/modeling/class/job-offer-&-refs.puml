@@ -1,3 +1,4 @@
+```plantuml
 @startuml UML - Classe - Offres d'emploi
 
 skinparam dpi 300
@@ -10,6 +11,7 @@ skinparam ranksep 80
 skinparam linetype ortho
 
 left to right direction
+
 
 '========================================================
 ' JOB OFFER
@@ -51,9 +53,17 @@ class Address {
     - street: string
 }
 
-Company "1" -- "0..*" JobOffer
-User "1" -- "0..*" JobOffer : creates
-JobOffer "0..*" --> "0..1" Address
+
+' Une entreprise possède plusieurs offres.
+' Une offre appartient à une seule entreprise.
+Company "1" o-- "0..*" JobOffer : offers
+
+' Un utilisateur peut créer plusieurs offres.
+' La création est une association, pas une composition.
+User "1" --> "0..*" JobOffer : creates
+
+' Une adresse peut être partagée et existe indépendamment de l'offre.
+JobOffer "0..*" --> "0..1" Address : address
 
 
 '========================================================
@@ -68,9 +78,12 @@ class Department {
     - externalRef: string
 }
 
-Department "0..1" --> "0..*" Department : parent
+' Un département peut avoir un département parent.
+' Auto-association simple : les départements existent indépendamment.
+Department "0..1" <-- "0..*" Department : parent
 
-JobOffer "*" --> "1" Department
+' Une offre appartient obligatoirement à un département.
+JobOffer "*" --> "1" Department : department
 
 
 '========================================================
@@ -85,7 +98,9 @@ class ContractType {
     - organisationId: string
 }
 
-ContractType "1" -- "0..*" JobOffer
+' Un type de contrat peut être utilisé par plusieurs offres.
+' Le type de contrat existe indépendamment des offres.
+ContractType "1" <-- "0..*" JobOffer : contract type
 
 
 '========================================================
@@ -102,8 +117,14 @@ class Skill {
 
 class JobOfferSkill
 
-JobOffer "1" -- "0..*" JobOfferSkill
-JobOfferSkill "*" --> "1" Skill
+' JobOfferSkill est une entité associative dépendante de JobOffer.
+' Si l'offre est supprimée, ses associations de compétences
+' n'ont plus de raison d'exister.
+JobOffer "1" *-- "0..*" JobOfferSkill : skills
+
+' Une association JobOfferSkill référence une compétence.
+' La compétence existe indépendamment des offres.
+JobOfferSkill "*" --> "1" Skill : skill
 
 
 '========================================================
@@ -119,7 +140,15 @@ class Candidate {
     - id: string
 }
 
-Candidate "1" -- "0..*" JobOfferView
-JobOffer "1" -- "0..*" JobOfferView
+' Une vue appartient à une offre.
+' Si l'offre disparaît, ses vues disparaissent également.
+JobOffer "1" *-- "0..*" JobOfferView : views
+
+' Un candidat peut avoir plusieurs vues.
+' Les vues sont rattachées à un candidat, mais le candidat
+' existe indépendamment.
+Candidate "1" --> "0..*" JobOfferView : views
+
 
 @enduml
+```

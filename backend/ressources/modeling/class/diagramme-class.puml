@@ -1,24 +1,16 @@
 @startuml UML - Classe
 
-
 skinparam dpi 300
-
 skinparam maxwidth 8000
 skinparam maxheight 8000
-skinparam dpi 300
-
 skinparam shadowing false
 skinparam classAttributeIconSize 0
-
 skinparam nodesep 60
 skinparam ranksep 80
-
 skinparam linetype ortho
 
-
-
 left to right direction
-skinparam classAttributeIconSize 0
+
 
 '========================================================
 ' CORE ACCOUNT
@@ -43,8 +35,8 @@ class Candidate {
     - id: string
 }
 
-Account "1" -up- "0..1" User
-Account "1" -- "0..1" Candidate
+Account <|-- User
+Account <|-- Candidate
 
 
 '========================================================
@@ -73,8 +65,8 @@ class Address {
     - street: string
 }
 
-Candidate "1" --> "0..1" Address
-Company "1" -- "0..*" Address
+Candidate "1" *-- "0..1" Address
+Company "1" *-- "0..*" Address
 JobOffer "0..*" --> "0..1" Address
 
 
@@ -105,8 +97,8 @@ class Resume {
     - hasBeenAnalyzed: boolean
 }
 
-Candidate "1" -- "0..*" Resume
-Resume "1" --> "1" File
+Candidate "1" *-- "0..*" Resume
+Resume "1" *-- "1" File
 
 
 '========================================================
@@ -145,16 +137,16 @@ class CandidateSkill {
 class JobOfferSkill
 
 
-Candidate "1" -- "0..*" CandidateSkill
+Candidate "1" *-- "0..*" CandidateSkill
 CandidateSkill "*" --> "1" Skill
 CandidateSkill "*" --> "0..1" Resume
 
-Skill "1" -- "0..*" SkillTranslation
+Skill "1" *-- "0..*" SkillTranslation
 SkillTranslation "*" --> "1" Language
 
-Skill "1" -- "0..*" SkillAlias
+Skill "1" *-- "0..*" SkillAlias
 
-JobOffer "1" -- "0..*" JobOfferSkill
+JobOffer "1" *-- "0..*" JobOfferSkill
 JobOfferSkill "*" --> "1" Skill
 
 
@@ -206,10 +198,10 @@ class JobOffer {
     - updatedAt: DateTime
 }
 
-Company "1" -- "0..*" JobOffer
-User "1" -- "0..*" JobOffer : creates
-Department "1" -- "0..*" JobOffer
-ContractType "1" -- "0..*" JobOffer
+Company "1" *-- "0..*" JobOffer
+User "1" --> "0..*" JobOffer : creates
+Department "1" --> "0..*" JobOffer
+ContractType "1" --> "0..*" JobOffer
 
 
 '========================================================
@@ -221,8 +213,8 @@ class JobOfferView {
     - viewedAt: DateTime
 }
 
-Candidate "1" -- "0..*" JobOfferView
-JobOffer "1" -- "0..*" JobOfferView
+Candidate "1" --> "0..*" JobOfferView
+JobOffer "1" --> "0..*" JobOfferView
 
 
 '========================================================
@@ -237,8 +229,8 @@ class Application {
     - updatedAt: DateTime
 }
 
-Candidate "1" -- "0..*" Application
-JobOffer "1" -- "0..*" Application
+Candidate "1" *-- "0..*" Application
+JobOffer "1" *-- "0..*" Application
 Application "1" --> "1" Resume
 Application "*" --> "1" Company
 
@@ -259,7 +251,7 @@ class Interview {
     - rejectionReason: string
 }
 
-Application "1" -- "0..*" Interview
+Application "1" *-- "0..*" Interview
 
 
 '========================================================
@@ -271,10 +263,11 @@ class EmploymentOffer {
     - reason: string [nullable]
 }
 
-Candidate "1" -- "0..*" EmploymentOffer
-User "1" -- "0..*" EmploymentOffer : creates
-Company "1" -left- "0..*" EmploymentOffer
-Application "1" -- "0..1" EmploymentOffer
+Candidate "1" --> "0..*" EmploymentOffer
+User "1" --> "0..*" EmploymentOffer : creates
+Company "1" *-- "0..*" EmploymentOffer
+Application "1" *-- "0..1" EmploymentOffer
+
 
 '========================================================
 ' NOTIFICATION
@@ -284,13 +277,12 @@ class Notification {
     - id: string
     - type: string
     - data: JSON
-    - isRead: boolean
     - createdAt: DateTime
     - readAt: DateTime
 }
 
-Account "1" -left- "0..*" Notification : recipient
-Account "1" -- "0..*" Notification : sender
+Account "1" *-- "0..*" Notification : recipient
+Account "1" --> "0..*" Notification : sender
 
 
 '========================================================
@@ -319,24 +311,9 @@ class BlacklistedToken {
     - reason: string
 }
 
-Account "1" -- "0..*" OTPVerification
-OTPVerification --> VerificationToken
+Account "1" *-- "0..*" OTPVerification
+OTPVerification "*" --> "1" VerificationToken
 
-'========================================================
-' TRACE / NOTIFICATION INTERNE
-'========================================================
-
-class KeepTrace {
-    - id: string
-    - entityType: string
-    - entityId: string
-    - message: string
-    - status: string
-    - createdAt: DateTime
-    - readAt: DateTime
-}
-
-Account "1" -- "0..*" KeepTrace
 
 
 '========================================================

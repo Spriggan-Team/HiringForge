@@ -645,11 +645,12 @@ class JobOfferQueryRepository implements JobOfferQueryRepositoryInterface
         }
 
         // Main Image
-        if (!empty($scheme['mainImage'])) {
+        if (!empty($scheme['mainImage']) || !empty($scheme['mainImageFileId'])) {
             $qb->leftJoin('j.images', 'ji', 'WITH', 'ji.isMain = true')
                ->leftJoin('ji.file', 'jf');
 
-            $selects[] = 'jf.name AS mainImage'; 
+            $selects[] = 'jf.id AS mainImageFileId';
+            $selects[] = 'jf.name AS mainImage';
         }
 
         // Fallback: Default to selecting ID if no direct field is specified
@@ -734,9 +735,18 @@ class JobOfferQueryRepository implements JobOfferQueryRepositoryInterface
         }
 
         // Main Image
-        if (!empty($scheme['mainImage'])) {
-            $output['mainImage'] = $baseData['mainImage'] ?? null;
+        if (!empty($scheme['mainImageFileId'])) {
+            $output['mainImageFileId'] = array_key_exists('mainImageFileId', $baseData) 
+                ? $baseData['mainImageFileId'] 
+                : null;
         }
+
+        if (!empty($scheme['mainImage'])) {
+            $output['mainImage'] = array_key_exists('mainImage', $baseData) 
+                ? $baseData['mainImage'] 
+                : null;
+        }
+
 
         // Handle 1-N collections (Languages, Skills) & Views Count
 

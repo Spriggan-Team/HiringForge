@@ -27,7 +27,8 @@ export type BasicPublicJobOfferModel = {
 };
 
 export type PublicJobOfferLightModel = BasicPublicJobOfferModel & {
-  mainImage: string | null;
+  mainImage: string | null; //image http url
+  mainImageId: string; //file id of the current image
 };
 
 export type PublicJobOfferDetailsModel = BasicPublicJobOfferModel & {

@@ -131,6 +131,9 @@ services:
     App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferQueryRepository
     
+    App\Domain\JobOffer\JobOfferImageRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferImageRepository
+
     #-- Offers
     App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer\Repositories\EmploymentOfferRepository
