@@ -54,13 +54,17 @@ class InterviewEntity
     #[ORM\ManyToOne(targetEntity: JobOfferEntity::class, inversedBy: "interviews")]
     private JobOfferEntity $jobOffer;
 
+    #[ORM\Column]
+    private \DateTimeImmutable $createdAt;
 
     //-------------------------
     //------- Constructing
     //-------------------
 
     private function __construct()
-    {}
+    {
+        $this->createdAt =  new \DateTimeImmutable();
+    }
 
     public static function create(
         string $id,
@@ -178,6 +182,10 @@ class InterviewEntity
     }
 
 
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
 
     //======================
     //  SETTERS

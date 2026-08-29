@@ -5,11 +5,10 @@ namespace App\Api\Controllers\User;
 use App\Api\Controllers\Helpers\ApiControllerHelpers;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
+use App\Application\Query\JobOffer\Repositories\JobOfferAnalyticsRepositoryInterface;
 use App\Domain\Company\CompanyRepositoryInterface;
-use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface;
 
-use App\Domain\File\MediaOwnerType;
-use App\Domain\File\MediaPurpose;
+
 use App\Domain\File\MediaStorageInterface;
 use App\Domain\Shared\AccountStorageParams;
 use App\Domain\Shared\PathResolverInterface;
@@ -44,19 +43,27 @@ class UserQueryManagement extends AbstractController
     }
 
 
+
     
     #[Route("/kpi", methods: ['GET'], name: "view_kpi_metrics")]
     public function getKpi(
-        JobOfferQueryRepositoryInterface $jobOfferQueryRepository
+        JobOfferAnalyticsRepositoryInterface $jobOfferQueryRepository
     ) {
         try{
             /** @var AuthenticatedPerson */
             $user = $this->getUser();
 
-            $result = $jobOfferQueryRepository->analyseJobOfferCollection(userId: $user->getId());
-            return ApiResponse::success(data: $result, message: "Everything went successfully")->toJsonResponse();
+            $result = $jobOfferQueryRepository->analyseJobOfferCollection(
+                userId: $user->getId()
+            );
+
+            return ApiResponse::success(
+                data: $result,
+                message: "Everything went successfully"
+            )->toJsonResponse();
         }
-        catch(\Exception $exception){
+        catch(\Exception $exception)
+        {
             return ApiResponse::error(
                 message: "Something wrong happened",
                 throwable: $exception

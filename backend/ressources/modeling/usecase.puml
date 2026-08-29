@@ -13,7 +13,6 @@ actor "Recruteur" as Recruiter
 actor "Candidat" as Candidate
 
 rectangle "HiringForge" {
-
     ' ============================================================
     ' OFFRES D'EMPLOI
     ' ============================================================

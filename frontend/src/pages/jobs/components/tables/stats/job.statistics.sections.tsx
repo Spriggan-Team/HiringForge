@@ -3,7 +3,6 @@ import React, { useEffect, useState, useTransition } from "react";
 
 import ApplicationQueries from "../../../../../api/services/application/queries";
 import JobQueries from "../../../../../api/services/jobs/queries";
-import { currentDay, currentMonth } from '../../../../../utils/dates'
 import type { JobKpis } from "../../../../../features/jobs/JobOffer";
 
 import { LineChart, type Dataset } from "../../../../../layout/components/charts/lineChart/lineChart";
@@ -12,6 +11,7 @@ import DonutChart from "../../../../../layout/components/charts/donutChart/donus
 
 
 import styles from "./JobStatisticsSection.module.css";
+import { ViewModelFactory } from "../../../../../utils/view.model.factory";
 
 
 
@@ -19,62 +19,6 @@ export interface JobStatisticsSectionProps {
     jobId?: string;
     jobTitle?: string;
 }
-
-
-/**
- * Generates the Dataset object required by the LineChart without mutating global state
- */
-const buildChartDataset = (metrics: number[], timeframe: "week" | "month"): Dataset => {
-    const dates = timeframe === "month" ? currentMonth : currentDay;
-    const maxVal = metrics.length > 0 ? Math.max(...metrics) : 10;
-
-    return {
-        dates,
-        maximum: maxVal > 0 ? maxVal : 10,
-        data: [
-            {
-                type: "area",
-                areaMultiplier: 1,
-                x: metrics,
-                attr: {
-                    fill: "url(#blue-gradient)",
-                },
-                defs: [
-                    {
-                        gradients: {
-                            linear: [
-                                {
-                                    id: "blue-gradient",
-                                    target: "fill",
-                                    coords: { x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
-                                    stop: [
-                                        { offset: "0%", stopColor: "#3b82f6", stopOpacity: 0.4 },
-                                        { offset: "100%", stopColor: "#3b82f6", stopOpacity: 0.0 },
-                                    ],
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-            {
-                type: "line",
-                x: metrics,
-                attr: {
-                    stroke: "#3b82f6",
-                    strokeWidth: 3,
-                },
-                dotIndicator: {
-                    r: 5,
-                    fill: "#3b82f6",
-                    stroke: "#ffffff",
-                    strokeWidth: 2,
-                    rPulse: 7,
-                },
-            },
-        ],
-    };
-};
 
 
 export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
@@ -100,6 +44,7 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
         rejectedCandidatesCount: 0,
     });
 
+    
     useEffect(() => {
         let isMounted = true;
 
@@ -144,9 +89,9 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
 
                 // Format Line Chart Data
                 const metricsArray = Array.isArray(postulationMetricsData) ? postulationMetricsData : [];
-                setApplicationsOverTimeData(buildChartDataset(metricsArray, timeframe));
-                
-
+                setApplicationsOverTimeData(ViewModelFactory.buildChartDataset({
+                    metrics: metricsArray, timeframe
+                }));
             }
             catch (error) {
                 console.error("Failed to load job statistics:", error);
@@ -163,6 +108,7 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
             isMounted = false;
         };
     }, [jobId, timeframe, t])
+
 
 
     //----- RENDER

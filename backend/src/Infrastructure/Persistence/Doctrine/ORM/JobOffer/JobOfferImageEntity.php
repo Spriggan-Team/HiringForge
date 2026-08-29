@@ -17,7 +17,7 @@ class JobOfferImageEntity
 
     #[ORM\ManyToOne(
         targetEntity: JobOfferEntity::class,
-        inversedBy: 'images'
+        inversedBy: 'images',
     )]
     #[ORM\JoinColumn(nullable: false)]
     private JobOfferEntity $jobOffer;

@@ -9,16 +9,12 @@ use App\Domain\Shared\AccountStorageParams;
 use App\Domain\Shared\PathResolverInterface;
 
 use App\Domain\Candidate\CandidateRepositoryInterface;
-use App\Domain\Shared\Document\DocumentExtractorInterface;
-use App\Domain\Candidate\Application\ResumeLexicalParserInterface;
 
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
-use App\Domain\Candidate\Application\ResumeAiParserInterface;
-use App\Domain\Candidate\CandidateResume;
 use App\Domain\Candidate\CandidateResumeRepositoryInterface;
 use App\Domain\Candidate\CandidateSkillRepositoryInterface;
 
-use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface;
+use App\Application\Query\JobOffer\Repositories\RecruiterJobOfferQueryRepositoryInterface;
 use App\Domain\Candidate\Application\CVParserInterface;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
 
@@ -46,14 +42,13 @@ class ApplyToJobOffer
         private ApplicationRepositoryInterface $applicationRepository,
         
         private PathResolverInterface $pathResolver,
-        private DocumentExtractorInterface $docExtractor,
         
         private CVParserInterface $cvParser,
         private SkillMatcherServiceInterface $skillMatcherServices,
         private SkillScoreCalculator $skillScoreCalculator,
 
         private JobOfferRepositoryInterface $jobRepository,
-        private JobOfferQueryRepositoryInterface $jobQueryInterface,
+        private RecruiterJobOfferQueryRepositoryInterface $jobQueryInterface,
         private NotificationRepositoryInterface $notificationRepository,
 
         private LoggerInterface $logger

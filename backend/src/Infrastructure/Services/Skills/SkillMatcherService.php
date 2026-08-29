@@ -14,7 +14,6 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillTranslationEntity;
 
 use Ramsey\Uuid\Uuid;
-use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferQueryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 

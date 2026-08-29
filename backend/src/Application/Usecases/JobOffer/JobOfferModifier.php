@@ -80,6 +80,10 @@ class JobOfferModifier
             $offer->changeCategories($command->categories);
         }
 
+        if(!empty($command->skills)){
+            
+        }
+
         // Statuts & Visibility
         if ($command->visibilityStatus !== null) {
             $offer->changeVisibilityStatus(JobOfferVisibilityStatus::from($command->visibilityStatus));

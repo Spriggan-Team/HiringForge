@@ -9,12 +9,13 @@ use App\Domain\JobOffer\JobOfferVisibilityStatus;
 use App\Domain\JobOffer\JobPublicationStatus;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\Mapper\JobOfferEntityMapper;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
+use Doctrine\ORM\EntityManagerInterface;
 
 
 class JobOfferRepository implements JobOfferRepositoryInterface
@@ -199,12 +200,6 @@ class JobOfferRepository implements JobOfferRepositoryInterface
         return (string) $companyId;
     }
     
-    
-    public function fetchJobOfferViewCollection(?int $limit = null, ?int $skip = null): array
-    {
-        throw new \Exception('Not implemented');
-    }
-
 
     
     #[Override]

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories;
+namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\Mapper;
 
 use App\Domain\File\StaticMedia;
 use App\Domain\JobOffer\JobOfferImage;
@@ -25,6 +25,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferSkillsEntity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+
 
 
 /**

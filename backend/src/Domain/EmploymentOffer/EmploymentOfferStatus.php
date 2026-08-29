@@ -9,5 +9,4 @@ enum EmploymentOfferStatus: string
     case DECLINED = 'DECLINED';
     case ACCEPTED = 'ACCEPTED';
     case EXPIRED = 'EXPIRED';
-    
 }

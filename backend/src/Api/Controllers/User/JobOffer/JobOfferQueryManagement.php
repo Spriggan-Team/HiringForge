@@ -4,14 +4,19 @@ namespace App\Api\Controllers\User\JobOffer;
 
 
 use App\Api\Responder\ApiResponse;
-use App\Domain\JobOffer\JobPublicationStatus;
 use App\Application\DTO\Auth\AuthenticatedPerson;
+
+use App\Application\Query\JobOffer\Repositories\JobOfferAnalyticsRepositoryInterface;
+use App\Application\Query\JobOffer\Repositories\RecruiterJobOfferQueryRepositoryInterface;
+
 use App\Application\Query\JobOffer\DTO\JobSummaryItem;
-use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
-use App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface;
+
 use App\Domain\EmploymentOffer\EmploymentOfferStatus;
+use App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface;
+
+
 use Psr\Log\LoggerInterface;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -27,7 +32,7 @@ class JobOfferQueryManagement extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
-        private JobOfferQueryRepositoryInterface $queryRepository,
+        private RecruiterJobOfferQueryRepositoryInterface $queryRepository,
         private ApplicationRepositoryInterface $applicationRepository,
         private EmploymentOfferRepositoryInterface $offerRepository
     ) {
@@ -95,6 +100,7 @@ class JobOfferQueryManagement extends AbstractController
                 jobOfferId: $jobOfferId,
                 userId: $userId
             );
+            
             $userAvgTimeToHireDays = $this->applicationRepository->getUserAvgTimeToHireDays($userId);
 
             //-- If no job is provided the difference is null
@@ -153,7 +159,8 @@ class JobOfferQueryManagement extends AbstractController
     #[Route('/', methods: ['GET'])]
     public function retrieveJobOfferWithPagination(
         Request $request,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        RecruiterJobOfferQueryRepositoryInterface $queryRepository,
     ): JsonResponse {
         try {
             /** @var AuthenticatedPerson $user */
@@ -172,7 +179,7 @@ class JobOfferQueryManagement extends AbstractController
             $criteria = $request->query->all();
 
             /** @var array<int, JobSummaryItem> $data */
-            $data = $this->queryRepository->fetchJobOfferViewCollection(
+            $data = $queryRepository->fetchJobOfferViewCollection(
                 userId: $user->getId(),
                 limit: $limit,
                 skip: $skip,
@@ -233,14 +240,15 @@ class JobOfferQueryManagement extends AbstractController
      */
     #[Route('/stats', name: 'api_users_job_offers_stats', methods: ['GET'])]
     public function getJobOfferOverview(
-        Request $request
+        Request $request,
+        JobOfferAnalyticsRepositoryInterface $queryRepository
     ): JsonResponse {
         try {
             /** @var AuthenticatedPerson $user */
             $user = $this->getUser();
             $jobId = $request->query->get('jobId');
 
-            $data = $this->queryRepository->getJobStats(
+            $data = $queryRepository->getJobStats(
                 userId: $user->getId(),
                 jobId: $jobId
             );

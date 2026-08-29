@@ -111,7 +111,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     }, []);
 
 
-    // ── Global mouseup safety net ─────────────────────────────
+    // -- Global mouseup safety net --
     useEffect(() => {
         if (!dragging) 
             return;
@@ -136,7 +136,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 };
 
 
-// ─────────────────────────────────────────────────────────────
+// ---------------------
 // KanbanDragGhost — floating preview that follows the cursor
 // Place this once inside <KanbanBoard>, pass the card UI as children
 //
@@ -147,7 +147,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 //     </KanbanDragGhost>
 //     ...columns
 //   </KanbanBoard>
-// ─────────────────────────────────────────────────────────────
+// --------------------
 
 
 export const KanbanDragGhost: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -267,6 +267,7 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
     const { dragging, startDrag, updateOver, commitDrop, abortDrag } = useDrag();
     const isDraggingThis = dragging?.cardId === id;
 
+    
     // ── Start drag 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         if (e.button !== 0) return;
@@ -277,6 +278,7 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
         startDrag({ cardId: id, columnId });
     }, [id, columnId, startDrag]);
 
+    
     // ── Drop & insert dragged card
     const handleMouseUp = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
@@ -284,6 +286,7 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
             return;
         commitDrop(columnId, id);
     }, [dragging, id, columnId, commitDrop]);
+
 
     // ── Hover — visual feedback
     const handleMouseEnter = useCallback(() => {

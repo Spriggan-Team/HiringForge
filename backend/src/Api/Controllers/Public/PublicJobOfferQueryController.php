@@ -3,7 +3,7 @@
 namespace   App\Api\Controllers\Public;
 
 use App\Api\Responder\ApiResponse;
-use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface;
+use App\Application\Query\JobOffer\Repositories\PublicJobOfferQueryRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,7 +17,7 @@ class PublicJobOfferQueryController extends AbstractController
 {
     public function __construct(
         private LoggerInterface $logger,
-        private JobOfferQueryRepositoryInterface $queryRepository
+        private PublicJobOfferQueryRepositoryInterface $queryRepository
     ) {
         ApiResponse::init($logger);
     }

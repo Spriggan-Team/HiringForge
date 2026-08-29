@@ -8,6 +8,9 @@ import { useTranslation } from "react-i18next";
 import RouteScheme from "../../../route.scheme";
 import UserQueriesServices from "../../../api/services/user/queries";
 import type {  RecruiterDashboardKpis } from "../../../features/dashboard/KpiData";
+import JobQueries from "../../../api/services/jobs/queries";
+import ApplicationQueries from "../../../api/services/application/queries";
+
 
 //-- Custom Component
 import KpiCard, { KpiCount, KpiPercentage } from "./component/kpi/kpi.card";
@@ -25,14 +28,14 @@ import StatsChart from "./component/stats/stast.chart";
 
 //-- SVG Components
 import JobOfferSVG from "/src/assets/svg/menu/work-svgrepo-com-v2.svg?react"
-import ReviewJobOfferSVG from "/src/assets/svg/menu/aethersx2-svgrepo-com.svg?react"
+// import ReviewJobOfferSVG from "/src/assets/svg/menu/aethersx2-svgrepo-com.svg?react"
 import InterviewsSVG from "/src/assets/svg/menu/user-speak-rounded-svgrepo-com.svg?react"
 import HiredSVG from "/src/assets/svg/menu/hire-a-helper-svgrepo-com.svg?react"
 
 //-- CSS Styles
 import styles from "./UserHome.module.css"
-
-
+import type { Dataset } from "../../../layout/components/charts/lineChart/lineChart";
+import { ViewModelFactory } from "../../../utils/view.model.factory";
 
 
 
@@ -40,7 +43,8 @@ const UserHome = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
     
-    const [kpiData, setKpiData] = useState<RecruiterDashboardKpis>()
+    const [kpiData, setKpiData] = useState<RecruiterDashboardKpis | null>(null)
+    const [applicationsKpiOverThisWeekChartDataset, setApplicationsKpiOverThisWeekChartDataset] = useState<Dataset | null>(null) //Line chart dataset
 
     useEffect(()=>{
         const token = localStorage.getItem("token") ?? undefined;
@@ -48,8 +52,28 @@ const UserHome = () => {
             navigate(RouteScheme.main);
 
         const retreiveKPI =  async ()=>{
-            const kpiData = await UserQueriesServices.getKPI();
-            setKpiData(kpiData);
+            try{ 
+                // kpis
+                const data = await UserQueriesServices.getKPI();
+                console.log({ kpis: data })
+                setKpiData(data);
+
+                // Postulation Kpi Line chart
+                const postulationMetricsData = await ApplicationQueries.getJobPostulationMetrics({
+                    timeframe: 'week'
+                })
+
+                const metricsArray = Array.isArray(postulationMetricsData) ? postulationMetricsData : [];
+                setApplicationsKpiOverThisWeekChartDataset(ViewModelFactory.buildChartDataset({
+                    metrics: metricsArray, 
+                    timeframe: "week",
+                    dots: null, // deactivate
+                    color: "#22C55E"
+                }));
+            }
+            catch(error){
+                console.warn("Something went wrong while retreiving kpis & application kpi linechart dataset : ", error)
+            }
         }
 
         retreiveKPI();
@@ -62,46 +86,44 @@ const UserHome = () => {
             <main className={styles.main}>
                 {/** KPI SECTIONS */}
                 <div className={styles.kpiSection}>
-                    <KpiCard  
-                        title={t("userHome.kpi.postulationRate")}
-                        increase={2.2}
+                    {/**Postulation */}
+                    <KpiCard
                         displayCurve={true}
+                        dataset={applicationsKpiOverThisWeekChartDataset}
+                        increase={kpiData?.applicationIncreaseThisWeek}
+                        title={t("userHome.kpi.postulationRate")}
                     >
-                        <KpiPercentage percent="90" />
+                        <KpiPercentage percent={kpiData?.applicationRate} />
                     </KpiCard>
+                    {/** Published Offer */}
                     <KpiCard
                         title={t("userHome.kpi.openOffers")}
-                        increase={12}
+                        // increase={kpiData.inc}
+                        increase={null}
                         svg={JobOfferSVG}
                         iconBgColor="#f1f0fe"
                     >
-                        <KpiCount count="12" />
+                        <KpiCount count={kpiData?.publicOffers} />
                     </KpiCard>
+                    {/** Interviews */}
                     <KpiCard
-                        title={t("userHome.kpi.reviewOffers")}
-                        increase={0.3}
-                        svg={ReviewJobOfferSVG}
-                        iconBgColor="#feeed2"
-                    >
-                        <KpiCount count="8" />
-                    </KpiCard>
-                    <KpiCard
-                        increase={1.2}
                         svg={InterviewsSVG}
-                        trendLabel={t("global.dates.today")}
-                        title={t("userHome.kpi.interviews")}
                         iconBgColor="#f0e8fd"
+                        trendLabel={t("global.dates.thisMonth")}
+                        title={t("userHome.kpi.interviews")}
                         svgStyle={{ color: "#cdaaec" }}
+                        increase={kpiData?.interviewsIncreaseThisWeek}
                     >
-                        <KpiCount count="4" />
+                        <KpiCount count={kpiData?.scheduledInterviews} />
                     </KpiCard>
+                    {/** Hired  */}
                     <KpiCard
-                        increase={5.2}
                         svg={HiredSVG}
-                        title={t("userHome.kpi.hired")}
                         iconBgColor="#e2f6ec"
+                        title={t("userHome.kpi.hired")}
+                        increase={kpiData?.hiredIncreaseThisWeek}
                     >
-                        <KpiCount count="124" />
+                        <KpiCount count={kpiData?.hiredApplicationCount} />
                     </KpiCard>
                 </div>
                 

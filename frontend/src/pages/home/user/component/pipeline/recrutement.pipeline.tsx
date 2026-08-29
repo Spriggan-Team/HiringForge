@@ -171,7 +171,9 @@ const initialCards: Record<string,{
 
 
 const RecruitmentPipeline = () => {
-    const {t} = useTranslation()
+    const {t} = useTranslation();
+
+    //-- Pipeline card
     const [cards, setCards] = useState<CardData[]>(()=>{
         const c = [];
         for(const key in initialCards)
@@ -179,6 +181,7 @@ const RecruitmentPipeline = () => {
         return c;
     });
 
+    //-- Pipeline update view
     const handleCandidateChangeStatus = useCallback(async (candidateId: string, status: KanbanColumnIds)=>{
 
     },[]);
@@ -188,6 +191,7 @@ const RecruitmentPipeline = () => {
             <div className={`${styles.pipeline} scrollbar`}>
                 <KanbanBoard
                     cards={cards}
+                    isDraggable={false}
                     onCardMove={async (current, index, cardData) =>{
                         setCards(cardData);
                         console.log({cardData, current, index})
@@ -224,6 +228,7 @@ const RecruitmentPipeline = () => {
                                     </KanbanCard>
                                 : <></>
                             ))}
+                            <span></span>
                     </KanbanColumn>
 
                     <KanbanColumn

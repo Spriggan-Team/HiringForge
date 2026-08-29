@@ -83,6 +83,8 @@ class JobOfferEntity
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $publicationDate = null;
 
+
+
     //-----------------------------
     //----- RELATIONS
     //----------------------------------
@@ -389,6 +391,7 @@ class JobOfferEntity
         return $this->company;
     }
 
+
     /* =======================
      * SETTERS
      * ======================= */
@@ -495,6 +498,7 @@ class JobOfferEntity
         $this->updatedAt = $updatedAt;
         return $this;
     }
+
 
         //-- User
 

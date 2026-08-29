@@ -52,7 +52,6 @@ class ApplicationEntity
     private ?float $matchScore = null;
     
 
-
     #[ORM\Column(enumType: JobApplicationStatus::class)]
     private JobApplicationStatus $status = JobApplicationStatus::APPLIED;
 

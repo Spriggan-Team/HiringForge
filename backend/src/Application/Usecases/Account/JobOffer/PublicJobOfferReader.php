@@ -2,12 +2,11 @@
 
 namespace App\Application\Usecases\Account\JobOffer;
 
-use App\Application\Query\JobOffer\JobOfferQueryRepositoryInterface;
-
+use App\Application\Query\JobOffer\Repositories\RecruiterJobOfferQueryRepositoryInterface;
 
 class PublicJobOfferReader
 {
-    public function __construct(private JobOfferQueryRepositoryInterface $repository){}
+    public function __construct(private RecruiterJobOfferQueryRepositoryInterface $repository){}
 
     public function execute(string $offerId)
     {

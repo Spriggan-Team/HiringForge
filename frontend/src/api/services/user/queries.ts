@@ -11,8 +11,8 @@ import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
 const getKPI = async ()=>{
     try{
-        const kpiData = await get<RecruiterDashboardKpis>(`/users/kpi`, generateAuthorizationBearerHeader());
-        return kpiData;
+        const kpiData = await get<ApiResponse<RecruiterDashboardKpis>>(`/users/kpi`, generateAuthorizationBearerHeader());
+        return kpiData.data;
     }
     catch(error){
         console.error("Something went wrong", error)
@@ -31,7 +31,6 @@ const getCurrentUserContext = async ()=>{
         throw error;
     }
 }
-
 
 
 

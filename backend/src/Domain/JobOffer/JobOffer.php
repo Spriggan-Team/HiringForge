@@ -54,10 +54,9 @@ final class JobOffer
     private ?string $currency = null;
 
 
-    private DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt; // appliedAt
     private DateTimeImmutable $updatedAt;
     private ?DateTimeImmutable $publicationDate = null;
-
 
 
     private function __construct(
@@ -298,14 +297,17 @@ final class JobOffer
         return $this->currency;
     }
 
+    
+    public function locationId(){
+        return $this->locationId;
+    }
+        
     public function publicationDate(){
         return $this->publicationDate;
     }
 
-    public function locationId(){
-        return $this->locationId;
-    }
-    
+
+
     // -------------------- Business behaviors --------------------
 
 
@@ -320,6 +322,7 @@ final class JobOffer
         }
 
         $this->publicationStatus = JobPublicationStatus::PUBLISHED;
+        $this->publicationDate = new DateTimeImmutable();
         $this->touch();
     }
 
