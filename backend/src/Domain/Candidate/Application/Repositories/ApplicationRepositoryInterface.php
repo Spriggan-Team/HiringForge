@@ -4,8 +4,10 @@ namespace App\Domain\Candidate\Application\Repositories;
 
 use App\Domain\Candidate\Application\Application;
 use App\Domain\Candidate\Application\JobApplicationStatus;
+use App\Domain\Candidate\CandidateLightModel;
 use App\Domain\Exception\UnauthorizedAction;
 use App\Domain\File\StaticMedia;
+
 
 interface ApplicationRepositoryInterface
 {
@@ -29,6 +31,14 @@ interface ApplicationRepositoryInterface
      * @throws UnauthorizedAction if the application does not belong to the candidate.
      */
     public function assertApplicationBelongsToCandidate(string $candidateId, string $applicationId): void;
+
+
+    /**
+     * Retreive application candidates pipeline
+     * @return array<int,array{ candidates: array<int,candidate: CandidateLightModel>, more: int, type }> candidate - a light model of a candidate
+     *                                                                       more: how much some candidate validating the condiotns are left in the bdd (system)
+     */
+    public function getCandidatesPipeline(string $recruiterId, int $skip, int $limit): array;
 
 
     /**

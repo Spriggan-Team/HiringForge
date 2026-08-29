@@ -10,9 +10,9 @@ use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationContext;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 use App\Domain\Candidate\Application\Repositories\CandidateApplication;
+use App\Domain\Candidate\CandidateLightModel;
 use App\Domain\File\StaticMedia;
-
-
+use App\Domain\Interviews\InterviewStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateResumeEntity;
@@ -151,6 +151,125 @@ class JobOfferApplicationRepository
 
         return $count > 0;
     }
+
+
+    #[Override]
+    public function getCandidatesPipeline(string $recruiterId, int $skip, int $limit): array
+    {
+        // Set of pipeline colonne and criteria
+        $pipelineStages = [
+            [
+                'type' => 'applied',
+                'appStatus' => JobApplicationStatus::APPLIED,
+                'interviewStatus' => null,
+            ],
+            [
+                'type' => 'rh_interview',
+                'appStatus' => JobApplicationStatus::IN_INTERVIEW,
+                'interviewStatus' => InterviewStatus::SCHEDULED, 
+            ],
+            [
+                'type' => 'hired',
+                'appStatus' => JobApplicationStatus::HIRED,
+                'interviewStatus' => null,
+            ],
+        ];
+
+        $pipeline = [];
+
+        foreach ($pipelineStages as $stage) {
+            //-- retreive candidat for spécifique stage
+            $qb = $this->createQueryBuilder('a')
+                ->select(
+                    'c.id AS candidateId',
+                    'c.firstName',
+                    'c.lastName',
+                    'c.email',
+                    'addr.id AS addressId',
+                    'addr.city',
+                    'addr.county',
+                    'addr.postalCode',
+                    'addr.street',
+                    'img.id AS imageId'
+                )
+                ->innerJoin('a.jobOffer', 'j')
+                ->innerJoin('a.candidate', 'c')
+                ->leftJoin('c.address', 'addr')
+                ->leftJoin('c.image', 'img')
+                ->where('j.user = :recruiterId')
+                ->andWhere('a.status = :appStatus')
+                ->setParameters([
+                    'recruiterId' => $recruiterId,
+                    'appStatus' => $stage['appStatus'],
+                ]);
+
+            // Join & filters interviews if needed
+            if ($stage['interviewStatus'] !== null) {
+                $qb->innerJoin('c.interviews', 'i')
+                ->andWhere('i.status = :interviewStatus')
+                ->setParameter('interviewStatus', $stage['interviewStatus']);
+            }
+
+            $results = $qb->setFirstResult($skip)
+                ->setMaxResults($limit)
+                ->getQuery()
+                ->getArrayResult();
+
+            //-- Total count of items matching criteria
+            $countQb = $this->createQueryBuilder('a')
+                ->select('COUNT(DISTINCT c.id)')
+                ->innerJoin('a.jobOffer', 'j')
+                ->innerJoin('a.candidate', 'c')
+                ->where('j.user = :recruiterId')
+                ->andWhere('a.status = :appStatus')
+                ->setParameters([
+                    'recruiterId' => $recruiterId,
+                    'appStatus' => $stage['appStatus'],
+                ]);
+
+            if ($stage['interviewStatus'] !== null) {
+                $countQb->innerJoin('c.interviews', 'i')
+                        ->andWhere('i.status = :interviewStatus')
+                        ->setParameter('interviewStatus', $stage['interviewStatus']);
+            }
+
+            $totalCount = (int) $countQb->getQuery()->getSingleScalarResult();
+
+            //-- Map entity to dto
+            $candidates = [];
+            foreach ($results as $row) {
+                $address = array_filter([
+                    'id' => $row['addressId'],
+                    'city' => $row['city'],
+                    'county' => $row['county'],
+                    'postalCode' => $row['postalCode'],
+                    'street' => $row['street'],
+                ]);
+
+                $candidates[] = new CandidateLightModel(
+                    id: $row['candidateId'],
+                    firstName: $row['firstName'],
+                    lastName: $row['lastName'],
+                    email: $row['email'],
+                    address: $address,
+                    imageId: $row['imageId']
+                );
+            }
+
+            // Gathering
+            $more = max(0, $totalCount - ($skip + count($candidates)));
+
+            $pipeline[] = [
+                'type' => $stage['type'],
+                'candidates' => $candidates,
+                'more' => $more,
+            ];
+        }
+
+        return $pipeline;
+    }
+
+
 
     #[Override]
     public function getApplicationContext(string $applicationId): ApplicationContext

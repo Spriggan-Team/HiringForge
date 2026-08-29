@@ -1,5 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+//-- Custom service
+import ApplicationQueries from "../../../../../api/services/application/queries";
 
 //-- Custom Composant
 import { 
@@ -24,6 +27,7 @@ const initialCards: Record<string,{
     columnId: KanbanColumnIds; 
     remainingTime: number;
 
+    image?: string;
     firstname: string;
     lastname: string;
 }> = {
@@ -180,6 +184,20 @@ const RecruitmentPipeline = () => {
             c.push({ id: initialCards[key].id, columnId: initialCards[key].columnId })
         return c;
     });
+
+    useEffect(()=>{
+        const handlePageDataInit = async ()=>{
+            try{
+                const pipleline = ApplicationQueries.getCandidatesPipeline({});
+                console.log(pipleline);
+            }
+            catch(error){
+                console.warn("Somtjing went wrong while retreiving candidate pipeline")
+            }
+        }
+
+        handlePageDataInit()
+    },[])
 
     //-- Pipeline update view
     const handleCandidateChangeStatus = useCallback(async (candidateId: string, status: KanbanColumnIds)=>{

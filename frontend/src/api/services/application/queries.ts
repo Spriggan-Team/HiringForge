@@ -1,9 +1,38 @@
+import { authGet } from "../../http"
 import { intercept } from "../../../utils/utils"
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
-import { authGet } from "../../http"
-import type { ApiResponse, ErrorApiResponse } from "../response.types";
-import type { CandidateApplicationListResponse, JobApplicationApiResponse } from "./response";
 
+
+import type { ApiResponse, ErrorApiResponse } from "../response.types";
+import type { 
+  CandidateApplicationListResponse,
+  CandidatePipelineResponse,
+  JobApplicationApiResponse
+} from "./response";
+
+
+
+/**
+ * Get candidate pipeline
+ */
+const getCandidatesPipeline = async ({
+  skip = 0, limit = 5
+}: {
+  skip?: number;
+  limit?: number;
+})=>{
+  const params = new URLSearchParams();
+
+  if (skip !== undefined) params.set('skip', String(skip));
+  if (limit !== undefined) params.set('limit', String(limit));
+
+  const url = `/users/applications/pipeline${
+    params.toString() ? `?${params.toString()}` : ''
+  }`;
+
+  const response = await authGet<CandidatePipelineResponse>(url);
+  return response.data;
+}
 
 
 /**
@@ -50,6 +79,7 @@ const getApplications = async (
 };
 
 
+
 /**
  * Search candidates withing the system using application as root
  * @param query 
@@ -66,6 +96,8 @@ const searchCandidateByApplication = async (query: string) => {
     throw error;
   }
 };
+
+
 
 /**
  * Retreive postulation metrics about job(s)
@@ -99,6 +131,7 @@ const getJobPostulationMetrics = async({
     }
 }
 
+
 /**
  * Get candidate image
  * @param param0 
@@ -123,6 +156,12 @@ async function getCandidateProfilImage({
 }
 
 
+
+/**
+ * Get content about candidat resume
+ * @param param0 
+ * @returns 
+ */
 const  getCandidateResume = async ({
   candidateId,
   applicationId
@@ -138,6 +177,8 @@ const  getCandidateResume = async ({
     throw error;
   }
 }
+
+
 
 /**
  * Count number of rejected applications
@@ -160,6 +201,7 @@ const countRejected = async (jobId: string)=>{
 //-------------------------------
 
 const Queries = { 
+  getCandidatesPipeline,
   getApplications,
   countRejected,
   
@@ -178,6 +220,7 @@ const ApplicationQueries = intercept<
     Queries,
     undefined,
     (method, response) => handleGenericApiResponseAfter(method, response)
-)
+);
+
 
 export default ApplicationQueries;

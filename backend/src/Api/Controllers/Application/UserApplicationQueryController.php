@@ -3,17 +3,17 @@
 namespace App\Api\Controllers\Application;
 
 
-use App\Api\Controllers\Helpers\ApiControllerHelpers;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
+use App\Api\Controllers\Helpers\ApiControllerHelpers;
+use App\Application\Query\JobOffer\Repositories\RecruiterJobOfferQueryRepositoryInterface;
 use App\Application\Usecases\Application\BulkApplicationStatusChange;
 use App\Application\Usecases\Application\ChangeApplicationStatus;
 use App\Application\Usecases\Application\GetCandidateByApplication;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 
-use App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface;
-use App\Domain\EmploymentOffer\EmploymentOfferStatus;
+
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\Account\AccountRole;
 use App\Domain\Shared\AccountStorageParams;
@@ -44,6 +44,47 @@ class UserApplicationQueryController extends AbstractController
         ApiResponse::init($logger);
     }
 
+    /**
+     * Retrieve candidate pipeline
+     */
+    #[Route('/pipeline', methods: ['GET'])]
+    public function getCandidatesPipeline(
+        Request $request,
+        ApplicationRepositoryInterface $repository
+    ): JsonResponse {
+        try {
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
+            if (!$user) {
+                return ApiResponse::error(
+                    message: 'Unauthorized action',
+                    statusCode: 401
+                )->toJsonResponse();
+            }
+
+            // pagination parameters
+            $skip = max(0, $request->query->getInt('skip', 0));
+            $limit = max(1, $request->query->getInt('limit', 5));
+
+            $results = $repository->getCandidatesPipeline(
+                recruiterId: $user->getId(),
+                skip: $skip,
+                limit: $limit 
+            );
+
+            return ApiResponse::success(
+                data: $results
+            )->toJsonResponse();
+
+        } catch (\Throwable $error) {
+            return ApiResponse::error(
+                message: 'Something went wrong while retrieving the pipeline',
+                throwable: $error
+            )->toJsonResponse();
+        }
+    }
+
+
 
     /**
      * Route : /users/applications/candidates/search?query=string
@@ -55,7 +96,7 @@ class UserApplicationQueryController extends AbstractController
         GetCandidateByApplication $handler
     ){
         try{
-            /** @var AuthenticatedPerson $user */
+            /** @var AuthenticatedPerson|null $user */
             $user = $this->getUser();
             if(!$user){
                 return ApiResponse::error(

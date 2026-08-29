@@ -33,7 +33,6 @@ class CandidateEntity extends AccountEntity
     private int $searchRadius;
 
 
-
     //---------------------------------
     //-------Relations
     //--------------------------------

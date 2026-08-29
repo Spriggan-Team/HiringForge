@@ -99,7 +99,7 @@ function App() {
                 <Route path={RouteScheme.userSchedule} element={<SchedulingWorkspace />} />
                 {/** CANDIDATES */}
                 <Route path={RouteScheme.userCandidate} element={<CandidatesPage />} />
-                {/** OFFER */}
+                {/** EMPLOYMENT OFFER */}
                 <Route path={RouteScheme.userOffer} element={<UserOffersPage />} />
                 {/** STATS */}
                 <Route path={RouteScheme.userStats} element={<UserStatsPage />}/>

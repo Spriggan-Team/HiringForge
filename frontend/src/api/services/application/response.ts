@@ -7,6 +7,7 @@ export type JobApplicationApiResponse = ApiResponse<JobApplicationItem[]>;
 
 export type CandidateApplicationListResponse = ApiResponse<CandidateApplication[]>; //Search candidate using application as root
 
+export type CandidatePipelineResponse = ApiResponse<CandidatePipelineItem[]>;
 
 /** Data body */
 
@@ -41,4 +42,15 @@ export interface CandidateApplication {
   jobOfferId: string;
   jobTitle: string;
   jobImageUrl?: string;
+}
+
+
+interface CandidatePipelineItem 
+{
+  id: string;
+  delayInSec: number;
+  imageFileId: string;
+  firstname: string;
+  lastname: string;
+  more: number;
 }

@@ -16,6 +16,5 @@ final readonly class CandidateApplication
         public string $email,
         public string $jobTitle,
         public ?string $jobImageUrl = null,
-    ) {
-    }
+    ) {}
 }

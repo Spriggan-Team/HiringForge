@@ -84,7 +84,7 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({  onSubmit }) =
                 salary: Number(salary),
                 candiate:{
                     email: selectedCandidateApplicationEntity.email as string,
-                    lastName: selectedCandidateApplicationEntity.email as string,
+                    lastName: selectedCandidateApplicationEntity.lastName as string,
                     firstName: selectedCandidateApplicationEntity.firstName as string
                 },
                 applicationId: selectedCandidateApplicationEntity.applicationId as string,

@@ -87,10 +87,10 @@ class ApplicationEntity
     #[ORM\JoinColumn(nullable: false, name: "company_id")]
     private CompanyEntity $company;
    
+    
     //----------------------------
     //----- Constructing
     //----------------------------
-    
 
 
     public function __construct(

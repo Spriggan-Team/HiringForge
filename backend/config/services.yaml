@@ -32,6 +32,7 @@ parameters:
     project_directory: '%kernel.project_dir%'
 
 
+
 #---------------------
 #   Services
 #------------------------------
@@ -219,9 +220,11 @@ services:
     App\Domain\Candidate\Application\ResumeLexicalParserInterface:
         alias: App\Infrastructure\Document\ResumeLexicalParser
 
+
     #-------------------------------
     # FileStorage Services
     #-------------------------------
+
 
     App\Domain\Shared\Document\DocumentExtractorInterface:
         alias: App\Infrastructure\Document\PDF\PdfDocumentExtractor
@@ -274,12 +277,17 @@ services:
     #---------------------------------
     #      External lib
     #---------------------------------
+    
+    #-- Pdf Parser 
     Smalot\PdfParser\Parser: ~
 
     App\Infrastructure\Document\PDF\PdfDocumentExtractor:
         arguments:
             $parser: '@Smalot\PdfParser\Parser'
 
+    Symfony\Component\Security\Http\AccessMapInterface: '@security.access_map'
+
+    
     #------------------
     #   Dev Packages
     #---------------------------
