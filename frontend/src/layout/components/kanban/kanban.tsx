@@ -9,9 +9,9 @@ import React, {
 import styles from "./style.module.css";
 
 
-// ─────────────────────────────────────────────────────────────
+// -----------
 // Types
-// ─────────────────────────────────────────────────────────────
+// -----------
 
 export interface CardData {
     id:       string;
@@ -33,9 +33,9 @@ interface DragContextValue {
 }
 
 
-// ─────────────────────────────────────────────────────────────
+// ----------
 // Context
-// ─────────────────────────────────────────────────────────────
+// ----------
 
 
 const DragContext = createContext<DragContextValue | null>(null);
@@ -47,24 +47,28 @@ const useDrag = () => {
     return ctx;
 };
 
-// ─────────────────────────────────────────────────────────────
+// --------------
 // KanbanBoard — owns card order state, provides context
-// ─────────────────────────────────────────────────────────────
+// ---------------
 
 export interface KanbanBoardProps {
     className?:   string;
     isDraggable?: boolean;
     cards:        CardData[];
+    ref?: React.Ref<HTMLDivElement>;
     onCardMove:   (moved: CardData, index: number ,cards: CardData[]) => void;
     children:     React.ReactNode;
+    style?: React.CSSProperties
 }
 
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({
+    ref,
     className,
     isDraggable = true,
     cards,
     onCardMove,
     children,
+    style,
 }) => {
     const [dragging, setDragging] = useState<DragState | null>(null);
     const [overId,   setOverId]   = useState<string | null>(null);
@@ -125,6 +129,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     return (
         <DragContext.Provider value={{ dragging, overId, startDrag, updateOver, commitDrop, abortDrag }}>
             <div
+                ref={ref}
+                style={style}
                 data-kanban-board
                 data-draggable={isDraggable}
                 className={`${className} ${styles.board}`}
@@ -186,9 +192,9 @@ export const KanbanDragGhost: React.FC<{ children: React.ReactNode }> = ({ child
 
 
 
-// ─────────────────────────────────────────────────────────────
+// -----
 // KanbanColumn — receives drops on empty space
-// ─────────────────────────────────────────────────────────────
+// -----
 
 export interface KanbanColumnProps {
     id:               string;       // required — must be stable
@@ -197,6 +203,7 @@ export interface KanbanColumnProps {
     color?:           string;
     backgroundColor?: string;
     className?:       string;
+    bannerClassName?:  string;
     children:         React.ReactNode;
 }
 
@@ -208,6 +215,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
     color,
     backgroundColor,
     className,
+    bannerClassName,
     children,
 }) => {
     const { dragging, commitDrop } = useDrag();
@@ -229,7 +237,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
                 ["--color"   as string]: color,
             }}
         >
-            <div className={styles.txtSection}>
+            <div className={`${styles.txtSection} ${bannerClassName}`}>
                 <span className={styles.title}>{title}</span>
                 {count !== undefined && <span className={styles.count}>{count}</span>}
             </div>
@@ -245,9 +253,9 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
 
 
 
-// ─────────────────────────────────────────────────────────────
+// ----
 // KanbanCard — fires events only, never mutates DOM
-// ─────────────────────────────────────────────────────────────
+// ----
 
 export interface KanbanCardProps {
     id:         string;     // must match CardData.id
@@ -267,7 +275,7 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
     const { dragging, startDrag, updateOver, commitDrop, abortDrag } = useDrag();
     const isDraggingThis = dragging?.cardId === id;
 
-    
+
     // ── Start drag 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         if (e.button !== 0) return;
@@ -342,8 +350,7 @@ export const KanbanCard: React.FC<KanbanCardProps> = ({
             onMouseUp={handleMouseUp}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className={`${cardClassName} ${styles.card}`}
-            style={{ cursor: dragging ? "grabbing" : "grab" }}
+            className={`${cardClassName} ${styles.card} ${dragging  ? styles.grabbedCard : "" }`}
         >
             {React.Children.only(children)}
         </div>

@@ -63,14 +63,14 @@ const KpiCard: React.FC<KpiCardPrps> = ({
                     { children }
                 </div>
                
-               {
-                increase != null && (
-                    <p className={styles.desc}>
-                        <span className={styles.badge}>+{increase}%</span>
-                        <span>{trendLabel ?? t("global.dates.thisMonth")}</span>
-                    </p>
-                )
-               }
+                <p 
+                    className={styles.desc}
+                    style={{ visibility: increase === null ? "hidden" : "visible" }}
+                >
+                    <span className={styles.badge}>+{increase}%</span>
+                    <span>{trendLabel ?? t("global.dates.thisMonth")}</span>
+                </p>
+       
             </div>
 
 

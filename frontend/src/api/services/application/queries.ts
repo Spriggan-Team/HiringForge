@@ -6,9 +6,11 @@ import { handleGenericApiResponseAfter } from "../../api-response-handler";
 import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import type { 
   CandidateApplicationListResponse,
+  CandidatePipelineItemResponse,
   CandidatePipelineResponse,
   JobApplicationApiResponse
 } from "./response";
+import type { CandidatePipelineType, CandidatePipelineTypeValue } from "../shared/reponses.types";
 
 
 
@@ -31,6 +33,36 @@ const getCandidatesPipeline = async ({
   }`;
 
   const response = await authGet<CandidatePipelineResponse>(url);
+  return response.data;
+}
+
+
+/**
+ * Load specific pipeline stage
+ * @param param0 
+ * @returns 
+ */
+const getCandidatePipelineStage = async ({
+  type,
+  skip = 0,
+  limit = 5
+}:{
+    type: CandidatePipelineTypeValue;
+    skip?: number;
+    limit?: number;
+})=>{
+  const params = new URLSearchParams();
+
+  params.set("type", String(type));
+  if (skip !== undefined) params.set('skip', String(skip));
+  if (limit !== undefined) params.set('limit', String(limit));
+
+  const url = `/users/applications/pipeline/stage${
+    params.toString() ? `?${params.toString()}` : ''
+  }`;
+
+  const response = await authGet<CandidatePipelineItemResponse>(url);
+  
   return response.data;
 }
 
@@ -202,6 +234,8 @@ const countRejected = async (jobId: string)=>{
 
 const Queries = { 
   getCandidatesPipeline,
+  getCandidatePipelineStage,
+
   getApplications,
   countRejected,
   

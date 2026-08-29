@@ -36,7 +36,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[Route('/job_offers')]
 class UserJobOfferManagementController extends AbstractController
 {
-
     public function __construct(
         private LoggerInterface $logger,
     )
@@ -70,7 +69,6 @@ class UserJobOfferManagementController extends AbstractController
                 accountId: $user->getId(),
                 command: $command
             );
-
 
             return ApiResponse::success(["offerId" => $offerId],"Everything went smoothly")->toJsonResponse();
         }

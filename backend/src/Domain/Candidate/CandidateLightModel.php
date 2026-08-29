@@ -14,6 +14,7 @@ readonly class CandidateLightModel extends AccountLightModel
         string $email,
         array $address,
         ?string $imageId = null,
+        public ?float $delayInSec =null,
         public ?string $headline = null,
     ) {
         parent::__construct(

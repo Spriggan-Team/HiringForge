@@ -6,13 +6,14 @@ namespace App\Api\Controllers\Application;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Api\Controllers\Helpers\ApiControllerHelpers;
-use App\Application\Query\JobOffer\Repositories\RecruiterJobOfferQueryRepositoryInterface;
+
 use App\Application\Usecases\Application\BulkApplicationStatusChange;
 use App\Application\Usecases\Application\ChangeApplicationStatus;
 use App\Application\Usecases\Application\GetCandidateByApplication;
+
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
-
+use App\Domain\Candidate\Application\Pipeline\PipelineStageType;
 
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\Account\AccountRole;
@@ -43,6 +44,7 @@ class UserApplicationQueryController extends AbstractController
     {
         ApiResponse::init($logger);
     }
+
 
     /**
      * Retrieve candidate pipeline
@@ -85,7 +87,53 @@ class UserApplicationQueryController extends AbstractController
     }
 
 
+    /**
+     * Retreive with pagination candidates within
+     * a specific pipeline stage
+     */
+    #[Route('/pipeline/stage', methods: ['GET'], name: 'api_response')]
+    public function getCandidatePipelineStage(
+        Request $request,
+        ApplicationRepositoryInterface $repository
+    ): JsonResponse{
+        try{
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
+            if (!$user) {
+                return ApiResponse::error(
+                    message: 'Unauthorized action',
+                    statusCode: 401
+                )->toJsonResponse();
+            }
 
+            $recruiterId = $user->getId(); // Auth
+            $stageType = PipelineStageType::from($request->query->get('type'));
+            $skip = $request->query->getInt('skip', 0);
+            $limit = $request->query->getInt('limit', 5);
+
+
+            //-- Exec queries
+            $results = $repository->getCandidatesForStage(
+                stageType: $stageType,
+                recruiterId: $recruiterId,
+                skip: $skip, limit: $limit
+            );
+
+            return ApiResponse::success(
+                data: $results,
+                message: "Everything is okay"
+            )->toJsonResponse();
+        }
+        catch(\Exception $exception){
+            return ApiResponse::error(
+                message: "Somthing went wrong",
+                throwable: $exception
+            )->toJsonResponse();
+        }
+    }
+
+
+    
     /**
      * Route : /users/applications/candidates/search?query=string
      * Search candidates withing the system using application as root

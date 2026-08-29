@@ -40,9 +40,10 @@ trait ApiControllerHelpers
             $relativePath,
         );
 
-
-        return $request->getUriForPath(
+        $publicHttpRessourcePath =  $request->getUriForPath(
             '/' . ltrim($relativePath, '/'),
         );
+
+        return $publicHttpRessourcePath;
     }
 }

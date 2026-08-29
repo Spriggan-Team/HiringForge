@@ -1,19 +1,33 @@
-export type InterviewStatus =
-    | "cancel"
-    | "closed"
-    | "missed"
-    | "scheduled"
-    | "in_progress"
-    | "completed";
+export class InterviewStatus {
+  static readonly CANCELLED = 'cancel';
+  static readonly CLOSED = 'closed';
+  static readonly MISSED = 'missed';
+  static readonly SCHEDULED = 'scheduled';
+  static readonly IN_PROGRESS = 'in_progress';
+  static readonly COMPLETED = 'completed';
+}
 
-export const INTERVIEW_STATUSES: InterviewStatus[] = [
-    "cancel",
-    "closed",
-    "missed",
-    "scheduled",
-    "in_progress",
-    "completed"
+export type InterviewStatusValue =
+  (typeof InterviewStatus)[keyof typeof InterviewStatus];
+
+export const INTERVIEW_STATUSES: InterviewStatusValue[] = [
+  InterviewStatus.CANCELLED,
+  InterviewStatus.CLOSED,
+  InterviewStatus.MISSED,
+  InterviewStatus.SCHEDULED,
+  InterviewStatus.IN_PROGRESS,
+  InterviewStatus.COMPLETED,
 ];
+
+
+export class InterviewType {
+  static RH_INTERVIEWS = 'rh_interviews';
+  static TECHNICAL_INTERVIEWS = 'technical_interviews';
+}
+
+
+export type InterviewTypeValue = (typeof InterviewType)[keyof typeof InterviewType];
+
 
 export interface Interview {
     id: string;

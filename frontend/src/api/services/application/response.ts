@@ -1,4 +1,6 @@
 import type { ApplicationStatusValue } from "../../../features/application/application";
+import type { CandidatePipelineItem,  } from "../shared/reponses.types";
+
 import type { ApiResponse } from "../response.types";
 
 
@@ -8,6 +10,8 @@ export type JobApplicationApiResponse = ApiResponse<JobApplicationItem[]>;
 export type CandidateApplicationListResponse = ApiResponse<CandidateApplication[]>; //Search candidate using application as root
 
 export type CandidatePipelineResponse = ApiResponse<CandidatePipelineItem[]>;
+
+export type CandidatePipelineItemResponse = ApiResponse<CandidatePipelineItem>;
 
 /** Data body */
 
@@ -45,12 +49,5 @@ export interface CandidateApplication {
 }
 
 
-interface CandidatePipelineItem 
-{
-  id: string;
-  delayInSec: number;
-  imageFileId: string;
-  firstname: string;
-  lastname: string;
-  more: number;
-}
+
+

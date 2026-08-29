@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Interview;
 
 use App\Domain\Interviews\InterviewStatus;
-
+use App\Domain\Interviews\InterviewType;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 
@@ -47,6 +47,13 @@ class InterviewEntity
     #[ORM\Column(length: 522, nullable: true)]
     private ?string $rejectionReason = null;
 
+    #[ORM\Column(enumType: InterviewType::class , nullable: true)]
+    private ?InterviewType $type = null;
+
+    //----------------------------
+    //-- Relations
+    //----------------------------
+
     #[ORM\ManyToOne(targetEntity: CandidateEntity::class, inversedBy: 'interviews' )]
     #[ORM\JoinColumn(nullable: false)]
     private CandidateEntity $candidate;
@@ -76,6 +83,7 @@ class InterviewEntity
         ?string $title = null,
         ?string $url = null,
         InterviewStatus $status = InterviewStatus::SCHEDULED,
+        ?InterviewType $type = null
     ): self {
         $entity = new self();
 
@@ -88,6 +96,7 @@ class InterviewEntity
         $entity->status = $status;
         $entity->url = $url;
         $entity->title = $title;
+        $entity->type = $type;
 
         return $entity;
     }
@@ -103,7 +112,8 @@ class InterviewEntity
         CandidateEntity $candidate,
         JobOfferEntity $jobOffer,
         InterviewStatus $status,
-        bool $candidateApproval
+        bool $candidateApproval,
+        ?InterviewStatus $type
     ): self {
         $entity = new self();
 
@@ -117,6 +127,7 @@ class InterviewEntity
         $entity->url = $url;
         $entity->candidateApproval = $candidateApproval;
         $entity->title = $title;
+        $entity->type = $type;
 
         return $entity;
     }
@@ -187,6 +198,11 @@ class InterviewEntity
         return $this->createdAt;
     }
 
+    public function getType()
+    {
+        return $this->type;
+    }
+
     //======================
     //  SETTERS
     //======================
@@ -223,6 +239,12 @@ class InterviewEntity
     public function setStatus(InterviewStatus $status): static
     {
         $this->status = $status;
+        return $this;
+    }
+
+    public function setType(?InterviewType $type): static
+    {
+        $this->type = $type;
         return $this;
     }
 

@@ -56,14 +56,110 @@
 
 /* Pipeline */
 .pipeline :global(.kanban-column) {
-    width: 280px; 
+    width: 280px;
     max-width: 280px;
-    flex-shrink: 0;
-    border-radius: 14px;
+    
+    height: 300px;
+    overflow: hidden;
+
+    
     padding: 16px;
+    border-radius: 14px;
+    
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    
+    position: relative;
+}
+
+.kanban{
+    flex: 1;
+    min-height: 0;
+
+    overflow: hidden;
+}
+
+.kanbanColumn {
+    height: 200px;
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+
+}
+
+/** Kaban scrool bar **/
+.kanbanColumn::-webkit-scrollbar {
+    width: 6px;
+}
+
+.kanbanColumn::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.kanbanColumn::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+}
+
+.kanbanColumn::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+
+
+/** kanban placeholder **/
+.candidatePlaceholder{
+    height: 70px;
+    width: 100%;
+    /* background: #000; */
+}
+
+
+.moreIndicator {
+    position: absolute;
+
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+
+    z-index: 10;
+
+    display: flex;
+    justify-content: center;
+}
+
+.moreIndicatorContent {
+    --more-color: var(--primary-color, #666);
+    --more-bg: var(--primary-color-light, rgba(0, 0, 0, 0.05));
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 8px 12px;
+
+    color: var(--more-color);
+    background: var(--more-bg);
+
+    font-size: 0.85rem;
+    font-weight: 500;
+
+    border-radius: 8px;
+    /* cursor: pointer; */
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.moreIndicatorContent:hover {
+    background: color-mix(
+        in srgb,
+        var(--more-color) 10%,
+        transparent
+    );
 }
 
 

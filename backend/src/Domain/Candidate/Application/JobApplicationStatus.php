@@ -16,7 +16,7 @@ enum JobApplicationStatus: string
     case PRESELECTED = 'preselected';
     case INTERVIEW_SCHEDULED = 'interview_scheduled'; // Scheduled Maintenance
     case IN_INTERVIEW = 'in_interview';         // Interview phase currently underway (HR, Technical, etc.)
-    case ASSESSMENT = 'assessment';             // Undergoing technical testing / case study
+    case ASSESSMENT = 'assessment';             // Undergoing technical testing / case study ..ect
 
     // --- Final Steps  ---
     case OFFER_PENDING = 'offer_pending';       // Job offer sent (awaiting a response)
@@ -40,11 +40,11 @@ enum JobApplicationStatus: string
             self::APPLIED->value => [self::RECEIVED, self::REJECTED, self::WITHDRAWN],
             self::RECEIVED->value => [self::SHORTLISTED, self::SCREENING, self::REJECTED, self::WITHDRAWN],
             self::SHORTLISTED->value => [self::SCREENING, self::INTERVIEW_SCHEDULED, self::REJECTED, self::WITHDRAWN],
-            self::SCREENING->value => [self::INTERVIEW_SCHEDULED, self::ASSESSMENT, self::REJECTED, self::WITHDRAWN],
+            self::SCREENING->value => [self::INTERVIEW_SCHEDULED, self::ASSESSMENT,  self::REJECTED, self::WITHDRAWN],
             self::INTERVIEW_SCHEDULED->value => [self::IN_INTERVIEW, self::REJECTED, self::WITHDRAWN],
-            self::IN_INTERVIEW->value => [self::ASSESSMENT, self::INTERVIEW_SCHEDULED, self::OFFER_PENDING, self::REJECTED, self::WITHDRAWN],
+            self::IN_INTERVIEW->value => [self::ASSESSMENT, self::INTERVIEW_SCHEDULED,  self::OFFER_PENDING, self::REJECTED, self::WITHDRAWN],
             self::ASSESSMENT->value => [self::INTERVIEW_SCHEDULED, self::OFFER_PENDING, self::REJECTED, self::WITHDRAWN],
-            self::OFFER_PENDING->value => [self::OFFER_ACCEPTED, self::OFFER_DECLINED, self::REJECTED, self::WITHDRAWN],
+            self::OFFER_PENDING->value => [self::OFFER_ACCEPTED, self::OFFER_DECLINED,  self::REJECTED, self::WITHDRAWN],
             self::OFFER_ACCEPTED->value => [self::HIRED, self::WITHDRAWN],
             
             // Statuts terminaux

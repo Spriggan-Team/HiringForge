@@ -1,11 +1,11 @@
 .board{
     display: flex;
     align-items: flex-start;
-    gap: 16px;
+    gap: 16px;    
     overflow-x: auto;
-    padding: 10px;
+    --board-padding: 10px ;
+    padding: var(--board-padding) ;
 }
-
 
 
 /* ==========================
@@ -13,30 +13,45 @@
    ========================== */
 
 
-.columns{
+.columns {
     display: flex;
     flex-direction: column;
+
     min-width: 280px;
     max-width: 280px;
+    --columns-padding: 15px;
 
-    padding: 14px;
+    position: static;
+    isolation: isolate;
+
     border-radius: 12px;
+    gap: 10px;
 
     background: var(--bgColor, #f6f8fa);
 
     border: 1px solid rgba(0,0,0,.08);
+
     box-shadow:
         0 2px 4px rgba(0,0,0,.05),
         0 8px 20px rgba(0,0,0,.04);
 }
 
+.columns .txtSection {
+    position: sticky;
+    top: 0;
 
-.columns .txtSection{
+    z-index: 10;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    margin-bottom: 12px;
+    padding: 12px var(--columns-padding);
+    width: 100%;
+
+    background: var(--bgColor, #f6f8fa);
+
+    border-radius: 12px 12px 0 0;
 }
 
 
@@ -68,13 +83,13 @@
 
 .columns .content{
     min-height: 30px;
+
+    padding: var(--columns-padding);
 }
 
 /* ==========================
    Cards
    ========================== */
-
-
 
 .card{
     display: flex;
@@ -88,7 +103,6 @@
     background: white;
     border: 1px solid rgba(0,0,0,.08);
 
-    cursor: grab;
     user-select: none;
 
     transition:
@@ -97,9 +111,11 @@
         border-color .15s;
 }
 
+
 .card:last-child{
     margin-bottom: 0;
 }
+
 
 .card:hover{
     transform: translateY(-2px);
@@ -110,7 +126,14 @@
         0 4px 10px rgba(0,0,0,.08);
 }
 
-.card:active{
+
+.grabbedCard{
+    cursor: grab;
+}
+
+
+.grabbedCard:active
+{
     cursor: grabbing;
 }
 
