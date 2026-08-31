@@ -39,9 +39,9 @@ export interface Interview {
 
 
 export interface InterviewsSectionProps {
-  job: {
-    id: string;
-    title: string;
+  job?: {
+    id: string | null;
+    title: string | null;
   };
   companyId?: string;
 }
@@ -49,7 +49,7 @@ export interface InterviewsSectionProps {
 
 
 export default function InterviewsSection({
-  job: { id: jobId, title: jobTitle },
+  job: { id: jobId, title: jobTitle } = { id: null, title: null },
   companyId,
 }: InterviewsSectionProps) {
   const { t } = useTranslation();
