@@ -11,7 +11,7 @@ import DonutChart from "../../../../../layout/components/charts/donutChart/donus
 
 
 import styles from "./JobStatisticsSection.module.css";
-import { ViewModelFactory } from "../../../../../utils/view.model.factory";
+import { buildLineChartDefaultParams, ViewModelFactory } from "../../../../../utils/view.model.factory";
 
 
 
@@ -90,7 +90,7 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
                 // Format Line Chart Data
                 const metricsArray = Array.isArray(postulationMetricsData) ? postulationMetricsData : [];
                 setApplicationsOverTimeData(ViewModelFactory.buildChartDataset({
-                    metrics: metricsArray, timeframe
+                    metrics: [metricsArray], timeframe
                 }));
             }
             catch (error) {
@@ -188,22 +188,7 @@ export const JobStatisticsSection: React.FC<JobStatisticsSectionProps> = ({
                         {applicationsOverTimeData && (
                             <LineChart
                                 dataset={applicationsOverTimeData}
-                                animate={{ duration: 1000, ease: "easeCubicOut" }}
-                                axisSettings={{
-                                    axisFormat: { x: timeframe === "week" ? "day" : "month" },
-                                }}
-                                tickSettings={{
-                                    xTickVisibility: true,
-                                    yTickVisibility: true,
-                                }}
-                                appTheme={{
-                                    CURVE: {
-                                        axes: {
-                                            fill: "#94a3b8",
-                                            stroke: "#334155",
-                                        },
-                                    },
-                                }}
+                                { ...(buildLineChartDefaultParams(timeframe)) }
                             />
                         )}
                     </div>

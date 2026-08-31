@@ -14,23 +14,78 @@ import { ApplicationRow } from "./components/application.table.row";
 import { ConfirmModal } from "../../../../../layout/components/conform.box";
 import { ApplicationDetailModal } from "../../../components/application/application.details";
 
-
-import styles from "./ApplicationsTable.module.css";
 import ApplicationServices from "../../../../../api/services/application/command";
 import { getInitials } from "../../../../../utils/format";
 
 
+import styles from "./ApplicationsTable.module.css";
 
+
+
+//---------------
+//-- Page
+//---------------
 const PAGE_SIZE = 10;
 const DEBOUNCE_DELAY = 400;
 
+//------------
+//-- Cache
+//--------------
 
-// --- API Helper
+interface ApplicationsQueryCache {
+    data: Application[];
+    hasMore: boolean;
+    fetchedAt: number;
+}
+
+
+const CACHE_DURATION = 1000 * 60 *5; // 5 min
+
+const getApplicationsCacheKey = ({
+    jobId,
+    companyId,
+    skip,
+    limit,
+    search,
+    status,
+}: {
+    jobId?: string;
+    companyId?: string;
+    skip: number;
+    limit: number;
+    search?: string;
+    status?: ApplicationStatusValue[] | null;
+}) => {
+    return [
+        jobId ?? "all-jobs",
+        companyId ?? "all-companies",
+        `skip:${skip}`,
+        `limit:${limit}`,
+        `search:${search?.trim().toLowerCase() ?? ""}`,
+        `status:${[...(status ?? [])].sort().join(",")}`,
+    ].join("|");
+};
+
+
+//-----------------------
+// --- API Helper & Props
+//-----------------------
+
+interface ApplicationFilters{
+  status: ApplicationStatusValue[] | null
+}
+
 const fetchApplicationsApi = async (
-  params: { jobId?: string; companyId?: string; skip: number; limit: number; search?: string },
+  params: { 
+    jobId?: string; 
+    companyId?: string; 
+    skip: number; 
+    limit: number; 
+    search?: string
+  } & Partial<ApplicationFilters>,
   signal?: AbortSignal
 ): Promise<Application[]> => {
-  console.log("PARAMS  : ", params )
+  // console.log("PARAMS  : ", params )
   const data = (await ApplicationQueries.getApplications({...params, signal })) ?? [];
   return data.map((value: any) => {
     // console.log("Application id : ",value.candidate.id)
@@ -48,30 +103,42 @@ const fetchApplicationsApi = async (
 };
 
 
+type FetchMode = "replace" | "append";
 
 
+//-- Props
 interface ApplicationsTableProps {
   jobId?: string;
   companyId?: string;
 }
 
 
-
 export default function ApplicationsTable({ jobId, companyId }: ApplicationsTableProps) {
   const { t } = useTranslation();
   const { setModal } = useAppContext();
 
+  //-- Applications & params
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [applicationFilters, setApplicationFilters] = useState<ApplicationFilters>({
+    status: null
+  });
 
   const [activeApplication, setActiveApplication] = useState<{applicationId: string; candidateId: string} | null>(null);
   const [candidateProfilImages, setCandidateProfilImages] = useState<Record<string, string>>({});
+  
+  //-- Memory Cache
+  const applicationsCache  = useRef<Map<string,ApplicationsQueryCache>>(new Map());
+  const pendingRequests  = useRef<Map<string, Promise<ApplicationsQueryCache>>>(new Map());
+
 
   // -- Pagination / Hot loading
   const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const loadedRef = useRef<boolean>(false); // Synchronous varification
+  //-- Loading
+  const [isLoading, setIsLoading] = useState(false); //-- Is resetting view
+  const [isLoadingMore, setIsLoadingMore] = useState(false); //-- Is loading More
+  const loadedRef = useRef<boolean>(false); // Synchronous varification - indicate something is loading
 
   //-- cache ref
   const imageUrlCache = useRef<Map<string, string>>(new Map()); // image url ...
@@ -84,8 +151,6 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
   const [search, setSearch] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
 
-  // Reference for canceling the previous query if a new search or filter is initiated
-  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Search Debounce
   useEffect(() => {
@@ -99,128 +164,240 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
   }, [search]);
 
 
-  //  Method for REFRESHING / RESETTING (New search, change of job/company)
-  const handleResetAndFetch = useCallback(
-    async (searchTerm: string) => {
-      // Cancel the previous request if it is still in progress
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+  //-- Global api call
+  const requestApplications = async ({
+      jobId,
+      companyId,
+      skip,
+      limit,
+      search,
+      status,
+      signal,
+      mode = "replace",
+  }: {
+      jobId?: string;
+      companyId?: string;
+      skip: number;
+      limit: number;
+      search?: string;
+      status?: ApplicationStatusValue[] | null;
+      signal?: AbortSignal;
+      mode?: FetchMode;
+  }): Promise<ApplicationsQueryCache> => {
+      
+      const key = getApplicationsCacheKey({
+          jobId,
+          companyId,
+          skip,
+          limit,
+          search,
+          status,
+      });
+
+      //----------------------------------
+      // CACHE HIT
+      //----------------------------------
+
+      const cached = applicationsCache.current.get(key);
+
+      if (
+          cached &&
+          Date.now() - cached.fetchedAt < CACHE_DURATION
+      ) {
+          updateApplicationsState(cached.data, mode);
+          return cached;
       }
 
-      const newController = new AbortController();
-      abortControllerRef.current = newController;
+      //----------------------------------
+      // REQUEST ALREADY RUNNING
+      //----------------------------------
 
-      setIsLoadingMore(true);
-      loadedRef.current = true;
-      setSkip(0);
+      const pending = pendingRequests.current.get(key);
 
-      try {
-        //-- Fetch application data
-        const freshData = await fetchApplicationsApi(
+      if (pending) {
+          const result = await pending;
+          updateApplicationsState(result.data, mode);
+          return result;
+      }
+
+      //----------------------------------
+      // CACHE MISS → API
+      //----------------------------------
+
+      const request = fetchApplicationsApi(
           {
-            jobId,
-            companyId,
-            skip: 0,
-            limit: PAGE_SIZE,
-            search: searchTerm || undefined,
+              jobId,
+              companyId,
+              skip,
+              limit,
+              search,
+              status,
           },
-          newController.signal
-        );
+          signal
+      )
+        .then(async (data) => {
+            const normalizedData = await handleApplicationsReceived(data);
+            const result: ApplicationsQueryCache = {
+                data: normalizedData,
+                hasMore: normalizedData.length === limit,
+                fetchedAt: Date.now(),
+            };
 
-        const ids = freshData
-            .filter(({ status }) => status === JobApplicationStatus.APPLIED)
-            .map(({ id }) => id);
+            //-- Updating
+            applicationsCache.current.set(key, result);
+            updateApplicationsState(normalizedData, mode);
 
-        await ApplicationServices.updateApplicationsStatus(
-            ids,
-            JobApplicationStatus.RECEIVED
-        );
+            return result;
+        })
+        .finally(() => {
+            pendingRequests.current.delete(key);
+        });
 
-        setApplications(
-          freshData.map(application => ({
-            ...application,
-            status: JobApplicationStatus.RECEIVED,
-          }))
-        );
+      pendingRequests.current.set(key, request);
 
-        setHasMore(freshData.length === PAGE_SIZE);
-        handleCandidateProfilImage(freshData);
+      return request;
+  };
+
+
+  //-- Update Application state when fetching
+  const updateApplicationsState = (
+      applications: Application[],
+      mode: FetchMode
+  ) => {
+      setApplications(prev => {
+          if (mode === "replace") {
+              return applications;
+          }
+          const existingIds = new Set(prev.map(app => app.id));
+          const newApplications = applications.filter(app => !existingIds.has(app.id));
+
+          return [...prev, ...newApplications];
+      });
+  };
+
+
+  //-- handle application received state (through api)
+  const handleApplicationsReceived = async (
+      applications: Application[]
+  ): Promise<Application[]> => {
+
+      const ids = applications
+          .filter(
+              app => app.status === JobApplicationStatus.APPLIED
+          )
+          .map(app => app.id);
+
+      if (ids.length > 0) {
+          await ApplicationServices.updateApplicationsStatus(
+              ids,
+              JobApplicationStatus.RECEIVED
+          );
+      }
+
+      return applications.map(app => ({
+          ...app,
+          status:
+              app.status === JobApplicationStatus.APPLIED
+                  ? JobApplicationStatus.RECEIVED
+                  : app.status,
+      }));
+  };
+
+
+  //-- Loading applications
+  const fetchApplications = async ({
+      mode,
+      skip,
+      search,
+      signal,
+  }: {
+      mode: FetchMode;
+      skip: number;
+      search?: string;
+      signal?: AbortSignal;
+  }) => {
+      loadedRef.current = true;
+      try {
+          const result = await requestApplications({
+              jobId,
+              companyId,
+              skip,
+              limit: PAGE_SIZE,
+              search,
+              status: applicationFilters.status,
+              signal,
+              mode,
+          });
+
+          //--------------------------------
+          // Pagination
+          //--------------------------------
+
+          setSkip(skip);
+          setHasMore(result.hasMore);
+
+          //--------------------------------
+          // Secondary resources
+          //--------------------------------
+
+          handleCandidateProfilImage(result.data);
+          return result;
       }
       catch (error: any) {
-        if (error.name !== 'AbortError') {
-          console.error('Erreur lors du chargement des candidatures:', error);
-        }
+          if (error.name !== "AbortError") {
+              console.error(
+                  "Error while fetching applications",
+                  error
+              );
+          }
+
+          throw error;
       }
       finally {
-        setIsLoadingMore(false);
-        loadedRef.current = false;
+          loadedRef.current = false;
       }
-    },
-    [jobId, companyId]
-  );
+  };
 
+
+  //  Method for REFRESHING / RESETTING (New search, change of job/company)
+  const handleResetAndFetch = useCallback(
+      async (searchTerm: string) => {
+          setIsLoading(true)
+          await fetchApplications({
+              mode: "replace",
+              skip: 0,
+              search: searchTerm || undefined,
+          });
+          setIsLoading(false)
+      },
+      [
+        jobId,
+        companyId,
+        applicationFilters.status,
+      ]
+  );
   
 
   //--  Pagination
   const handleFetchMore = useCallback(async () => {
-    if (isLoadingMore || !hasMore)
-      return;
+      if (isLoadingMore || !hasMore) {
+          return;
+      }
 
-    loadedRef.current = true;
-    setIsLoadingMore(true);
-
-    const nextSkip = skip + PAGE_SIZE;
-
-    try {
-      const moreData = await fetchApplicationsApi({
-        jobId,
-        companyId,
-        skip: nextSkip,
-        limit: PAGE_SIZE,
-        search: debouncedSearch || undefined,
+      setIsLoadingMore(true);
+      await fetchApplications({
+          mode: "append",
+          skip: skip + PAGE_SIZE,
+          search: debouncedSearch || undefined,
       });
+      setIsLoading(false);
 
-      //-- Mark job as received
-      const ids = moreData
-          .filter(({ status }) => status === JobApplicationStatus.APPLIED)
-          .map(({ id }) => id);
-
-      await ApplicationServices.updateApplicationsStatus(
-          ids,
-          JobApplicationStatus.RECEIVED
-      );
-
-      //-- update applications pag
-      setApplications(prev => {
-        const existingIds = new Set(prev.map(app => app.id));
-
-        const newApplications = moreData
-          .filter(app => !existingIds.has(app.id))
-          .map(app => ({
-            ...app,
-            status: JobApplicationStatus.RECEIVED,
-          }));
-
-        return [...prev, ...newApplications];
-      });
-
-      setSkip(nextSkip);
-      setHasMore(moreData.length === PAGE_SIZE);
-      
-      handleCandidateProfilImage(moreData);
-    } 
-    catch (error) {
-      console.error(
-        'Erreur lors du chargement de la suite des candidatures:',
-        error
-      );
-    }
-    finally {
-      setIsLoadingMore(false);
-      loadedRef.current = false;
-    }
-  }, [jobId, companyId, skip, hasMore, debouncedSearch]);
-
+  }, [
+      skip,
+      hasMore,
+      isLoadingMore,
+      debouncedSearch,
+  ]);
 
 
   //--  load candidate image
@@ -282,18 +459,15 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
       const url = URL.createObjectURL(blob);
       resumeUrlCache.current.set(applicationId, url);
 
-      console.log("URL : ", url);
-      console.log("Resume blob : ", blob);
-
       return url;
     }
     catch(error){
-      console.log(
+      console.error(
         "Something went wrong while fetching candidates resume"
       );
       return undefined;
     }
-  },[])
+  },[]);
 
 
 
@@ -322,6 +496,19 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
   },[hasMore, handleFetchMore]);
 
 
+  //-- Observe filters change
+  useEffect(() => {
+      fetchApplications({
+          mode: "replace",
+          skip: 0,
+          search: debouncedSearch || undefined,
+      });
+  }, [
+      applicationFilters,
+      debouncedSearch,
+      jobId,
+      companyId,
+  ]);
 
 
   // --- Handlers change of statut & actions ---
@@ -339,7 +526,14 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
     setIsUpdating(applicationId);
     try {
       await ApplicationServices.updateStatus(applicationId, newStatus);
-      setApplications((prev) => prev.map((app) => (app.id === applicationId ? { ...app, status: newStatus } : app)));
+      setApplications(prev =>
+            prev.map(app =>
+                app.id === applicationId
+                    ? { ...app, status: newStatus }
+                    : app
+            )
+      );
+      applicationsCache.current.clear();
     }
     catch (error) {
       console.error('Erreur lors de la mise à jour du statut', error);
@@ -470,8 +664,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
       imageUrlCache.current.clear();
       resumeUrlCache.current.clear()
     };
-  },[])
-
+  },[]);
   
 
   // Reset trigger (search or change of props)
@@ -481,15 +674,16 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
 
 
 
-
   return (
     <div className={styles.container}>
       <ApplicationSearchHeader 
         t={t}
+        onFilterValueChange={({status})=>{
+          setApplicationFilters({status})
+        }}
         search={search}
         onSearchChange={setSearch}
       />
-
       <div className={styles.tableCard}>
         <ApplicationTableTitle totalCount={applications.length} />
 

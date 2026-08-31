@@ -2,9 +2,9 @@ import type { ApiResponse } from "../response.types";
 import type { CandidateLightModel } from "../../../features/candidates/candidates";
 import type { 
   JobActivityStatus,
+  JobOfferViewLightModel,
   JobPublicationStatus,
   JobSummary,
-  JobView,
   JobWorkMode,
   LanguageLevel,
   VisibilityStatus
@@ -18,7 +18,9 @@ import type {
 
 export type CandidateListResponse = ApiResponse<CandidateLightModel[]>;
 
+export type ApplicationsLightViewApiresponse = ApiResponse<JobOfferViewLightModel[]>;
 
+export  type JobOfferCardinalitiesApiResponse = ApiResponse<JobOfferCardinalities>;
 //------------------
 //-- Job
 //------------------
@@ -106,3 +108,12 @@ interface RecruitmentMetrics {
   avgTimeToHireDiffDays: number;
   offersGenerated: number;
 }
+
+
+export type JobOfferCardinalities = {
+  candidatesCount: number;
+  interviewsCount: number;
+  employmentOfferCount: number;
+  hiredCount: number;
+  viewsCount: number;
+};

@@ -2,7 +2,7 @@
 
 namespace App\Api\Controllers\User\JobOffer;
 
-
+use App\Api\Controllers\Helpers\ApiControllerHelpers;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 
@@ -10,36 +10,113 @@ use App\Application\Query\JobOffer\Repositories\JobOfferAnalyticsRepositoryInter
 use App\Application\Query\JobOffer\Repositories\RecruiterJobOfferQueryRepositoryInterface;
 
 use App\Application\Query\JobOffer\DTO\JobSummaryItem;
+use App\Application\Query\User\Repositories\UserDashboardQueryRepositoryInterface;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 
 use App\Domain\EmploymentOffer\EmploymentOfferStatus;
 use App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface;
-
-
+use App\Domain\JobOffer\JobActivityStatus;
+use App\Domain\Shared\AccountStorageParams;
+use App\Domain\Shared\PathResolverInterface;
+use App\Domain\User\UserRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
-
-
+use Symfony\Component\HttpFoundation\Response;
 
 #[Route('/users/job_offers')]
 class JobOfferQueryManagement extends AbstractController
 {
+    use ApiControllerHelpers;
+
     public function __construct(
         private LoggerInterface $logger,
         private RecruiterJobOfferQueryRepositoryInterface $queryRepository,
         private ApplicationRepositoryInterface $applicationRepository,
-        private EmploymentOfferRepositoryInterface $offerRepository
+        private EmploymentOfferRepositoryInterface $offerRepository,
+        private PathResolverInterface $pathResolver,
+        private UserRepositoryInterface $userRepository
     ) {
         ApiResponse::init($logger);
     }
 
-        
+    
+    /**
+     * Route: /users/job_offers/stats/dashboard
+     *      This one is used for retrieving cross stats data
+     *      regarding interviews and candidates
+     * Queries:
+     *      - pick: string (Date ISO)
+     *      - timeframe?: "week" | "month" | "year"
+     */
+    #[Route('/stats/dashboard', methods: ['GET'])]
+    public function getRecruitmentStatistics(
+        Request $request,
+        UserDashboardQueryRepositoryInterface $repository
+    ): JsonResponse {
+        try {
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
+
+            if (!$user) {
+                return ApiResponse::error(
+                    message: 'Unauthorized action',
+                    statusCode: 401
+                )->toJsonResponse();
+            }
+
+            $pick = $request->query->get('pick');
+            if (!$pick) {
+                return ApiResponse::error(
+                    message: '"pick" query parameter is mandatory',
+                    statusCode: 400
+                )->toJsonResponse();
+            }
+
+            try {
+                $date = new \DateTimeImmutable($pick);
+            } catch (\Exception) {
+                return ApiResponse::error(
+                    message: 'Invalid date format for "pick". Expected a valid ISO string',
+                    statusCode: 400
+                )->toJsonResponse();
+            }
+
+            $allowedTimeframes = ['week', 'month', 'year'];
+            $timeframe = $request->query->get('timeframe', 'week');
+
+            if (!in_array($timeframe, $allowedTimeframes, true)) {
+                return ApiResponse::error(
+                    message: sprintf('Invalid "timeframe". Allowed values are: %s', implode(', ', $allowedTimeframes)),
+                    statusCode: 400
+                )->toJsonResponse();
+            }
+
+            $results = $repository->getDashboardStats(
+                recruiterId: $user->getId(),
+                date: $date,
+                timeframe: $timeframe
+            );
+
+            return ApiResponse::success(
+                data: $results,
+                message: 'Dashboard statistics retrieved successfully'
+            )->toJsonResponse();
+
+        }
+        catch (\Throwable $error) {
+            return ApiResponse::error(
+                message: 'Something went wrong while retrieving dashboard statistics',
+                throwable: $error
+            )->toJsonResponse();
+        }
+    }
+
+
     /**
      * Route: users/applications/kpis?jobId=string
      * Obtained kpis about job(s), if jobId is specified then the calcul is done only within the scope 
@@ -156,55 +233,8 @@ class JobOfferQueryManagement extends AbstractController
         }
     }
 
-    #[Route('/', methods: ['GET'])]
-    public function retrieveJobOfferWithPagination(
-        Request $request,
-        LoggerInterface $logger,
-        RecruiterJobOfferQueryRepositoryInterface $queryRepository,
-    ): JsonResponse {
-        try {
-            /** @var AuthenticatedPerson $user */
-            $user = $this->getUser();
-            if(!$user){
-                return ApiResponse::error(
-                    message: "Unauthentificated action",
-                    statusCode: 403
-                )->toJsonResponse();
-            }
 
-            $limit = $request->query->has('limit') ? (int) $request->query->get('limit') : null;
-            $skip  = $request->query->has('skip')  ? (int) $request->query->get('skip')  : null;
-
-            // Extract all filters passed via the URL(publishedState[published]=true, offerState, salary, etc.)
-            $criteria = $request->query->all();
-
-            /** @var array<int, JobSummaryItem> $data */
-            $data = $queryRepository->fetchJobOfferViewCollection(
-                userId: $user->getId(),
-                limit: $limit,
-                skip: $skip,
-                criteria: $criteria
-            );
-
-            return ApiResponse::success(
-                data: $data,
-                message: "Everything went successfully"
-            )->toJsonResponse();
-
-        } catch (\Throwable $exception) {
-            $logger->error('Error fetching job offers collection: ' . $exception->getMessage(), [
-                'exception' => $exception,
-            ]);
-
-            return ApiResponse::error(
-                message: "Something went wrong",
-                throwable: $exception,
-                statusCode: 500
-            )->toJsonResponse();
-        }
-    }
-
-
+    /** Count job offers */
     #[Route('/count', methods: ['GET'])]
     public function countJobOffer(Request $request): JsonResponse
     {
@@ -232,6 +262,111 @@ class JobOfferQueryManagement extends AbstractController
         }
     }
 
+
+
+    #[Route('/summary/{jobId}', methods: ['GET'])]
+        public function getSpecificJobOfferSummary(
+            string $jobId
+    ): JsonResponse {
+        try {
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
+            if (!$user) {
+                return ApiResponse::error(
+                    message: "Unauthenticated action",
+                    statusCode: Response::HTTP_UNAUTHORIZED // 401
+                )->toJsonResponse();
+            }
+
+            /** @var array{candidatesCount: int, interviewsCount: int, employmentOfferCount: int, hiredCount: int, viewsCount: int} $data */
+            $data = $this->queryRepository->fetchJobOfferCardinalities(
+                recruiterId: $user->getId(),
+                jobId: $jobId
+            );
+
+            return ApiResponse::success(
+                data: $data,
+                message: "Everything went successfully"
+            )->toJsonResponse();
+        }
+        catch (\Throwable $exception) {
+            $this->logger->error('Error job offer summary: ' . $exception->getMessage(), [
+                'exception' => $exception,
+                'jobId' => $jobId,
+            ]);
+
+            return ApiResponse::error(
+                message: "Something went wrong",
+                throwable: $exception,
+                statusCode: Response::HTTP_INTERNAL_SERVER_ERROR // 500
+            )->toJsonResponse();
+        }
+    }
+
+
+    /**
+     * Queries:
+     *  Filters:
+     *       - publishedState: JobPublicationStatus,
+     *       - salary: int,
+     *       - candidateCount: int,
+     *       - searchText: string,
+     *       - searchAddress: string
+     *  Pagination:
+     *       - skip: int,
+     *       - limit: int
+     */
+    #[Route('/summary', methods: ['GET'])]
+    public function retrieveJobOfferSummaryWithPagination(
+        Request $request,
+        LoggerInterface $logger,
+        RecruiterJobOfferQueryRepositoryInterface $queryRepository,
+    ): JsonResponse {
+        try {
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
+            if(!$user){
+                return ApiResponse::error(
+                    message: "Unauthentificated action",
+                    statusCode: 403
+                )->toJsonResponse();
+            }
+
+            $limit = $request->query->has('limit') ? (int) $request->query->get('limit') : null;
+            $skip  = $request->query->has('skip')  ? (int) $request->query->get('skip')  : null;
+
+            // Extract all filters passed via the URL(publishedState[published]=true, offerState, salary, etc.)
+            $criteria = $request->query->all();
+
+            /** @var array<int, JobSummaryItem> $data */
+            $data = $queryRepository->fetchJobOfferViewCollection(
+                userId: $user->getId(),
+                limit: $limit,
+                skip: $skip,
+                criteria: $criteria
+            );
+
+            return ApiResponse::success(
+                data: $data,
+                message: "Everything went successfully"
+            )->toJsonResponse();
+
+        }
+        catch (\Throwable $exception) {
+            $logger->error('Error fetching job offers collection: ' . $exception->getMessage(), [
+                'exception' => $exception,
+            ]);
+
+            return ApiResponse::error(
+                message: "Something went wrong",
+                throwable: $exception,
+                statusCode: 500
+            )->toJsonResponse();
+        }
+    }
+
+
+ 
 
     /**
      * Route: /stats?jobId=string
@@ -265,6 +400,83 @@ class JobOfferQueryManagement extends AbstractController
                 message: 'Something went wrong while fetching job overview',
                 throwable: $error,
                 verbose: true
+            )->toJsonResponse();
+        }
+    }
+
+    /**
+     * Retrieve job offers wit hspecific criteria
+     * Route: /users/job_offers/criteria_base
+     * Queries:
+     *  - actvityStatus : the activity status of the candidats
+     *  - skip (Optionnel): skip range of job offer
+     *  - limit : set limit of result count
+     */
+    #[Route('/criteria_base', name: 'app_job_offers_by_criteria', methods: ['GET'])]
+    public function getJobOffersWithCriteria(
+        Request $request,
+        RecruiterJobOfferQueryRepositoryInterface $repository
+    ): JsonResponse {
+        try {
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
+            if (!$user) {
+                return ApiResponse::error(
+                    message: "Unauthenticated action",
+                    statusCode: 401
+                )->toJsonResponse();
+            }
+
+
+            //-- Queries
+            $activityStatus = JobActivityStatus::tryFrom($request->query->get('activityStatus', ''));
+            if (!$activityStatus) {
+                return ApiResponse::error(
+                    message: "Wrong input sent for retrieving job offers by criteria",
+                    statusCode: 400
+                )->toJsonResponse(); 
+            }
+
+
+            $skip = $request->query->get("skip");
+            $limit = $request->query->get("limit");
+            $skip = ctype_digit($skip) ? (int) $skip : 0;
+            $limit = ctype_digit($limit) ? (int) $limit : 0;
+
+            $userId= $user->getId();
+            $views = $repository->getJobOfferLightViewModelByCriteria(
+                userId: $userId,
+                activityStatus: $activityStatus
+            );
+
+            $companyId = $this->userRepository->getOrganizationId($userId);
+
+            // Treat list
+            $views = array_map(function($view) use ($request, $companyId) {
+                if ($view->image !== null) {
+                    $imageUrl = $this->resolvePublicImageUrl(
+                        request: $request,
+                        params: AccountStorageParams::companyJobImages(
+                            companyId: $companyId,
+                            storedFileName: $view->image
+                        ),
+                        pathResolver: $this->pathResolver
+                    );
+
+                    $view->image = $imageUrl; 
+                }
+
+                return $view;
+            }, $views);
+
+            return ApiResponse::success(
+                data: $views
+            )->toJsonResponse();
+        }
+        catch (\Exception $error) {
+            return ApiResponse::error(
+                message: "Something went wrong while looking for matching job offers",
+                throwable: $error
             )->toJsonResponse();
         }
     }
@@ -353,25 +565,4 @@ class JobOfferQueryManagement extends AbstractController
         }
     }
 
-
-
-
-    #[Route('/kanban', methods: ['GET'])]
-    public function getKanbanResult()
-    {
-        try{
-
-        }
-        catch(\Exception $error){
-            return ApiResponse::error(
-                message: "Something went wrong gettings job kanbans"
-            );
-        }
-    }
-
-
-
-
-
- 
 }

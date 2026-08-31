@@ -30,8 +30,33 @@ class NotificationRepository extends ServiceEntityRepository
     }
 
 
+    #[Override]
+    public function markNotificationAsRead(array $notificationIds, string $recipientId): void
+    {
+        if (empty($notificationIds)) {
+            return;
+        }
+
+        $this->createQueryBuilder('n')
+            ->update()
+            ->set('n.readAt', ':now')
+            ->set('n.isRead', ':isRead')
+            ->where('n.id IN (:ids)')
+            ->andWhere('n.readAt IS NULL')
+            ->andWhere('n.recipientAccount = :recipientId OR n.recipientCompany = :recipientId')
+            ->setParameters([
+                'now'         => new \DateTimeImmutable(),
+                'isRead'      => true,
+                'ids'         => $notificationIds,
+                'recipientId' => $recipientId,
+            ])
+            ->getQuery()
+            ->execute();
+    }
+
 
     /**
+     * @param array<NotificationType> $types Tableau de filtres par type (vide = tous les types)
      * @return array<int, array{
      *     id: string,
      *     targetUrl: string|null,
@@ -47,24 +72,13 @@ class NotificationRepository extends ServiceEntityRepository
      *     createdAt: \DateTimeImmutable
      * }>
      */
-/**
-     * @return array<int, array{
-     *     id: string,
-     *     targetUrl: string|null,
-     *     isRead: bool,
-     *     data: array,
-     *     account: array{
-     *         id: string|null,
-     *         firstName: string,
-     *         lastName: string
-     *     }|null,
-     *     type: NotificationType,
-     *     readAt: \DateTimeImmutable|null,
-     *     createdAt: \DateTimeImmutable
-     * }>
-     */
-    public function getJobOfferNotification(string $userId, string $jobId, int $limit = 7): array
-    {
+    public function getNotifications(
+        string $userId, 
+        ?string $jobId = null, 
+        int $limit = 7, 
+        int $skip = 0,
+        array $types = [] 
+    ): array {
         $qb = $this->createQueryBuilder('n')
             ->select(
                 'n.id',
@@ -80,44 +94,51 @@ class NotificationRepository extends ServiceEntityRepository
             )
             ->leftJoin('n.account', 'sender')
             ->where('n.recipientAccount = :userId')
-            ->andWhere('n.type = :type')
             ->setParameter('userId', $userId)
-            ->setParameter('type', NotificationType::JOB_APPLIED)
-            ->orderBy('n.createdAt', 'DESC');
+            ->orderBy('n.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->setFirstResult($skip);
 
-        $results = $qb->getQuery()->getArrayResult();
-        $filtered = [];
-
-        foreach ($results as $item) {
-            // Secure verification of the jobId in the data for the JOB_APPLIED type
-            if (!isset($item['data']['jobId']) || $item['data']['jobId'] !== $jobId) {
-                continue;
-            }
-
-            // Removing Unwanted Keys from the “data” Table
-            unset($item['data']['companyId']);
-
-            // Structuring the ‘account’ key in accordance with the output schema
-            $item['account'] = $item['senderId'] !== null ? [
-                'id' => $item['senderId'],
-                'firstName' => $item['senderFirstName'] ?? '',
-                'lastName' => $item['senderLastName'] ?? '',
-            ] : null;
-
-            // Clearing the temporary fields in the SELECT statement
-            unset($item['senderId'], $item['senderFirstName'], $item['senderLastName']);
-
-            $filtered[] = $item;
-
-            // Applying the limit after filtering
-            if ($limit > 0 && count($filtered) >= $limit) {
-                break;
-            }
+        // Conditionnal filter on  jobId
+        if ($jobId) {
+            $qb->andWhere('n.data LIKE :jobIdPattern')
+               ->setParameter('jobIdPattern', '%"jobId":"' . $jobId . '"%');
         }
 
-        return $filtered;
-    }
+        // Filter types
+        if (!empty($types)) {
+            $qb->andWhere('n.type IN (:types)')
+               ->setParameter(
+                   'types', 
+                   array_map(fn($t) => $t instanceof \BackedEnum ? $t->value : $t, $types)
+               );
+        }
 
+        $results = $qb->getQuery()->getArrayResult();
+
+        return array_map(function (array $row): array {
+            $hasSender = $row['senderId'] !== null || $row['senderFirstName'] !== null;
+
+            return [
+                'id'        => $row['id'],
+                'targetUrl' => $row['targetUrl'],
+                'isRead'    => (bool) $row['isRead'],
+                'data'      => $row['data'],
+                'account'   => $hasSender ? [
+                    'id'        => $row['senderId'],
+                    'firstName' => $row['senderFirstName'] ?? '',
+                    'lastName'  => $row['senderLastName'] ?? '',
+                ] : null,
+                'type'      => $row['type'] instanceof NotificationType 
+                                ? $row['type'] 
+                                : NotificationType::from($row['type']),
+                'readAt'    => $row['readAt'],
+                'createdAt' => $row['createdAt'] instanceof \DateTimeImmutable
+                                    ?  $row['createdAt']->format(\DateTimeInterface::ATOM)
+                                    :  $row['createdAt'] ,
+            ];
+        }, $results);
+    }
 
     /**
      * Counts the number of unread notifications for a given target (Account or Company).
@@ -133,12 +154,12 @@ class NotificationRepository extends ServiceEntityRepository
     ): int {
         $qb = $this->createQueryBuilder('n')
             ->select('COUNT(n.id)')
-            ->where('n.isRead = :isRead')
-            ->setParameter('isRead', false);
-
-        if (strtoupper($recipientType->value) === 'COMPANY') {
+            ->where('n.readAt IS NULL');
+        
+        if ($recipientType->value === RecipientType::COMPANY) {
             $qb->andWhere('n.recipientCompany = :recipientId');
-        } else {
+        }
+        else {
             $qb->andWhere('n.recipientAccount = :recipientId');
         }
 

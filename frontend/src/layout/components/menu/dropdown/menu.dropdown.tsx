@@ -1,6 +1,6 @@
 
 
-import { 
+import React, { 
     createContext,
     useCallback,
     useContext,
@@ -304,21 +304,27 @@ export const MenuDrawerItem: React.FC<MenuDrawerItemProps> = ({
 interface MenuDrawerInputProps {
     placeholder?: string;
     formatter?: (value: string) => any;
-
+    value: string;
+    onChange: (event: React.ChangeEvent<HTMLInputElement>)=>void;
     className?: string;
     style?: React.CSSProperties,
 }
 
-
+/**
+ * @warning onChange - if set, you must manually update the input state value through callback
+ * @param formatter is call on keyboard enter 
+ * @param onChange  is call whenerver the input's value change 
+ * @returns 
+ */
 export const MenuDrawerInput: React.FC<MenuDrawerInputProps> = ({
     placeholder,
     formatter,
-
+    value,
+    onChange,
     style,
     className,
 }) => {
     const { setSelected, setIsOpen } = useDrawer();
-    const [value, setValue] = useState("");
 
     return (
         <input
@@ -326,7 +332,12 @@ export const MenuDrawerInput: React.FC<MenuDrawerInputProps> = ({
             className={`${styles.input} ${className}`}
             placeholder={placeholder}
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => {
+                if(onChange){
+                    onChange(e)
+                    return;
+                }
+            }}
             onKeyDown={(e) => {
                 if (e.key === "Enter") {
                     const finalValue = formatter

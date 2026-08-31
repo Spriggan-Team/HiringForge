@@ -54,7 +54,9 @@
       "title": "Agenda d'aujourd'hui"
     },
     "acitveOffer":{
-      "title": "ActiveOffers"
+      "title": "Offres d'emplois d'actives",
+      "noActiveOffers": "Aucune offre active avec candidature",
+      "noActiveOffersTooltip": "Toutes vos offres actuellement publiées comportent au moins une candidature."
     },
 
     "statistics":{
@@ -62,6 +64,9 @@
       "drawer":{
         "instrcution": "Sélectionner une semaine",
         "addOption": "Entrée une date"
+      },
+      "messages":{
+        "noAvailableStatsForPeriod": "Aucune donnée disponible pour cette période"
       }
     }
   }

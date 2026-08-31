@@ -59,7 +59,8 @@ const RecruitmentPipeline = () => {
         [CandidatePipelineType.RH_INTERVIEWS]: rhInterviewsPipeline,
         [CandidatePipelineType.TECHNICAL_INTERVIEWS]: technicalInterviewsPipeline ,
         [CandidatePipelineType.HIRED]: hiredCandidatesPipeline
-    }
+    };
+
 
     //-- Pipeline card
     const [kanbanCardData, setKanbanCardData] = useState<CardData[]>([]);
@@ -68,9 +69,18 @@ const RecruitmentPipeline = () => {
         if(!data){
             return [];
         }
+        
         const c = [];
-        for(const value of Object.values(data.candidates))
+        for(const value of Object.values(data.candidates)){
+            //-- candidate image data
+            if(value.imageId){
+                // const imageBlob = ApplicationQueries.getCandidateProfilImage({});
+                // console.log({value})
+            }
+        
+            //-- Kanban components - card data
             c.push({ id: value.id, columnId: data.stageType as string  })
+        }
         return c;
     }
 
@@ -193,6 +203,7 @@ const RecruitmentPipeline = () => {
                     return;
                 }
                 
+                console.log("Observer Reach !!");
                 const stageType = target.dataset.columnObserver as CandidatePipelineTypeValue;
                 const currentPipeline = PipelineStages[stageType];
                 if(currentPipeline && currentPipeline.more > 0){
@@ -214,6 +225,16 @@ const RecruitmentPipeline = () => {
         throw Error("Not implemented");
     },[]);
 
+    const getKanbanCount = (currentCount: number | undefined, more: number | undefined)=>{
+        more = more ?? 0;
+        currentCount = currentCount ?? 0;
+        if(more > currentCount){
+            return `+${more - currentCount}`
+        }
+        else{
+            return currentCount;
+        }
+    }
 
     return (
         <div className={styles.view}>
@@ -235,7 +256,7 @@ const RecruitmentPipeline = () => {
                         className={styles.kanbanColumn}
                         id={ "recruitment" as KanbanColumnIds }
                         title={t("userHome.borad.kanban.colomns.new.title")}
-                        count={newCandidatesPipeline?.candidates.length ?? 0}
+                        count={getKanbanCount(newCandidatesPipeline?.candidates.length, newCandidatesPipeline?.more)}
                     >
                         {
                             newCandidatesPipeline?.candidates.slice(0, 4).map((card) => (
@@ -269,7 +290,7 @@ const RecruitmentPipeline = () => {
                         backgroundColor="#fef7f1"
                         id={ "interview" as KanbanColumnIds}
                         title={t("userHome.borad.kanban.colomns.interviews.title")}
-                        count={rhInterviewsPipeline?.candidates.length ?? 0}
+                        count={getKanbanCount(rhInterviewsPipeline?.candidates.length, rhInterviewsPipeline?.more)}
                     >
                         {
                             rhInterviewsPipeline?.candidates.slice(0,4)
@@ -304,7 +325,7 @@ const RecruitmentPipeline = () => {
                         backgroundColor="#ece2fd"
                         id={ "technical-interview" as KanbanColumnIds}
                         title={t("userHome.borad.kanban.colomns.techInterview.title")}
-                        count={technicalInterviewsPipeline?.candidates.length ?? 0}
+                        count={getKanbanCount(technicalInterviewsPipeline?.candidates.length, technicalInterviewsPipeline?.more)}
                     >
                         {
                             technicalInterviewsPipeline?.candidates.slice(0, 4)
@@ -340,7 +361,7 @@ const RecruitmentPipeline = () => {
                         backgroundColor="#f1faf7"
                         id={ "hired" as KanbanColumnIds}
                         title={t("userHome.borad.kanban.colomns.hired.title")}
-                        count={hiredCandidatesPipeline?.candidates.length ?? 0}
+                        count={getKanbanCount(hiredCandidatesPipeline?.candidates.length, hiredCandidatesPipeline?.more)}
                     >
                         {
                             hiredCandidatesPipeline?.candidates.slice(0,4)

@@ -7,8 +7,7 @@ export class InterviewStatus {
   static readonly COMPLETED = 'completed';
 }
 
-export type InterviewStatusValue =
-  (typeof InterviewStatus)[keyof typeof InterviewStatus];
+export type InterviewStatusValue = (typeof InterviewStatus)[keyof typeof InterviewStatus];
 
 export const INTERVIEW_STATUSES: InterviewStatusValue[] = [
   InterviewStatus.CANCELLED,
@@ -20,25 +19,56 @@ export const INTERVIEW_STATUSES: InterviewStatusValue[] = [
 ];
 
 
-export class InterviewType {
-  static RH_INTERVIEWS = 'rh_interviews';
-  static TECHNICAL_INTERVIEWS = 'technical_interviews';
-}
-
+export const InterviewType = {
+  RH_INTERVIEWS: 'rh_interviews',
+  TECHNICAL_INTERVIEWS: 'technical_interviews',
+} as const;
 
 export type InterviewTypeValue = (typeof InterviewType)[keyof typeof InterviewType];
 
 
-export interface Interview {
-    id: string;
-    candidate?: string;
-    recruiter?: string;
+//-- Helpers
+export type InterviewWithCandidateData = BaseInterviewData & {
+    candidate: CandidateData;
+};
+
+
+//---------------------
+///- Utils/Componets
+//----------------------
+
+export type BaseInterviewData = {
+  id: string;
+  startDate: string; // ISO 8601
+  minutes: number;
+  status: InterviewStatus;
+  description?: string;
+  url?: string;
+  type?: InterviewTypeValue
+};
+
+
+export type CandidateData = {
+    id:string;
+    firstName: string;
+    lastName: string;
     email: string;
-    jobTitle: string;
-    scheduledAt: string; // ISO
-    locationOrLink?: string;
-    status: InterviewStatus;
-    avatarUrl?: string;
+    imageId?: number;
+};
+
+
+//-- UI
+
+export interface Interview {
+  id: string;
+  candidate?: string;
+  recruiter?: string;
+  email: string;
+  jobTitle: string;
+  scheduledAt: string; // ISO
+  locationOrLink?: string;
+  status: InterviewStatus;
+  avatarUrl?: string;
 }
 
 

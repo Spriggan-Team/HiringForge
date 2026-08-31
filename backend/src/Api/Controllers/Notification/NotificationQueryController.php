@@ -8,8 +8,9 @@ use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Domain\Notification\NotificationRepositoryInterface;
 use App\Domain\Notification\NotificationType;
 use App\Domain\Notification\RecipientType;
-use Psr\Log\LoggerInterface;
 
+
+use Psr\Log\LoggerInterface;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,6 +26,61 @@ class NotificationQueryController extends AbstractController
         private LoggerInterface $logger
     ){
         ApiResponse::init($logger);
+    }
+
+    /**
+     * Route: /notifications/account/read
+     * Body:
+     *  - notificationIds : array<int,string>
+     */
+    #[Route('/account/read', methods: ['POST'])]
+    public function markAsRead(
+        Request $request,
+    ): JsonResponse {
+        try {
+            /** @var AuthenticatedPerson|null $user */
+            $user = $this->getUser();
+
+            if (!$user) {
+                return ApiResponse::error(
+                    message: 'User authentication required.',
+                    statusCode: 401
+                )->toJsonResponse();
+            }
+
+            // Validation
+            $body = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            $notificationIds = $body['notificationIds'] ?? null;
+
+            if (!is_array($notificationIds) || empty($notificationIds)) {
+                return ApiResponse::error(
+                    message: 'Invalid or empty notificationIds array provided.',
+                    statusCode: 400
+                )->toJsonResponse();
+            }
+
+            // Update
+            $this->notificationRepository->markNotificationAsRead(
+                notificationIds: $notificationIds,
+                recipientId: $user->getId()
+            );
+
+            return ApiResponse::notice(
+                message: 'Notifications marked as read successfully.'
+            )->toJsonResponse();
+
+        } catch (\JsonException $error) {
+            return ApiResponse::error(
+                message: 'Invalid JSON payload.',
+                statusCode: 400
+            )->toJsonResponse();
+        }
+        catch (\Throwable $error) {
+            return ApiResponse::error(
+                message: 'Something went wrong while marking notifications as read.',
+                throwable: $error
+            )->toJsonResponse();
+        }
     }
 
     
@@ -45,6 +101,7 @@ class NotificationQueryController extends AbstractController
             //-- type
             $typeParam = $request->query->get('type');
             $type = null;
+
             if ($typeParam !== null) {
                 $type = NotificationType::tryFrom($typeParam);
                 if ($type === null) {
@@ -89,7 +146,8 @@ class NotificationQueryController extends AbstractController
 
             return ApiResponse::error(
                 message: 'An unexpected error occurred',
-                statusCode: 500
+                statusCode: 500,
+                throwable: $exception
             )->toJsonResponse();
         }
     }
@@ -168,7 +226,8 @@ class NotificationQueryController extends AbstractController
 
             return ApiResponse::error(
                 message: 'An unexpected error occurred',
-                statusCode: 500
+                statusCode: 500,
+                throwable: $exception
             )->toJsonResponse();
         }
     }
@@ -206,14 +265,15 @@ class NotificationQueryController extends AbstractController
 
             return ApiResponse::error(
                 message: 'An unexpected error occurred',
-                statusCode: 500
+                statusCode: 500,
+                throwable: $exception
             )->toJsonResponse();
         }
     }
 
 
     /**
-     * Route: GET /activity/company/unread-count?companyId=uuid
+     * Route: GET /company/unread-count?companyId=uuid
      */
     #[Route('/company/unread-count', name: 'api_notifications_company_unread_count', methods: ['GET'])]
     public function getCompanyUnreadCount(Request $request): JsonResponse
@@ -249,20 +309,26 @@ class NotificationQueryController extends AbstractController
 
             return ApiResponse::error(
                 message: 'An unexpected error occurred',
-                statusCode: 500
+                statusCode: 500,
+                throwable: $exception
             )->toJsonResponse();
         }
     }
 
-
     /**
-     * Route:  /user/jobs/{offerId}?limit=number
+     * Route: /user
+     * Queries:
+     *  - skip: number - offset
+     *  - limit: number - max result
+     *  - offerId: ?string - id of an offer
+     *  - types: string - comma-separated list of types ("JOB_APPLIED,SYSTEM")
      */
-    #[Route('/user/jobs/{offerId}')]
-    public function getRecentActionOnJobOffer(
-        Request $request,
-        string $offerId
+    #[Route('/user', methods: ['GET'])]
+    public function getNotifications(
+        Request $request
     ): JsonResponse {
+        $offerId = null;
+
         try {
             /** @var AuthenticatedPerson|null $user */
             $user = $this->getUser();
@@ -274,14 +340,31 @@ class NotificationQueryController extends AbstractController
                 )->toJsonResponse();
             }
 
-            $limitParam = $request->query->get('limit');
-            $limit = is_numeric($limitParam) ? (int) $limitParam : 7;
-            $limit = max(1, min($limit, 50));
+            $skip = max(0, $request->query->getInt('skip', 0));
+            $limit = max(1, min($request->query->getInt('limit', 7), 50));
+            $offerId = $request->query->get('offerId');
 
-            $result = $this->notificationRepository->getJobOfferNotification(
+            // Extraction & convert type array
+            $typesParam = $request->query->get('types');
+            $types = [];
+
+            if (is_string($typesParam) && trim($typesParam) !== '') {
+                $rawTypes = array_map('trim', explode(',', $typesParam));
+
+                foreach ($rawTypes as $rawType) {
+                    $enumType = NotificationType::tryFrom($rawType);
+                    if ($enumType !== null) {
+                        $types[] = $enumType;
+                    }
+                }
+            }
+
+            $result = $this->notificationRepository->getNotifications(
                 userId: $user->getId(),
                 jobId: $offerId,
-                limit: $limit
+                limit: $limit,
+                skip: $skip,
+                types: $types
             );
 
             return ApiResponse::success(
@@ -290,16 +373,16 @@ class NotificationQueryController extends AbstractController
             )->toJsonResponse();
 
         } catch (\Throwable $error) {
-            $this->logger->error('Error fetching job offer notifications', [
+            $this->logger->error('Error fetching user notifications', [
                 'exception' => $error->getMessage(),
-                'offerId' => $offerId,
+                'offerId'   => $offerId,
             ]);
 
             return ApiResponse::error(
                 message: 'An unexpected error occurred',
-                statusCode: 500 // <-- Corrigé (500 au lieu de 400)
+                statusCode: 500,
+                throwable: $error
             )->toJsonResponse();
         }
     }
-
 }

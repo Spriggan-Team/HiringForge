@@ -4,6 +4,7 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\Queries;
 
 use App\Application\Query\JobOffer\DTO\JobOfferListItem;
+use App\Application\Query\JobOffer\DTO\JobOfferViewLightModel;
 use App\Application\Query\JobOffer\DTO\JobSummaryItem;
 use App\Application\Query\JobOffer\Repositories\RecruiterJobOfferQueryRepositoryInterface;
 use App\Domain\Candidate\Application\JobApplicationStatus;
@@ -13,7 +14,7 @@ use App\Domain\Company\CompanyRepositoryInterface;
 use App\Domain\Interviews\InterviewsRepositoryInterface;
 use App\Domain\JobOffer\JobActivityStatus;
 use App\Domain\JobOffer\JobPublicationStatus;
-
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillTranslationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferLanguageEntity;
@@ -136,6 +137,134 @@ class RecruiterJobOfferQueryRepository implements RecruiterJobOfferQueryReposito
     //----------------------------------------------
     //--- FETCH: PROJECT/COLLECTION/ITEM (JOB OFFERS)
     //----------------------------------------------
+
+    public function fetchJobOfferCardinalities(string $recruiterId, string $jobId): array
+    {
+        $qb = $this->em->createQueryBuilder()
+            ->select('
+                COUNT(DISTINCT a.id) AS candidates,
+                COUNT(DISTINCT i.id) AS interviews,
+                COUNT(DISTINCT jv.id) AS viewsCount,
+                COUNT(DISTINCT employment.id) AS employmentOffer,
+                COUNT(DISTINCT CASE WHEN a.status = :hiredStatus THEN 1 ELSE \'\' END) AS hired
+            ')
+            ->from(ApplicationEntity::class, 'a')
+            ->innerJoin('a.jobOffer', 'j')
+            ->leftJoin('j.views', 'jv')
+            ->leftJoin('a.interviews', 'i')
+            ->leftJoin('a.employmentOffers', 'employment')
+            ->where('j.id = :jobId')
+            ->andWhere('j.user = :recruiterId')
+            ->setParameters([
+                'recruiterId' => $recruiterId,
+                'jobId'       => $jobId,
+                'hiredStatus' => JobApplicationStatus::HIRED->value,
+            ]);
+
+        try {
+            $result = $qb->getQuery()->getSingleResult();
+        } catch (\Doctrine\ORM\NoResultException) {
+            return [
+                'candidatesCount'      => 0,
+                'interviewsCount'      => 0,
+                'employmentOfferCount' => 0,
+                'hiredCount'           => 0,
+                'viewsCountCount'      => 0,
+            ];
+        }
+
+        return [
+            'candidatesCount'      => (int) ($result['candidates'] ?? 0),
+            'interviewsCount'      => (int) ($result['interviews'] ?? 0),
+            'employmentOfferCount' => (int) ($result['employmentOffer'] ?? 0),
+            'hiredCount'           => (int) ($result['hired'] ?? 0),
+            'viewsCountCount'      => (int) ($result['viewsCount'] ?? 0),
+        ];
+    }
+
+
+    #[Override]
+    public function getJobOfferLightViewModelByCriteria(
+        string $userId,
+        JobActivityStatus $activityStatus,
+        int $skip = 0,
+        int $limit = 5
+    ): array
+    {
+        $qb = $this->em->createQueryBuilder()
+            ->select(
+                'j.id, j.title, j.jobWorkMode, j.createdAt AS jobCreationDate',
+                'f.name AS imageName',
+                'addr.city',
+                'c.label AS contractType',
+                'COUNT(DISTINCT i.id) AS interviewCount',
+                'COUNT(DISTINCT a.id) AS totalAppCount',
+                'SUM(CASE WHEN a.status NOT IN (:treatedAppStatus) THEN 1 ELSE 0 END) AS remainingApp'
+            )
+            ->from(JobOfferEntity::class, 'j')
+            ->leftJoin('j.address', 'addr')
+            ->leftJoin('j.images', 'jf')
+            ->leftJoin('jf.file', 'f')
+            ->leftJoin('j.contractType', 'c')
+            ->innerJoin('j.applications', 'a')
+            ->innerJoin('a.interviews', 'i')
+            ->where('j.user = :user')
+            ->andWhere('j.activityStatus = :activityStatus')
+            ->groupBy('j.id, f.name, addr.city, c.label')
+            ->setParameters([
+                'user' => $userId,
+                'activityStatus' => $activityStatus, 
+                'treatedAppStatus' => [
+                        JobApplicationStatus::REJECTED, 
+                        JobApplicationStatus::HIRED,
+                        JobApplicationStatus::WITHDRAWN
+                    ]
+            ])
+            ->setFirstResult($skip)
+            ->setMaxResults($limit);
+
+        $results = $qb->getQuery()
+                      ->getArrayResult();
+        
+        // ApiResponse::$logger->error("SQL DUM: ". $qb->getQuery()->getSQL());
+        // dd( $qb->getQuery()->getSQL());
+        // dump( $qb->getQuery()->getSQL());
+
+        $response = [];
+        $now = new \DateTimeImmutable();
+
+        foreach ($results as $value) {
+            $delay = $value['jobCreationDate'] instanceof \DateTimeInterface
+                ? $now->getTimestamp() - $value['jobCreationDate']->getTimestamp()
+                : 0;
+
+            $totalAppCount = (int) ($value['totalAppCount'] ?? 0);
+            $remainingApp = (int) ($value['remainingApp'] ?? 0);
+
+            $treatmentProgress = $totalAppCount > 0 
+                ? ($remainingApp / $totalAppCount) 
+                : 0;
+
+            $response[] = new JobOfferViewLightModel(
+                id: $value['id'],
+                title: $value['title'],
+                image: $value['imageName'],
+                interviews: (int) $value['interviewCount'] ?? 0,
+                tags: array_values(array_filter([
+                    $value['contractType'],
+                    $value['jobWorkMode'],
+                    $value['city']
+                ], fn($item) => $item !== null)),
+                delay: $delay,
+                treatmentProgress: $treatmentProgress,
+                remainingCandidates: $remainingApp,
+                candidates: $remainingApp
+            );
+        }
+
+        return $response;
+    }
+
 
     public function fetchJobOfferViewById(
         string $offerId,
@@ -428,6 +557,9 @@ class RecruiterJobOfferQueryRepository implements RecruiterJobOfferQueryReposito
     }
 
 
+    /**
+     * @return array<int,JobSummaryItem>
+    */
     public function fetchJobOfferViewCollection(
         ?string $userId = null,
         ?int $limit = null,
@@ -442,7 +574,8 @@ class RecruiterJobOfferQueryRepository implements RecruiterJobOfferQueryReposito
                 scheme: ['id' => true]
             );
             $companyId = $company['id'] ?? null ? (string) $company['id'] : null;
-        } catch (\Throwable $e) {
+        }
+        catch (\Throwable $e) {
             $companyId = null;
         }
 
@@ -464,7 +597,7 @@ class RecruiterJobOfferQueryRepository implements RecruiterJobOfferQueryReposito
         // User: Filter
         if (!empty($userId)) {
             $qb->andWhere('u.id = :userId')
-            ->setParameter('userId', (string) $userId);
+                ->setParameter('userId', (string) $userId);
         }
 
         //  Extraction of the articles of incorporation selected for publication
@@ -495,28 +628,46 @@ class RecruiterJobOfferQueryRepository implements RecruiterJobOfferQueryReposito
             }
         }
 
-        // Applying OR Condition Filters (Filter Flexibility)
+        // Applying Strict Condition Filters (Filter Flexibility)
         if (!empty($pubStatuses) || !empty($actStatuses)) {
-            $stateOrConditions = $qb->expr()->orX();
-
             if (!empty($pubStatuses)) {
-                $stateOrConditions->add($qb->expr()->in('j.publicationStatus', ':pubStatuses'));
-                $qb->setParameter('pubStatuses', $pubStatuses);
+                $qb->andWhere('j.publicationStatus IN (:pubStatuses)')
+                   ->setParameter('pubStatuses', $pubStatuses);
             }
 
             if (!empty($actStatuses)) {
-                $stateOrConditions->add($qb->expr()->in('j.activityStatus', ':actStatuses'));
-                $qb->setParameter('actStatuses', $actStatuses);
+                $qb->andWhere('j.activityStatus IN (:actStatuses)')
+                    ->setParameter('actStatuses', $actStatuses);
             }
+        }
 
-            $qb->andWhere($stateOrConditions);
+        // Salary Filters
+        if (isset($criteria['salary']) && is_numeric($criteria['salary']) && (float)$criteria['salary'] > 0) {
+            $qb->andWhere('j.minSalary >= :minSalary')
+               ->setParameter('minSalary', (float) $criteria['salary']);
+        }
+
+        // Application Count Filters
+        if (isset($criteria['candidateCount']) && is_numeric($criteria['candidateCount'])) {
+            $minCandidates = (int) $criteria['candidateCount'];
+
+            if ($minCandidates > 0) {
+                $subQuery = $this->em->createQueryBuilder()
+                    ->select('COUNT(app.id)')
+                    ->from(ApplicationEntity::class, 'app')
+                    ->where('app.jobOffer = j.id');
+
+                $qb->andWhere('(' . $subQuery->getDQL() . ') >= :minCandidates')
+                   ->setParameter('minCandidates', $minCandidates);
+            }
         }
 
         // Text Search Filter (Title)
         if (!empty($criteria['searchText'])) {
             $qb->andWhere('LOWER(j.title) LIKE :searchText')
-            ->setParameter('searchText', '%' . mb_strtolower(trim($criteria['searchText'])) . '%');
+               ->setParameter('searchText', '%' . mb_strtolower(trim($criteria['searchText'])) . '%');
         }
+        $qb->orderBy('j.createdAt', 'DESC');
 
         //  Pagination
         if ($limit !== null && $limit > 0) $qb->setMaxResults($limit);
@@ -555,7 +706,7 @@ class RecruiterJobOfferQueryRepository implements RecruiterJobOfferQueryReposito
                 cardinal: [
                     'candidates' => $candidatesCount,
                     'interviews' => $interviewsCount,
-                    'offers'     => 0,
+                    'employmentOffers'     => 0,
                     'hired'      => $hiredCount,
                 ]
             );

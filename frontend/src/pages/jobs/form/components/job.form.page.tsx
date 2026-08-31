@@ -17,6 +17,7 @@ import { INITIAL_JOB_VIEW, type JobView } from "../../../../features/jobs/JobOff
 import { FailedJobAssetsUpload } from "../../../../api/services/jobs/exceptions";
 import { validateSalary } from "../../../../utils/validators";
 import type { UserAppNavBarProps } from "../../../../context/context.type";
+import { useUserJobContext } from "../../../../context/user.job.context";
 
 //-- SVG components
 import RightToLeftArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-down-right-left-up-svgrepo-com.svg?react';
@@ -28,7 +29,7 @@ import styles from "./JobFormPage.module.css"
 
 export interface JobFormProps{
     navBar: UserAppNavBarProps | null;
-    handleJob: (currentJob: JobView) => Promise<{ offerId: string }>; //return id
+    handleJob: (editingJob: JobView) => Promise<{ offerId: string }>; //return id
     formType?: "create" | "modify";
     handleUploadImage: (
         jobId: string, 
@@ -48,7 +49,8 @@ const JobFormPage: React.FC<JobFormProps> = ({
 }) => {
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const { setNavbar, setLoading, setPopup, setCurrentJob } = useAppContext();
+    const { setNavbar, setLoading, setPopup } = useAppContext();
+    const { setEditingJob } = useUserJobContext()
 
     const [image, setImage] = useState<File | null>(null);
     const savedJobOffer = useRef<{offerId?: string} | null>(null);
@@ -56,30 +58,28 @@ const JobFormPage: React.FC<JobFormProps> = ({
     //  Navbar 
     useEffect(() => {
         setNavbar(navBar);
-
-        setCurrentJob(INITIAL_JOB_VIEW);
-
+        setEditingJob(INITIAL_JOB_VIEW);
         return () => setNavbar(null);
     }, [setNavbar, t]);
 
 
         //-- Validate date
-    const validateCurrentJob = useCallback((currentJob: JobView) => {
+    const validateCurrentJob = useCallback((editingJob: JobView) => {
         const isSalaryValid = validateSalary(
-            currentJob,
+            editingJob,
             () => setPopup({
                 status: "warning",
                 title: t('jobs.createJob.constraints.minSalary.title'),
-                message: `${t('jobs.createJob.constraints.minSalary.minSalaryConstraint')} (${currentJob.salary?.max}).`,
+                message: `${t('jobs.createJob.constraints.minSalary.minSalaryConstraint')} (${editingJob.salary?.max}).`,
             }),
             () => setPopup({
                 status: "warning",
                 title: t('jobs.createJob.constraints.maxSalary.title'),
-                message: `${t('jobs.createJob.constraints.maxSalary.maxSalaryConstraint')} (${currentJob.salary?.min}).`,
+                message: `${t('jobs.createJob.constraints.maxSalary.maxSalaryConstraint')} (${editingJob.salary?.min}).`,
             }),
         );
         
-        const isTitleValid = currentJob.title.length >= 10 && currentJob.title.length <= 255;
+        const isTitleValid = editingJob.title.length >= 10 && editingJob.title.length <= 255;
         return isSalaryValid && isTitleValid;
     }, [t, setPopup]);
 
@@ -87,9 +87,9 @@ const JobFormPage: React.FC<JobFormProps> = ({
 
     //-- Handlers
     const handleSave = useCallback(
-        async (currentJob: JobView) => {
+        async (editingJob: JobView) => {
             // -- Validation
-            if (!validateCurrentJob(currentJob)) {
+            if (!validateCurrentJob(editingJob)) {
                 console.warn("There are still invalid inputs in your job");
                 return;
             }
@@ -108,7 +108,7 @@ const JobFormPage: React.FC<JobFormProps> = ({
                 let offerId = savedJobOffer.current?.offerId;
 
                 if (!offerId) {
-                    const response = await handleJob(currentJob);
+                    const response = await handleJob(editingJob);
                     offerId = response.offerId;
                     
                     //-- update saved

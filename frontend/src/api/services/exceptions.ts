@@ -13,3 +13,6 @@ export class FileTimeExceeded extends ExceptionWithPayload{};
 
 //--  Resume
 export class ResumeDeletionNotAllowedException extends ExceptionWithPayload{};
+
+//-- Employment Offer Exeption
+export class ActiveEmploymentOfferExistsException  extends ExceptionWithPayload{};

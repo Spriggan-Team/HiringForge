@@ -3,6 +3,7 @@ export interface RecruiterDashboardKpis {
   readonly totalOffers: number;
   readonly viewCount: number;
   readonly applicationCount: number;
+  readonly rejectedApplicationCount: number;
   readonly hiredApplicationCount: number;
   readonly activeOffers: number;
   readonly pendingReviewOffers: number;

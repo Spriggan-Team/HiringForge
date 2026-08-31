@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import RouteScheme from "../../route.scheme";
 import { useAppContext, useCurrentUser } from "../../hooks/context";
 import JobQueries from "../../api/services/jobs/queries";
+import UserJobContextProvider, { useUserJobContext } from "../../context/user.job.context";
 import type {  CompleteJobView, JobEngagementMetrics, JobSummary, JobView } from "../../features/jobs/JobOffer";
 
 
@@ -30,8 +31,26 @@ import AddSVGComponent from "/src/assets/svg/add/add-svgrepo-com.svg?react"
 
 //-- CSS styles 
 import styles from "./UserJobPage.module.css"
+import { useDebounce } from "../../hooks/timer";
 
 
+interface UserJobsPageProps{}
+
+
+const UserJobsPage: React.FC<UserJobsPageProps> = () => {
+    return (
+        <UserJobContextProvider>
+            <UserJobsPageContent />
+        </UserJobContextProvider>
+    );
+}
+ 
+export default UserJobsPage;
+
+
+//----------------
+//-- Page Content 
+//------------------
 
 const PAGE_SIZE = 10;
 
@@ -45,20 +64,60 @@ const DEFAULT_FILTERS: FilterState = {
     searchAddress: '',
 };
 
+//-----------------
+//-- Cache
+//-----------------
 
-const UserJobsPage: React.FC<{}> = () => {
+interface JobsQueryCache {
+    data: JobSummary[];
+    total: number;
+    fetchedAt: number;
+}
+
+const getJobsCacheKey = (
+    page: number,
+    filters: FilterState
+): string => {
+    return JSON.stringify({
+        page,
+        publishedState: filters.publishedState,
+        offerState: filters.offerState,
+        salary: filters.salary,
+        candidateCount: filters.candidateCount,
+        searchText: filters.searchText.trim().toLowerCase(),
+        searchAddress: filters.searchAddress.trim().toLowerCase(),
+    });
+};
+
+
+const CACHE_DURATION = 1000 * 60 * 5; // 5 min
+
+
+//----------------
+//--- Components
+//----------------
+
+const UserJobsPageContent: React.FC<{}> = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
+
     const user = useCurrentUser();
+    const { setViewedJob  } = useUserJobContext();
 
     // -- Memory cache
-    const jobViewCache = useRef<Map<string, CompleteJobView>>(new Map());
+    const jobViewCache = useRef<Map<string, CompleteJobView>>(
+        new Map()
+    );
+    const jobsQueryCache = useRef<Map<string, JobsQueryCache>>(
+        new Map()
+    );
+    const pendingRequests = useRef<Map<string, Promise<JobsQueryCache>>>(new Map());
 
     // -- Listes & Pagination
-    const [jobDataSummary, setJobDataSummary] = useState<JobSummary[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(0);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [totalJobCount, setTotalJobCount] = useState<number>(0);
+    const [jobDataSummary, setJobDataSummary] = useState<JobSummary[]>([]);
 
     // -- Selected Offre
     const [currentJobId, setCurrentJobId] = useState<string | null>(null);
@@ -67,6 +126,10 @@ const UserJobsPage: React.FC<{}> = () => {
 
     // -- Filtres & Search
     const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+    const debouncedFilters = useDebounce(
+        filters,
+        400
+    );
 
     const totalPages = useMemo(
         () => Math.ceil(totalJobCount / PAGE_SIZE),
@@ -75,7 +138,7 @@ const UserJobsPage: React.FC<{}> = () => {
 
 
     //-- Cache invalidation (to be called after a modification/edit)
-    const invalidateJobCache = (jobId?: string) => {
+    const invalidateJobViewCache = (jobId?: string) => {
         if (jobId) {
             jobViewCache.current.delete(jobId);
         } else {
@@ -83,49 +146,105 @@ const UserJobsPage: React.FC<{}> = () => {
         }
     };
 
+    /** Handle concurrent requests */
+    const requestJobs = async (
+        page: number,
+        filters: FilterState
+    ): Promise<JobsQueryCache> => {
+        const key = getJobsCacheKey(page, filters);
 
-    //-- Loading
+        // Cache
+        const cached = jobsQueryCache.current.get(key);
+
+        if (
+            cached &&
+            Date.now() - cached.fetchedAt < CACHE_DURATION
+        ) {
+            return cached;
+        }
+
+        // Request already running
+        const pending = pendingRequests.current.get(key);
+
+        if (pending) {
+            return pending;
+        }
+
+        // Create request
+        const request = Promise.all([
+            JobQueries.getJobsSummary(
+                PAGE_SIZE,
+                page * PAGE_SIZE,
+                filters
+            ),
+            JobQueries.countJobOffers(filters),
+        ])
+            .then(([data, total]) => {
+                const result = {
+                    data,
+                    total,
+                    fetchedAt: Date.now(),
+                };
+
+                jobsQueryCache.current.set(key, result);
+
+                return result;
+            })
+            .finally(() => {
+                pendingRequests.current.delete(key);
+            });
+
+        pendingRequests.current.set(key, request);
+
+        return request;
+    };
+
+
+    //-- Load data
     const fetchJobs = useCallback(async (page: number, currentFilters: FilterState) => {
         if (!user?.id) return;
         
-        setIsLoading(true);
         try {
-            const skip = page * PAGE_SIZE;
+            setIsLoading(true);
 
-            const [data, total] = await Promise.all([
-                JobQueries.getJobsSummary(PAGE_SIZE, skip, currentFilters),
-                JobQueries.countJobOffers(currentFilters)
-            ]);
+            const result = await requestJobs(
+                page,
+                currentFilters
+            );
 
-            setJobDataSummary(data);
-            setTotalJobCount(total);
+            setJobDataSummary(result.data);
+            setTotalJobCount(result.total);
 
-            //  Auto-select if no offer is selected
             setCurrentJobId((prevId) => {
-                if (data.length === 0) return null;
-                const exists = data.some((job) => job.id === prevId);
-                return exists ? prevId : data[0].id;
+                if (result.data.length === 0) {
+                    return null;
+                }
+
+                return result.data.some(
+                    job => job.id === prevId
+                )
+                    ? prevId
+                    : result.data[0].id;
             });
         }
         catch (error) {
-            console.error("Erreur récupération offres:", error);
+            console.error(
+                "Error job request retrieval",
+                error
+            );
         }
         finally {
             setIsLoading(false);
-        }
+        }        
     }, [user?.id]);
 
 
 
     // Filter Debounce Time
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setCurrentPage(0);
-            fetchJobs(0, filters);
-        }, 400);
-
-        return () => clearTimeout(timer);
-    }, [filters, fetchJobs]);
+        setCurrentPage(0);
+        fetchJobs(0, debouncedFilters);
+    }, [debouncedFilters, fetchJobs]);
 
 
 
@@ -136,13 +255,12 @@ const UserJobsPage: React.FC<{}> = () => {
     };
 
 
-    //--- Load Details
+    //--- Load Jobs Details
     useEffect(() => {
         if (!currentJobId) return;
 
         //-- Reteive metrics from job summary
         const summaryItem = jobDataSummary.find((item) => item.id === currentJobId);
-        const summaryCardinal = summaryItem?.cardinal;
 
         //-- Verify cache
         if (jobViewCache.current.has(currentJobId)) {
@@ -266,8 +384,9 @@ const UserJobsPage: React.FC<{}> = () => {
                         currentJobView && (
                             <CurrentJob
                                 job={currentJobView}
-                                onInvalidateCache={invalidateJobCache}
+                                onInvalidateCache={invalidateJobViewCache}
                                 onClick={(id) => {
+                                    setViewedJob(currentJobView);
                                     navigate(RouteScheme.userJobView.replace(':id', id));
                                 }}
                             />
@@ -287,7 +406,6 @@ const UserJobsPage: React.FC<{}> = () => {
     );
 };
  
-export default UserJobsPage;
 
 
 

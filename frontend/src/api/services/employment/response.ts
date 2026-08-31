@@ -30,6 +30,10 @@ export type EmploymentOfferQueryData = {
     id: string;
     title: string;
   },
+
+  rejectionReason?: string;
+
+  scheduledEndDate: SymfonyDateTime;
   expiredAt: SymfonyDateTime;
   createdAt: SymfonyDateTime;
 };

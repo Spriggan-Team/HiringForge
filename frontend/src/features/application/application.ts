@@ -1,3 +1,4 @@
+import type { InterviewStatusValue, InterviewTypeValue } from "../interviews/interviews";
 
 export const JobApplicationStatus = {
   // --- Entry Phase ---
@@ -41,8 +42,7 @@ export const JOB_APPLICATION_STATUSES: ApplicationStatusValue[] = [
 
 
 
-export type ApplicationStatusValue =
-  (typeof JobApplicationStatus)[keyof typeof JobApplicationStatus];
+export type ApplicationStatusValue = (typeof JobApplicationStatus)[keyof typeof JobApplicationStatus];
 
 
 export type TerminalApplicationStatus =
@@ -123,4 +123,12 @@ export interface Application {
   appliedAt: string;
   status: ApplicationStatusValue;
   matchScore: number;
+  
+  interviews?: {
+    id: string;
+    startDate: string; // ISO
+    type: InterviewTypeValue;
+    minutes: number;
+    status: InterviewStatusValue
+  }[]
 }

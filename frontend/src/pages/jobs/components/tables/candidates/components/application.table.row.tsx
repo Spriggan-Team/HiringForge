@@ -84,6 +84,8 @@ export const ApplicationRow: React.FC<ApplicationRowProps> = ({
       {/* Status */}
       <td data-label="Statut">
         <StatusDropdown
+          className={styles.status}
+          labelClassName={styles.statusLabelClassName}
           currentStatus={application.status}
           onStatusChange={(newStatus) =>
             onRequestStatusChange(

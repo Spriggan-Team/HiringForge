@@ -4,19 +4,33 @@ namespace App\Application\Usecases\Application;
 
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
+use App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface;
+
+use App\Domain\Exception\EmploymentOfferException;
+use App\Domain\Interviews\InterviewsRepositoryInterface;
 use App\Domain\Notification\JobApplicationStatusShiftData;
 use App\Domain\Notification\Notification;
 use App\Domain\Notification\NotificationRepositoryInterface;
 use App\Domain\Notification\NotificationType;
+use App\Domain\Shared\TransactionManagerInterface;
+
 
 class ChangeApplicationStatus
 {
     public function __construct(
         private ApplicationRepositoryInterface $applicationRepository,
-        private NotificationRepositoryInterface $notificationRepo
+        private NotificationRepositoryInterface $notificationRepo,
+        private TransactionManagerInterface $transactionManager,
+        private InterviewsRepositoryInterface $interviewsRepository,
+        private EmploymentOfferRepositoryInterface $employmentOfferRepository
     )
     {}
 
+    /**
+     * @param string $userId - recruiterId
+     * @param string $applicationId - applicationId
+     * @param JobApplicationStatus $newStatus - new status
+     */
     public function execute(string $userId, string $applicationId, JobApplicationStatus $newStatus): void
     {
         // Check recruiter access
@@ -27,6 +41,7 @@ class ChangeApplicationStatus
 
         //  Retrieve current status
         $currentStatus = $this->applicationRepository->getApplicationStatus(applicationId: $applicationId);
+
 
         //  Validate transition with explicit DomainException message
         if (!$currentStatus->canTransitionTo($newStatus)) {
@@ -39,29 +54,42 @@ class ChangeApplicationStatus
         }
 
         // Update status in database
-        $this->applicationRepository->changeStatus(
-            applicationId: $applicationId, 
-            newStatus: $newStatus
-        );
+        $this->transactionManager->execute(function () use ($userId, $applicationId, $currentStatus, $newStatus) {
+            
+            if ($newStatus === JobApplicationStatus::REJECTED) {
+                if ($this->employmentOfferRepository->hasActiveOffer(applicationId: $applicationId)) {
+                    throw new EmploymentOfferException("You cannot reject a candidate who has an active job offer. First, cancel the offer.");
+                }
 
-        //  Build and save notification
-        $applicationIdentity = $this->applicationRepository->getApplicationIdentity($applicationId);
+                $this->interviewsRepository->cancelInterviewPlansForApplication(
+                    recruiterId: $userId,
+                    applicationId: $applicationId
+                );
+            }
+            
+            // Change status
+            $this->applicationRepository->changeStatus(
+                applicationId: $applicationId, 
+                newStatus: $newStatus
+            );
 
-        if(!$applicationIdentity){
-            return;
-        }
+            // Build and save notification
+            $applicationIdentity = $this->applicationRepository->getApplicationIdentity($applicationId);
 
-        $notification = Notification::create(
-            accountId: $applicationIdentity['recruiterId'],
-            recipientId: $userId,
-            type: NotificationType::JOB_APPLICATIONS_STATUS_SHIFT,
-            data: JobApplicationStatusShiftData::create(
-                applicationId: $applicationId,
-                prevStatus: $currentStatus,
-                nextStatus: $newStatus
-            )
-        );
+            if ($applicationIdentity) {
+                $notification = Notification::create(
+                    accountId: $applicationIdentity['recruiterId'],
+                    recipientId: $applicationIdentity['candidateId'],
+                    type: NotificationType::JOB_APPLICATIONS_STATUS_SHIFT,
+                    data: JobApplicationStatusShiftData::create(
+                        applicationId: $applicationId,
+                        prevStatus: $currentStatus,
+                        nextStatus: $newStatus
+                    )
+                );
 
-        $this->notificationRepo->save($notification);
+                $this->notificationRepo->save($notification);
+            }
+        });
     }
 }

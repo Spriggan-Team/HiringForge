@@ -1,7 +1,10 @@
 import { intercept } from "../../../utils/utils";
-import type { ApiResponseError } from "../../exceptions";
+
 import { authPatch } from "../../http";
 import type { ApiResponse } from "../response.types";
+
+import { ActiveEmploymentOfferExistsException } from "../exceptions";
+import { ApiResponseCode, HttpBadResponse, type ApiResponseError } from "../../exceptions";
 
 
 
@@ -11,8 +14,19 @@ const updateApplicationsStatus = async (selectedIds: string[], status: string)=>
 
 
 const updateStatus = async (applicationId: string, newStatus: string)=>{
-    await authPatch(`/users/applications/${applicationId}/status/change`, { newStatus })
+    try{
+        await authPatch(`/users/applications/${applicationId}/status/change`, { newStatus })
+    }
+    catch(error){
+        if(error instanceof HttpBadResponse){
+            if(error.apiCode === ApiResponseCode.ACTIVE_EMPLOYMENT_OFFER_EXISTS){
+                throw new ActiveEmploymentOfferExistsException();
+            }
+        }
+        throw error;
+    }
 }
+
 
 const Services = {
     updateApplicationsStatus,

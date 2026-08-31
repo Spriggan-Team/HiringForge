@@ -195,6 +195,10 @@
     font-weight: 600;
 }
 
+.statusLabelClassName{
+    text-transform: uppercase;
+}
+
 .statusPending {
     background: #fef3c7;
     color: #92400e;

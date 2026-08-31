@@ -108,6 +108,8 @@ Application "1" *-- "0..*" Interview : interviews
 class EmploymentOffer {
     - id: string
     - reason: string [nullable]
+    - scheduledEndDate: DateTime
+    - expiredAt: DateTime
 }
 
 ' Une offre d'embauche est destinée à un candidat.
@@ -118,9 +120,6 @@ Candidate "1" <-- "0..*" EmploymentOffer : receives
 ' existe indépendamment de celle-ci.
 User "1" --> "0..*" EmploymentOffer : creates
 
-' L'entreprise émet plusieurs offres d'embauche.
-' L'entreprise existe indépendamment des offres.
-Company "1" --> "0..*" EmploymentOffer : issues
 
 ' Une candidature peut aboutir à au maximum une offre d'embauche.
 ' L'offre d'embauche dépend de la candidature.

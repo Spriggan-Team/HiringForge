@@ -9,9 +9,10 @@ import RouteScheme from "../../../route.scheme";
 import { useAppContext } from "../../../hooks/context";
 import { jobStatusStyles } from "../../../context/styles";
 import {  jobsViewData } from "../../../core/mock/job.data";
-import type { JobView } from "../../../features/jobs/JobOffer";
+import type { CompleteJobView } from "../../../features/jobs/JobOffer";
 import type { EntityAction } from "../../../features/shared/global";
 import JobQueries from "../../../api/services/jobs/queries";
+import UserJobContextProvider, { useUserJobContext } from "../../../context/user.job.context";
 
 //-- Custom components
 import Title from "../../../layout/components/text/title/title";
@@ -34,11 +35,25 @@ import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-s
 import styles from "./PrivateJobViewPage.module.css"
 
 
-
 //-- Types
 
 export interface UserPageSinglePageProps{}
 
+
+const PrivateJobViewPage = () => {
+    return (
+        <UserJobContextProvider>
+          <PrivateJobViewContent/>
+        </UserJobContextProvider>
+    );
+}
+ 
+export default PrivateJobViewPage;
+
+
+//---------------
+//-- Page Content
+//---------------
 
 type ViewModeTypes = 
     | "overview"
@@ -49,18 +64,20 @@ type ViewModeTypes =
 
 
 
-const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
+const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
     const { t } = useTranslation()
     const { setNavbar } = useAppContext();
+    const { viewedJob } = useUserJobContext();
 
     const { id } = useParams(); 
-    const [currentJob, setCurrentJob] = useState<JobView | null>(null);
+    const [currentJob, setCurrentJob] = useState<CompleteJobView | null>(null);
 
 
     /** -- Initialize data --- */
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    
     const loadJobOffer = useCallback(async (jobId: string) => {
         if (!jobId) {
             console.warn('Job ID is required for handling this route');
@@ -70,9 +87,27 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
         try {
             setIsLoading(true);
             setError(null);
+            
+            if(viewedJob){
+                setCurrentJob(viewedJob);
+                return;
+            }
+
 
             const data = await JobQueries.getJobView(jobId);
-            setCurrentJob(data);
+            const metrics = await JobQueries.getJobSummaryById(jobId);
+
+            setCurrentJob({
+                ...data,
+                applications: metrics.candidatesCount,
+                views: metrics.viewsCount,
+                cardinal:{
+                    candidates: metrics.candidatesCount,
+                    interviews: metrics.interviewsCount,
+                    employmentOffers: metrics.employmentOfferCount,
+                    hired: metrics.hiredCount
+                }
+            });
         }
         catch (err) {
             console.error('Something went wrong while retrieving job:', err);
@@ -128,10 +163,10 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
             {
                 mode: "offers" as ViewModeTypes,
                 current: viewMenu === "offers",
-                count: currentJob.cardinal?.offers ?? 0,
+                count: currentJob.cardinal?.employmentOffers ?? 0,
                 onClick: () => setViewMenu("offers"),
                 text: t("global.offer.offerLabel", {
-                    count: currentJob.cardinal?.offers ?? 0,
+                    count: currentJob.cardinal?.employmentOffers ?? 0,
                 }),
             },
             {
@@ -274,4 +309,3 @@ const PrivateJobViewPage: React.FC<UserPageSinglePageProps> = () => {
     );
 }
  
-export default PrivateJobViewPage;

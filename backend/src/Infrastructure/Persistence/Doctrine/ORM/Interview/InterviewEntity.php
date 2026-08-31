@@ -4,12 +4,12 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Interview;
 
 use App\Domain\Interviews\InterviewStatus;
 use App\Domain\Interviews\InterviewType;
-use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
+
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-
 
 #[ORM\Entity]
 #[ORM\Table(name: 'interview')]
@@ -28,14 +28,11 @@ class InterviewEntity
     #[ORM\Column(nullable: false)]
     private ?int $minutes = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(type: Types::STRING)]
+    #[ORM\Column(type: Types::STRING, nullable: true)]
     private ?string $url;
-
-    #[ORM\Column(nullable: true, type: Types::BOOLEAN)]
-    private ?bool $confirm = null;
 
     #[ORM\Column(enumType: InterviewStatus::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -54,12 +51,11 @@ class InterviewEntity
     //-- Relations
     //----------------------------
 
-    #[ORM\ManyToOne(targetEntity: CandidateEntity::class, inversedBy: 'interviews' )]
-    #[ORM\JoinColumn(nullable: false)]
-    private CandidateEntity $candidate;
+    #[ORM\ManyToOne(targetEntity: ApplicationEntity::class, inversedBy: 'interviews' )]
+    private ApplicationEntity $application;
 
-    #[ORM\ManyToOne(targetEntity: JobOfferEntity::class, inversedBy: "interviews")]
-    private JobOfferEntity $jobOffer;
+    #[ORM\ManyToOne(targetEntity: UserEntity::class)]
+    private UserEntity $user;
 
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
@@ -78,8 +74,8 @@ class InterviewEntity
         \DateTimeImmutable $startDate,
         int $minutes,
         string $description,
-        CandidateEntity $candidate,
-        JobOfferEntity $jobOffer,
+        ApplicationEntity $application,
+        UserEntity $user,
         ?string $title = null,
         ?string $url = null,
         InterviewStatus $status = InterviewStatus::SCHEDULED,
@@ -91,10 +87,10 @@ class InterviewEntity
         $entity->startDate = $startDate;
         $entity->minutes = $minutes;
         $entity->description = $description;
-        $entity->candidate = $candidate;
-        $entity->jobOffer = $jobOffer;
+        $entity->application = $application;
         $entity->status = $status;
         $entity->url = $url;
+        $entity->user = $user;
         $entity->title = $title;
         $entity->type = $type;
 
@@ -109,9 +105,9 @@ class InterviewEntity
         string $description,
         ?string $url ,
         ?string $title,
-        CandidateEntity $candidate,
-        JobOfferEntity $jobOffer,
+        ApplicationEntity $application,
         InterviewStatus $status,
+        UserEntity $user,
         bool $candidateApproval,
         ?InterviewStatus $type
     ): self {
@@ -121,13 +117,13 @@ class InterviewEntity
         $entity->startDate = $startDate;
         $entity->minutes = $minutes;
         $entity->description = $description;
-        $entity->candidate = $candidate;
-        $entity->jobOffer = $jobOffer;
+        $entity->application = $application;
         $entity->status = $status;
         $entity->url = $url;
         $entity->candidateApproval = $candidateApproval;
         $entity->title = $title;
         $entity->type = $type;
+        $entity->user = $user;
 
         return $entity;
     }
@@ -138,6 +134,10 @@ class InterviewEntity
 
     public function getId(): string{
         return $this->id;
+    }
+
+    public function getUser():UserEntity{
+        return $this->user;
     }
 
     public function getTitle()
@@ -154,7 +154,7 @@ class InterviewEntity
         return $this->startDate;
     }
 
-    public function getDuration(): int
+    public function getMinutes(): int
     {
         return $this->minutes;
     }
@@ -164,14 +164,11 @@ class InterviewEntity
         return $this->status;
     }
 
-    public function getCandidate(){
-        return $this->candidate;
+    public function getApplication(){
+        return $this->application;
     }
 
-    public function getJobOffer() : JobOfferEntity
-    {
-        return $this->jobOffer;
-    }
+
 
     public function getURL()
     {
@@ -183,10 +180,6 @@ class InterviewEntity
         return $this->candidateApproval;
     }
 
-    public function getConfirm()
-    {
-        return $this->confirm;
-    }
 
     public function getRejectionReason(){
         return $this->rejectionReason;
@@ -248,16 +241,12 @@ class InterviewEntity
         return $this;
     }
 
-    public function setCandidate(CandidateEntity $candidate) : static
+    public function setApplication(ApplicationEntity $application) : static
     {
-        $this->candidate = $candidate;
+        $this->application = $application;
         return $this;
     }
 
-    public function setJobOffer(JobOfferEntity $jobOffer): static{
-        $this->jobOffer = $jobOffer;
-        return $this;
-    }
 
     public function setUrl(?string $url): static
     {
@@ -275,8 +264,8 @@ class InterviewEntity
         return $this;
     }
 
-    public function  setConfirm(?bool $confirm) : static {
-        $this->confirm = $confirm;
+    public function setUser(UserEntity $user){
+        $this->user = $user;
         return $this;
     }
 }

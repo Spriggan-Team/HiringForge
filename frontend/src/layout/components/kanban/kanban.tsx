@@ -199,7 +199,7 @@ export const KanbanDragGhost: React.FC<{ children: React.ReactNode }> = ({ child
 export interface KanbanColumnProps {
     id:               string;       // required — must be stable
     title?:           string;
-    count?:           number;
+    count?:           number | string;
     color?:           string;
     backgroundColor?: string;
     className?:       string;

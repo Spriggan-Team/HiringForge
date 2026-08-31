@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './OfferDetailModal.module.css';
 import type { FlatOffer } from '../../../../features/employment/offer';
+import { formatDateSafely } from '../../../../utils/format';
 
 interface OfferDetailModalProps {
   offer: FlatOffer;
@@ -61,7 +62,7 @@ export const OfferDetailModal: React.FC<OfferDetailModalProps> = ({
         <div className={styles.detailItem}>
           <strong>Date d'envoi :</strong>
           <p className={styles.detailValue}>
-            {offer.createdAt || '—'}
+            {formatDateSafely(offer.createdAt) || '—'}
           </p>
         </div>
 
@@ -69,7 +70,15 @@ export const OfferDetailModal: React.FC<OfferDetailModalProps> = ({
         <div className={styles.detailItem}>
           <strong>Expiration :</strong>
           <p className={styles.detailValue}>
-            {offer.expiresAt || '—'}
+            {formatDateSafely(offer.expiresAt) || '—'}
+          </p>
+        </div>
+
+        {/** Rejection reason */}
+        <div className={styles.detailItem}>
+          <strong>Date de fin :</strong>
+          <p className={styles.detailValue}>
+            {formatDateSafely(offer.scheduledEndDate) || '—'}
           </p>
         </div>
 
@@ -85,6 +94,14 @@ export const OfferDetailModal: React.FC<OfferDetailModalProps> = ({
           <div className={styles.messageBox}>
             <strong>Message :</strong>
             <p className={styles.messageContent}>{offer.message}</p>
+          </div>
+        )}
+
+        {/** Rejection reason */}
+        {offer.rejectionReason && (
+          <div className={styles.rejectionReasonBox}>
+            <strong>Motif du refus :</strong>
+            <p className={styles.rejectionText}>{offer.rejectionReason}</p>
           </div>
         )}
       </div>

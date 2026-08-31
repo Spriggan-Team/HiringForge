@@ -8,9 +8,13 @@ use ApiPlatform\Metadata\GraphQl\QueryCollection;
 
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer\EmploymentOfferEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 
 
@@ -70,7 +74,7 @@ class ApplicationEntity
     #[ORM\JoinColumn(nullable: false, name: "candidate_id")]
     private CandidateEntity $candidate;
 
-    
+
     #[ORM\ManyToOne(
         targetEntity: CandidateResumeEntity::class,
     )]
@@ -86,8 +90,23 @@ class ApplicationEntity
     #[ORM\ManyToOne()]
     #[ORM\JoinColumn(nullable: false, name: "company_id")]
     private CompanyEntity $company;
-   
     
+    
+    #[ORM\OneToMany(
+        targetEntity: InterviewEntity::class,
+        mappedBy: 'application'
+    )]
+    /** @var Collection<int,InterviewEntity> $interviews */
+    private Collection $interviews;
+    
+    
+    #[ORM\OneToMany(
+        targetEntity: EmploymentOfferEntity::class,
+        mappedBy: 'application'
+    )]
+    /** @var Collection<int,EmploymentOfferEntity> $employmentOffers */
+    private Collection $employmentOffers;
+
     //----------------------------
     //----- Constructing
     //----------------------------
@@ -109,6 +128,9 @@ class ApplicationEntity
         $this->status = JobApplicationStatus::APPLIED;
         $this->appliedAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
+        
+        $this->interviews = new ArrayCollection();
+        $this->employmentOffers = new ArrayCollection();
     }
 
     public static function create(
@@ -168,6 +190,17 @@ class ApplicationEntity
         return $this->candidateResume;
     }
 
+    /** @return Collection<int,InterviewEntity> */
+    public function getInterviews(){
+        return $this->interviews;
+    }
+
+    /**
+     * @return Collection<int,EmploymentOfferEntity> 
+     */
+    public function getEmploymentOffers(){
+        return $this->employmentOffers;
+    }
 
     //==========================
     //    SETTERS
@@ -192,5 +225,18 @@ class ApplicationEntity
         $this->updatedAt = new \DateTimeImmutable();
     }
 
+    public function addInterview(InterviewEntity $interview):static
+    {
+        if(!$this->interviews->contains($interview)){
+            $this->interviews->add($interview);
+        }
+        return $this;
+    }
 
+    public function addEmploymentOffer(EmploymentOfferEntity $employmentOffer){
+        if(!$this->employmentOffers->contains($employmentOffer)){
+            $this->employmentOffers->add($employmentOffer);
+        }
+        return $this;
+    }
 }

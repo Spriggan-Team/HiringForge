@@ -43,7 +43,6 @@ class UserQueryManagement extends AbstractController
     }
 
 
-
     
     #[Route("/kpi", methods: ['GET'], name: "view_kpi_metrics")]
     public function getKpi(

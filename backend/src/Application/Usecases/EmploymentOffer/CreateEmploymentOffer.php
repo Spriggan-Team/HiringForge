@@ -40,7 +40,8 @@ class CreateEmploymentOffer
             salary: $command->salary,
             expiredAt: $command->expiredAt,
             candidateId: $command->candidateId,
-            applicationId: $command->applicationId
+            applicationId: $command->applicationId,
+            scheduledEndDate: $command->scheduledEndDate
         );
 
         $this->employementOfferRepository->save($userId, $employementOffer);

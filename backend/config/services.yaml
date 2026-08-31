@@ -84,6 +84,8 @@ services:
     App\Domain\User\UserRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories\UserRepository
     
+    App\Application\Query\User\Repositories\UserDashboardQueryRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories\UserDashboardQueryRepository
 
     #------ Candidate ----
     App\Domain\Candidate\CandidateRepositoryInterface:
@@ -287,7 +289,7 @@ services:
 
     Symfony\Component\Security\Http\AccessMapInterface: '@security.access_map'
 
-    
+
     #------------------
     #   Dev Packages
     #---------------------------

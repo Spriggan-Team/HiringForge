@@ -26,11 +26,9 @@ use Override;
 
 class JobOfferAnalyticsRepository implements JobOfferAnalyticsRepositoryInterface
 {
-
     public function __construct(
         private EntityManagerInterface $manager,
     ){}
-
 
     
     /**
@@ -75,14 +73,15 @@ class JobOfferAnalyticsRepository implements JobOfferAnalyticsRepositoryInterfac
         $qbInterviews =  $this->manager
             ->createQueryBuilder()
             ->select('COUNT(i.id)')
-            ->from(InterviewEntity::class, 'i');
+            ->from(InterviewEntity::class, 'i')
+            ->innerJoin('i.application', 'a');
         
         if($isJobIdProvided){
-            $qbInterviews->where("i.jobOffer = :jobId")
+            $qbInterviews->where("a.jobOffer = :jobId")
                             ->setParameter("jobId", $jobId);
         }
         else{
-            $qbInterviews->innerJoin('i.jobOffer', 'j')
+            $qbInterviews->innerJoin('a.jobOffer', 'j')
                             ->where('j.user = :userId')
                             ->setParameter('userId', $userId);
         }
@@ -97,6 +96,7 @@ class JobOfferAnalyticsRepository implements JobOfferAnalyticsRepositoryInterfac
         ];
     }
 
+    
 
     #[Override]
     public function analyseJobOfferCollection(string $userId): JobOfferStatistics
@@ -133,33 +133,29 @@ class JobOfferAnalyticsRepository implements JobOfferAnalyticsRepositoryInterfac
 
         $stats = $qb->getQuery()->getSingleResult();
 
-        //  GLOBAL COUNTER
-
-        // Total of Candidatures (Applications)
-        $applicationCount = (int) $this->manager->createQueryBuilder()
-            ->select('COUNT(app.id)')
+        // Aggregated Applications Stats (Total, Hired, Rejected)
+        $applicationStats = $this->manager->createQueryBuilder()
+            ->select([
+                'COUNT(app.id) AS totalCount',
+                'SUM(CASE WHEN app.status = :hiredStatus THEN 1 ELSE 0 END) AS hiredCount',
+                'SUM(CASE WHEN app.status = :rejectedStatus THEN 1 ELSE 0 END) AS rejectedCount',
+            ])
             ->from(ApplicationEntity::class, 'app')
             ->innerJoin('app.jobOffer', 'job')
             ->where('job.user = :userId')
-            ->setParameter('userId', $userId)
-            ->getQuery()
-            ->getSingleScalarResult();
-        
-        // Total of hired 
-        $hiredApplicationCount = (int) $this->manager->createQueryBuilder()
-            ->select('COUNT(app.id)')
-            ->from(ApplicationEntity::class, 'app')
-            ->innerJoin('app.jobOffer', 'job')
-            ->where('job.user = :userId')
-            ->andWhere('app.status = :hiredStatus')
             ->setParameters([
                 'userId' => $userId,
                 'hiredStatus' => JobApplicationStatus::HIRED,
+                'rejectedStatus' => JobApplicationStatus::REJECTED,
             ])
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleResult();
 
 
+        $applicationCount = (int) ($applicationStats['totalCount'] ?? 0);
+        $hiredApplicationCount = (int) ($applicationStats['hiredCount'] ?? 0);
+        $rejectedApplicationCount = (int) ($applicationStats['rejectedCount'] ?? 0);
+ 
         // Job offer views
         $viewCount = (int) $this->manager->createQueryBuilder()
             ->select('COUNT(view.id)')
@@ -174,39 +170,33 @@ class JobOfferAnalyticsRepository implements JobOfferAnalyticsRepositoryInterfac
         $scheduledInterviews = (int) $this->manager->createQueryBuilder()
             ->select('COUNT(interview.id)')
             ->from(InterviewEntity::class, 'interview')
-            ->innerJoin('interview.jobOffer', 'job')
+            ->innerJoin('interview.application', 'a')
+            ->innerJoin('a.jobOffer', 'job')
             ->where('job.user = :userId')
             ->andWhere('interview.startDate > CURRENT_TIMESTAMP()')
             ->setParameter('userId', $userId)
             ->getQuery()
             ->getSingleScalarResult();
 
-        // Total Of Emplyment offer generated
-        $totalGeneratedEmploymentOffers = (int) $this->manager->createQueryBuilder()
-            ->select('COUNT(emp.id)')
+        // Aggregated Employment Offers Stats (Total Generated, Total Accepted)
+        $employmentOfferStats = $this->manager->createQueryBuilder()
+            ->select([
+                'COUNT(emp.id) AS totalGenerated',
+                'SUM(CASE WHEN emp.status = :acceptedStatus THEN 1 ELSE 0 END) AS totalAccepted',
+            ])
             ->from(EmploymentOfferEntity::class, 'emp')
             ->innerJoin('emp.application', 'app')
             ->innerJoin('app.jobOffer', 'job')
             ->where('job.user = :userId')
-            ->setParameter('userId', $userId)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        // Total of Employment offer accepted
-        $totalAcceptedEmploymentOffers = (int) $this->manager->createQueryBuilder()
-            ->select('COUNT(emp.id)')
-            ->from(EmploymentOfferEntity::class, 'emp')
-            ->innerJoin('emp.application', 'app')
-            ->innerJoin('app.jobOffer', 'job')
-            ->where('job.user = :userId')
-            ->andWhere('emp.status = :acceptedStatus')
             ->setParameters([
                 'userId' => $userId,
                 'acceptedStatus' => EmploymentOfferStatus::ACCEPTED,
             ])
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getSingleResult();
 
+        $totalGeneratedEmploymentOffers = (int) ($employmentOfferStats['totalGenerated'] ?? 0);
+        $totalAcceptedEmploymentOffers = (int) ($employmentOfferStats['totalAccepted'] ?? 0);
 
         // VARTION CALCULATION (% Increase This Week)
         $percentageCalculator = new PercentageCalculator();
@@ -266,7 +256,10 @@ class JobOfferAnalyticsRepository implements JobOfferAnalyticsRepositoryInterfac
             InterviewEntity::class,
             'createdAt',
             $userId,
-            joins: ['e.jobOffer' => 'job']
+            joins: [
+                'e.application' => 'app',
+                'app.jobOffer' => 'job',
+            ]
         );
         $interviewsIncreaseThisWeek = $percentageCalculator->calculatePercentageIncrease($interviewCounts['current'], $interviewCounts['previous']);
 
@@ -280,6 +273,7 @@ class JobOfferAnalyticsRepository implements JobOfferAnalyticsRepositoryInterfac
             totalOffers: (int) ($stats['totalOffers'] ?? 0),
             viewCount: $viewCount,
             applicationCount: $applicationCount,
+            rejectedApplicationCount: $rejectedApplicationCount,
             activeOffers: (int) ($stats['activeOffers'] ?? 0),
             pendingReviewOffers: (int) ($stats['pendingOffers'] ?? 0),
             publishedOffers: (int) ($stats['publishedOffers'] ?? 0),

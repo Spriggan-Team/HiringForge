@@ -1,0 +1,30 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    width="24"
+    height="24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+>
+    <!-- Calendar body -->
+    <rect
+        x="3"
+        y="5"
+        width="18"
+        height="16"
+        rx="3"
+    />
+
+    <!-- Calendar header separator -->
+    <path d="M3 10H21" />
+
+    <!-- Calendar bindings -->
+    <path d="M8 3V7" />
+    <path d="M16 3V7" />
+
+    <!-- Check mark -->
+    <path d="M8 15L10.5 17.5L16 12.5" />
+</svg>

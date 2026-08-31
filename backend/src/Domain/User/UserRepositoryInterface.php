@@ -18,6 +18,8 @@ interface UserRepositoryInterface
     public function save(User $user): void;
 
 
+
+
     /**
      * This function verify if a specific user exist & is registered in the 
      * database.
@@ -58,7 +60,10 @@ interface UserRepositoryInterface
     public function findById(string $uuid): User;
 
 
-    /** retreive user company id */
+    /** 
+     * retreive user company id 
+     * @throws \Exception
+    */
     public function getOrganizationId(string $userId): string ;
 
     

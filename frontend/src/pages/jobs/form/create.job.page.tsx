@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 //-- services
 import RouteScheme from "../../../route.scheme";
 import JobServices from "../../../api/services/jobs/command";
-import JobContextProvider from "../../../context/job.context";
+import UserJobContextProvider from "../../../context/user.job.context";
 
 //-- Components
 import JobFormPage from "./components/job.form.page";
@@ -17,9 +17,9 @@ interface CreateJobPageProps{}
 
 const CreateJobPage: React.FC<CreateJobPageProps> = ({}) => {
     return (
-        <JobContextProvider>
+        <UserJobContextProvider>
             <CreateJoPageContent />
-        </JobContextProvider>
+        </UserJobContextProvider>
     )
 }
  

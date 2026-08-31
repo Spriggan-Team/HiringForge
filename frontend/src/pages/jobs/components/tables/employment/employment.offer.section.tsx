@@ -50,7 +50,7 @@ export default function EmploymentOffersSection({
     const isLoadingRef = useRef(false);
     const imageURLsCache = useRef<Record<string, string>>({}); //employment : id => url-image
 
-    const fetchOffers = useCallback(async (currentSkip: number) => {
+    const fetchEmploymentOffers = useCallback(async (currentSkip: number) => {
         // Secure calls
         if (isLoadingRef.current || (!hasMore && currentSkip !== 0)) return;
 
@@ -76,7 +76,7 @@ export default function EmploymentOffersSection({
                     avatarUrl = cache[data.id];
                 }
                 else if (data.candidate.image?.name) {
-                    // Optionnel : ne charger l'image que si le candidat en a vraiment une
+                    // Load image if it really exist
                     try {
                         const blob = await ApplicationQueries.getCandidateProfilImage({
                             candidateId: data.candidate.id,
@@ -100,7 +100,8 @@ export default function EmploymentOffersSection({
                     createdAt: data.createdAt.date, 
                     status: data.status,
                     avatarUrl: avatarUrl,
-                    message: data.message
+                    message: data.message,
+                    scheduledEndDate: data.scheduledEndDate.date
                 }
 
                 return payload;
@@ -126,7 +127,7 @@ export default function EmploymentOffersSection({
     useEffect(() => {
         setSkip(0);
         setHasMore(true);
-        fetchOffers(0);
+        fetchEmploymentOffers(0);
     }, [jobId]);
 
 
@@ -135,7 +136,7 @@ export default function EmploymentOffersSection({
         if (hasMore && !isLoadingMore) {
             const nextSkip = skip + LIMIT;
             setSkip(nextSkip);
-            fetchOffers(nextSkip);
+            fetchEmploymentOffers(nextSkip);
         }
     };
 
@@ -153,6 +154,7 @@ export default function EmploymentOffersSection({
             setIsUpdating(null);
         }
     };
+
 
     const handleCancel = useCallback(async (id: string) => {
         try {
@@ -189,7 +191,7 @@ export default function EmploymentOffersSection({
                                     {
                                         id: data.id,
                                         email: payload.candiate.email,
-                                        status: data.status, // Assure-toi que status est bien présent dans EmploymentSaved si nécessaire
+                                        status: data.status, // status
                                         candidate: name,
                                         salary: payload.salary ? payload.salary : undefined,
                                         avatarUrl: payload.avatarUrl,
@@ -197,6 +199,7 @@ export default function EmploymentOffersSection({
                                         message: payload.message,
                                         expiresAt: payload.expiredAt,
                                         createdAt: data.createdAt,
+                                        scheduledEndDate: payload.scheduledEndDate
                                     },
                                     ...prevOffers,
                                 ]);
@@ -227,7 +230,7 @@ export default function EmploymentOffersSection({
         const handleClose = () => {
             setModal(null);
             if (onCloseCallback) {
-                onCloseCallback(); // Réinitialise l'œil dans le tableau
+                onCloseCallback(); // reset eye
             }
         };
 
@@ -313,6 +316,7 @@ const OfferTable: React.FC<OffersTableProps> = ({
     const { setModal } = useAppContext();
     const [activeOfferId, setActiveOfferId] = useState<string | null>(null);
 
+
     //-- Handle Eye icon
     const handleToggleEye = (offer: FlatOffer) => { 
         if (activeOfferId === offer.id) {
@@ -332,9 +336,11 @@ const OfferTable: React.FC<OffersTableProps> = ({
 
     const observerTarget = useRef<HTMLTableRowElement | null>(null); //determines wether the scorl is at the bottom
 
+
     useEffect(() => {
         const target = observerTarget.current;
-        if (!target) return;
+        if (!target) 
+            return;
 
         const observer = new IntersectionObserver(
             (entries) => {
@@ -344,14 +350,12 @@ const OfferTable: React.FC<OffersTableProps> = ({
             },
             { threshold: 0.1 }
         );
-
         observer.observe(target);
 
         return () => {
             if (target) observer.unobserve(target);
         };
     }, [hasMore, isLoadingMore]);
-
 
 
     //-- Construct intials
@@ -488,7 +492,7 @@ const OfferTable: React.FC<OffersTableProps> = ({
                                             </button>
 
                                             {/* Cancel & delete */}
-                                            {offer.status === "SENT" && (
+                                            {(offer.status === "SENT") && (
                                                 <button
                                                     type="button"
                                                     onClick={() => onCancel(offer.id)}

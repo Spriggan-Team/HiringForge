@@ -21,6 +21,7 @@ import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-s
 //-- Styles CSS
 import styles from "./CurrentJob.module.css"
 import { useAppNavigate } from "../../../../../hooks/navigation";
+import { useUserJobContext } from "../../../../../context/user.job.context";
 
 
 interface CurrentJobProps{
@@ -37,7 +38,8 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
 }) => {
     const { t } = useTranslation();
     const naviagate = useAppNavigate();
-    const { setModal, setLoading, setCurrentJob } = useAppContext();
+    const { setModal, setLoading } = useAppContext();
+    const { setEditingJob } = useUserJobContext();
 
     const handleAction = (actionType: string) => {
         if (actionType === 'edit' || actionType === 'delete') {
@@ -110,6 +112,7 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
     };
 
 
+
     /**  
      * Redirect to editing page
     */
@@ -121,7 +124,7 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
             }
 
             setLoading({ state: false });
-            setCurrentJob(() => job as JobView);
+            setEditingJob(() => job);
 
             naviagate(RouteScheme.modifyJob, { 
                 params: { id: job.id },
@@ -134,6 +137,7 @@ const CurrentJob: React.FC<CurrentJobProps> = ({
         }
 
     }
+
 
 
     /**

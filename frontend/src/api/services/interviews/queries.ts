@@ -1,12 +1,41 @@
 import { intercept } from "../../../utils/utils";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
 import { authGet } from "../../http";
+
 import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import type { RecruiterJobInterviewsResponse } from "./response";
 
 
-//Recruiter
+/**
+ * Retreive interviews for today
+ */
+const getInterviewAgendaForRecruiter = async ({
+    date,
+    skip = 0,
+    limit = 2,
+}: {
+    date?: Date;
+    skip?: number;
+    limit?: number;
+} = {}) => {
+    const params = new URLSearchParams();
+    
+    const targetDate = date ?? new Date();
+    
+    params.set("date", targetDate.toISOString());
+    params.set("skip", String(skip));
+    params.set("limit", String(limit));
 
+    const response = await authGet<RecruiterJobInterviewsResponse>(
+        `/interviews/users/agenda?${params.toString()}`
+    );
+    
+    return response.data;
+};
+
+
+
+//Recruiter
 const getRecruiterJobOfferInterviews = async (
    {
     jobId,
@@ -24,10 +53,11 @@ const getRecruiterJobOfferInterviews = async (
         const params = new URLSearchParams();
 
         if (companyId) params.set('companyId', companyId);
-        if (skip !== undefined) params.set('skip', String(skip));
-        if (limit !== undefined) params.set('limit', String(limit));
+        if (skip) params.set('skip', String(skip));
+        if (limit) params.set('limit', String(limit));
+        if (jobId) params.set('jobId', jobId)
 
-        const url = `/interviews/users/job_offer/${jobId}${
+        const url = `/interviews/users/job_offers${
             params.toString() ? `?${params.toString()}` : ''
         }`;
 
@@ -44,7 +74,8 @@ const getRecruiterJobOfferInterviews = async (
 //----Services
 
 const Queries = {
-    getRecruiterJobOfferInterviews
+    getRecruiterJobOfferInterviews,
+    getInterviewAgendaForRecruiter
 }
 
 

@@ -1,6 +1,8 @@
 
 import { useTranslation } from "react-i18next";
 
+import type { FilterState, JobOfferState, JobPublishedState } from "../../../../../features/shared/global";
+
 //-- Custom Component
 import Title from "../../../../../layout/components/text/title/title";
 import CheckBoxInput from "../../../../../layout/components/form/input/checkbox/checkbox.input";
@@ -9,7 +11,6 @@ import CustomMapContainer from "../../../../../layout/components/cards/map/Map";
 
 //-- CSS Styles
 import styles from "./JobMapFilters.module.css"
-import type { FilterState, JobOfferState, JobPublishedState } from "../../../../../features/shared/global";
 
 
 
@@ -142,9 +143,9 @@ const JobMapFilters: React.FC<JobFilterWithMapProps> = ({
                     <div className={styles.sliderSection}>
                         <SliderInput
                             devise=" $"
-                            minLabel="1200 $"
+                            minLabel="0 $"
                             maxLabel="6000 $"
-                            min={1200}
+                            min={0}
                             max={6000}
                             value={filters.salary}
                             label={t("global.salary.title")}

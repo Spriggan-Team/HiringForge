@@ -19,6 +19,10 @@ export const ApiResponseCode = {
     //-- auth/login
     AUTH_ACCESS_EXPIRED: "access_expired",
 
+    //-- employment offer
+    ACTIVE_EMPLOYMENT_OFFER_EXISTS: 'active_employment_offer_exists',
+    EMPLOYMENT_OFFER_NOT_FOUND: 'employment_offer_not_found',
+    INVALID_EMPLOYMENT_OFFER_STATE: 'invalid_employment_offer_state',
 
     //-- file
     FILE_MISMATCH_TYPE: "file_mismatch_type",
@@ -32,10 +36,7 @@ export const ApiResponseCode = {
 
 
 
-export type ApiResponseCodeType =
-    typeof ApiResponseCode[keyof typeof ApiResponseCode];
-
-
+export type ApiResponseCodeType = typeof ApiResponseCode[keyof typeof ApiResponseCode];
 
 
 //--- Api Générique error code

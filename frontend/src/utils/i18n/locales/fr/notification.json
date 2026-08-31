@@ -1,8 +1,15 @@
 {
-    "notification": {
-        "postulate": "{{person}} a postulé au poste {{offer}}",
-        "createInterview": "{{person}} → {{interview}}",
-        "publishOffer": "Offre {{title}} publiée",
-        "confirmInterview": "{{person}} Dupont a confirmé son entretien"
+  "notifications": {
+    "postulate": "{{person}} a postulé au poste {{offer}}",
+    "createInterview": "Entretien planifié avec {{person}} pour {{interview}}",
+    "candidateRejected": "Candidature refusée pour {{offer}} chez {{company}}",
+    "employmentOfferGenerated": "Offre d'emploi générée par {{company}} pour {{offer}}",
+    "employmentOfferCancelled": "Offre d'emploi annulée par {{company}} pour {{offer}}",
+    "applicationStatusShift": "Le statut de la candidature pour {{offer}} a changé",
+    "systemAlert": "{{message}}",
+
+    "messages":{
+        "noNotificationFounded": "Aucune notification trouvée"
     }
+  }
 }

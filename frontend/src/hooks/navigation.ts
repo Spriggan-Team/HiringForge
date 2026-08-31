@@ -1,11 +1,12 @@
-import { useLocation, useMatches, useNavigate } from 'react-router-dom';
-import RouteScheme, { type AppRoute } from '../route.scheme';
+import { useLocation,  useNavigate } from 'react-router-dom';
+import  { type AppRoute } from '../route.scheme';
+import type { MenuKeys } from '../layout/components/menu/sidebar/user.side.menu';
 
 
 export interface NavigateOptions {
   params?: Record<string, string | number | boolean>;
   queries?: Record<string, string | number | boolean | undefined | null>;
-  menuId?: string;
+  menuId?: MenuKeys;
   persistMenu?: boolean;
   state?: Record<string, any>;
   from?: AppRoute;

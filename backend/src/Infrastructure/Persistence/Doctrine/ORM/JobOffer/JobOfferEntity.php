@@ -63,7 +63,6 @@ class JobOfferEntity
     private JobOfferVisibilityStatus $visibilityStatus = JobOfferVisibilityStatus::PUBLIC; //-- control visibility
 
 
-
     #[ORM\Column(nullable: false, enumType: JobPublicationStatus::class )]
     private JobPublicationStatus  $publicationStatus = JobPublicationStatus::DRAFT; //-- publication state
 
@@ -84,10 +83,10 @@ class JobOfferEntity
     private ?\DateTimeImmutable $publicationDate = null;
 
 
-
-    //-----------------------------
+    //----------------------------------
     //----- RELATIONS
     //----------------------------------
+
 
     #[ORM\ManyToOne(targetEntity: CompanyEntity::class)]
     private CompanyEntity $company;
@@ -150,7 +149,6 @@ class JobOfferEntity
         cascade: ['persist'],
         orphanRemoval: true
     )]
-    #[ORM\JoinColumn(nullable: false)]
     private Collection $applications;
     
 
@@ -160,7 +158,6 @@ class JobOfferEntity
         cascade: ['persist'],
         orphanRemoval: true
     )]
-    #[ORM\JoinColumn(nullable: false)]
     private Collection $interviews;
     
     
@@ -170,7 +167,6 @@ class JobOfferEntity
         cascade: ['persist'],
         orphanRemoval: true
     )]
-    #[ORM\JoinColumn(nullable: false)]
     private Collection $images;
 
 

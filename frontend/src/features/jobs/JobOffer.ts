@@ -21,7 +21,7 @@ export interface JobSummary {
 export interface JobCardinal {
   candidates: number;
   interviews: number;
-  offers: number;
+  employmentOffers: number;
   hired: number;
 }
 
@@ -40,9 +40,12 @@ export interface JobKpis {
   avgTimeToHireDiffDays: number;
 }
 
+
 /** ----------------------------------------------------------------
  * Shared (Candidate + Recruiter)
  * ---------------------------------------------------------------- */
+
+ 
 
 export interface PublicJobView {
     id: string;
@@ -126,11 +129,25 @@ export  type RecruiterJobView  =  {
     cardinal: JobCardinal;
 
     department?: Department | null;
-} 
+}
+
 
 export interface JobEngagementMetrics {
     views: number;
     applications: number;
+}
+
+
+export interface JobOfferViewLightModel {
+    id: string;
+    title: string;
+    image: string | null;
+    candidates: number;
+    interviews: number;
+    tags: string[];
+    treatmentProgress: number;
+    remainingCandidates: number;
+    delay: string;
 }
 
 
@@ -148,7 +165,6 @@ export type JobStatus = JobPublicationStatus | JobActivityStatus;
 export type JobPublicationStatus = "draft" | "closed" | "published";
 export type JobActivityStatus = "active" | "pending";
 export type VisibilityStatus = "private" | "public"
-
 
 
 
@@ -215,7 +231,7 @@ export const INITIAL_JOB_VIEW: PublicJobView & RecruiterJobData = {
     cardinal: {
         candidates: 0,
         interviews: 0,
-        offers: 0,
+        employmentOffers: 0,
         hired: 0,
     },
 

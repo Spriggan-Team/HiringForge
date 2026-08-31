@@ -64,10 +64,6 @@ class CandidateEntity extends AccountEntity
     private AddressEntity $address;
 
 
-    #[ORM\OneToMany(mappedBy: "candidate", targetEntity: InterviewEntity::class)]
-    private Collection $interviews;
-
-
     #[ORM\OneToMany(
         mappedBy: "candidate",
         targetEntity: JobOfferViewEntity::class,
@@ -91,7 +87,6 @@ class CandidateEntity extends AccountEntity
     public function __construct()
     {
         parent::__construct();
-        $this->interviews  = new ArrayCollection();
         $this->applications = new ArrayCollection();
         $this->jobOfferViews = new ArrayCollection();
         $this->resumes = new ArrayCollection();
@@ -119,7 +114,6 @@ class CandidateEntity extends AccountEntity
     }
 
     public function getApplication():   Collection  { return $this->applications; }
-    public function getInterviews():    Collection  { return $this->interviews; }
 
     public function getAddress(): AddressEntity
     {

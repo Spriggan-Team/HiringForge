@@ -96,6 +96,32 @@
 }
 
 
+/** Interviews box/container **/
+.interviewsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 200px; /*Max height */
+    overflow-y: auto;  /* scroll */
+    padding-right: 0.25rem;
+}
+
+.interviewCard {
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+/* State color */
+.interviewCancel { border-left: 4px solid #ef4444; }
+.interviewComplete { border-left: 4px solid #10b981; }
+.interviewInprogess { border-left: 4px solid #3b82f6; }
+
+/** Actions */
 .actions {
   margin-top: 1rem;
   display: flex;

@@ -7,6 +7,12 @@ use  App\Domain\Candidate\Application\JobApplicationStatus;
 interface EmploymentOfferRepositoryInterface
 {
     /**
+     * Check if application has some active employment offer  
+     */
+    public function hasActiveOffer(string $applicationId): bool;
+
+
+    /**
      * Returns an array of offers related to a recruiter.
      *
      * @param ?string $userId The unique identifier of the user. If provided, the
@@ -26,6 +32,8 @@ interface EmploymentOfferRepositoryInterface
     *      'createdAt'?: bool,
     *      'sentAt'?: bool,
     *      'message'?: bool,
+    *      'scheduledEndDate'?: bool,
+    *      'rejectionReason'?: bool,
     *      'candidate'?: array{
     *          'id'?: bool,
     *          'firstName'?: bool,
@@ -50,6 +58,8 @@ interface EmploymentOfferRepositoryInterface
     */
     public function fetchOfferProjection(?string $userId= null, ?string $companyId =null, ?string $jobId = null, array $scheme = ['id' => true], int $limit= 17, int $skip=0 ): array;
 
+
+
     /**
      * Creates an offer after verifying that the user is associated with the related job.
      * It can be used to handle update
@@ -57,6 +67,7 @@ interface EmploymentOfferRepositoryInterface
      * @param EmploymentOffer $offer Domain object containing the data required to create an offer.
      */
     public function save(string $userId,  EmploymentOffer $offer): void;
+
 
 
     /**
@@ -70,6 +81,7 @@ interface EmploymentOfferRepositoryInterface
      * @return int
      */
     public function countOffers(array $criteria): int;
+
 
 
     /**

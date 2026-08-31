@@ -4,11 +4,30 @@
 namespace App\Application\Query\JobOffer\Repositories;
 
 use App\Application\Query\JobOffer\DTO\JobOfferListItem;
+use App\Application\Query\JobOffer\DTO\JobOfferViewLightModel;
 use App\Application\Query\JobOffer\DTO\JobSummaryItem;
+use App\Domain\JobOffer\JobActivityStatus;
+use App\Domain\JobOffer\JobPublicationStatus;
 
 interface RecruiterJobOfferQueryRepositoryInterface
 {
-        /**
+    /**
+     * Fetch statistical cardinalities for a specific job offer application pipeline.
+     *
+     * @param string $jobId The unique identifier of the job offer.
+     * 
+     * @return array{
+     *     candidatesCount: int,
+     *     interviewsCount: int,
+     *     employmentOfferCount: int,
+     *     hiredCount: int,
+     *     viewsCount: int
+     * } Array containing the count metrics for each application stage.
+     */
+    public function fetchJobOfferCardinalities(string  $recruiterId, string $jobId): array;
+
+
+    /**
      * Retrieves a collection of job offers.
      *
      * By default, only published job offers are returned. To retrieve job offers
@@ -28,15 +47,14 @@ interface RecruiterJobOfferQueryRepositoryInterface
      *     Number of job offers to skip from the beginning of the result set.
      *
      *
-     * @param array $criteria this is used for filter the reponse thta should be returned 
-     *         ex: [
-     *              'publishedState' => JobPublicationStatus,
-     *              'salary' => number, (between minSalry or maxSlary),
-     *              'candidateCount' => number,
-     *              'searchText' => string,
-     *              'searchAddress' => string
-     *          ]
-     * 
+     * @param array{
+     *          publishedState: JobPublicationStatus,
+     *          salary: int,
+     *          candidateCount: int,
+     *          searchText: string,
+     *          searchAddress: string
+     * } $criteria this is used for filter the reponse thta should be returned 
+     *      - salary  (between minSalry or maxSlary),
      * @return array<int,JobSummaryItem>
      *     Collection of serializable job offer view models.
      */
@@ -46,6 +64,20 @@ interface RecruiterJobOfferQueryRepositoryInterface
         ?int $skip = null,
         array $criteria = []
     ): array;
+
+
+
+    /**
+     *  Retrieve job offers matching criteria.
+     *  @return array<int,JobOfferViewLightModel> 
+     */
+    public function getJobOfferLightViewModelByCriteria(
+        string $userId,
+        JobActivityStatus $activityStatus,
+        int $skip = 0,
+        int $limit = 5
+    ): array;
+
 
 
     /**

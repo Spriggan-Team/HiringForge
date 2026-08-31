@@ -46,6 +46,7 @@ export interface CreateOfferPayload {
     salary: number;
     expiredAt: string;
     jobTitle: string;
+    scheduledEndDate: string;
 }
 
 export const canDeleteOffer = (status: EmploymentOfferStatus): boolean => {
@@ -63,11 +64,14 @@ export interface FlatOffer {
     email: string;
     jobTitle: string;
     salary?: number; // Ex: 45000 (en €/an)
-    createdAt: string;
-    expiresAt: string;
     status: EmploymentOfferStatus;
     avatarUrl?: string | null;
     message?: string | null;
+
+    createdAt: string;
+    expiresAt: string;
+    scheduledEndDate: string;
+    rejectionReason?: string;
 }
 
 

@@ -4,6 +4,38 @@ namespace App\Domain\Interviews;
 
 interface InterviewsRepositoryInterface
 {
+    // -- Save Interviews
+    public function save(Interview $interview): void;
+    
+
+    public function findById(string $id): ?Interview;
+
+
+     /**
+     * @param string $userId - refers to recruiter's id
+     * @return array<int, array{
+     *      id: string,
+     *      type: string,
+     *      candidate: array{
+     *          id: string,
+     *          firstName: string,
+     *          email: string,
+     *          lastName: string,
+     *          imageId?: int
+     *      },
+     *      description?: string,
+     *      startDate: \DateTimeImmutable,
+     *      minutes: int
+     * }>
+     */
+    public function getTodayInterviewAgenda(
+        string $userId, 
+        int $skip,
+        int $limit,
+        \DateTimeImmutable $date
+    ) : array;
+
+
     /**
      * @param array $criteria
      *      ex: [
@@ -12,6 +44,13 @@ interface InterviewsRepositoryInterface
      *          ]
      */
     public function countInterviews(array $criteria);
+
+    
+    /**
+     * Invalidate interview plans for an application
+     * Turn all application of an user into CANCELELD State
+     */
+    public function cancelInterviewPlansForApplication(string $recruiterId, string $applicationId): void;
 
 
     /**
@@ -49,11 +88,11 @@ interface InterviewsRepositoryInterface
      * @return array
      */
     public function fetchJobInterviewsProjection(
-        string $jobId,
-        int $limit = 17,
+        string $userId,
         int $skip = 0,
+        int $limit = 17,
+        ?string $jobId = null,
         array $scheme = ['id' => true],
-        ?string $userId = null,
         ?string $companyId = null,
         ?string $candidateId = null
     ): array ;

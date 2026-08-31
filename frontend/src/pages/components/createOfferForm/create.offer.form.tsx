@@ -43,11 +43,14 @@ type SelectedCandidateApplicationEntity = {
  * @returns 
  */
 export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({  onSubmit }) => {
-    const { setModal } = useAppContext();
+    const { setModal, setPopup } = useAppContext();
 
     const [selectedCandidateApplicationEntity, setSelectedCandidateApplicationEntity] = useState<
                                                                                             (AutoCompleteSearchResultItem & SelectedCandidateApplicationEntity) | null
                                                                                         >(null); //-- selected Candidate serach result
+
+
+    const [scheduledEndDate, setScheduledEndDate] = useState<string>("");
 
     const [message, setMessage] = useState("");
     const [expiredAt, setExpiredAt] = useState("");
@@ -64,9 +67,17 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({  onSubmit }) =
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
 
-        if (!selectedCandidateApplicationEntity  || !expiredAt) {
-                console.warn("Soumission bloquée : des champs obligatoires sont manquants.");
-                return;
+        if(Object.values(searchCache.current).length < 1){
+            setPopup({ 
+                status: "warning", 
+                message: "Vous ne pouvez pas faire d'offre d'embauche sans sélectionner un candidat." 
+            });
+            return;
+        }
+
+        if (!selectedCandidateApplicationEntity  || !expiredAt || !scheduledEndDate) {
+            console.warn("Soumission bloquée : des champs obligatoires sont manquants.");
+            return;
         }
 
         setIsSubmitting(true);
@@ -90,6 +101,7 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({  onSubmit }) =
                 applicationId: selectedCandidateApplicationEntity.applicationId as string,
                 candidateId: selectedCandidateApplicationEntity.candidateId as string,
                 expiredAt: new Date(expiredAt).toISOString(),
+                scheduledEndDate: new Date(scheduledEndDate).toISOString(),
                 jobTitle: selectedCandidateApplicationEntity.jobTitle as string,
                 avatarUrl: avatarUrl,
             };
@@ -225,6 +237,17 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({  onSubmit }) =
                         required
                     />
                 </div>
+            </div>
+
+            <div className={styles.formGroup}>
+                <label className={styles.label}>Date de fin *</label>
+                <input
+                    type="date"
+                    className={styles.input}
+                    value={scheduledEndDate}
+                    onChange={(e) => setScheduledEndDate(e.target.value)}
+                    required
+                />
             </div>
 
             <div className={styles.formGroup}>

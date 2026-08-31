@@ -5,13 +5,9 @@ namespace App\Api\Controllers\Interviews;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Api\Controllers\Helpers\ApiControllerHelpers;
-
-use App\Domain\File\MediaOwnerType;
-use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaStorageInterface;
 
 
-use App\Domain\Shared\Account\AccountRole;
 use App\Domain\Interviews\InterviewsRepositoryInterface;
 use App\Domain\Shared\AccountStorageParams;
 use App\Domain\Shared\PathResolverInterface;
@@ -34,7 +30,6 @@ class InterviewsUserQueryManagement extends AbstractController{
         LoggerInterface $logger,
         private PathResolverInterface $pathResolver,
         private InterviewsRepositoryInterface $interviewsRepository,
-        private MediaStorageInterface $mediaStorage
     )
     {
         ApiResponse::init($logger);
@@ -42,9 +37,61 @@ class InterviewsUserQueryManagement extends AbstractController{
 
 
     /**
-     * Route /users/job_offer/{offerId}?limit=number&skip=number
+     * Generate interviews
+     * Route: "/interviews/users/agenda"
+     * Queries:
+     *  - date: ISO String
+     *  - skip: number
+     *  - limit: number
      */
-    #[Route('/job_offer/{offerId}', methods: ['GET'])]
+    #[Route('/agenda', methods: ['GET'])]
+    public function getRecentForToday(
+        Request $request
+    ): JsonResponse
+    {
+        try {
+            /** @var AuthenticatedPerson $user */
+            $user = $this->getUser();
+            
+            //-- Date
+            $rawDate = $request->query->get('date');
+            $date = $rawDate !== null 
+                ? new \DateTimeImmutable($rawDate) 
+                : new \DateTimeImmutable();
+
+            // Paganition params
+            $skip = $request->query->getInt('skip', 0);
+            $limit = $request->query->getInt('limit', 10);
+
+            $results = $this->interviewsRepository->getTodayInterviewAgenda(
+                userId: $user->getId(),
+                skip: $skip,
+                limit: $limit,
+                date: $date
+            );
+
+            return ApiResponse::success(
+                data: $results
+            )->toJsonResponse();
+        }
+        catch (\Exception $error) {
+            return ApiResponse::error(
+                message: "Something went wrong",
+                throwable: $error
+            )->toJsonResponse();
+        }
+    }
+
+
+    /**
+     * Route /users/job_offer/?limit=number&skip=number
+     * Queries:
+     *  - limit?: number
+     *  - skip?:  number
+     *  - jobId?: number
+     *  - companyId?: number   
+     */
+    #[Route('/job_offers', methods: ['GET'])]
     public function getUserInterviews(
         string $offerId,
         Request $request
@@ -94,7 +141,8 @@ class InterviewsUserQueryManagement extends AbstractController{
                         ),
                         mime: $value['candidate']['image']['mime']
                     );
-                } elseif (isset($value['candidate'])) {
+                }
+                elseif (isset($value['candidate'])) {
                     $value['candidate']['image'] = null;
                 }
 

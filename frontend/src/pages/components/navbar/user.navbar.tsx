@@ -34,14 +34,24 @@ const UserNavBar: React.FC<NavBarProps> = ({
     const { t } = useTranslation();
     const user = useCurrentUser();
     const navigate = useNavigate();
-    const { navbar, setPopup } = useAppContext();
-    const [notificationCount, setNotificationCount] = useState<number>(0);
+    
+    const { 
+        navbar, 
+        setPopup,
+        kpiData,
+        notificationCount,
+        setNotificationCount
+    } = useAppContext();
 
 
     //-- Text
-    const postsTxt = t('userHome.header.leading.open_post', { count: 0 });
-    const candTxt = t('userHome.header.leading.candidature', { count: 12 });
-
+    const postsTxt = t('userHome.header.leading.open_post', { count: kpiData?.publicOffers ??  0 });
+    const candTxt = t('userHome.header.leading.candidature', {
+        count:
+            (kpiData?.applicationCount ?? 0) -
+            (kpiData?.rejectedApplicationCount ?? 0),
+    });
+    
     const informationTxt = t('userHome.header.leading.summary_sentence', { 
         openPostsText: postsTxt, 
         candidaturesText: candTxt 

@@ -52,6 +52,3 @@ export interface CurrentAgent {
     agencyName: string;
 }
 
-
-
-export type PersonActionType = "postulate" | "create-interview" | "confirm-interview" | "publish-offer";

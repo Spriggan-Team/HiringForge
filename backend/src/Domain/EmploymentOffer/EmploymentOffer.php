@@ -17,6 +17,7 @@ class EmploymentOffer
     private EmploymentOfferStatus $status = EmploymentOfferStatus::SENT;
 
     private \DateTimeImmutable $expiredAt;
+    private \DateTimeImmutable $scheduledEndDate;
     private \DateTimeImmutable $createdAt;
 
 
@@ -34,6 +35,7 @@ class EmploymentOffer
         string $candidateId,
         string $applicationId,
         \DateTimeImmutable $expiredAt,
+        \DateTimeImmutable $scheduledEndDate,
         ?float $salary = null,
         ?string $message = null
     ): self {
@@ -45,8 +47,8 @@ class EmploymentOffer
         $domain->setSalary($salary)
                ->setMessage($message)
                ->setExpiredAt($expiredAt)
-               ->setCreatedAt(new \DateTimeImmutable());
-
+               ->setCreatedAt(new \DateTimeImmutable())
+               ->setScheduledEndDate($scheduledEndDate);
         return $domain;
     }
 
@@ -56,6 +58,7 @@ class EmploymentOffer
         EmploymentOfferStatus $status,
         \DateTimeImmutable $createdAt,
         \DateTimeImmutable $expiredAt,
+        \DateTimeImmutable $scheduledEndDate,
         ?string $candidateId = null,
         ?string $applicationId = null,
         ?float $salary = null,
@@ -75,6 +78,7 @@ class EmploymentOffer
         $domain->salary = $salary;
         $domain->expiredAt = $expiredAt;
         $domain->createdAt = $createdAt;
+        $domain->scheduledEndDate = $scheduledEndDate;
 
         return $domain;
     }
@@ -127,12 +131,14 @@ class EmploymentOffer
 
 
 
-
     public function rejectionReason(){
         return $this->rejectionReason;
     }
 
-
+    public function scheduledEndDate()
+    {
+        return $this->scheduledEndDate;
+    }
 
     //------------------------------
     //--- SETTERS
@@ -182,7 +188,18 @@ class EmploymentOffer
         if ($this->expiredAt < $now) {
             return false;
         }
+        
+        $isValid = $this->scheduledEndDate > $now;
 
-        return $this->status === EmploymentOfferStatus::SENT;
+        return $isValid && (
+            $this->status === EmploymentOfferStatus::SENT ||
+            $this->status === EmploymentOfferStatus::DRAFT
+        );
+    }
+
+    public function setScheduledEndDate(\DateTimeImmutable $scheduledEndDate): static
+    {
+        $this->scheduledEndDate = $scheduledEndDate;
+        return $this;
     }
 }

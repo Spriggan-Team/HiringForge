@@ -17,8 +17,8 @@ class JobOfferViewEntity
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: UserEntity::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: CandidateEntity::class)]
+    #[ORM\JoinColumn(nullable: false, name: "candidate_id")]
     private CandidateEntity $candidate;
 
     #[ORM\ManyToOne(

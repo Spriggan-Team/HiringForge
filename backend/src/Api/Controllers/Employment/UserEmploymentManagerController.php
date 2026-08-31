@@ -35,10 +35,16 @@ class UserEmploymentManagerController extends AbstractController
 
 
     /**
-     * Route /users/employment_offers/user?jobId=string&limit=number&skip=number&companyId=number
+     * Retreive paginated employment offer
+     * Route: /users/employment_offers/user?jobId=string&limit=number&skip=number&companyId=number
+     * Queries:
+     *     - skip?: number
+     *     - limit?: number
+     *     - companyId?: string
+     *     - jobId?: string
      */
     #[Route('', methods: ['GET'])]
-    public function getOfferForUser(Request $request): JsonResponse
+    public function getEmploymentOfferForUser(Request $request): JsonResponse
     {
         try {
             /** @var AuthenticatedPerson|null $user */
@@ -62,6 +68,7 @@ class UserEmploymentManagerController extends AbstractController
                 'sentAt' => true,
                 'salary' => true,
                 'expiredAt' => true,
+                'scheduledEndDate' => true,
                 'createdAt' => true,
                 'message' => true,
                 'candidate' => [

@@ -8,6 +8,7 @@ final class JobOfferStatistics
         public readonly int $totalOffers,
         public readonly int $viewCount,
         public readonly int $applicationCount,
+        public readonly int $rejectedApplicationCount,
         public readonly int $activeOffers,
         public readonly int $pendingReviewOffers,
         public readonly int $publishedOffers,

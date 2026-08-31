@@ -14,13 +14,7 @@ interface EntryPageProps{
 
 
 const AuthEntryPage: React.FC<EntryPageProps> = ({ children }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const { currentActor, initializeData, isAppInitializing } = useAppContext();
-
-
-
+  const {  isAppInitializing } = useAppContext();
 
   //-- Initializing guard
   if (isAppInitializing) {

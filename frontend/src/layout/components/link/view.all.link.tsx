@@ -10,11 +10,13 @@ import styles from "./ViewAllLink.module.css"
 
 
 interface ViewActionProps{
+    text?: string;
     onClick?: React.MouseEventHandler
 }
 
 
 const ViewAllLink: React.FC<ViewActionProps> = ({
+    text,
     onClick
 }) => {
     const {t} = useTranslation();
@@ -33,7 +35,7 @@ const ViewAllLink: React.FC<ViewActionProps> = ({
                 }}
                 className={styles.link}
             >
-                {t("global.link.viewAll")}
+                {text ?? t("global.link.viewAll")}
             </span>
         </div>
     );

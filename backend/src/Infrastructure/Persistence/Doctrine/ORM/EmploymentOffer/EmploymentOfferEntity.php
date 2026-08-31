@@ -5,11 +5,9 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer;
 use App\Domain\EmploymentOffer\EmploymentOfferStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Types\UuidType;
 
 
 
@@ -40,6 +38,9 @@ class EmploymentOfferEntity
 
     #[ORM\Column]
     private \DateTimeImmutable $expiredAt;
+    
+    #[ORM\Column]
+    private \DateTimeImmutable $scheduledEndDate;
 
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
@@ -49,14 +50,10 @@ class EmploymentOfferEntity
     //--- RELATIONS
     //------------------------------
 
-    #[ORM\ManyToOne(targetEntity: ApplicationEntity::class)]
+    #[ORM\ManyToOne(targetEntity: ApplicationEntity::class, inversedBy: 'employmentOffers')]
     #[ORM\JoinColumn(name: 'application_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ApplicationEntity $application;
 
-
-    #[ORM\ManyToOne(targetEntity: CandidateEntity::class)]
-    #[ORM\JoinColumn(name: 'candidate_id', referencedColumnName: 'id', nullable: false)]
-    private CandidateEntity $candidate;
 
     //-----------------
     //-- construct
@@ -69,12 +66,14 @@ class EmploymentOfferEntity
 
     public static function create(
         ApplicationEntity $application,
-        CandidateEntity $candidate,
+        \DateTimeImmutable $scheduledEndDate,
+        \DateTimeImmutable $expiredAt
     )
     {
         $entity = new self();
-        $entity->setApplication($application)
-               ->setCandidate($candidate);
+        $entity->scheduledEndDate = $scheduledEndDate;
+        $entity->application = $application;
+        $entity->expiredAt = $expiredAt;
         return $entity; 
     }
 
@@ -100,10 +99,6 @@ class EmploymentOfferEntity
         return $this->application;
     }
 
-    public function getCandidate(): ?CandidateEntity
-    {
-        return $this->candidate;
-    }
 
     public function getSalary()
     {
@@ -129,6 +124,10 @@ class EmploymentOfferEntity
         return $this->rejectionReason;
     }
 
+    public function getScheduledEndDate(){
+        return $this->scheduledEndDate;
+    }
+
     //---------------------
     //- SETTERS
     //---------------------
@@ -148,12 +147,6 @@ class EmploymentOfferEntity
         return $this;
     }
 
-
-    public function setCandidate(?CandidateEntity $candidate): self
-    {
-        $this->candidate = $candidate;
-        return $this;
-    }
 
 
 
@@ -191,4 +184,9 @@ class EmploymentOfferEntity
         return $this;
     }
 
+
+    public function setScheduledEndDate(\DateTimeImmutable $scheduledEndDate){
+        $this->scheduledEndDate = $scheduledEndDate;
+        return $this;
+    }
 }

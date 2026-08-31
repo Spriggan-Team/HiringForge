@@ -2,6 +2,7 @@ import type { ApplicationStatusValue } from "../../../features/application/appli
 import type { CandidatePipelineItem,  } from "../shared/reponses.types";
 
 import type { ApiResponse } from "../response.types";
+import type { InterviewTypeValue } from "../../../features/interviews/interviews";
 
 
 /**Response */
@@ -32,7 +33,14 @@ export interface JobApplicationItem {
   jobOffer?:{
     id: string;
     title: string
-  }
+  },
+
+  interviews?: {
+    id: string;
+    startdate: string; // ISO
+    type: InterviewTypeValue;
+    minutes: number;
+  }[]
 }
 
 /** Candidate Search using applicaton */

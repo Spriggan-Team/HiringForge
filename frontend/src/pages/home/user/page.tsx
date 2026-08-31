@@ -6,9 +6,6 @@ import { useTranslation } from "react-i18next";
 
 //-- Services
 import RouteScheme from "../../../route.scheme";
-import UserQueriesServices from "../../../api/services/user/queries";
-import type {  RecruiterDashboardKpis } from "../../../features/dashboard/KpiData";
-import JobQueries from "../../../api/services/jobs/queries";
 import ApplicationQueries from "../../../api/services/application/queries";
 
 
@@ -17,9 +14,7 @@ import KpiCard, { KpiCount, KpiPercentage } from "./component/kpi/kpi.card";
 import RecruitmentPipeline from "./component/pipeline/recrutement.pipeline";
 import DatePicker from "../../../layout/components/cards/calendar/datepicker/DatePicker";
 import Separator from "../../../layout/components/separator/separator";
-import PriorityTask from "./component/task/priority.task";
 import SectionHeader from "../../../layout/components/sections/sectionHeader/section.header";
-import ViewAllLink from "../../../layout/components/link/view.all.link";
 import Agenda from "./component/agenda/agenda";
 import ActiveOfferSection from "./component/offers/active.offer";
 import RecentActionPool from "./component/recent/recent.action.pool";
@@ -36,14 +31,15 @@ import HiredSVG from "/src/assets/svg/menu/hire-a-helper-svgrepo-com.svg?react"
 import styles from "./UserHome.module.css"
 import type { Dataset } from "../../../layout/components/charts/lineChart/lineChart";
 import { ViewModelFactory } from "../../../utils/view.model.factory";
+import { useAppContext } from "../../../hooks/context";
 
 
 
 const UserHome = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const { kpiData, setNotificationCount } = useAppContext();
     
-    const [kpiData, setKpiData] = useState<RecruiterDashboardKpis | null>(null)
     const [applicationsKpiOverThisWeekChartDataset, setApplicationsKpiOverThisWeekChartDataset] = useState<Dataset | null>(null) //Line chart dataset
 
     useEffect(()=>{
@@ -51,13 +47,8 @@ const UserHome = () => {
         if(!token)
             navigate(RouteScheme.main);
 
-        const retreiveKPI =  async ()=>{
-            try{ 
-                // kpis
-                const data = await UserQueriesServices.getKPI();
-                console.log({ kpis: data })
-                setKpiData(data);
-
+        const initApplicationKpiLineChartData = async ()=>{
+            try{
                 // Postulation Kpi Line chart
                 const postulationMetricsData = await ApplicationQueries.getJobPostulationMetrics({
                     timeframe: 'week'
@@ -65,18 +56,19 @@ const UserHome = () => {
 
                 const metricsArray = Array.isArray(postulationMetricsData) ? postulationMetricsData : [];
                 setApplicationsKpiOverThisWeekChartDataset(ViewModelFactory.buildChartDataset({
-                    metrics: metricsArray, 
+                    metrics: [metricsArray], 
                     timeframe: "week",
-                    dots: null, // deactivate
-                    color: "#22C55E"
+                    seriesOptions: [
+                        { dots: null, color:  "#22C55E" }
+                    ]
                 }));
             }
             catch(error){
-                console.warn("Something went wrong while retreiving kpis & application kpi linechart dataset : ", error)
+                console.log("Something went wrong while retreiving kpis charts")
             }
         }
 
-        retreiveKPI();
+        initApplicationKpiLineChartData();
     },[]);
 
 
@@ -135,7 +127,7 @@ const UserHome = () => {
                         <div className={styles.recruitmentPipeline}>
                             <SectionHeader
                                 title={t("userHome.borad.kanban.title")} 
-                                action={<ViewAllLink />}
+                                // action={<ViewAllLink />}
                             />
                             <RecruitmentPipeline />
                         </div>
@@ -147,7 +139,7 @@ const UserHome = () => {
                         {/** CURVES & RECENT ACTIONS */}
                         <div className={styles.bottom}>
                             <div className={styles.recent}>
-                                <RecentActionPool />
+                                <RecentActionPool  setNotificationCount={setNotificationCount} />
                             </div>
                             <div className={styles.stats}>
                                 <StatsChart />
@@ -160,13 +152,13 @@ const UserHome = () => {
                     <div className={styles.sidebar}>
                         {/** PRIORITY TASK */}
                         <div className={styles.priorityTaskSection}>
-                            <PriorityTask />
+                            {/* <PriorityTask /> */}
                         </div>
                         {/** DATES/ CALENDAR */}
                         <div className={styles.calendarSection}>
                             <SectionHeader
                                 title={t("global.dates.calendar")}
-                                action={<ViewAllLink />}
+                                // action={<ViewAllLink />}
                             />
                             <DatePicker className={styles.calendar} width="100%"/>
                         </div>

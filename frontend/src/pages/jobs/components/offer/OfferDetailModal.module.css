@@ -91,3 +91,25 @@
   line-height: 1.5;
   white-space: pre-line;
 }
+
+/* Rejection reason box */
+.rejectionReasonBox {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: #fef2f2;
+  border-left: 3px solid #ef4444;
+  border-radius: 4px;
+}
+
+.rejectionReasonBox strong {
+  color: #991b1b;
+  font-size: 0.875rem;
+}
+
+.rejectionReasonBox .messageContent {
+  color: #7f1d1d;
+}

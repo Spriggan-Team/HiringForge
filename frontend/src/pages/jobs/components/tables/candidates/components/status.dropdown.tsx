@@ -32,12 +32,17 @@ interface StatusDropdownProps {
     currentStatus: ApplicationStatusValue;
     onStatusChange: (newStatus: ApplicationStatusValue) => void;
     disabled?: boolean;
+    className?: string;
+    labelClassName?: string;
 }
 
 export const StatusDropdown: React.FC<StatusDropdownProps> = ({
     currentStatus,
     onStatusChange,
     disabled = false,
+    
+    className,
+    labelClassName
 }) => {
     const { t } = useTranslation();
 
@@ -75,7 +80,7 @@ export const StatusDropdown: React.FC<StatusDropdownProps> = ({
     };
 
     return (
-        <div className={styles.dropdownContainer} ref={containerRef}>
+        <div className={`${styles.dropdownContainer} ${className ?? ""}`} ref={containerRef}>
             <button
                 type="button"
                 className={`${styles.dropdownTrigger} ${styles[`status_${currentStatus}`]}`}
@@ -83,7 +88,7 @@ export const StatusDropdown: React.FC<StatusDropdownProps> = ({
                 disabled={disabled || isTerminal}
             >
                 <span className={styles.statusDot} />
-                <span className={styles.statusLabel}>{currentStatus}</span>
+                <span className={`${styles.statusLabel} ${labelClassName ?? ""}`}>{currentStatus}</span>
                 {!isTerminal && (
                     <svg
                         className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`}
@@ -108,7 +113,7 @@ export const StatusDropdown: React.FC<StatusDropdownProps> = ({
                             <button
                                 key={option}
                                 type="button"
-                                className={`${styles.dropdownItem} ${isCurrent ? styles.activeItem : ''}`}
+                                className={`${styles.dropdownItem} ${labelClassName ?? ""} ${isCurrent ? styles.activeItem : ''}`}
                                 onClick={() => handleSelect(option)}
                             >
                                 <span className={`${styles.statusDot} ${styles[`dot_${option}`]}`} />

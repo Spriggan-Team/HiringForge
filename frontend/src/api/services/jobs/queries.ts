@@ -4,7 +4,9 @@ import { type ApiResponse } from "../response.types";
 import { authGet } from "../../http";
 import type { 
     ApiJobSummaryResponse,
+    ApplicationsLightViewApiresponse,
     CandidateListResponse,
+    JobOfferCardinalitiesApiResponse,
     JobViewApiResponse,
     RecruitmentMetricsResponse,
     RecruitmentPipelineStatsResponse
@@ -13,7 +15,7 @@ import type {
 import { buildFilterQueryParams } from "./helpers";
 import { mapJobOfferViewToJobView } from "./mapper";
 import type { UserJobFiltersRequets } from "./request";
-import type { JobView } from "../../../features/jobs/JobOffer";
+import type { JobActivityStatus, JobView } from "../../../features/jobs/JobOffer";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
 
@@ -35,7 +37,7 @@ const getJobsSummary = async (
 ) => {
     try {
         const queryString = buildFilterQueryParams(filters, { limit, skip });
-        const response = await authGet<ApiJobSummaryResponse>(`/users/job_offers?${queryString}`);
+        const response = await authGet<ApiJobSummaryResponse>(`/users/job_offers/summary?${queryString}`);
         console.log("Job summaries", response.data);
         return response.data;
     }
@@ -45,9 +47,50 @@ const getJobsSummary = async (
 };
 
 
-//--------------------------------
-//---- Stats (Recruiters)
-//--------------------------------
+/** Retrurns metrics / count data */
+const getJobSummaryById = async (jobId: string)=>{
+    const response = await authGet<JobOfferCardinalitiesApiResponse>(`/users/job_offers/summary/${jobId}`);
+    console.log("Job summaries", response.data);
+    return response.data;
+}
+
+
+/**
+ * Retrieve light job offers by criteria
+ */
+const getJobOffersWithCriteria = async ({
+    filters,
+    skip,
+    limit
+}: {
+    filters: {
+        activityStatus?: JobActivityStatus;
+    };
+    skip?: number;
+    limit?: number
+}) => {
+    try {
+        const params = new URLSearchParams();
+
+        if (skip) params.set('activityStatus', String(skip));
+        if (limit) params.set('activityStatus', String(limit));
+        if (filters.activityStatus) params.set('activityStatus', filters.activityStatus);
+
+        const queryString = params.toString();
+        const url = `/users/job_offers/criteria_base${
+            queryString ? `?${queryString}` : ''
+        }`;
+
+        const response = await authGet<ApplicationsLightViewApiresponse>(url);
+
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+
+
 
 /**
  * Retreive details about a job for a recruiter
@@ -175,9 +218,6 @@ const getJobCandidates = async(
 }
 
 
-//------------------------------
-//--- Candidates
-//-------------------------------
 
 
 //-------------------------
@@ -186,17 +226,17 @@ const getJobCandidates = async(
 
 const JobQueries = intercept(
     { 
-        //-------------------------------
-        //---- Recruiter
-        //--------------------------
-            getJobView,
-            getJobsSummary,
-                //-- Stats
-            countJobOffers,
-            getJobOffersOverview,
-        
-            getJobCandidates,
-            getJobKpis,
+        getJobView,
+        getJobsSummary,
+        getJobOffersWithCriteria,
+        getJobSummaryById,
+
+            //-- Stats
+        countJobOffers,
+        getJobOffersOverview,
+    
+        getJobCandidates,
+        getJobKpis,
     },
     undefined,
     (method, result) => handleGenericApiResponseAfter(method, result as ApiResponse)

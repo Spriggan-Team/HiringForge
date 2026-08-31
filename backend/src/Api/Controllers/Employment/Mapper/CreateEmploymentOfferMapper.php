@@ -13,15 +13,11 @@ class CreateEmploymentOfferMapper
 
         // Deal with expired
         $rawExpiredAt = $data['expiredAt'] ?? null;
-        $expiredAt = null;
+        $expiredAt = $this->parseDate($rawExpiredAt);
 
-        if ($rawExpiredAt !== null && $rawExpiredAt !== 0 && $rawExpiredAt !== '0' && $rawExpiredAt !== '') {
-            try {
-                $expiredAt = new \DateTimeImmutable((string) $rawExpiredAt);
-            } catch (\Exception) {
-                $expiredAt = null;
-            }
-        }
+    
+        $rawScheduledEndDate = $data['scheduledEndDate'] ?? null;
+        $scheduledEndDate = $this->parseDate($rawScheduledEndDate);
 
         // Salary
         $rawSalary = $data['salary'] ?? null;
@@ -30,11 +26,24 @@ class CreateEmploymentOfferMapper
         return new CreateOfferRequestDto(
             candidateId: (string) ($data['candidateId'] ?? ''),
             applicationId: (string) ($data['applicationId'] ?? ''),
-            expiredAt: $expiredAt,
             jobTitle: (string) ($data['jobTitle'] ?? ''),
             title: isset($data['title']) ? (string) $data['title'] : null,
             salary: $salary,
             message: isset($data['message']) ? (string) $data['message'] : null,
+            
+            expiredAt: $expiredAt,
+            scheduledEndDate: $scheduledEndDate
         );
+    }
+
+    private function parseDate(?string $raw){
+        if ($raw !== null && $raw !== 0 && $raw !== '0' && $raw !== '') {
+            try{
+                return new \DateTimeImmutable((string) $raw);
+            }
+            catch(\Exception){
+                return null;
+            }
+        }
     }
 }

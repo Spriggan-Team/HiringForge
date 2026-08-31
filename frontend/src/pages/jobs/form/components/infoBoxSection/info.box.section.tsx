@@ -10,6 +10,7 @@ import { formatLocation } from "../../../../../utils/convertor";
 import ContractQueries from "../../../../../api/services/contract/queries";
 import DepartmentQueries from "../../../../../api/services/department/queries";
 import SkillServices from "../../../../../api/services/shared/skill.service";
+import { useUserJobContext } from "../../../../../context/user.job.context";
 
 //-- Custom components
 import Title from "../../../../../layout/components/text/title/title";
@@ -32,7 +33,9 @@ interface InfoBoxSectionProps{
 const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
     const { t } = useTranslation();
     const currentUser = useCurrentUser();
-    const { setPopup,  currentJob, setCurrentJob } = useAppContext();
+    
+    const { setPopup } = useAppContext();
+    const { editingJob, setEditingJob } = useUserJobContext();
 
     const [skillInput,    setSkillInput]    = useState<string>("");
     const [searchSkills,  setSearchSkills]  = useState<{ id: string; name: string }[]>([]);
@@ -99,35 +102,49 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
     const handleAddSkill = useCallback(() => {
         if (!selectedSkill) return;
 
-        // FIX: guard against duplicates
-        setCurrentJob(prev => {
-            const alreadyAdded = prev.skills?.some(s => s.id === selectedSkill.id);
+        //  guard against duplicates
+        setEditingJob(prev => {
+            if (!prev) 
+                return prev;
+            const alreadyAdded = prev.skills?.some(
+                s => s.id === selectedSkill.id
+            );
+
             if (alreadyAdded) return prev;
-            return { ...prev, skills: [...(prev.skills ?? []), selectedSkill] };
+            return {
+                ...prev,
+                skills: [
+                    ...(prev.skills ?? []),
+                    selectedSkill
+                ]
+            };
         });
 
         setSkillInput("");
         setSelectedSkill(null);
         setSearchSkills([]);
-    }, [selectedSkill, setCurrentJob]);
+    }, [selectedSkill, setEditingJob]);
 
 
     // Remove skill 
     const handleRemoveSkill = useCallback(
         (skillId: string) => {
-            setCurrentJob(prev => ({
-                ...prev,
-                skills: prev.skills?.filter(s => s.id !== skillId) ?? [],
-            }));
+            setEditingJob(prev => {
+                if(!prev) return prev;
+                return({
+                    ...prev,
+                    skills: prev.skills?.filter(s => s.id !== skillId) ?? [],
+                })
+            });
         },
-        [setCurrentJob],
+        [setEditingJob],
     );
 
-    // ── Render ────────────────────────────────────────────────
+    // ---- Render -----
     return (
         <div className={styles.container}>
 
-            {/* ── General information ── */}
+            {/*------ General information ---- */}
             <div className={`${styles.contextBox} card`}>
                 <Title title={t("jobs.createJob.generalInformationSection.title")} />
 
@@ -135,19 +152,24 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                     {/* Title */}
                     <BasicInput
                         {...globalBasicInputInput}
-                        value={currentJob.title}
+                        value={editingJob?.title}
                         label={t("jobs.createJob.generalInformationSection.inputs.offerTitle.label")}
                         placeholder={t("jobs.createJob.generalInformationSection.inputs.offerTitle.placeholder")}
-                        onChange={e =>
-                            setCurrentJob(prev => ({ ...prev, title: e.target.value }))
-                        }
+                        onChange={e => {
+                            setEditingJob(prev => {
+                                return {
+                                    ...prev,
+                                    title: e.target.value,
+                                };
+                            });
+                        }}
                     />
 
                     {/* Department */}
                     <div className={styles.drawer}>
                         <InputLabel label={t("jobs.createJob.generalInformationSection.drawers.department.label")} />
                         <DrawerBuilder
-                            value={currentJob.department ?? undefined}
+                            value={editingJob?.department ?? undefined}
                             placeholder={t("jobs.createJob.generalInformationSection.drawers.department.placeholder")}
                             items={departmentList.map((d, key) => ({
                                 key,
@@ -164,10 +186,13 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                             )}
                             onChange={(value: Department) => {
                                 if (value) {
-                                    setCurrentJob(prev => ({
-                                        ...prev,
-                                        department: value
-                                    }));
+                                    setEditingJob(prev => {
+                                        if(!prev) return prev;
+                                        return({
+                                            ...prev,
+                                            department: value
+                                        })}
+                                    );
                                 }
                             }}
                         />
@@ -200,10 +225,13 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                                 )}
                                 onChange={(value: Location) => {
                                     if (value) {
-                                        setCurrentJob(prev => ({
-                                            ...prev,
-                                            location: value
-                                        }));
+                                        setEditingJob(prev => {
+                                            if(!prev) return prev;
+                                            return({
+                                                ...prev,
+                                                location: value
+                                            })
+                                        });
                                     }
                                 }}
                             />
@@ -213,7 +241,7 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                         <div className={styles.drawer}>
                             <InputLabel label={t("jobs.createJob.generalInformationSection.inputs.offerType.label")} />
                             <DrawerBuilder
-                                value={currentJob.contract ?? undefined}
+                                value={editingJob?.contract ?? undefined}
                                 items={jobContractTypes.map(c => ({
                                     key: c.id,
                                     value: c,
@@ -228,10 +256,13 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                                 }
                                 onChange={(value) => {
                                     if (value)
-                                        setCurrentJob(prev => ({
-                                            ...prev,
-                                            contract: value,
-                                        }));
+                                        setEditingJob(prev => {
+                                            if(!prev) return prev;
+                                            return({
+                                                ...prev,
+                                                contract: value,
+                                            })
+                                        });
                                 }}
                             />
                         </div>
@@ -248,9 +279,14 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                         width="100%"
                         className={styles.editor}
                         sizeable={{y: true}}
-                        value={currentJob.content ?? {}}
+                        value={editingJob?.content ?? {}}
                         placeholder={t("jobs.createJob.postDescriptionSection.inputs.description.placeholder")}
-                        setValue={value => setCurrentJob(prev => ({ ...prev, content: value }))}
+                        setValue={value =>{ 
+                            setEditingJob(prev => {
+                                if(!prev) return prev;
+                                return ({ ...prev, content: value });
+                            })
+                        }}
                     />
                 </div>
             </div>
@@ -319,9 +355,9 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                         </div>
                     </div>
 
-                    {currentJob.skills.length > 0 && (
+                    {editingJob?.skills && editingJob.skills.length > 0 && (
                         <div className={styles.skills}>
-                            {currentJob.skills.map(skill => (
+                            {editingJob.skills.map(skill => (
                                 <JobSkill
                                     key={skill.id}
                                     content={skill.name}
@@ -342,36 +378,42 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                         <BasicInput
                             type="number"
                             {...globalBasicInputInput}
-                            value={currentJob?.salary?.min}
+                            value={editingJob?.salary?.min}
                             placeholder={t("jobs.createJob.salarySection.inputs.salary.minSalary.placeholder")}
                             onChange={(e) => {
                                 const min = Number(e.target.value);
 
-                                setCurrentJob(prev => ({
-                                    ...prev,
-                                    salary: {
-                                        ...prev.salary,
-                                        min,
-                                    },
-                                }));
+                                setEditingJob(prev => {
+                                    if(!prev) return prev;
+                                    return ({
+                                        ...prev,
+                                        salary: {
+                                            ...prev.salary,
+                                            min,
+                                        },
+                                    })
+                                });
                             }}
                         />
                         <Separator className={styles.separator} width="15px" height="2px" />
                         <BasicInput
                             type="number"
                             {...globalBasicInputInput}
-                            value={currentJob?.salary?.max}
+                            value={editingJob?.salary?.max}
                             placeholder={t("jobs.createJob.salarySection.inputs.salary.maxSalary.placeholder")}
                             onChange={(e) => {
                                 const max = Number(e.target.value);
 
-                                setCurrentJob(prev => ({
-                                    ...prev,
-                                    salary: {
-                                        ...prev.salary,
-                                        max,
-                                    },
-                                }));
+                                setEditingJob(prev => {
+                                    if(!prev) return prev;
+                                    return ({
+                                        ...prev,
+                                        salary: {
+                                            ...prev.salary,
+                                            max,
+                                        },
+                                    })
+                                });
                             }}
                         />
                         <DrawerBuilder
@@ -379,10 +421,13 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                             items={deviseCollection.map((v, key) => ({ key, value: v, label: v }))}
                             triggerProps={{ className: `${styles.deviseTrigger} card-border ` }}
                             onChange={value =>
-                                setCurrentJob(prev => ({
-                                    ...prev,
-                                    salary: { ...prev.salary, devise: value as string },
-                                }))
+                                setEditingJob(prev => {
+                                    if(!prev) return prev;
+                                    return({
+                                        ...prev,
+                                        salary: { ...prev.salary, devise: value as string },
+                                    })
+                                })
                             }
                         />
                     </div>

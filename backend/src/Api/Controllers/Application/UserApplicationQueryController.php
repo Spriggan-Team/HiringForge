@@ -10,11 +10,11 @@ use App\Api\Controllers\Helpers\ApiControllerHelpers;
 use App\Application\Usecases\Application\BulkApplicationStatusChange;
 use App\Application\Usecases\Application\ChangeApplicationStatus;
 use App\Application\Usecases\Application\GetCandidateByApplication;
-
+use App\Domain\ApplicationErrorCode;
 use App\Domain\Candidate\Application\JobApplicationStatus;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 use App\Domain\Candidate\Application\Pipeline\PipelineStageType;
-
+use App\Domain\Exception\EmploymentOfferException;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\Account\AccountRole;
 use App\Domain\Shared\AccountStorageParams;
@@ -255,11 +255,18 @@ class UserApplicationQueryController extends AbstractController
 
             return ApiResponse::notice("Everything went successfully")->toJsonResponse();
         }
-        catch(\Exception $error){
+        catch(EmploymentOfferException $employmentError){
             return ApiResponse::error(
                 message: 'Something went wrong while changing candidate application',
                 statusCode: 400,
-                verbose: true,
+                throwable: $employmentError,
+                code: ApplicationErrorCode::ACTIVE_EMPLOYMENT_OFFER_EXISTS
+            )->toJsonResponse();
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: 'Something went wrong while changing candidate application status',
+                statusCode: 400,
                 throwable: $error
             )->toJsonResponse();
         }
@@ -312,6 +319,13 @@ class UserApplicationQueryController extends AbstractController
      * 
      * Retreive all application related to an user if jobId. Howerver
      * has it been provided the search is done only with the specified job as a  scope
+     * Queries:
+     *  - jobId?: string
+     *  - companyId?: string
+     *  - skip?: number
+     *  - limit?: number
+     *  - search: number
+     *  - statuses?: JobApplicationStatus[]
      */
     #[IsGranted(AccountRole::USER->value)]
     #[Route('/job_offers', methods: ['GET'])]
@@ -323,12 +337,28 @@ class UserApplicationQueryController extends AbstractController
             $user = $this->getUser();
             $userId = $user->getId();
 
-            //-- Params pagination
+            // 1. Params pagination (GET)
             $limit = max(1, filter_var($request->query->get('limit', 15), FILTER_VALIDATE_INT) ?: 15);
             $skip  = max(0, filter_var($request->query->get('skip', 0), FILTER_VALIDATE_INT) ?: 0);
             
-            $jobId = $request->query->get('jobId', null);
-            $search =  $request->request->get('search');
+            $jobId  = $request->query->get('jobId');
+            $search = $request->query->get('search');
+            $companyId = $request->query->get('companyId');
+
+            // Statuses
+            $appStatuses = null;
+            $rawStatuses = $request->query->get('statuses');
+            
+            if (!empty($rawStatuses)) {
+                $decoded = json_decode($rawStatuses, true);
+
+                if (is_array($decoded)) {
+                    $appStatuses = array_map(
+                        static fn(string $val) => JobApplicationStatus::from($val),
+                        $decoded
+                    );
+                }
+            }
 
             //-- Fetching with projection
             $results = $this->applicationRepository->fetchJobApplicationsProjection(
@@ -336,6 +366,7 @@ class UserApplicationQueryController extends AbstractController
                 limit: $limit,
                 skip: $skip,
                 search: $search,
+                appStatuses: $appStatuses,
                 scheme: [
                     'id' => true,
                     'status' => true,
@@ -354,7 +385,14 @@ class UserApplicationQueryController extends AbstractController
                     'jobOffer' => $jobId ? [
                             'id' => true,
                             'title' => true
-                    ] : null
+                    ] : null,
+                    'interviews' => [
+                        'id' => true,
+                        'startDate' => true,
+                        'type' => true,
+                        'minutes' => true,
+                        'status' => true
+                    ]
                 ],
                 userId: $userId 
             );

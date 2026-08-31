@@ -1,19 +1,20 @@
 import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useParams } from "react-router-dom";
 
 //-- Services
 import RouteScheme from "../../../route.scheme";
-import JobContextProvider from "../../../context/job.context";
+import UserJobContextProvider, { useUserJobContext } from "../../../context/user.job.context";
+import JobQueries from "../../../api/services/jobs/queries";
+import JobServices from "../../../api/services/jobs/command";
+import type { JobView } from "../../../features/jobs/JobOffer";
+import { useAppContext } from "../../../hooks/context";
+import { useAppNavigate } from "../../../hooks/navigation";
 
 //- Components
 import JobFormPage from "./components/job.form.page";
 import BreadCrumbs, { type LinkData } from "../../../layout/components/navigation/auth/link/bread.crumbs";
-import { useAppContext } from "../../../hooks/context";
-import { useAppNavigate } from "../../../hooks/navigation";
-import { useParams } from "react-router-dom";
-import JobQueries from "../../../api/services/jobs/queries";
-import JobServices from "../../../api/services/jobs/command";
-import type { JobView } from "../../../features/jobs/JobOffer";
+
 
 
 
@@ -22,9 +23,9 @@ interface ModifyJobPageProps{}
 
 const ModifyJobPage: React.FC<ModifyJobPageProps> = ({}) => {
     return (
-        <JobContextProvider>
+        <UserJobContextProvider>
             <ModifyJobPageContent />
-        </JobContextProvider>
+        </UserJobContextProvider>
     );
 }
 
@@ -43,16 +44,19 @@ interface ModifyJobPageContentProps
 
 const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
     const { t } = useTranslation()
-    const { currentJob, setPopup, setCurrentJob } = useAppContext();
+    const { setPopup } = useAppContext();
+    const { editingJob, setEditingJob } = useUserJobContext();
 
-    const { id: jobId } = useParams<{id: string}>();
+
     const navigate = useAppNavigate();
+    const { id: jobId } = useParams<{id: string}>();
+
 
     const linkData = useMemo(()=>{
         const links: LinkData[] = [];
         links.push({ route: RouteScheme.userJobs,  text: t("jobs.jobs"), current: false })
         
-        if(currentJob && currentJob.id)
+        if(editingJob && editingJob.id)
         {
             links.push({ 
                 current: false, 
@@ -64,7 +68,7 @@ const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
         links.push({ route: RouteScheme.createJob, text: t("jobs.modifyJob"), current: true  })
         
         return (links);
-    }, [currentJob]);
+    }, [editingJob]);
 
 
     //-- Initalize
@@ -74,10 +78,10 @@ const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
 
         const fetchCurrentJobView = async ()=>{
             try{
-                const id = jobId ?? currentJob.id;
+                const id = jobId ?? editingJob?.id;
                 const view = await JobQueries.getJobView(id);
                 
-                setCurrentJob(view);
+                setEditingJob(view);
                 console.log({view})
             }
             catch(error){
@@ -92,16 +96,16 @@ const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
 
     
     useEffect(()=>{
-        if(!jobId && !currentJob.id){
+        if(!jobId && !editingJob?.id){
             setPopup({ status: 'error', message: t('global.messages.unexpectedErrorReload') })
             return;
         }
-    },[currentJob])
+    },[editingJob])
 
     const handleUpdateJob = async (job: JobView)=>{
         console.log("UPDATED JOB: ",job)
         await JobServices.updateJob(job);
-        return { offerId: currentJob.id }; //jobId
+        return { offerId: job.id };
     }
 
     const handleUdateAssets = async (
@@ -111,7 +115,7 @@ const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
             isMain: boolean;
         }[]
     )=>{
-        const ids = [currentJob?.mainImageFileId].filter(
+        const ids = [editingJob?.mainImageFileId].filter(
             (id): id is string => Boolean(id)
         );
         await JobServices.updateJobAssets(

@@ -4,12 +4,10 @@ import { useCallback, useEffect, useMemo, useState, type SVGProps } from "react"
 import { useTranslation } from "react-i18next";
 
 //-- Services & types
-import type { JobView,  } from "../../../../../features/jobs/JobOffer";
-import { formatRemainingTime, formatSalary } from "../../../../../utils/format";
-import type { PersonActionType  } from "../../../../../features/shared/account";
-import NotificationQueries from "../../../../../api/services/notification/queries";
-import type { JobOfferNotification } from "../../../../../api/services/notification/response";
 import RouteScheme from "../../../../../route.scheme";
+import type { CompleteJobView, JobView,  } from "../../../../../features/jobs/JobOffer";
+import { formatRemainingTime, formatSalary } from "../../../../../utils/format";
+import NotificationQueries from "../../../../../api/services/notification/queries";
 import JobQueries from "../../../../../api/services/jobs/queries";
 
 //-- Custom components
@@ -30,39 +28,14 @@ import RecentAction from "../../../../components/recentAction/recent.action";
 //-- CSS styles 
 import styles from "./JobOverviewSection.module.css"
 import ApplicationQueries from "../../../../../api/services/application/queries";
+import { Notifications, type JobAppliedNotification, type JobNotification, type NotificationTypes } from "../../../../../features/notfication/notification";
 
 
 
-
-const mockData = [
-    {
-        delay: "11min",
-        person: "Sarah Martin",
-        title: "Frontend Developper",
-        type: "postulate" as PersonActionType,
-    },
-    {
-        delay: "1h",
-        person: "Marc Leroy",
-        title: "Entretien Technique",
-        type: "create-interview" as PersonActionType,
-    },
-    {
-        delay: "2h",
-        person: null,
-        title: "Backend Developper",
-        type: "publish-offer" as PersonActionType,
-    },
-    {
-        delay: "3h",
-        person: "Alice Dupont",
-        title: "Entretien Technique",
-        type: "confirm-interview" as PersonActionType,
-    }
-]
 interface JobOverviewSectionProps {
-    jobView?: JobView;
+    jobView?: CompleteJobView;
 }
+
 
 export const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({ 
     jobView: defaultJobView = null 
@@ -70,31 +43,36 @@ export const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
     const { t } = useTranslation();
     const { id } = useParams<{ id: string }>();
 
-    const [jobView, setJobView] = useState<JobView | null>(defaultJobView);
-    const [notifications, setNotifications] = useState<JobOfferNotification[]>([]);
+    const [jobView, setJobView] = useState<CompleteJobView | null>(defaultJobView);
+    const [notifications, setNotifications] = useState<NotificationTypes[]>([]);
     const [pieData, setPieData] = useState<DonutChartData[]>([]);
 
-    // 1. Initialisation des données principales (Job & Notifications)
+    //  Initialize data
     const initializingData = useCallback(async () => {
         if (!id) return;
 
         try {
-            const [jobData, notificationData] = await Promise.all([
-                JobQueries.getJobView(id),
-                NotificationQueries.getJobNotfication(id),
+            const [notificationData] = await Promise.all([
+                NotificationQueries.getUserbNotifications<JobNotification>({
+                    jobId: id,
+                    types: [Notifications.JOB_APPLIED]
+                }),
             ]);
 
-            setJobView(jobData);
+            console.log(notificationData);
             setNotifications(notificationData ?? []);
-        } catch (error) {
+        }
+        catch (error) {
             console.error("Failed to load job overview data:", error);
         }
     }, [id]);
+
 
     useEffect(() => {
         initializingData();
     }, [initializingData]);
 
+    
     // 2. Chargement des statistiques du Donut (Asynchrone via useEffect)
     useEffect(() => {
         if (!jobView) return;
@@ -105,7 +83,8 @@ export const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
             let rejectedCount = 0;
             try {
                 rejectedCount = await ApplicationQueries.countRejected(jobView.id);
-            } catch (error) {
+            }
+            catch (error) {
                 console.warn("Failed to fetch rejected applications count", error);
             }
 
@@ -243,15 +222,19 @@ export const JobOverviewSection: React.FC<JobOverviewSectionProps> = ({
                     <div className={`${styles.recentActivitySection} card`}>
                         <Title title={t("global.text.recentAction")} />
                         <div className={styles.actions}>
-                            {notifications.map((item, index) => (
-                                <RecentAction
-                                    key={item.id ?? index}
-                                    title={item.data?.jobTitle}
-                                    person={`${item.account?.firstName ?? ""} ${item.account?.lastName ?? ""}`.trim()}
-                                    type={item.type}
-                                    delay={formatRemainingTime(item.createdAt)}
-                                />
-                            ))}
+                            {
+                                notifications
+                                    .filter(
+                                        (notif): notif is JobAppliedNotification => notif.type === Notifications.JOB_APPLIED
+                                    )
+                                    .map((notif, index) => (
+                                            <RecentAction
+                                                key={notif.id ?? index}
+                                                notification={notif}
+                                            />
+                                        )
+                                    )
+                            }
                         </div>
                         <button className={styles.button}>{t("global.messages.seeMore")}</button>
                     </div>

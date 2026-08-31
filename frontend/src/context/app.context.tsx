@@ -6,7 +6,7 @@ import {
     useEffect,
 } from "react";
 
-import type { JobOverview } from "./job.context";
+import type { JobOverview } from "./user.job.context";
 import type { CurrentActor } from "../features/shared/account";
 import type { AppLoadingState, AppModalProps, AppPopUpSettings, UserAppNavBarProps } from "./context.type";
 
@@ -16,7 +16,9 @@ import { INITIAL_JOB_VIEW, type JobView } from "../features/jobs/JobOffer";
 
 import { AccountRole } from "../core/enums/AccountRole";
 import { getSession } from "../core/auth.helpers";
-import { COUNTDOWN_EXPIRED_STORAGE_KEY, COUNTDOWN_LABEL_STORAGE_KEY, DraggableCountdown, type DraggableCountdownProps } from "../layout/components/draggable.contdown";
+import { type RecruiterDashboardKpis } from "../features/dashboard/KpiData";
+
+import { COUNTDOWN_EXPIRED_STORAGE_KEY,  DraggableCountdown, type DraggableCountdownProps } from "../layout/components/draggable.contdown";
 
 
 
@@ -27,7 +29,7 @@ interface AppContextProps{
     
     //-- App initialization
     isAppInitializing: boolean;
-    initializeData: ()=>void;
+    initializeAccountData: ()=>void;
 
     //-- Popup
     popup: AppPopUpSettings;
@@ -37,7 +39,7 @@ interface AppContextProps{
     modal: AppModalProps | null;
     setModal: (param: AppModalProps | null)=>void;
 
-    //-- Navbar
+    //-- User(Recruiter) Navbar - Config
     navbar?: UserAppNavBarProps | null;
     setNavbar: (param: UserAppNavBarProps | null) => void;
 
@@ -49,20 +51,18 @@ interface AppContextProps{
     currentActor: CurrentActor | null;
     setCurrentActor: (param: CurrentActor | null) => void;
 
+    //-- Kpi data
+    kpiData: RecruiterDashboardKpis | null;
+    setKpiData: (params: RecruiterDashboardKpis | null) => void;
+
+    //-- Notification
+    notificationCount: number;
+    setNotificationCount: React.Dispatch<React.SetStateAction<number>>;
+
     /** Actor profi limage */
     avatarUrl: string ;
     setAvatarUrl: (param: string)=>void;
 
-    //------ Job
-    /**
-     * Current job overview used across the application
-     * (AI generation, preview, creation, edition, ...).
-     */
-    jobOverview: JobOverview | null;
-    setJobOverview: React.Dispatch<React.SetStateAction<JobOverview | null>>;
-
-    currentJob: JobView;
-    setCurrentJob: React.Dispatch<React.SetStateAction<JobView>>;
 }
 
 export const AppContext = createContext<AppContextProps | null>(null);
@@ -82,9 +82,12 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
 
     //-- Initialization
     const [isAppInitializing, setIsAppInitializing] = useState<boolean>(true);
+    const [kpiData, setKpiData] = useState<RecruiterDashboardKpis | null>(null)
     
+
     //-- modal
     const [modal, setModal] = useState<AppModalProps | null>(null);
+
 
     //-- Countdown
     const [countdown, setCountdownState] = useState<DraggableCountdownProps | null>(() => {
@@ -95,16 +98,16 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
     });
     
     // navbar
-    const [navbar, setNavbar] = useState<UserAppNavBarProps | null>(null);
+    const [navbar, setNavbar] = useState<UserAppNavBarProps | null>(null); // user navbar
 
     const [currentActor, setCurrentActor] = useState<CurrentActor | null>(null);
     const [avatarUrl, setAvatarUrl] = useState<string>("")
-
-    const [jobOverview, setJobOverview ] = useState<JobOverview | null>(null);
-    const [currentJob, setCurrentJob] = useState<JobView>(INITIAL_JOB_VIEW);
-
     
-    const initializeData = useCallback(async () => {
+    //--- Notification
+    const [notificationCount, setNotificationCount] = useState<number>(0);
+
+
+    const initializeAccountData = useCallback(async () => {
         try {
             const { role } = getSession();
 
@@ -168,9 +171,24 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
     }, [setCurrentActor]);
 
 
+    //-- Load Kpis
+    const initialializeUserKpis = useCallback(async ()=>{
+        try{ 
+            // kpis
+            const data = await UserQueriesServices.getKPI();
+            console.log({ kpis: data })
+            setKpiData(data);
+        }
+        catch(error){
+            console.warn("Something went wrong while retreiving kpis & application kpi linechart dataset : ", error)
+        }
+    }, []);
+
+
     useEffect(()=>{
-        initializeData();
-    },[initializeData])
+        initializeAccountData();
+        initialializeUserKpis();
+    },[initializeAccountData])
 
     //----------------------
     //--  CUSTOM SETTER
@@ -213,19 +231,20 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
             navbar,
             setNavbar,
 
+            kpiData,
+            setKpiData,
+
+            notificationCount,
+            setNotificationCount,
+
             currentActor,
             setCurrentActor,
 
             avatarUrl,
             setAvatarUrl,
 
-            jobOverview,
-            setJobOverview,
-
-            currentJob,
-            setCurrentJob,
-
-            initializeData,
+            
+            initializeAccountData
         }),
         [
             popup,
@@ -234,11 +253,9 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
             isAppInitializing,
             loading,
             navbar,
+            kpiData,
             currentActor,
             avatarUrl,
-            jobOverview,
-            currentJob,
-            initializeData,
             handleSetCountdown,
         ]
     );

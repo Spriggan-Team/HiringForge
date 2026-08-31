@@ -1,52 +1,49 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 //-- Services
-import type { PersonActionType } from "../../../../../features/shared/account";
+import NotificationQueries from "../../../../../api/services/notification/queries";
+import NotificationServices from "../../../../../api/services/notification/command";
+import type { NotificationTypes,  NotificationValueType } from "../../../../../features/notfication/notification";
 
 //-- Custom Components
+import RecentAction from "../../../../components/recentAction/recent.action";
 import SectionHeader from "../../../../../layout/components/sections/sectionHeader/section.header";
 import ViewAllLink from "../../../../../layout/components/link/view.all.link";
 
 //-- CSS styles
 import styles from "./RecentActionPool.module.css"
-import RecentAction from "../../../../components/recentAction/recent.action";
+import { CardPlaceholder } from "../../../../../layout/components/cards/placeholder.php/card.placeholder";
 
 
-
-const mockData = [
-    {
-        delay: "11min",
-        person: "Sarah Martin",
-        title: "Frontend Developper",
-        type: "postulate" as PersonActionType,
-    },
-    {
-        delay: "1h",
-        person: "Marc Leroy",
-        title: "Entretien Technique",
-        type: "create-interview" as PersonActionType,
-    },
-    {
-        delay: "2h",
-        person: null,
-        title: "Backend Developper",
-        type: "publish-offer" as PersonActionType,
-    },
-    {
-        delay: "3h",
-        person: "Alice Dupont",
-        title: "Entretien Technique",
-        type: "confirm-interview" as PersonActionType,
-    }
-]
-
-interface RecentActionPoolProps{}
+interface RecentActionPoolProps{
+    setNotificationCount: React.Dispatch<React.SetStateAction<number>>;
+}
 
 
-const RecentActionPool: React.FC<RecentActionPoolProps> = ({}) => {
+const RecentActionPool: React.FC<RecentActionPoolProps> = ({
+    setNotificationCount
+}) => {
     const {t} = useTranslation();
-    const [recentActions, setRecentAction] = useState(mockData);
+    const [recentActions, setRecentAction] = useState<NotificationTypes[]>([]);
+
+    useEffect(()=>{
+        const initNotificationData = async ()=>{
+            try{
+                const data = await NotificationQueries.getUserbNotifications({});
+                setRecentAction(data);
+                
+                const ids = data.map(value => value.id);
+                await NotificationServices.markNotificationAsRead(ids);
+
+                setNotificationCount((prev) => (prev ?? 0) - (ids.length ?? 0) )
+            }
+            catch(error){
+                console.log("Something went wrong ")
+            }
+        }
+        initNotificationData();
+    },[])
 
     return (
         <div className={styles.container}>
@@ -54,20 +51,26 @@ const RecentActionPool: React.FC<RecentActionPoolProps> = ({}) => {
                 title={t("global.actions.recentAction")}
                 action={<ViewAllLink />}
             />
-            <div className={styles.items}>
-                {
-                    recentActions.map((item, index)=>(
-                        <RecentAction
-                            key={index}
-                            type={item.type}
-                            title={item.title}
-                            delay={item.delay}
-                            person={item.person}
-                            className={styles.item}
+            {
+                recentActions.length > 0 ?
+                    (
+                        <div className={styles.items}>
+                            {
+                                recentActions.map((item, index)=>(
+                                    <RecentAction
+                                        key={index}
+                                        notification={item}
+                                        className={styles.item}
+                                    />
+                                ))
+                            }
+                        </div>
+                    ) : (
+                        <CardPlaceholder 
+                            text={t('notifications.messages.noNotificationFounded')}
                         />
-                    ))
-                }
-            </div>
+                    )
+            }
         </div>
     );
 }

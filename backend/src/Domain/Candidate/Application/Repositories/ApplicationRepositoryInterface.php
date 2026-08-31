@@ -36,6 +36,7 @@ interface ApplicationRepositoryInterface
     public function assertApplicationBelongsToCandidate(string $candidateId, string $applicationId): void;
 
 
+
     /**
      * Retreive application candidates pipeline
      * 
@@ -90,8 +91,13 @@ interface ApplicationRepositoryInterface
 
     /**
      * Get candidates idntity
+     * @return array{
+     *  id: string,
+     *  lastName: string,
+     *  firstName: string
+     * }|null
      */
-    public function getCandidateIdentity(string $applicationid):string;
+    public function getCandidateIdentity(string $applicationid): ?array;
 
     /** 
      * Counts applications matching criteria. If no status is provided, all applications are counted.
@@ -119,6 +125,7 @@ interface ApplicationRepositoryInterface
      *
      * @param string $jobId
      * @param int $limit
+     * @param ?array $jobStatuses
      * @param int $skip
      * @param array{
      *      id?: bool,
@@ -140,8 +147,17 @@ interface ApplicationRepositoryInterface
      *      jobOffer?: array{
      *          id?: bool,
      *          title?: bool
-     *      } 
+     *      },
+     *      interviews: array{
+     *          id?: bool,
+     *          startDate?: bool,
+     *          minutes?: bool,
+     *          type?: bool
+     *      }
      * } $scheme
+     *      interviews:
+     *          type: interview type
+     *          startDate: ISO
      * @param string|null $userId
      * @param string|null $companyId
      * @param string|null $search allows used to search applications based on userName
@@ -150,11 +166,13 @@ interface ApplicationRepositoryInterface
      */
     public function fetchJobApplicationsProjection(
         ?string $jobId, 
-        int $limit = 17, int $skip = 0, 
+        int $limit = 17, 
+        int $skip = 0, 
         array $scheme = ['id'=>true], 
-        ?string $userId =null, ?string $companyId = null,
+        ?string $userId =null, 
+        ?string $companyId = null,
+        ?array $appStatuses = null,
         ?string $search = null,
-        ?JobApplicationStatus $status =null,
     ): array;
 
 

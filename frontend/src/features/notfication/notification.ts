@@ -20,12 +20,26 @@ export interface InterviewScheduledData extends BaseJobNotificationData {
   recruiterName?: string;
 }
 
+
 export interface CandidateRejectedData extends BaseJobNotificationData {
   companyName: string;
   reason?: string;
 }
 
+
+//-- employment notif
+export interface EmploymentOfferNotificationData {
+  employmentOfferId: string;
+  jobTitle: string;
+  companyName: string;
+  salary?: number | null;
+  expiresAt?: string | null;
+}
+
+
+//-- stystem
 export type SystemAlertLevel = 'info' | 'warning' | 'danger';
+
 
 export interface SystemAlertData {
   title: string;
@@ -34,15 +48,31 @@ export interface SystemAlertData {
   metadata?: Record<string, unknown>;
 }
 
+
 // ==========================================
 //  Discriminated Notification Unions
 // ==========================================
 
-export type NotificationType =
-  | 'JOB_APPLIED'
-  | 'INTERVIEW_SCHEDULED'
-  | 'CANDIDATE_REJECTED'
-  | 'SYSTEM_ALERT';
+
+export const Notifications = {
+  JOB_APPLIED: 'JOB_APPLIED',
+  JOB_APPLICATIONS_STATUS_SHIFT: 'JOB_APPLICATIONS_STATUS_SHIFT',
+  
+  //-- Interviews
+  INTERVIEW_SCHEDULED: 'INTERVIEW_SCHEDULED',
+  
+  //-- Application
+  CANDIDATE_REJECTED: 'CANDIDATE_REJECTED',
+
+  //-- Employment
+  EMPLOYMENT_OFFER_GENERATED: "EMPLOYMENT_OFFER_GENERATED",
+  EMPLOYMENT_OFFER_CANCELLED:  "EMPLOYMENT_OFFER_CANCELLED",
+    
+  SYSTEM_ALERT:  'SYSTEM_ALERT'
+} as const;
+
+export type NotificationValueType = typeof Notifications[keyof typeof Notifications];
+
 
 interface BaseNotification {
   id: string;
@@ -57,37 +87,52 @@ interface BaseNotification {
   createdAt: string;
 }
 
-export type AppNotificationType = 
-  | 'JOB_APPLIED' | 'INTERVIEW_SCHEDULED' 
-  | 'CANDIDATE_REJECTED' | 'SYSTEM_ALERT';
 
 export type JobAppliedNotification = BaseNotification & {
   type: 'JOB_APPLIED';
   data: JobAppliedData;
 };
 
+
 export type InterviewScheduledNotification = BaseNotification & {
   type: 'INTERVIEW_SCHEDULED';
   data: InterviewScheduledData;
 };
+
 
 export type CandidateRejectedNotification = BaseNotification & {
   type: 'CANDIDATE_REJECTED';
   data: CandidateRejectedData;
 };
 
+
+export type EmploymentOfferNotification = BaseNotification & {
+  type: 
+    | typeof Notifications.EMPLOYMENT_OFFER_GENERATED 
+    | typeof Notifications.EMPLOYMENT_OFFER_CANCELLED;
+  data: EmploymentOfferNotificationData;
+};
+
+
 export type SystemAlertNotification = BaseNotification & {
   type: 'SYSTEM_ALERT';
   data: SystemAlertData;
 };
 
-/** Type Global for any notfication  */
 
-export type Notification =
+//------------------------------------
+//-- Complete Notifications Types
+//------------------------------------
+
+export type JobNotification = JobAppliedNotification;
+
+/** Type Global for any notfication  */
+export type NotificationTypes =
   | JobAppliedNotification
   | InterviewScheduledNotification
   | CandidateRejectedNotification
-  | SystemAlertNotification;
+  | SystemAlertNotification
+  | EmploymentOfferNotification;
 
 
 

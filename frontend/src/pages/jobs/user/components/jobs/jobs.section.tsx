@@ -10,7 +10,6 @@ import { renderStatus } from "../../../utils/utils";
 //--Custom components
 import Separator from "../../../../../layout/components/separator/separator";
 import InfoPill, { type InfoPillProps } from "../../../../../layout/components/badges/pill/info.pill";
-import { SelectionContainer } from "../../../../../layout/components/form/input/selection/selection";
 
 //-- SVG Compoenents
 import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.svg?react"
@@ -169,9 +168,9 @@ const JobItem: React.FC<JobItemProps> = ({
 
         <Cardinal
           type="offer"
-          count={cardinal.offers}
+          count={cardinal.employmentOffers}
           label={t('global.offer.offerLabel', {
-            count: cardinal.offers,
+            count: cardinal.employmentOffers,
           })}
         />
 

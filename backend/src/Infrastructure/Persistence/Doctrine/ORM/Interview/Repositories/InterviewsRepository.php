@@ -3,7 +3,9 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Interview\Repositories;
 
+use App\Domain\Interviews\Interview;
 use App\Domain\Interviews\InterviewsRepositoryInterface;
+use App\Domain\Interviews\InterviewStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
 
 use Override;
@@ -22,8 +24,103 @@ class InterviewsRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, InterviewEntity::class);
     }
+
+
+    /**
+     * @param string $userId - refers to recruiter's id
+     * @return array<int, array{
+     *      id: string,
+     *      type: string,
+     *      candidate: array{
+     *          id: string,
+     *          firstName: string,
+     *          email: string,
+     *          lastName: string,
+     *          imageId?: int
+     *      },
+     *      description?: string,
+     *      startDate: \DateTimeImmutable,
+     *      minutes: int
+     * }>
+     */
+    public function getTodayInterviewAgenda(
+        string $userId,
+        int $skip,
+        int $limit,
+        \DateTimeImmutable $date
+    ): array {
+        $dayStart = $date->setTime(0, 0, 0);
+        $dayEnd = $dayStart->modify('+1 day');
+
+        $interviews = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('i', 'a', 'c')
+            ->from(InterviewEntity::class, 'i')
+            ->innerJoin('i.application', 'a')
+            ->innerJoin('a.candidate', 'c')
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('j.user = :userId')
+            ->andWhere('i.startDate >= :dayStart')
+            ->andWhere('i.startDate < :dayEnd')
+            ->orderBy('i.startDate', 'ASC')
+            ->setFirstResult($skip)
+            ->setMaxResults($limit)
+            ->setParameters([
+                'userId' => $userId,
+                'dayStart' => $dayStart,
+                'dayEnd' => $dayEnd,
+            ])
+            ->getQuery()
+            ->getResult();
+
+        return array_map(static function (InterviewEntity $interview): array {
+            $application = $interview->getApplication();
+            $candidate = $application->getCandidate();
+
+            $data = [
+                'id' => $interview->getId(),
+                'type' => $interview->getType(),
+                'candidate' => [
+                    'id' => $candidate->getId(),
+                    'firstName' => $candidate->getFirstName(),
+                    'lastName' => $candidate->getLastName(),
+                    'email' => $candidate->getEmail(),
+                ],
+                'startDate' => $interview->getStartDate()->format(\DateTimeInterface::ATOM),
+                'minutes' => $interview->getMinutes(),
+            ];
+
+            if ($interview->getDescription() !== null) {
+                $data['description'] = $interview->getDescription();
+            }
+
+            if ($candidate->getImage()->getId() !== null) {
+                $data['candidate']['imageId'] = $candidate->getImage()->getId();
+            }
+
+            return $data;
+        }, $interviews);
+    }
+
     
+
+
+    #[Override]
+    public function cancelInterviewPlansForApplication(string $recruiterId, string $applicationId): void
+    {
+        $this->createQueryBuilder('i')
+            ->update()
+            ->set('i.status', ':status')
+            ->where('i.application = :applicationId')
+            ->andWhere('i.user = :recruiterId')
+            ->setParameter('status', InterviewStatus::CLOSED->value)
+            ->setParameter('applicationId', $applicationId)
+            ->setParameter('recruiterId', $recruiterId)
+            ->getQuery()
+            ->execute();
+    }
     
+
     /**
      * Retrieve interviews related to a specific job linked to a recruiter (user),
      * a company, or a specific candidate.
@@ -60,15 +157,16 @@ class InterviewsRepository extends ServiceEntityRepository
      */
     #[Override]
     public function fetchJobInterviewsProjection(
-        string $jobId,
-        int $limit = 17,
+        string $userId,
         int $skip = 0,
+        int $limit = 17,
+        ?string $jobId = null,
         array $scheme = ['id' => true],
-        ?string $userId = null,
         ?string $companyId = null,
         ?string $candidateId = null
     ): array {
-        $qb = $this->createQueryBuilder('i');
+        $qb = $this->createQueryBuilder('i')
+                   ->innerJoin('i.application', 'a');
         $selectedFields = [];
 
         //  Dynamic selection for Interview entity fields
@@ -86,7 +184,7 @@ class InterviewsRepository extends ServiceEntityRepository
 
         //  Sub-Projection for Candidate relationship
         if (!empty($scheme['candidate']) && is_array($scheme['candidate'])) {
-            $qb->leftJoin('i.candidate', 'c');
+            $qb->leftJoin('a.candidate', 'c');
             $allowedCandidateFields = ['id', 'firstName', 'lastName', 'email'];
 
             foreach ($allowedCandidateFields as $candField) {
@@ -114,18 +212,20 @@ class InterviewsRepository extends ServiceEntityRepository
         }
 
         $qb->select(implode(', ', $selectedFields))
-           ->where('i.jobOffer = :jobId')
+           ->where('a.jobOffer = :jobId')
            ->setParameter('jobId', $jobId);
 
         //  Filtering by Candidate, Company or Recruiter User (Exclusive execution)
         if ($candidateId) {
-            $qb->andWhere('i.candidate = :candidateId')
+            $qb->andWhere('a.candidate = :candidateId')
                ->setParameter('candidateId', $candidateId);
-        } elseif ($companyId) {
-            $qb->andWhere('i.company = :companyId')
+        } 
+        elseif ($companyId) {
+            $qb->andWhere('a.company = :companyId')
                ->setParameter('companyId', $companyId);
-        } elseif ($userId) {
-            $qb->innerJoin('i.jobOffer', 'jo')
+        }
+        elseif ($userId) {
+            $qb->innerJoin('a.jobOffer', 'jo')
                ->andWhere('jo.user = :userId')
                ->setParameter('userId', $userId);
         }
@@ -175,11 +275,31 @@ class InterviewsRepository extends ServiceEntityRepository
 
 
 
+    #[Override]
+    public function find($id, $lockMode = null, $lockVersion = null)
+    {
+        return parent::find($id, $lockMode, $lockVersion);
+    }
+
+
+    #[Override]
+    public function findById(string $id): ?Interview
+    {
+        throw new \Exception('Not implemented');
+    }
+
+
+    #[Override]
+    public function save(Interview $interview): void
+    {
+        throw new \Exception('Not implemented');
+    }
+
 
     public function countInterviews(array $criteria): int 
     {
         $qb = $this->createQueryBuilder('i')
-            ->select('COUNT(DISTINCT i.id)');
+                   ->select('COUNT(DISTINCT i.id)');
 
         //-- Filter by status
         if (!empty($criteria['status'])) {
@@ -187,18 +307,22 @@ class InterviewsRepository extends ServiceEntityRepository
                ->setParameter('status', $criteria['status']);
         }
 
-        // Direct filter : check if an iterviews posses a relation with the procided offer
-        if (!empty($criteria['jobOfferId'])) {
-            $qb->andWhere('i.jobOffer = :jobOfferId')
-               ->setParameter('jobOfferId', $criteria['jobOfferId']);
-        }
+        if(!empty($criteria['jobOfferId']) || !empty($criteria['companyId']))
+        {
+            $qb->innerJoin('i.application', 'a');
 
-        // Filter By Compoany par Company (companyId)
-        if (!empty($criteria['companyId'])) {
-            $qb->innerJoin('i.jobOffer', 'j');
-  
-            $qb->andWhere('j.company = :companyId')
-                ->setParameter('companyId', $criteria['companyId']);
+            // Direct filter : check if an iterviews posses a relation with the procided offer
+            if (!empty($criteria['jobOfferId'])) {
+                $qb->andWhere('a.jobOffer = :jobOfferId')
+                   ->setParameter('jobOfferId', $criteria['jobOfferId']);
+            }
+
+            // Filter By Compoany par Company (companyId)
+            if (!empty($criteria['companyId'])) {
+                $qb->innerJoin('a.jobOffer', 'j');
+                $qb->andWhere('j.company = :companyId')
+                   ->setParameter('companyId', $criteria['companyId']);
+            }  
         }
 
         try {

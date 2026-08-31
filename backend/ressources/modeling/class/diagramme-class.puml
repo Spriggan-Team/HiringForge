@@ -261,11 +261,12 @@ Application "1" *-- "0..*" Interview
 class EmploymentOffer {
     - id: string
     - reason: string [nullable]
+    - scheduledEndDate: DateTime
+    - expiredAt: DateTime
 }
 
 Candidate "1" --> "0..*" EmploymentOffer
 User "1" --> "0..*" EmploymentOffer : creates
-Company "1" *-- "0..*" EmploymentOffer
 Application "1" *-- "0..1" EmploymentOffer
 
 

@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 //--Services
 import { activeJobOfferData } from "../../../../../core/mock/job.data";
+import JobQueries from "../../../../../api/services/jobs/queries";
+import type { JobOfferViewLightModel } from "../../../../../features/jobs/JobOffer";
+import { CardPlaceholder } from "../../../../../layout/components/cards/placeholder.php/card.placeholder";
+import { useAppNavigate } from "../../../../../hooks/navigation";
+
 
 //-- Custom component
 import SectionHeader from "../../../../../layout/components/sections/sectionHeader/section.header";
@@ -19,6 +24,9 @@ import ImagePlaceholder from "/src/assets/images/image-placeholder.png"
 
 //-- CSS Styles
 import styles from "./ActiveOffer.module.css"
+import RouteScheme from "../../../../../route.scheme";
+
+
 
 
 
@@ -26,35 +34,58 @@ import styles from "./ActiveOffer.module.css"
 interface ActiveOfferSectionProps{}
 
 
+
 const ActiveOfferSection: React.FC<ActiveOfferSectionProps> = () => {
     const { t } = useTranslation();
-    const [activeOffer, setActiveOffers] = useState(activeJobOfferData);
+    const [activeOffer, setActiveOffers] = useState<JobOfferViewLightModel[] | null>(null);
+    const navigate = useAppNavigate();
+
+    useEffect(()=>{
+        const fetchActiveOffer = async ()=>{
+            try{
+                const data = await JobQueries.getJobOffersWithCriteria({
+                    filters: {
+                        activityStatus: 'active'
+                    }
+                });
+
+                setActiveOffers(data);
+            }
+            catch(error){
+                console.log("Something went wrong while retreieving active offer", error)
+            }
+        }
+        fetchActiveOffer();
+    },[])
+
 
     return (
         <div className={`${styles.container}`}>
             <SectionHeader
                 title={t("userHome.acitveOffer.title")}
-                action={<ViewAllLink />}
+                action={<ViewAllLink onClick={()=> navigate(RouteScheme.userJobs, { menuId: 'poste' })} />}
             />
             <div className={`${styles.content} scrollbar`}>
                 {
-                    activeOffer.map((item, key)=>(
-                        <ActiveOffer
-                            key={key}
-                            
-                            title={item.title}
-                            image={item.image}
-                            
-                            tags={item.tags}
-                            delay={item.delay}
+                    activeOffer && activeOffer.length > 0 ?
+                        activeOffer.map((item, key)=>(
+                            <ActiveOffer
+                                key={key}
+                                
+                                title={item.title}
+                                image={item.image}
+                                
+                                tags={item.tags}
+                                delay={item.delay}
 
-                            interviews={item.interviews}
-                            candidates={item.candidates}
+                                interviews={item.interviews}
+                                candidates={item.candidates}
 
-                            remainingCandidates={item.remainingCandidates ?? 0}
-                            treatmentProgress={item.treatmentProgress ?? 0}
-                        />
-                    ))
+                                remainingCandidates={item.remainingCandidates ?? 0}
+                                treatmentProgress={item.treatmentProgress ?? 0}
+                            />
+                        ))
+                        : <CardPlaceholder text={t("userHome.acitveOffer.noActiveOffers")}/>
                 }
             </div>
         </div>

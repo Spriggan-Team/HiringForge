@@ -3,6 +3,7 @@
 import React from 'react';
 import styles from './ApplicationDetailModal.module.css'
 import type { Application } from '../../../../features/application/application';
+import { InterviewStatus, InterviewType } from '../../../../features/interviews/interviews';
 
 
 
@@ -94,6 +95,38 @@ export const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
                 )}
             </div>
 
+            {/** Interviews */}
+            {application.interviews && application.interviews.length > 0 && (
+                <div className={styles.interviewsContainer}>
+                    <h4 className={styles.interviewsTitle}>Entretiens programmés</h4>
+                    {application.interviews.map((interview) => {
+                        const scheduleAt = new Date(interview.startDate);
+                        
+                        return (
+                            <div 
+                                key={interview.id} 
+                                className={`${styles.interviewCard} ${getInterviewStatusClassName(interview.status as string)}`}
+                            >
+                                <span className={styles.title}>
+                                    {getInterviewsTag(interview.type)}
+                                </span>
+                                <span className={styles.date}>
+                                    Programmé le : {scheduleAt.toLocaleString('fr-FR', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}
+                                </span>
+                                <span className={styles.duration}>
+                                    Durée : {interview.minutes} min
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
             <div  className={styles.actions}>
                 <button type="button" onClick={onClose} className={styles.closeButton}>
                     Fermer
@@ -102,3 +135,33 @@ export const ApplicationDetailModal: React.FC<ApplicationDetailModalProps> = ({
         </div>
     );
 };
+
+
+const getInterviewsTag = (text: string)=>{
+    switch(text){
+        case InterviewType.RH_INTERVIEWS:
+            return "Entretien RH"
+        case InterviewType.TECHNICAL_INTERVIEWS:
+            return "Entretien technique"
+        default:
+            return "Entretien"
+    }
+}
+
+
+const getInterviewStatusClassName = (status: string)=>{
+        switch(status){
+            case InterviewStatus.CANCELLED:
+                return styles.interviewCancel
+            case InterviewStatus.COMPLETED:
+                return styles.interviewComplete
+            case InterviewStatus.CLOSED:
+                return styles.interviewClosed
+            case InterviewStatus.MISSED:
+                return styles.interviewMissed
+            case InterviewStatus.IN_PROGRESS:
+                return styles.interviewInprogess
+            default:
+                return ""
+    }
+}

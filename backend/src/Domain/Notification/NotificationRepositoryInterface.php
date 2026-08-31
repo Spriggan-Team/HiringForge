@@ -5,6 +5,12 @@ namespace App\Domain\Notification;
 
 interface NotificationRepositoryInterface
 {
+    /**
+     * Mark notifications as read
+     * @param array<int,string> $notificationIds
+     * @throws \Exception
+     */
+    public function markNotificationAsRead(array $notificationIds, string $recipientId): void;
 
     /**
      * Counts the number of unread notifications for a given target (Account or Company).
@@ -20,13 +26,7 @@ interface NotificationRepositoryInterface
     ): int;
 
     /**
-     * Retrieves all notifications related to a specified recruiter (user) for a given job.
-     * Checks whether the notification belongs to the user and is related to the specific jobId.
-     *
-     * @param string $userId The recruiter (recipient) account UUID.
-     * @param string $jobId The job offer identifier.
-     * @param int $limit Maximum number of notifications to return.
-     *
+     * @param array<NotificationType> $types Tableau de filtres par type (vide = tous les types)
      * @return array<int, array{
      *     id: string,
      *     targetUrl: string|null,
@@ -42,7 +42,13 @@ interface NotificationRepositoryInterface
      *     createdAt: \DateTimeImmutable
      * }>
      */
-    public function getJobOfferNotification(string $userId, string $jobId, int $limit = 7): array;
+    public function getNotifications(
+        string $userId, 
+        ?string $jobId = null, 
+        int $limit = 7, 
+        int $skip = 0,
+        array $types = [] 
+    ): array;
 
     /**
      * Retrieves recent notifications for a given recipient (Account or Company).

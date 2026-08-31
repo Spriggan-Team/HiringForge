@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer\Repositories;
 
 use App\Domain\EmploymentOffer\EmploymentOffer as DomainEmploymentOffer;
@@ -26,11 +25,31 @@ class EmploymentOfferRepository extends ServiceEntityRepository
 
 
     #[Override]
+    public function hasActiveOffer(string $applicationId): bool
+    {
+        $result = $this->createQueryBuilder('o')
+            ->select('COUNT(o.id)')
+            ->where('o.application = :applicationId')
+            ->andWhere('o.status NOT IN (:inactiveStatuses)')
+            ->setParameter('applicationId', $applicationId)
+            ->setParameter('inactiveStatuses', [
+                EmploymentOfferStatus::EXPIRED->value,
+                EmploymentOfferStatus::DECLINED->value,
+            ])
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $result > 0;
+    }
+
+
+
+    #[Override]
     public function findById(string $employmentId): ?DomainEmploymentOffer
     {
         /** @var EmploymentOfferEntity|null $employment */
         $entity = $this->findOneBy(["id" => $employmentId]);
-        if(!$employment){
+        if (!$entity) {
             return null;
         }
         $domain = $this->mapper->toDomain($entity);
@@ -72,7 +91,7 @@ class EmploymentOfferRepository extends ServiceEntityRepository
         $activeOffersCount = (int) $this->createQueryBuilder('e')
             ->select('COUNT(e.id)')
             ->innerJoin('e.application', 'a')
-            ->innerJoin('e.candidate', 'c')
+            ->innerJoin('a.candidate', 'c')
             ->where('a.id = :applicationId')
             ->andWhere('c.id = :candidateId')
             ->andWhere('e.expiredAt > :now')
@@ -110,16 +129,20 @@ class EmploymentOfferRepository extends ServiceEntityRepository
                ->setParameter('applicationId', $criteria['applicationId']);
         }
 
+        //-- Join aplications
+        if(isset($criteria['candidateId']) ||  isset($criteria['userId'])){
+            $qb->innerJoin('o.application', 'a');
+        }
+
         // Filter by Candidate
         if (isset($criteria['candidateId'])) {
-            $qb->andWhere('o.candidate = :candidateId')
-               ->setParameter('candidateId', $criteria['candidateId']);
+            $qb->andWhere('a.candidate = :candidateId')
+                ->setParameter('candidateId', $criteria['candidateId']);
         }
 
         // If you search by JobOffer or by Recruiter (User), you must perform a join with Application and JobOffer
         if (isset($criteria['jobOfferId']) || isset($criteria['userId'])) {
-            $qb->innerJoin('o.application', 'a')
-               ->innerJoin('a.jobOffer', 'j');
+            $qb->innerJoin('a.jobOffer', 'j');
 
             if (isset($criteria['jobOfferId'])) {
                 $qb->andWhere('j.id = :jobOfferId')
@@ -162,6 +185,7 @@ class EmploymentOfferRepository extends ServiceEntityRepository
         }
     }
 
+    
 
     /** DELETION */
     #[Override]
@@ -219,11 +243,15 @@ class EmploymentOfferRepository extends ServiceEntityRepository
         int $skip = 0
     ): array {
         $qb = $this->createQueryBuilder('o');
+        $qb->leftJoin('o.application', 'a')
+           ->leftJoin('a.jobOffer', 'j');
+
         $selects = [];
 
         //  Projection Offer (Champs corrects de EmploymentOfferEntity)
         $offerFields = [
-            'id', 'message', 'salary', 'status', 'expiredAt', 'createdAt'
+            'id', 'message', 'salary', 'status', 'rejectionReason',
+            'expiredAt', 'createdAt', 'scheduledEndDate'
         ];
         
         foreach ($offerFields as $field) {
@@ -235,7 +263,7 @@ class EmploymentOfferRepository extends ServiceEntityRepository
         //  Candidate & Image
         $candidateScheme = $scheme['candidate'] ?? [];
         if (!empty($candidateScheme)) {
-            $qb->leftJoin('o.candidate', 'c');
+            $qb->leftJoin('a.candidate', 'c');
 
             foreach (['id', 'firstName', 'lastName', 'email'] as $field) {
                 if (!empty($candidateScheme[$field])) {
@@ -253,8 +281,6 @@ class EmploymentOfferRepository extends ServiceEntityRepository
         }
 
         //  Application & JobOffer
-        $qb->leftJoin('o.application', 'a')
-        ->leftJoin('a.jobOffer', 'j');
 
         $applicationScheme = array_filter($scheme['application'] ?? []);
         if (!empty($applicationScheme['id'])) {

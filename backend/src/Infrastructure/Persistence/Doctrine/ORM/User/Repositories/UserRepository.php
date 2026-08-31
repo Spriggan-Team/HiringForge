@@ -14,7 +14,7 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\Account\AccountEntity;
 
-
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 
@@ -76,7 +76,6 @@ class UserRepository implements UserRepositoryInterface
         return UserEntityMapper::toDomainEntity($entity);
     }
 
-
     /**
      * @throws ResourceCreationRejected
      * @return void
@@ -108,10 +107,12 @@ class UserRepository implements UserRepositoryInterface
     }
 
 
+
     public function change(DomainEntity $user, string $uuid, ?array $deleteImages=null): void
     {
         throw new \Exception('Not implemented');
     }
+
 
     #[Override]
     public function getOrganizationId(string $userId): string

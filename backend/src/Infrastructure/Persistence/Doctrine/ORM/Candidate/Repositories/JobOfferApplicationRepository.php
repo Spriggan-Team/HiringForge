@@ -233,7 +233,7 @@ class JobOfferApplicationRepository
             ]);
 
         if ($hasInterviewFilter) {
-            $qb->innerJoin('c.interviews', 'i');
+            $qb->innerJoin('a.interviews', 'i');
 
             if ($criteria->interviewStatus !== null) {
                 $qb->andWhere('i.status = :interviewStatus')
@@ -265,16 +265,22 @@ class JobOfferApplicationRepository
             ]);
 
         if ($hasInterviewFilter) {
-            $countQb->innerJoin('c.interviews', 'i');
+            $countQb->innerJoin('a.interviews', 'i');
 
             if ($criteria->interviewStatus !== null) {
                 $countQb->andWhere('i.status = :interviewStatus')
-                        ->setParameter('interviewStatus', $criteria->interviewStatus);
+                        ->setParameter(
+                            'interviewStatus',
+                            $criteria->interviewStatus
+                        );
             }
 
             if ($criteria->interviewType !== null) {
                 $countQb->andWhere('i.type = :interviewType')
-                        ->setParameter('interviewType', $criteria->interviewType);
+                        ->setParameter(
+                            'interviewType',
+                            $criteria->interviewType
+                        );
             }
         }
 
@@ -375,15 +381,29 @@ class JobOfferApplicationRepository
     }
 
 
+    /**
+     * Get candidate's identity
+     * 
+     * @return array{
+     *  id: string,
+     *  lastName: string,
+     *  firstName: string
+     * }|null
+     */
     #[Override]
-    public function getCandidateIdentity(string $applicationId): string
+    public function getCandidateIdentity(string $applicationId): ?array
     {
-        return (string) $this->createQueryBuilder('a')
-            ->select('IDENTITY(a.candidate)')
+        return $this->createQueryBuilder('a')
+            ->select(
+                'c.id AS id',
+                'c.lastName AS lastName',
+                'c.firstName AS firstName'
+            )
+            ->innerJoin('a.candidate', 'c')
             ->where('a.id = :applicationId')
             ->setParameter('applicationId', $applicationId)
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getOneOrNullResult();
     }
 
     
@@ -745,17 +765,18 @@ class JobOfferApplicationRepository
         return $qb->getQuery()->getResult();
     }
 
+
  
     #[Override]
     public function fetchJobApplicationsProjection(
-        ?string $jobId,
-        int $limit = 17,
-        int $skip = 0,
-        array $scheme = ['id' => true],
-        ?string $userId = null,
+        ?string $jobId, 
+        int $limit = 17, 
+        int $skip = 0, 
+        array $scheme = ['id'=>true], 
+        ?string $userId =null, 
         ?string $companyId = null,
+        ?array $appStatuses = null,
         ?string $search = null,
-        ?JobApplicationStatus $status = null,
     ): array {
         $qb = $this->createQueryBuilder('a');
         $selectedFields = [];
@@ -769,10 +790,11 @@ class JobOfferApplicationRepository
         }
 
         // Check scheme dependencies
-        $hasCandidateScheme = !empty($scheme['candidate']) && is_array($scheme['candidate']);
-        $hasJobOfferScheme = !empty($scheme['jobOffer']) && is_array($scheme['jobOffer']);
+        $hasCandidateScheme  = !empty($scheme['candidate']) && is_array($scheme['candidate']);
+        $hasJobOfferScheme   = !empty($scheme['jobOffer']) && is_array($scheme['jobOffer']);
+        $hasInterviewsScheme = !empty($scheme['interviews']) && is_array($scheme['interviews']);
 
-        if (empty($selectedFields) && !$hasCandidateScheme && !$hasJobOfferScheme) {
+        if (!in_array('a.id', $selectedFields, true)) {
             $selectedFields[] = 'a.id';
         }
 
@@ -783,8 +805,7 @@ class JobOfferApplicationRepository
         }
 
         // --- JOINTURE JOB OFFER ---
-        // On effectue la jointure si demandée par le scheme OU si userId est présent
-        $needsJobOfferJoin = $hasJobOfferScheme || ($userId !== null && $companyId === null);
+        $needsJobOfferJoin = $hasJobOfferScheme || $userId !== null;
         if ($needsJobOfferJoin) {
             $qb->innerJoin('a.jobOffer', 'jo');
         }
@@ -828,30 +849,41 @@ class JobOfferApplicationRepository
             }
         }
 
+        if ($hasInterviewsScheme) {
+            $qb->leftJoin('a.interviews', 'i');
+            $allowedInterviewFields = ['id', 'startDate', 'minutes', 'type', 'status'];
+            foreach ($allowedInterviewFields as $iField) {
+                if (!empty($scheme['interviews'][$iField])) {
+                    $selectedFields[] = 'i.' . $iField . ' AS interview_' . $iField;
+                }
+            }
+        }
+
         $qb->select(implode(', ', $selectedFields));
 
-        // 3. Dynamic filtering based on jobId, companyId, and userId
+        // Dynamic filtering based on jobId, companyId, and userId
         if ($jobId !== null) {
             $qb->andWhere('a.jobOffer = :jobId')
-                ->setParameter('jobId', $jobId);
+            ->setParameter('jobId', $jobId);
         }
 
         if ($companyId !== null) {
             $qb->andWhere('a.company = :companyId')
-                ->setParameter('companyId', $companyId);
+            ->setParameter('companyId', $companyId);
         }
-        elseif ($userId !== null) {
+
+        if ($userId !== null) {
             $qb->andWhere('jo.user = :userId')
-                ->setParameter('userId', $userId);
+            ->setParameter('userId', $userId);
         }
 
-        // 4. Status filter
-        if ($status !== null) {
-            $qb->andWhere('a.status = :status')
-                ->setParameter('status', $status);
+        // Status filter
+        if (!empty($appStatuses)) {
+            $qb->andWhere('a.status IN (:appStatuses)')
+            ->setParameter('appStatuses', $appStatuses);
         }
 
-        // 5. Search filter (by candidate first name, last name or full name)
+        //  Search filter (by candidate first name, last name or full name)
         if (!empty($search)) {
             $trimmedSearch = trim($search);
             $qb->andWhere(
@@ -863,7 +895,7 @@ class JobOfferApplicationRepository
             )->setParameter('search', '%' . $trimmedSearch . '%');
         }
 
-        // 6. Pagination
+        // Pagination
         if ($limit > 0) {
             $qb->setMaxResults($limit);
         }
@@ -873,56 +905,79 @@ class JobOfferApplicationRepository
 
         $results = $qb->getQuery()->getArrayResult();
 
-        // 7. Restructure output array (MAJ pour gérer à la fois candidate et jobOffer)
-        if ($hasCandidateScheme || $hasJobOfferScheme) {
-            return array_map(static function (array $row) use ($hasCandidateScheme, $hasJobOfferScheme) {
-                $candidateData = [];
-                $imageData = [];
-                $jobOfferData = [];
-                $hasCandidateValue = false;
-                $hasJobOfferValue = false;
+        // Restructure output array (MAJ pour gérer à la fois candidate et jobOffer)
+        if ($hasCandidateScheme || $hasJobOfferScheme || $hasInterviewsScheme) {
+            $groupedResults = [];
 
-                foreach ($row as $key => $value) {
-                    if (str_starts_with($key, 'jobOffer_')) {
-                        $realJobKey = str_replace('jobOffer_', '', $key);
-                        $jobOfferData[$realJobKey] = $value;
-                        if ($value !== null) {
-                            $hasJobOfferValue = true;
+            foreach ($results as $row) {
+                $appId = $row['id'] ?? null;
+                if ($appId === null) {
+                    continue;
+                }
+
+                //-- Find candidature first time
+                if (!isset($groupedResults[$appId])) {
+                    $groupedResults[$appId] = [];
+                    $candidateData = [];
+                    $imageData = [];
+                    $jobOfferData = [];
+
+                    foreach ($row as $key => $value) {
+                        if (str_starts_with($key, 'jobOffer_')) {
+                            $jobOfferData[str_replace('jobOffer_', '', $key)] = $value;
+                        } elseif (str_starts_with($key, 'candidate_image_')) {
+                            $imageData[str_replace('candidate_image_', '', $key)] = $value;
+                        } elseif (str_starts_with($key, 'candidate_')) {
+                            $candidateData[str_replace('candidate_', '', $key)] = $value;
+                        } elseif (!str_starts_with($key, 'interview_')) {
+                            $groupedResults[$appId][$key] = $value;
                         }
-                        unset($row[$key]);
-                    } elseif (str_starts_with($key, 'candidate_image_')) {
-                        $realImgKey = str_replace('candidate_image_', '', $key);
-                        $imageData[$realImgKey] = $value;
-                        unset($row[$key]);
-                    } elseif (str_starts_with($key, 'candidate_')) {
-                        $realKey = str_replace('candidate_', '', $key);
-                        $candidateData[$realKey] = $value;
-                        if ($value !== null) {
-                            $hasCandidateValue = true;
+                    }
+
+                    if ($hasCandidateScheme) {
+                        if (!empty($imageData) && array_filter($imageData, static fn($v) => $v !== null)) {
+                            $candidateData['image'] = $imageData;
                         }
-                        unset($row[$key]);
+                        $groupedResults[$appId]['candidate'] = array_filter($candidateData, static fn($v) => $v !== null) ? $candidateData : null;
+                    }
+
+                    if ($hasJobOfferScheme) {
+                        $groupedResults[$appId]['jobOffer'] = array_filter($jobOfferData, static fn($v) => $v !== null) ? $jobOfferData : null;
+                    }
+
+                    if ($hasInterviewsScheme) {
+                        $groupedResults[$appId]['interviews'] = [];
                     }
                 }
 
-                // Reconstruction de l'objet Candidate
-                if ($hasCandidateScheme) {
-                    if (!empty($imageData) && array_filter($imageData, static fn($v) => $v !== null)) {
-                        $candidateData['image'] = $imageData;
+                //-- Extract intervew
+                if ($hasInterviewsScheme) {
+                    $interviewData = [];
+                    $hasInterviewValue = false;
+
+                    foreach ($row as $key => $value) {
+                        if (str_starts_with($key, 'interview_')) {
+                            $realIKey = str_replace('interview_', '', $key);
+                            $interviewData[$realIKey] = $value;
+                            if ($value !== null) {
+                                $hasInterviewValue = true;
+                            }
+                        }
                     }
-                    $row['candidate'] = $hasCandidateValue ? $candidateData : null;
-                }
 
-                // Reconstruction de l'objet JobOffer
-                if ($hasJobOfferScheme) {
-                    $row['jobOffer'] = $hasJobOfferValue ? $jobOfferData : null;
+                    // Add interviews (avoid duplicate)
+                    if ($hasInterviewValue && !in_array($interviewData, $groupedResults[$appId]['interviews'], true)) {
+                        $groupedResults[$appId]['interviews'][] = $interviewData;
+                    }
                 }
+            }
 
-                return $row;
-            }, $results);
+            return array_values($groupedResults);
         }
 
         return $results;
     }
+
 
 
 

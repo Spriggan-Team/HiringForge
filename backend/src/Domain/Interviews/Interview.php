@@ -2,73 +2,223 @@
 
 namespace App\Domain\Interviews;
 
-class Interview {
+class Interview
+{
     private ?string $id = null;
 
-    private ?\DateTimeImmutable $startDate = null;
+    private \DateTimeImmutable $startDate;
 
-    private ?int $minutes = null;
+    private ?string $title = null;
 
-    private InterviewStatus $status = InterviewStatus::SCHEDULED;
+    private int $minutes;
+
+    private ?string $description = null;
+
+    private ?string $url = null;
+
+    private InterviewStatus $status;
 
     private bool $candidateApproval = false;
 
-    public function __construc(
+    private ?string $rejectionReason = null;
+
+    private ?InterviewType $type = null;
+
+    /**
+     * Relations represented by IDs in the Domain.
+     */
+    private string $applicationId;
+
+    private string $userId;
+
+
+    private function __construct(
         int $minutes,
+        \DateTimeImmutable $startDate,
+        string $applicationId,
+        string $userId,
+
         InterviewStatus $status = InterviewStatus::SCHEDULED,
         ?string $id = null,
+        ?string $title = null,
+        ?string $description = null,
+        ?string $url = null,
+        ?InterviewType $type = null,
         bool $candidateApproval = false,
-        ?\DateTimeImmutable $startDate =null,
-    ){
+        ?string $rejectionReason = null,
+    ) {
+        if ($minutes <= 0) {
+            throw new \InvalidArgumentException(
+                'Interview duration must be greater than zero.'
+            );
+        }
+
         $this->id = $id;
-        $this->status = $status;
         $this->minutes = $minutes;
         $this->startDate = $startDate;
+        $this->applicationId = $applicationId;
+        $this->userId = $userId;
+
+        $this->status = $status;
+        $this->title = $title;
+        $this->description = $description;
+        $this->url = $url;
+        $this->type = $type;
         $this->candidateApproval = $candidateApproval;
+        $this->rejectionReason = $rejectionReason;
     }
 
-    // -- Statics
-    public function create(
+
+    // ==========================================
+    // Factory
+    // ==========================================
+
+    public static function create(
         int $minutes,
-        InterviewStatus $status = InterviewStatus::SCHEDULED,
-        
+        \DateTimeImmutable $startDate,
+        string $applicationId,
+        string $userId,
+
+        ?string $title = null,
+        ?string $description = null,
+        ?string $url = null,
+        ?InterviewType $type = null,
         ?string $id = null,
-        ?\DateTimeImmutable $startDate =null,
-    ){
+    ): self {
         return new self(
-            id: $id,
-            status: $status,
             minutes: $minutes,
-            startDate: $startDate
+            startDate: $startDate,
+            applicationId: $applicationId,
+            userId: $userId,
+
+            status: InterviewStatus::SCHEDULED,
+            id: $id,
+            title: $title,
+            description: $description,
+            url: $url,
+            type: $type,
         );
     }
 
-    //-- Getters
 
-    public function getId(){
+    // ==========================================
+    // Getters
+    // ==========================================
+
+    public function getId(): ?string
+    {
         return $this->id;
     }
 
-
-    public function getStatus()  {
-        return $this->status;
-    }
-
-    public function getMinutes(){
+    public function getMinutes(): int
+    {
         return $this->minutes;
     }
 
-    public function getStartDate(){
+    public function getStartDate(): \DateTimeImmutable
+    {
         return $this->startDate;
     }
 
-    public function candidateApproval()
+    public function getStatus(): InterviewStatus
+    {
+        return $this->status;
+    }
+
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function getType(): ?InterviewType
+    {
+        return $this->type;
+    }
+
+    public function getApplicationId(): string
+    {
+        return $this->applicationId;
+    }
+
+    public function getUserId(): string
+    {
+        return $this->userId;
+    }
+
+    public function isCandidateApproved(): bool
     {
         return $this->candidateApproval;
     }
 
-    public function setCandidateApproval()
+    public function getRejectionReason(): ?string
     {
-        return $this->candidateApproval; 
+        return $this->rejectionReason;
+    }
+
+
+    // ==========================================
+    // Business methods
+    // ==========================================
+
+    public function accept(): void
+    {
+        $this->candidateApproval = true;
+        $this->rejectionReason = null;
+    }
+
+
+    public function reject(string $reason): void
+    {
+        $reason = trim($reason);
+
+        if ($reason === '') {
+            throw new \InvalidArgumentException(
+                'A valid reason is required to decline an interview.'
+            );
+        }
+
+        $this->candidateApproval = false;
+        $this->rejectionReason = $reason;
+        $this->status = InterviewStatus::CLOSED;
+    }
+
+
+    public function cancel(): void
+    {
+        $this->status = InterviewStatus::CLOSED;
+    }
+
+
+    // ==========================================
+    // Update methods
+    // ==========================================
+
+    public function reschedule(
+        \DateTimeImmutable $startDate
+    ): void {
+        $this->startDate = $startDate;
+    }
+
+
+    public function changeDuration(
+        int $minutes
+    ): void {
+        if ($minutes <= 0) {
+            throw new \InvalidArgumentException(
+                'Interview duration must be greater than zero.'
+            );
+        }
+
+        $this->minutes = $minutes;
     }
 }

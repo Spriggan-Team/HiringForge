@@ -80,11 +80,15 @@
         "navbar":{},
         
         "dates": {
+            "years": "années",
             "date": "Date",
+            "month": "mois",
+            "day": "jours",
             "thisMonth": "ce mois",
             "today": "Aujourd'hui",
             "calendar": "Calendrier",
             "thisWeek": "Cette semaine",
+            "week": "week",
             "lastWeek": "La semaine dernière",
             "inputs":{
                 "selectCalandarDate":{

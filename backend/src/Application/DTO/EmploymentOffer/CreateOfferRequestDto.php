@@ -15,15 +15,20 @@ final readonly class CreateOfferRequestDto
 
         #[Assert\Type(\DateTimeInterface::class)]
         #[Assert\GreaterThan('now')]
-        public ?\DateTimeImmutable $expiredAt = null,
+        public \DateTimeImmutable $expiredAt,
+
+        #[Assert\Type(\DateTimeInterface::class)]
+        #[Assert\GreaterThan('now')]
+        public \DateTimeImmutable $scheduledEndDate,
+
+        public string $jobTitle,
 
         #[Assert\Length(max: 255)]
         public ?string $title = null,
 
-        public string $jobTitle,
-
         public ?float $salary = null,
         
         public ?string $message = null,
+
     ) {}
 }

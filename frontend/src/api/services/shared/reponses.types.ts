@@ -38,3 +38,6 @@ export interface CandidatePipelineItem {
     delayInSec: number;
   })[];
 }
+
+
+export type Timeframe = 'week' | 'month' | 'year';

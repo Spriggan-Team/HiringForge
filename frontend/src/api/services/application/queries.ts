@@ -10,7 +10,8 @@ import type {
   CandidatePipelineResponse,
   JobApplicationApiResponse
 } from "./response";
-import type { CandidatePipelineType, CandidatePipelineTypeValue } from "../shared/reponses.types";
+import type {  CandidatePipelineTypeValue } from "../shared/reponses.types";
+import type { ApplicationStatusValue } from "../../../features/application/application";
 
 
 
@@ -79,7 +80,8 @@ const getApplications = async (
     skip,
     limit,
     search,
-    signal
+    signal,
+    status,
   }: {
     signal?: AbortSignal;
     search?:string;
@@ -87,6 +89,7 @@ const getApplications = async (
     companyId?: string;
     skip?: number;
     limit?: number;
+    status?: ApplicationStatusValue[] | null
   } = {}
 ) => {
   try {
@@ -97,6 +100,7 @@ const getApplications = async (
     if(search) params.set("search", search)
     if (skip !== undefined) params.set('skip', String(skip));
     if (limit !== undefined) params.set('limit', String(limit));
+    if(status) params.set("statuses", JSON.stringify(status));
 
     const url = `/users/applications/job_offers${
       params.toString() ? `?${params.toString()}` : ''
@@ -109,7 +113,6 @@ const getApplications = async (
     throw error;
   }
 };
-
 
 
 /**

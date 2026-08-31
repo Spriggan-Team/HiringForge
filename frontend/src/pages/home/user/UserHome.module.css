@@ -1,133 +1,286 @@
+/* =====================================================
+   ROOT
+===================================================== */
+
 .container {
     width: 100%;
-    min-height: 100vh;
+    min-width: 0;
+
     box-sizing: border-box;
 }
+
 
 .main {
+    width: 100%;
+    min-width: 0;
+
     display: flex;
-    gap: 32px;
-    
-    box-sizing: border-box;
     flex-direction: column;
 
-    /* margin: 0 auto; */
-    /* background: #000; */
+    gap: 24px;
+
+    box-sizing: border-box;
 }
 
-/* ==========================
-   KPI GRID SYSTEM
-   ========================== */
+
+/* =====================================================
+   KPI SECTION
+===================================================== */
 
 .kpiSection {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px;
     width: 100%;
+    min-width: 0;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+
+    gap: 16px;
 }
 
-/* ==========================
-   SPLIT VIEW (KANBAN + SIDEBAR)
-   ========================== */
+
+/* =====================================================
+   MAIN SPLIT VIEW
+===================================================== */
 
 .splitView {
-    display: grid;
-    grid-template-columns: 1fr 360px;
-    gap: 32px;
-    /* background: #000; */
-    align-items: start;
     width: 100%;
+    min-width: 0;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(280px, 340px);
+
+    align-items: start;
+
+    gap: 24px;
 }
 
-/** Main vue (board content) **/
+
+/* =====================================================
+   MAIN BOARD CONTENT
+===================================================== */
 
 .boardContent {
+    width: 100%;
+    min-width: 0;
+
     display: flex;
     flex-direction: column;
-    gap: 15px;
+
+    gap: 24px;
+}
+
+
+/* =====================================================
+   RECRUITMENT PIPELINE
+===================================================== */
+
+.recruitmentPipeline {
+    width: 100%;
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 16px;
+}
+
+
+/* =====================================================
+   ACTIVE OFFERS
+===================================================== */
+
+.activeOfferSection {
+    width: 100%;
     min-width: 0;
 }
 
-.recruitmentPipeline{
+
+/* =====================================================
+   BOTTOM SECTION
+===================================================== */
+
+.bottom {
     width: 100%;
+    min-width: 0;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 24px;
 }
 
-.bottom{ /** bottom section **/
-    gap: 2rem;
+
+.recent,
+.stats {
     width: 100%;
-    display: flex;
-    margin-top: 5px;
-    /* justify-content: center;
-    flex-wrap: wrap; */
+    min-width: 0;
 }
 
-.bottom .stats{
-    width: 100%;
-}
 
-/** Side content **/
+/* =====================================================
+   SIDEBAR
+===================================================== */
 
 .sidebar {
     width: 100%;
-    padding: 0 20px;
+    min-width: 0;
+
     display: flex;
     flex-direction: column;
+
     gap: 24px;
-    position: sticky;
-    top: 24px; 
-}
-
-.sidebar > * {
-    width: 360px;
 }
 
 
-/* ==========================
+/* =====================================================
    PRIORITY TASK
-   ========================== */
+===================================================== */
 
-.priorityTaskSection{}
+.priorityTaskSection {
+    width: 100%;
+    min-width: 0;
+}
 
-/* ==========================
+
+/* =====================================================
    CALENDAR
-   ========================== */
+===================================================== */
 
-.calendarSection{
-    gap: 16px;
+.calendarSection {
+    width: 100%;
+    min-width: 0;
+
     display: flex;
     flex-direction: column;
+
+    gap: 14px;
 }
 
 
-.calendar {}
+.calendar {
+    width: 100%;
+    max-width: 100%;
+}
 
 
+/* =====================================================
+   AGENDA
+===================================================== */
 
-/* ==========================
-   RESPONSIVE LAYOUTS
-   ========================== */
+.agenda {
+    width: 100%;
+    min-width: 0;
+}
 
-@media (max-width: 1200px) {
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (max-width: 1150px) {
+
     .splitView {
-        grid-template-columns: 1fr;
-        gap: 40px;
+        grid-template-columns: minmax(0, 1fr);
     }
-    
+
+
     .sidebar {
-        position: static;
-        width: 100%;
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        align-items: start;
+
+        gap: 20px;
+    }
+
+
+    .agenda {
+        grid-column: 1 / -1;
     }
 }
 
-/* Mobiles */
-@media (max-width: 640px) {
+
+/* =====================================================
+   SMALL TABLET
+===================================================== */
+
+@media (max-width: 850px) {
+
     .main {
-        padding: 16px;
-        gap: 24px;
+        gap: 20px;
     }
+
 
     .kpiSection {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 12px;
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+
+    .bottom {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+
+    .sidebar {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+
+    .agenda {
+        grid-column: auto;
+    }
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 600px) {
+
+    .container {
+        width: 100%;
+    }
+
+
+    .main {
+        gap: 16px;
+    }
+
+
+    .kpiSection {
+        grid-template-columns: minmax(0, 1fr);
+
+        gap: 14px;
+    }
+
+
+    .splitView {
+        gap: 16px;
+    }
+
+
+    .boardContent {
+        gap: 16px;
+    }
+
+
+    .bottom {
+        gap: 16px;
+    }
+
+
+    .sidebar {
+        gap: 16px;
     }
 }

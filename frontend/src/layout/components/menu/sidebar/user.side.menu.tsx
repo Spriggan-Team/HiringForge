@@ -15,6 +15,7 @@ import PostSVG from "/src/assets/svg/menu/work-svgrepo-com.svg?react"
 import CandidateSVG from "/src/assets/svg/menu/candidate-for-elections-svgrepo-com.svg?react"
 import InterviewsSVG from "/src/assets/svg/menu/user-speak-rounded-svgrepo-com.svg?react"
 import StatsSVG from "/src/assets/svg/analytics/analytics-svgrepo-com.svg?react"
+
 // import AgentSVG from "/src/assets/svg/menu/illustrations-of-agents-svgrepo-com.svg?react"
 import ChevronLeftSVG from "/src/assets/svg/menu/chevron-right-double-svgrepo-com.svg?react"
 import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg?react"
@@ -23,6 +24,13 @@ import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg?react
 //-- CSS- style
 import styles from "./UserSideMenu.module.css"
 
+export type MenuKeys = |
+        "home"
+        | "poste"
+        | "candidates"
+        | "offers"
+        | "calendar"
+        | "stats"
 
 
 const UserSideMenu = () => {
@@ -32,7 +40,7 @@ const UserSideMenu = () => {
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [active, setActive] = useState(localStorage.getItem("menu") ?? "home");
 
-    const menuItems = [
+    const menuItems: {id: MenuKeys, [key: string]: any}[] = [
         { id: "home", svg: HomeSVG, label: t("global.menu.home"), route: RouteScheme.userHome },
         { id: "poste", svg: PostSVG, label: t("global.menu.poste"), route: RouteScheme.userJobs },
         { id: "candidates", svg: CandidateSVG, label: t("global.menu.candidates"), route: RouteScheme.userCandidate },

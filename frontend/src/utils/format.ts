@@ -29,6 +29,7 @@ export const formatDateSafely = (dateString: string | null | undefined): string 
 };
 
 
+//-- Trandfrom date into elapsed/remaining-time time
 export function formatRemainingTime(
     input: number | string | Date, 
     isCountdown: boolean = false
@@ -118,10 +119,8 @@ export const getElapsedTime = (start: Time, end: Time): string => {
 
 
 
-
 //-- delat time
-export const toSeconds = ({ hours, minutes }: Time) =>
-    hours * 3600 + minutes * 60;
+export const toSeconds = ({ hours, minutes }: Time) => hours * 3600 + minutes * 60;
 
 
 export const getDeltaSecondeTime = (start: Time, end: Time): number => {
@@ -140,3 +139,24 @@ export function getMinutesFromDate(date: string | Date, isCountdown: boolean = f
 
     return Math.floor(diffMs / (1000 * 60));
 }
+
+
+/** Trun a minutes number into readable time data */
+export const formatMinutesIntoTime = (minutes: number): string => {
+  if (isNaN(minutes) || minutes < 0) return '0m';
+
+  const hrs = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  if (hrs === 0) {
+    return `${mins}m`;
+  }
+
+  const paddedMins = mins.toString().padStart(2, '0');
+
+  if (mins === 0) {
+    return `${hrs}h`;
+  }
+
+  return `${hrs}h ${paddedMins}m`;
+};

@@ -16,6 +16,11 @@ enum ApplicationErrorCode: string{
     case INVALID_CREDENTIALS = "invalid_credential";
     case COMPANY_ALREADY_REGISTERED = "company_already_registered";
 
+    //-- employment offer
+    case ACTIVE_EMPLOYMENT_OFFER_EXISTS = "active_employment_offer_exists";
+    case EMPLOYMENT_OFFER_NOT_FOUND = "employment_offer_not_found";
+    case INVALID_EMPLOYMENT_OFFER_STATE = "invalid_employment_offer_state";
+
     //-- auth/login
     case AUTH_ACCESS_EXPIRED = "access_expired";
 
