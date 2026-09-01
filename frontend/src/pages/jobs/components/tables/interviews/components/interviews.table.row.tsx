@@ -2,12 +2,16 @@ import React from "react";
 
 import styles from "../Interviews.module.css";
 import type { Interview } from "../interviews.section";
+import { InterviewStatus, InterviewType } from "../../../../../../features/interviews/interviews";
+import { formatDateSafely, safeParsingDate } from "../../../../../../utils/format";
+
 
 interface InterviewRowProps {
   interview: Interview;
   isUpdating: boolean;
   onCancel: (id: string) => void;
   getInitials: (name: string) => string;
+  onDelete: (id: string)=>void;
 }
 
 
@@ -15,8 +19,12 @@ const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
   interview,
   isUpdating,
   onCancel,
+  onDelete,
   getInitials,
 }) => {
+  const scheduleDate = new Date(interview.scheduledAt);
+  const parsedDate =safeParsingDate(interview.scheduledAt)
+
   return (
     <tr className={isUpdating ? styles.rowDisabled : ""}>
       {/* Candidat */}
@@ -49,17 +57,25 @@ const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
       <td data-label="Date & Heure">
         <div className={styles.dateCell}>
           <span className={styles.dateText}>
-            {new Date(interview.scheduledAt).toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
+            {
+              parsedDate
+                ? parsedDate.toLocaleDateString("fr-FR", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "Date invalide"
+            }
           </span>
+
           <span className={styles.timeText}>
-            {new Date(interview.scheduledAt).toLocaleTimeString("fr-FR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {
+              parsedDate &&
+                parsedDate.toLocaleTimeString("fr-FR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+            }
           </span>
         </div>
       </td>
@@ -89,24 +105,40 @@ const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
       {/* Statut */}
       <td data-label="Statut">
         <span className={`${styles.status} ${styles[`status${interview.status}`]}`}>
-          {interview.status}
+          {interview.status as string}
         </span>
       </td>
 
+        
       {/* Actions */}
       <td data-label="Actions" className={styles.actionsCell}>
         <div className={styles.actionGroup}>
-          {interview.status !== "cancel" && (
-            <button
-              type="button"
-              onClick={() => onCancel(interview.id)}
-              className={styles.btnDanger}
-              title="Annuler l'entretien"
-              disabled={isUpdating}
-            >
-              Annuler
-            </button>
-          )}
+          {
+            interview.status == InterviewStatus.SCHEDULED 
+              ?  // manually closed
+                  (
+                    <button
+                      type="button"
+                      onClick={() => onDelete(interview.id)}
+                      className={styles.btnDanger}
+                      title="Annuler l'entretien"
+                      disabled={isUpdating}
+                    >
+                      Delete
+                    </button>
+                  )
+              : interview.candidateApproval && (
+                    <button
+                      type="button"
+                      onClick={() => onCancel(interview.id)}
+                      className={styles.btnDanger}
+                      title="Annuler l'entretien"
+                      disabled={isUpdating}
+                    >
+                      Cancel
+                    </button>
+              )
+          }
         </div>
       </td>
     </tr>

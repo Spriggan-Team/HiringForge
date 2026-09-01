@@ -1,12 +1,14 @@
+import type { InterviewTypeValue } from "../interviews/interviews";
 import type { Time } from "../shared/global";
 
 export interface CalendarEvent{
+    id: string;
     title: string;
     date: Date;
-    type: CalendarEventType;
-    note: string;
+    type?: InterviewTypeValue;
+    note?: string;
     rate: TaskRate;
-    members: string[];
+    members: {name: string, image?: string | null}[]; //string[]: name[] -> array of name
     time: {
         start: Time,
         end?: Time
@@ -36,6 +38,7 @@ export type CalendarEventType =
 
 
 export const INITIAL_CALENDAR_EVENT_VIEW: CalendarEvent = {
+    id: "",
     title: "",
     date: new Date(),
     type: undefined,

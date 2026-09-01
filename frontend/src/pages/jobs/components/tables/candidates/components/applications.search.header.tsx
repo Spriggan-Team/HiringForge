@@ -18,7 +18,7 @@ interface ApplicationSearchHeaderProps {
   search: string;
   t: TFunction;
   onSearchChange: (value: string) => void;
-  onFilterValueChange: (value: { status: ApplicationStatusValue[] }) => void;
+  onFilterValueChange: (value: { statuses: ApplicationStatusValue[] }) => void;
 }
 
 
@@ -40,7 +40,7 @@ export const ApplicationSearchHeader: React.FC<ApplicationSearchHeaderProps> = (
     //-- handle filters
   const handleFilterChange = (newValues: string[]) => {
     setSelectedStatuses(newValues);
-    onFilterValueChange({status: newValues as ApplicationStatusValue[] })
+    onFilterValueChange({statuses: newValues as ApplicationStatusValue[] })
   };
 
   //- Status

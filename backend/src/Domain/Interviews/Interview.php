@@ -29,8 +29,12 @@ class Interview
      */
     private string $applicationId;
 
-    private string $userId;
+    private string $userId; //-- recruiter - id
 
+
+    //------------------------
+    //--- Building
+    //--------------------
 
     private function __construct(
         int $minutes,
@@ -97,6 +101,37 @@ class Interview
             description: $description,
             url: $url,
             type: $type,
+        );
+    }
+
+
+    public static function reconstitute(
+        string $id,
+        int $minutes,
+        \DateTimeImmutable $startDate,
+        string $applicationId,
+        string $userId,
+        InterviewStatus $status,
+        ?string $title = null,
+        ?string $description = null,
+        ?string $url = null,
+        ?InterviewType $type = null,
+        bool $candidateApproval = false,
+        ?string $rejectionReason = null,
+    ): self {
+        return new self(
+            id: $id,
+            minutes: $minutes,
+            startDate: $startDate,
+            applicationId: $applicationId,
+            userId: $userId,
+            status: $status,
+            title: $title,
+            description: $description,
+            url: $url,
+            type: $type,
+            candidateApproval: $candidateApproval,
+            rejectionReason: $rejectionReason,
         );
     }
 
@@ -193,8 +228,14 @@ class Interview
     }
 
 
+    /**
+     * 
+     */
     public function cancel(): void
     {
+        if($this->status === InterviewStatus::CLOSED){
+            throw new \DomainException("Interview already cancel");
+        }
         $this->status = InterviewStatus::CLOSED;
     }
 

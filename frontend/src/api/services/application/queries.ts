@@ -81,7 +81,7 @@ const getApplications = async (
     limit,
     search,
     signal,
-    status,
+    statuses,
   }: {
     signal?: AbortSignal;
     search?:string;
@@ -89,7 +89,7 @@ const getApplications = async (
     companyId?: string;
     skip?: number;
     limit?: number;
-    status?: ApplicationStatusValue[] | null
+    statuses?: ApplicationStatusValue[] | null
   } = {}
 ) => {
   try {
@@ -100,7 +100,7 @@ const getApplications = async (
     if(search) params.set("search", search)
     if (skip !== undefined) params.set('skip', String(skip));
     if (limit !== undefined) params.set('limit', String(limit));
-    if(status) params.set("statuses", JSON.stringify(status));
+    if(statuses) params.set("statuses", JSON.stringify(statuses));
 
     const url = `/users/applications/job_offers${
       params.toString() ? `?${params.toString()}` : ''

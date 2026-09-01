@@ -3,7 +3,7 @@
 namespace App\Application\Usecases\Department;
 
 use App\Domain\Department\Department;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Application\DTO\Department\CreateDepartmentRequest;
 
 
@@ -18,14 +18,14 @@ class DepartmentGenerator{
     ){}
     
     /**
-     * @throws RessourceNotFound
+     * @throws ResourceNotFoundException
      */
     public function execute(
         CreateDepartmentRequest $command
     ): array{
         $companyExist = $this->companyRepository->exists($command->companyId);
         if(!$companyExist)
-            throw new RessourceNotFound("Company not found");
+            throw new ResourceNotFoundException("Company not found");
 
         $department =  Department::create(
             label: $command->label,
@@ -43,7 +43,7 @@ class DepartmentGenerator{
                 if ($parent) {
                     $department->setParent($parent);
                 }
-            }catch(RessourceNotFound){}
+            }catch(ResourceNotFoundException){}
         }
 
         $this->departmentRepository->save($department, true);

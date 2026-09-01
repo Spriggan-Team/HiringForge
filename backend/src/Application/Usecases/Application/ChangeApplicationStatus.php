@@ -74,12 +74,12 @@ class ChangeApplicationStatus
             );
 
             // Build and save notification
-            $applicationIdentity = $this->applicationRepository->getApplicationIdentity($applicationId);
+            $applicationContext = $this->applicationRepository->getApplicationContext($applicationId);
 
-            if ($applicationIdentity) {
+            if ($applicationContext) {
                 $notification = Notification::create(
-                    accountId: $applicationIdentity['recruiterId'],
-                    recipientId: $applicationIdentity['candidateId'],
+                    accountId: $applicationContext->recruiterId,
+                    recipientId: $applicationContext->candidateId,
                     type: NotificationType::JOB_APPLICATIONS_STATUS_SHIFT,
                     data: JobApplicationStatusShiftData::create(
                         applicationId: $applicationId,

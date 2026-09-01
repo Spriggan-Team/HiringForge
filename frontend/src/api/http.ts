@@ -19,7 +19,8 @@ const request = async <T, O = unknown>(
   endpoint: string,
   method: string,
   data?: RequestData,
-  headers: HeadersInit = {}
+  headers: HeadersInit = {},
+  moreOptions?: RequestInit
 ): Promise<T> => {
   const isFormData = data instanceof FormData;
   const clearEndpoint = endpoint.replace(/^\//, "");
@@ -38,6 +39,7 @@ const request = async <T, O = unknown>(
         : data
         ? JSON.stringify(data)
         : undefined,
+    ...(moreOptions ?? {}),
   });
 
   const contentType = response.headers.get("content-type");
@@ -117,39 +119,44 @@ const request = async <T, O = unknown>(
 
 export const get = <T>(
   endpoint: string,
-  headers?: HeadersInit
-) => request<T>(endpoint, "GET", undefined, headers);
+  headers?: HeadersInit,
+  moreOptions?: RequestInit
+) => request<T>(endpoint, "GET", undefined, headers, moreOptions);
 
 
 
 export const post = <T>(
   endpoint: string,
   data?: RequestData,
-  headers?: HeadersInit
-) => request<T>(endpoint, "POST", data, headers);
+  headers?: HeadersInit,
+  moreOptions?: RequestInit
+) => request<T>(endpoint, "POST", data, headers, moreOptions);
 
 
 
 export const put = <T>(
   endpoint: string,
   data?: RequestData,
-  headers?: HeadersInit
-) => request<T>(endpoint, "PUT", data, headers);
+  headers?: HeadersInit,
+  moreOptions?: RequestInit
+) => request<T>(endpoint, "PUT", data, headers, moreOptions);
 
 
 
 export const patch = <T>(
   endpoint: string,
   data?: RequestData,
-  headers?: HeadersInit
-) => request<T>(endpoint, "PATCH", data, headers);
+  headers?: HeadersInit,
+  moreOptions?: RequestInit
+) => request<T>(endpoint, "PATCH", data, headers, moreOptions);
 
 
 
 export const del = <T>(
   endpoint: string,
-  headers?: HeadersInit
-) => request<T>(endpoint, "DELETE", undefined, headers);
+  headers?: HeadersInit,
+  moreOptions?: RequestInit
+) => request<T>(endpoint, "DELETE", undefined, headers, moreOptions);
 
 
 
@@ -162,14 +169,16 @@ export const generateAuthorizationBearerHeader = (header?: HeadersInit): Headers
 };
 
 
-//-- Authorization
-
+//-------------------------------
+//-- Authorization request
+//--------------------------------
 
 export const authGet = async <T>(
   endpoint: string,
-  headers?: HeadersInit
+  headers?: HeadersInit,
+  moreOptions?: RequestInit,
 )=>{
-  return get<T>(endpoint, generateAuthorizationBearerHeader(headers));
+  return get<T>(endpoint, generateAuthorizationBearerHeader(headers), moreOptions);
 }
 
 
@@ -177,9 +186,10 @@ export const authGet = async <T>(
 export const authPost = async <T>(
   endpoint: string,
   data?: RequestData,
-  headers?: HeadersInit
+  headers?: HeadersInit,
+  moreOptions?: RequestInit,
 )=>{
-  return post<T>(endpoint, data, generateAuthorizationBearerHeader(headers));
+  return post<T>(endpoint, data, generateAuthorizationBearerHeader(headers), moreOptions);
 }
 
 
@@ -187,9 +197,10 @@ export const authPost = async <T>(
 export const  authPut = async <T>(
   endpoint: string,
   data?: RequestData,
-  headers?: HeadersInit
+  headers?: HeadersInit,
+  moreOptions?: RequestInit,
 )=>{
-  return put<T>(endpoint, data, generateAuthorizationBearerHeader(headers));
+  return put<T>(endpoint, data, generateAuthorizationBearerHeader(headers), moreOptions);
 }
 
 
@@ -197,17 +208,19 @@ export const  authPut = async <T>(
 export const authPatch = async<T>(
   endpoint: string,
   data?: RequestData,
-  headers?: HeadersInit
+  headers?: HeadersInit,
+  moreOptions?: RequestInit,
 )=>{
-  return patch<T>(endpoint, data, generateAuthorizationBearerHeader(headers));
+  return patch<T>(endpoint, data, generateAuthorizationBearerHeader(headers), moreOptions);
 }
 
 
 
 export const authDel = async<T>(
   endpoint: string,
-  headers?: HeadersInit
+  headers?: HeadersInit,
+  moreOptions?: RequestInit
 )=>{
-  return del<T>(endpoint, generateAuthorizationBearerHeader(headers));
+  return del<T>(endpoint, generateAuthorizationBearerHeader(headers), moreOptions);
 }
 

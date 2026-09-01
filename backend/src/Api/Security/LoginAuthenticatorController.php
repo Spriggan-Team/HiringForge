@@ -8,7 +8,7 @@ use App\Application\DTO\Auth\AuthentificateAccount;
 
 use App\Domain\ApplicationErrorCode;
 use App\Domain\Shared\Account\AccountRole;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Infrastructure\Security\JwtAuthentificator;
 use App\Application\Usecases\Auth\AuthentificateAccountUseCase;
@@ -71,7 +71,7 @@ class LoginAuthenticatorController extends AbstractAuthenticator
         try {
             [$personId, $role] = $this->usecase->execute($account);
         }
-        catch (RessourceNotFound $e) {
+        catch (ResourceNotFoundException $e) {
             if(ApiResponse::$logger)
                 ApiResponse::$logger->error("Caught Exception: ". $e->getMessage(), ['exception' => $e]);
             throw new CustomUserMessageAuthenticationException('Identifiants invalides.', [], 404);

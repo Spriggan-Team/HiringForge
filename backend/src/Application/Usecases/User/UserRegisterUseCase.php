@@ -12,7 +12,7 @@ use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Exception\FileSizeExceeded;
 use App\Domain\Exception\FileTimeExceeded;
 use App\Domain\Exception\ResourceCreationRejected;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 
 use App\Domain\File\MediaPurpose;
 use App\Domain\File\MediaOwnerType;
@@ -65,7 +65,7 @@ class UserRegisterUseCase
             if($identity)
                 throw new EmailAlreadyRegistered("This user already exists"); 
         }
-        catch(RessourceNotFound){}
+        catch(ResourceNotFoundException){}
 
         $userId = AccountId::create();
 
@@ -87,14 +87,14 @@ class UserRegisterUseCase
             
             $otp->verify($command->verificationCode, $this->hasher);
         }
-        catch (RessourceNotFound) {
+        catch (ResourceNotFoundException) {
             throw new OTPException(message: "No verification code found for this account.", isInvalid: true);
         }
         catch (OTPException $e) {
             if (isset($otp)) {
                 try {
                     $this->OTPRepository->update($email->value(), $otp);
-                } catch (RessourceNotFound $exception) {
+                } catch (ResourceNotFoundException $exception) {
                     throw new OTPException(
                         message: "The verification session has expired or does not exist.", 
                         isInvalid: true,

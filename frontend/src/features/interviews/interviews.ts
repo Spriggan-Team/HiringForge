@@ -1,16 +1,16 @@
+import type { SymfonyDateTime } from "../shared/global";
+
 export class InterviewStatus {
-  static readonly CANCELLED = 'cancel';
-  static readonly CLOSED = 'closed';
+  static readonly CLOSED = 'closed'; // indicate manual closure/cancellation (handled: ok)
   static readonly MISSED = 'missed';
-  static readonly SCHEDULED = 'scheduled';
+  static readonly SCHEDULED = 'scheduled'; //(handled: ok)
   static readonly IN_PROGRESS = 'in_progress';
-  static readonly COMPLETED = 'completed';
+  static readonly COMPLETED = 'completed'; //(handled: ok)
 }
 
 export type InterviewStatusValue = (typeof InterviewStatus)[keyof typeof InterviewStatus];
 
 export const INTERVIEW_STATUSES: InterviewStatusValue[] = [
-  InterviewStatus.CANCELLED,
   InterviewStatus.CLOSED,
   InterviewStatus.MISSED,
   InterviewStatus.SCHEDULED,
@@ -26,6 +26,12 @@ export const InterviewType = {
 
 export type InterviewTypeValue = (typeof InterviewType)[keyof typeof InterviewType];
 
+export const INTERVIEW_TYPES: InterviewTypeValue[] = [
+  InterviewType.RH_INTERVIEWS,
+  InterviewType.TECHNICAL_INTERVIEWS
+]
+
+
 
 //-- Helpers
 export type InterviewWithCandidateData = BaseInterviewData & {
@@ -39,12 +45,15 @@ export type InterviewWithCandidateData = BaseInterviewData & {
 
 export type BaseInterviewData = {
   id: string;
+  title?:string,
   startDate: string; // ISO 8601
   minutes: number;
   status: InterviewStatus;
   description?: string;
   url?: string;
-  type?: InterviewTypeValue
+  type?: InterviewTypeValue;
+  candidateApproval?: boolean
+  rejectionReason?: string | null;
 };
 
 
@@ -78,4 +87,8 @@ export interface CreateInterviewFormData {
   description?: string;
   scheduledAt: string;
   url?: string;
+  type?: InterviewTypeValue;
+  minutes: number;
+
+  applicationId: string;
 }

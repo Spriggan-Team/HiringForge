@@ -13,7 +13,7 @@ use App\Domain\Shared\Account\AccountFlowPurpose;
 use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Email\EmailServicesInterface;
 use App\Domain\Exception\EmailAlreadyRegistered;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 
@@ -63,7 +63,7 @@ class VerificationCodeSender
                 purpose: $purpose
             );
         }
-        catch(RessourceNotFound){}
+        catch(ResourceNotFoundException){}
 
 
         // -- Generate warning if OTP is still active (Il n'est PAS expiré)

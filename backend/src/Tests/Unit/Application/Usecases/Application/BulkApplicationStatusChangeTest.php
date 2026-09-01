@@ -57,7 +57,7 @@ class BulkApplicationStatusChangeTest extends TestCase
             ->with($ids, JobApplicationStatus::SHORTLISTED);
 
         $this->applicationRepo->expects($this->once())
-            ->method('getApplicationIdentity')
+            ->method('getApplicationContext')
             ->with('app-1')
             ->willReturn([
                 'applicationId' => 'app-1',

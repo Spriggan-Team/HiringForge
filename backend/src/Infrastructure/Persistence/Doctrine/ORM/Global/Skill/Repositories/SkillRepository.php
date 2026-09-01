@@ -3,7 +3,7 @@
 namespace  App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\Repositories;
 
 use App\Domain\Shared\Skill\Skill;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Shared\Skill\SkillMatchMethod;
 use App\Domain\Shared\Skill\SkillRepositoryInterface;
 use App\Domain\Shared\Skill\SkillResolution;
@@ -34,7 +34,7 @@ final class SkillRepository
             ->find($id);
 
         if(!$entity){
-            throw new RessourceNotFound(
+            throw new ResourceNotFoundException(
                 "Skill not found"
             );
         }

@@ -6,8 +6,9 @@ use App\Domain\Exception\ResourceCreationRejected;
 use App\Domain\User\User as DomainEntity;
 use App\Domain\Shared\KnownIdentity;
 
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Shared\Account\AccountRole;
+use App\Domain\User\UserLightModel;
 use App\Domain\User\UserRepositoryInterface;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
@@ -22,8 +23,21 @@ use Override;
 
 class UserRepository implements UserRepositoryInterface
 {
-
     public function __construct(private EntityManagerInterface $em){}
+
+
+
+    #[Override]
+    public function getLightModelById(string $userId): ?array
+    {
+        return $this->em->createQueryBuilder()
+            ->select('u.lastName, u.firstName')
+            ->from(UserEntity::class, 'u')
+            ->where('u.id = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 
     #[Override]
     public function assertExist(?string $uuid = null, ?string $email = null): KnownIdentity
@@ -39,11 +53,11 @@ class UserRepository implements UserRepositoryInterface
 
         $account = $accountRepository->findOneBy($criteria);
         if(!$account)
-            throw new RessourceNotFound("User Account not found");
+            throw new ResourceNotFoundException("User Account not found");
 
         $user = $userRepository->find($account->getId());
         if(!$user)
-            throw new RessourceNotFound("User account not identified");
+            throw new ResourceNotFoundException("User account not identified");
 
         return new KnownIdentity(
             uuid: $user->getId(),
@@ -58,7 +72,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $entity = $this->em->find(UserEntity::class, $uuid);
         if(!$entity){
-            throw new RessourceNotFound("[USER] This id is not registered");
+            throw new ResourceNotFoundException("[USER] This id is not registered");
         }
         return UserEntityMapper::toDomainEntity($entity);
     }
@@ -71,7 +85,7 @@ class UserRepository implements UserRepositoryInterface
             "email" => $email
         ]);
         if(!$entity){
-            throw new RessourceNotFound("[USER] This email belogns to no user");
+            throw new ResourceNotFoundException("[USER] This email belogns to no user");
         }
         return UserEntityMapper::toDomainEntity($entity);
     }
@@ -100,7 +114,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $entity = $this->em->find(UserEntity::class, $uuid);
         if(!$entity){
-            throw new RessourceNotFound("This ressource does not exist");
+            throw new ResourceNotFoundException("This ressource does not exist");
         }
         $this->em->remove($entity);
         $this->em->flush();
@@ -119,7 +133,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $user = $this->em->find(UserEntity::class, $userId);
         if (!$user) {
-            throw new RessourceNotFound("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
 
         $company = $user->getCompany();

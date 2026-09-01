@@ -19,7 +19,7 @@ use App\Application\DTO\Candidate\RegisterCandidateCommand;
 
 use App\Domain\Exception\EmailAlreadyRegistered;
 use App\Domain\Candidate\CandidateRepositoryInterface;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\File\MediaFactoryInterface;
 use App\Domain\File\MediaStorageScope;
 
@@ -41,7 +41,7 @@ class CandidateRegisterUsecase
     ){}
 
   /**
-     * @throws EmailAlreadyRegistered|RessourceNotFound|\Throwable
+     * @throws EmailAlreadyRegistered|ResourceNotFoundException|\Throwable
      * @return AccountRegister
      */
     public function execute(
@@ -62,14 +62,14 @@ class CandidateRegisterUsecase
 
             $otp->verify($command->verificationCode, $this->hasher);
         }
-        catch (RessourceNotFound) {
+        catch (ResourceNotFoundException) {
             throw new OTPException(message: "No verification code found for this account.", isInvalid: true);
         }
         catch (OTPException $e) {
             if (isset($otp)) {
                 try {
                     $this->OTPRepository->update($email->value(), $otp);
-                } catch (RessourceNotFound $exception) {
+                } catch (ResourceNotFoundException $exception) {
                     throw new OTPException(
                         message: "The verification session has expired or does not exist.",
                         isInvalid: true,

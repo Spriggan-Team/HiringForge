@@ -13,7 +13,7 @@ use App\Domain\Shared\PasswordHasherInterface;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 
 use App\Domain\OTP\Exceptions\OTPException;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Exception\RessourceAlreadyRegistered;
 
 use App\Domain\Shared\PlainPassword;
@@ -55,7 +55,7 @@ class CreateAgentUseCase
                 purpose: AccountFlowPurpose::CONFIRM_AGENT_IDENTITY
             );
         }
-        catch(RessourceNotFound){ throw new OTPException(isInvalid: true); }
+        catch(ResourceNotFoundException){ throw new OTPException(isInvalid: true); }
 
         if($otp && !$otp->verify($command->verificationCode, $this->hasher))
             throw new OTPException(isInvalid: true);

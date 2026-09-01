@@ -53,7 +53,7 @@ interface AppContextProps{
 
     //-- Kpi data
     kpiData: RecruiterDashboardKpis | null;
-    setKpiData: (params: RecruiterDashboardKpis | null) => void;
+    setKpiData: React.Dispatch<React.SetStateAction<RecruiterDashboardKpis | null>>;
 
     //-- Notification
     notificationCount: number;

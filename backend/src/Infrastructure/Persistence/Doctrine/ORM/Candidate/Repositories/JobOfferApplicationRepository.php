@@ -48,6 +48,9 @@ class JobOfferApplicationRepository
         return parent::__construct($registry, ApplicationEntity::class);
     }
 
+    
+  
+
     /**
      * Asserts that an application exists by its ID.
      *
@@ -332,7 +335,7 @@ class JobOfferApplicationRepository
 
 
     #[Override]
-    public function getApplicationContext(string $applicationId): ApplicationContext
+    public function getApplicationContext(string $applicationId): ?ApplicationContext
     {
         $data = $this->createQueryBuilder('a')
             ->select(
@@ -340,7 +343,8 @@ class JobOfferApplicationRepository
                 'IDENTITY(a.candidate) AS candidateId',
                 'j.title AS jobTitle',
                 'c.name AS companyName',
-                'u.id AS recruiterId' 
+                'u.id AS recruiterId' ,
+                'j.id AS jobId',
             )
             ->innerJoin('a.company', 'c')
             ->innerJoin('a.jobOffer', 'j')
@@ -359,25 +363,9 @@ class JobOfferApplicationRepository
             candidateId: $data['candidateId'],
             jobTitle: $data['jobTitle'],
             companyName: $data['companyName'],
-            recruiterId: $data['recruiterId']
+            recruiterId: $data['recruiterId'],
+            jobId: $data['jobId'],
         );
-    }
-
-
-    public function getApplicationIdentity(string $applicationId): ?array
-    {
-        return $this->createQueryBuilder('a')
-            ->select(
-                'a.id AS applicationId',
-                'IDENTITY(a.candidate) AS candidateId',
-                'IDENTITY(a.company) AS companyId',
-                'IDENTITY(j.user) AS recruiterId'
-            )
-            ->innerJoin('a.jobOffer', 'j')
-            ->where('a.id = :id')
-            ->setParameter('id', $applicationId)
-            ->getQuery()
-            ->getOneOrNullResult();
     }
 
 

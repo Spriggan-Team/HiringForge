@@ -23,7 +23,7 @@ export interface CalendarHandleContext {
 
 export interface TaskData {
     task: string;
-    rate: TaskRate;
+    rate?: TaskRate;
 }
 
 
@@ -146,7 +146,7 @@ const CalendarDay = forwardRef<CalendarHandleContext, CalendarDayProps>(
                                 className={styles.task}
                                 style={{
                                     ["--task-rate-color" as string]:
-                                        TaskStyleConfig[item.rate],
+                                        TaskStyleConfig[(item.rate ?? "normal")],
                                 }}
                             >
                                 {item.task}

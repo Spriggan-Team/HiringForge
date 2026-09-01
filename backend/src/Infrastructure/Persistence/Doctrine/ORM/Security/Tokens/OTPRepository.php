@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Security\Tokens;
 
 use App\Domain\OTP\OTP;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\OTP\OTPRepositoryInterface;
 use App\Domain\Shared\Account\AccountFlowPurpose;
 
@@ -38,7 +38,7 @@ class OTPRepository implements OTPRepositoryInterface
             ->getOneOrNullResult();
 
         if (!$entity) {
-            throw new RessourceNotFound();
+            throw new ResourceNotFoundException();
         }
 
         return $this->mapper->toDomainEntity($entity);
@@ -53,7 +53,7 @@ class OTPRepository implements OTPRepositoryInterface
         
         //-- Control purpose validation
         if($otp->getPurpose() !== AccountFlowPurpose::SIGN_UP  && !$account)
-            throw new RessourceNotFound(
+            throw new ResourceNotFoundException(
                 "No associated account detected for this otp code"
             );
 
@@ -83,7 +83,7 @@ class OTPRepository implements OTPRepositoryInterface
             ->findOneBy(['email' => $email]);
 
         if (!$account) {
-            throw new RessourceNotFound(
+            throw new ResourceNotFoundException(
                 "No associated account detected for this OTP code"
             );
         }
@@ -96,7 +96,7 @@ class OTPRepository implements OTPRepositoryInterface
             ]);
 
         if (!$entity) {
-            throw new RessourceNotFound("The OTP verification token to update does not exist");
+            throw new ResourceNotFoundException("The OTP verification token to update does not exist");
         }
 
         $entity->setAttempts($otp->attempts);

@@ -1,11 +1,5 @@
 import type { Timeframe } from "../api/services/shared/reponses.types";
-
-
-export const getDate = (startOfWeek: Date, offset: number) => {
-    const d = new Date(startOfWeek);
-    d.setDate(startOfWeek.getDate() + offset);
-    return d;
-};
+import type { TimeRange } from "../features/shared/global";
 
 
 const currentYear = new Date().getFullYear();
@@ -25,6 +19,21 @@ export const currentDays = Array.from({ length: 7 }, (_, index) => {
 
     return day;
 });
+
+
+/**
+ * Get Date with offeser number
+ * @param startOfWeek 
+ * @param offset 
+ * @returns 
+ */
+export const getDate = (startOfWeek: Date, offset: number) => {
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + offset);
+    return d;
+};
+
+
 
 
 /**
@@ -62,8 +71,11 @@ export const shiftDate = (
 };
 
 
-
-//-- parse date
+/**
+ * Parse string data into date
+ * @param value 
+ * @returns 
+ */
 export const parseDate = (value: string): Date | null => {
     const date = new Date(value);
 
@@ -181,4 +193,39 @@ export const parseFrenchDate = (dateString: string): Date | null => {
   }
 
   return date;
+};
+
+
+
+/**
+ * Convert date + minutes into time range data
+ */
+export const calculateInterviewTimeRange = (
+  startDate: string | Date,
+  minutes: number
+): TimeRange => {
+  const start = new Date(startDate);
+
+  if (Number.isNaN(start.getTime())) {
+    throw new Error("Invalid start date.");
+  }
+
+  if (minutes < 0) {
+    throw new Error("Duration cannot be negative.");
+  }
+
+  const end = new Date(
+    start.getTime() + minutes * 60 * 1000
+  );
+
+  return {
+    startTime: {
+      hours: start.getHours(),
+      minutes: start.getMinutes(),
+    },
+    endTime: {
+      hours: end.getHours(),
+      minutes: end.getMinutes(),
+    },
+  };
 };

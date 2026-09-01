@@ -3,11 +3,16 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Interview\Repositories;
 
+use App\Api\Responder\ApiResponse;
 use App\Domain\Interviews\Interview;
+use App\Domain\Interviews\InterviewContext;
 use App\Domain\Interviews\InterviewsRepositoryInterface;
 use App\Domain\Interviews\InterviewStatus;
+use App\Domain\Interviews\InterviewType;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
-
+use App\Infrastructure\Persistence\Doctrine\ORM\Interview\Repositories\Mapper\InterviewEntityMapper;
+use DateTimeImmutable;
 use Override;
 
 use Doctrine\ORM\NoResultException;
@@ -15,15 +20,370 @@ use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
+use Symfony\Component\Finder\Exception\AccessDeniedException;
+
 
 
 class InterviewsRepository extends ServiceEntityRepository 
     implements InterviewsRepositoryInterface
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(
+        ManagerRegistry $registry,
+        private InterviewEntityMapper $mapper
+    )
     {
         parent::__construct($registry, InterviewEntity::class);
     }
+
+    /**
+     * Get interview details scheduled for a specific day.
+     *
+     * @return array<int, array{
+     *     id: string,
+     *     startDate: string,
+     *     title: ?string,
+     *     type: ?InterviewType,
+     *     status: InterviewStatus,
+     *     description: ?string,
+     *     candidateApproval: bool,
+     *     rejectionReason: ?string,
+     *     createdAt: string
+     * }>
+     */
+    #[Override]
+    public function getInterviewDetailsByDay(
+        string $userId,
+        \DateTimeImmutable $day
+    ): array {
+        // Normalizing
+        $timezone = new \DateTimeZone('UTC');
+        $startOfDay = $day->setTimezone($timezone)->setTime(0, 0, 0);
+        $startOfNextDay = $startOfDay->modify('+1 day');
+
+        // Request
+        $results = $this->createQueryBuilder('i')
+            ->select(
+                'i.id AS id',
+                'i.startDate AS startDate',
+                'i.title AS title',
+                'i.type AS type',
+                'i.status AS status',
+                'i.description AS description',
+                'i.candidateApproval AS candidateApproval',
+                'i.rejectionReason AS rejectionReason',
+                'i.createdAt AS createdAt'
+            )
+            ->innerJoin('i.application', 'a')
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('j.user = :userId')
+            ->andWhere('i.startDate >= :startOfDay')
+            ->andWhere('i.startDate < :startOfNextDay')
+            ->setParameter('userId', $userId)
+            ->setParameter('startOfDay', $startOfDay)
+            ->setParameter('startOfNextDay', $startOfNextDay)
+            ->orderBy('i.startDate', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(
+            static fn (array $result): array => [
+                'id' => $result['id'],
+                'startDate' => $result['startDate'] instanceof \DateTimeInterface 
+                    ? $result['startDate']->format(\DateTimeInterface::ATOM) 
+                    : (new \DateTimeImmutable($result['startDate']))->format(\DateTimeInterface::ATOM),
+                'title' => $result['title'],
+                'type' => $result['type'],
+                'status' => $result['status'],
+                'description' => $result['description'],
+                'candidateApproval' => $result['candidateApproval'],
+                'rejectionReason' => $result['rejectionReason'],
+                'createdAt' => $result['createdAt'] instanceof \DateTimeInterface 
+                    ? $result['createdAt']->format(\DateTimeInterface::ATOM) 
+                    : (new \DateTimeImmutable($result['createdAt']))->format(\DateTimeInterface::ATOM),
+            ],
+            $results
+        );
+    }
+
+
+    /**
+     * Get interview details.
+     *
+     * @return array{
+     *     id: string,
+     *     startDate: string,
+     *     title: ?string,
+     *     type: ?InterviewType,
+     *     status: InterviewStatus,
+     *     description: string,
+     *     candidateApproval: bool,
+     *     rejectionReason: ?string,
+     *     createdAt: string
+     * }
+     */
+    #[Override]
+    public function getInterviewDetails(
+        string $userId,
+        string $interviewId,
+    ): array {
+        $result = $this->createQueryBuilder('i')
+            ->select(
+                'i.id AS id',
+                'i.startDate AS startDate',
+                'i.title AS title',
+                'i.type AS type',
+                'i.status AS status',
+                'i.description AS description',
+                'i.candidateApproval AS candidateApproval',
+                'i.rejectionReason AS rejectionReason',
+                'i.createdAt AS createdAt'
+            )
+            ->innerJoin('i.application', 'a')
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('i.id = :interviewId')
+            ->andWhere('j.user = :userId')
+            ->setParameter('interviewId', $interviewId)
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($result === null) {
+            throw new \DomainException(
+                'Interview not found or access denied.'
+            );
+        }
+
+        return [
+            'id' => $result['id'],
+            'startDate' => $result['startDate']->format(DATE_ATOM),
+            'title' => $result['title'],
+            'type' => $result['type'],
+            'status' => $result['status'],
+            'description' => $result['description'],
+            'candidateApproval' => $result['candidateApproval'],
+            'rejectionReason' => $result['rejectionReason'],
+            'createdAt' => $result['createdAt']->format(DATE_ATOM),
+        ];
+    }
+
+    
+    #[Override]
+    public function getCalendarCollectionViews(
+        string $userId,
+        \DateTimeImmutable $month
+    ): array {
+        $startOfMonth = $month
+            ->modify('first day of this month')
+            ->setTime(0, 0, 0);
+
+        $startOfNextMonth = $startOfMonth
+            ->modify('+1 month');
+
+        $interviews = $this->createQueryBuilder('i')
+            ->select(
+                'i.id AS id',
+                'i.startDate AS startDate',
+                'i.title AS title',
+                'i.type AS type',
+                'i.status AS status',
+                'i.minutes AS minutes'
+            )
+            ->innerJoin('i.application', 'a')
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('j.user = :userId')
+            ->andWhere('i.startDate >= :startOfMonth')
+            ->andWhere('i.startDate < :startOfNextMonth')
+            ->setParameter('userId', $userId)
+            ->setParameter('startOfMonth', $startOfMonth)
+            ->setParameter('startOfNextMonth', $startOfNextMonth)
+            ->orderBy('i.startDate', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $groupedInterviews = [];
+
+        foreach ($interviews as $interview) {
+            $date = $interview['startDate'];
+            //-- Treat Datetime
+            if ($date instanceof \DateTimeInterface) {
+                $dayKey = $date->format('Y-m-d');
+                $interview['startDate'] = $date->format(
+                    \DateTimeInterface::ATOM
+                );
+            }
+            else {
+                $dayKey = (new \DateTimeImmutable($date))->format('Y-m-d');
+            }
+            $groupedInterviews[$dayKey][] = $interview;
+        }
+
+        return $groupedInterviews;
+    }
+
+
+
+    #[Override]
+    public function getInterviewContext(string $interviewId): ?InterviewContext
+    {
+        $data = $this->createQueryBuilder('i')
+            ->select(
+                'i.id AS interviewId',
+                'j.id AS jobId',
+                'j.title AS jobTitle',
+                'IDENTITY(a.candidate) AS candidateId'
+            )
+            ->innerJoin('i.application', 'a')
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('i.id = :interviewId')
+            ->setParameter('interviewId', $interviewId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if (!$data) {
+            return null;
+        }
+
+        return new InterviewContext(
+            jobId: $data['jobId'],
+            jobTitle: $data['jobTitle'],
+            interviewId: $data['interviewId'],
+            candidateId: $data['candidateId']
+        );
+    }
+
+
+    #[Override]
+    public function isUserAssociatedWithInterview(
+        string $userId,
+        string $interviewId
+    ): bool {
+        $count = $this->getEntityManager()->createQueryBuilder()
+            ->select('COUNT(i.id)')
+            ->from(ApplicationEntity::class, 'a')
+            ->innerJoin('a.interviews', 'i')
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('j.user = :userId')
+            ->andWhere('i.id = :interviewId')
+            ->setParameter('userId', $userId)
+            ->setParameter('interviewId', $interviewId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $count > 0;
+    }
+
+
+    
+    #[Override]
+    public function save(Interview $interview): void
+    {
+        $entity = null;
+
+        if ($interview->getId() !== null) {
+            $entity = $this->em->find(
+                InterviewEntity::class,
+                $interview->getId()
+            );
+        }
+
+        $entity = $this->mapper->toEntity(
+            interview: $interview,
+            entity: $entity
+        );
+
+        $em = $this->getEntityManager();
+        $em->persist($entity);
+        $em->flush();
+    }
+
+
+
+    #[Override]
+    public function remove(string $interviewId): void
+    {
+        $entity = $this->find($interviewId);
+
+        if ($entity === null) {
+            throw new \DomainException(
+                sprintf('Interview "%s" not found.', $interviewId)
+            );
+        }
+
+        $em = $this->getEntityManager();
+        $em->remove($entity);
+        $em->flush();
+    }
+
+
+
+    #[Override]
+    public function isConfirmedByCandidate(string $interviewId): bool
+    {
+        $result = $this->createQueryBuilder('i')
+            ->select('COUNT(i.id)')
+            ->where('i.id = :interviewId')
+            ->andWhere('i.candidateApproval = :approved')
+            ->setParameter('interviewId', $interviewId)
+            ->setParameter('approved', true)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $result > 0;
+    }
+
+
+
+    #[Override]
+    public function findConcurrentInterviews(DateTimeImmutable $startDate, int $minutes): bool
+    {
+        $endDate = $startDate->modify(sprintf('+%d minutes', $minutes));
+
+        $count = $this->createQueryBuilder('i')
+            ->select('COUNT(i.id)')
+            ->where('i.startDate < :endDate')
+            ->andWhere('DATE_ADD(i.startDate, i.minutes, \'MINUTE\') > :startDate')
+            ->andWhere('i.status != :cancelledStatus')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->setParameter('cancelledStatus', InterviewStatus::CLOSED)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count > 0;
+    }
+
+
+
+    #[Override]
+    public function assertRecruiterHasAccessToInterview(
+        string $recruiterId,
+        string $candidateId,
+        string $interviewId
+    ): void {
+        $exists = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('1')
+            ->from(ApplicationEntity::class, 'a')
+            ->innerJoin('a.candidate', 'c')
+            ->innerJoin('a.interviews', 'i')
+            ->innerJoin('a.jobOffer', 'j')
+            ->where('IDENTITY(j.user) = :recruiterId')
+            ->andWhere('c.id = :candidateId')
+            ->andWhere('i.id = :interviewId')
+            ->setParameter('recruiterId', $recruiterId)
+            ->setParameter('candidateId', $candidateId)
+            ->setParameter('interviewId', $interviewId)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($exists === null) {
+            throw new AccessDeniedException(
+                'You do not have access to this interview.'
+            );
+        }
+    }
+
 
 
     /**
@@ -31,6 +391,7 @@ class InterviewsRepository extends ServiceEntityRepository
      * @return array<int, array{
      *      id: string,
      *      type: string,
+     *      title: string,
      *      candidate: array{
      *          id: string,
      *          firstName: string,
@@ -40,10 +401,11 @@ class InterviewsRepository extends ServiceEntityRepository
      *      },
      *      description?: string,
      *      startDate: \DateTimeImmutable,
+     *      rejectionReason?: string,
      *      minutes: int
      * }>
      */
-    public function getTodayInterviewAgenda(
+    public function getInterviewAgenda(
         string $userId,
         int $skip,
         int $limit,
@@ -79,6 +441,7 @@ class InterviewsRepository extends ServiceEntityRepository
 
             $data = [
                 'id' => $interview->getId(),
+                'title' =>$interview->getTitle(),
                 'type' => $interview->getType(),
                 'candidate' => [
                     'id' => $candidate->getId(),
@@ -88,6 +451,7 @@ class InterviewsRepository extends ServiceEntityRepository
                 ],
                 'startDate' => $interview->getStartDate()->format(\DateTimeInterface::ATOM),
                 'minutes' => $interview->getMinutes(),
+                'rejectionReason'=> $interview->getRejectionReason()
             ];
 
             if ($interview->getDescription() !== null) {
@@ -120,6 +484,7 @@ class InterviewsRepository extends ServiceEntityRepository
             ->execute();
     }
     
+
 
     /**
      * Retrieve interviews related to a specific job linked to a recruiter (user),
@@ -163,139 +528,214 @@ class InterviewsRepository extends ServiceEntityRepository
         ?string $jobId = null,
         array $scheme = ['id' => true],
         ?string $companyId = null,
-        ?string $candidateId = null
+        ?string $candidateId = null,
+        ?array $statuses= null,
     ): array {
         $qb = $this->createQueryBuilder('i')
                    ->innerJoin('i.application', 'a');
         $selectedFields = [];
 
-        //  Dynamic selection for Interview entity fields
-        $allowedInterviewFields = ['id', 'title' , 'startDate', 'minutes', 'description', 'status', 'url'];
+        //--------------------------------
+        // Interview projection
+        //--------------------------------
+
+        $allowedInterviewFields = [
+            'id',
+            'title',
+            'startDate',
+            'minutes',
+            'description',
+            'status',
+            'url',
+        ];
+
         foreach ($allowedInterviewFields as $field) {
             if (!empty($scheme[$field])) {
-                $selectedFields[] = 'i.' . $field;
+                $selectedFields[] = "i.$field";
             }
         }
 
-        // Default to id if no root fields or sub-relations are requested
-        if (empty($selectedFields) && empty($scheme['candidate'])) {
-            $selectedFields[] = 'i.id';
-        }
+        //--------------------------------
+        // Candidate projection
+        //--------------------------------
 
-        //  Sub-Projection for Candidate relationship
-        if (!empty($scheme['candidate']) && is_array($scheme['candidate'])) {
+        if (
+            !empty($scheme['candidate'])
+            && is_array($scheme['candidate'])
+        ) {
             $qb->leftJoin('a.candidate', 'c');
-            $allowedCandidateFields = ['id', 'firstName', 'lastName', 'email'];
 
-            foreach ($allowedCandidateFields as $candField) {
-                if (!empty($scheme['candidate'][$candField])) {
-                    $selectedFields[] = 'c.' . $candField . ' AS candidate_' . $candField;
+            $allowedCandidateFields = [
+                'id',
+                'firstName',
+                'lastName',
+                'email',
+            ];
+
+            foreach ($allowedCandidateFields as $field) {
+                if (!empty($scheme['candidate'][$field])) {
+                    $selectedFields[] =
+                        "c.$field AS candidate_$field";
                 }
             }
 
-            // Sub-Projection for Candidate's Profile Image (FileEntity)
+            //--------------------------------
+            // Candidate image projection
+            //--------------------------------
+
             if (!empty($scheme['candidate']['image'])) {
                 $qb->leftJoin('c.image', 'img');
+
                 $imageScheme = $scheme['candidate']['image'];
 
                 if ($imageScheme === true) {
                     $selectedFields[] = 'img.name AS candidate_image_name';
-                } elseif (is_array($imageScheme)) {
-                    $allowedImageFields = ['id', 'name', 'size', 'mime'];
-                    foreach ($allowedImageFields as $imgField) {
-                        if (!empty($imageScheme[$imgField])) {
-                            $selectedFields[] = 'img.' . $imgField . ' AS candidate_image_' . $imgField;
+                }
+                elseif (is_array($imageScheme)) {
+                    $allowedImageFields = [
+                        'id',
+                        'name',
+                        'size',
+                        'mime',
+                    ];
+
+                    foreach ($allowedImageFields as $field) {
+                        if (!empty($imageScheme[$field])) {
+                            $selectedFields[] =
+                                "img.$field AS candidate_image_$field";
                         }
                     }
                 }
             }
         }
 
-        $qb->select(implode(', ', $selectedFields))
-           ->where('a.jobOffer = :jobId')
-           ->setParameter('jobId', $jobId);
+        //--------------------------------
+        // Default projection
+        //--------------------------------
 
-        //  Filtering by Candidate, Company or Recruiter User (Exclusive execution)
+        if (empty($selectedFields)) {
+            $selectedFields[] = 'i.id';
+        }
+
+        $qb->select(implode(', ', $selectedFields));
+
+
+        //--------------------------------
+        // Filters
+        //--------------------------------
+
+        if ($jobId) {
+            $qb->andWhere('a.jobOffer = :jobId')
+                ->setParameter('jobId', $jobId);
+        }
+
+        if (!empty($statuses)) {
+            $qb->andWhere('i.status IN (:statuses)')
+                ->setParameter('statuses', $statuses);
+        }
+
+        //--------------------------------
+        // Context filter
+        //--------------------------------
+
         if ($candidateId) {
             $qb->andWhere('a.candidate = :candidateId')
-               ->setParameter('candidateId', $candidateId);
-        } 
+                ->setParameter('candidateId', $candidateId);
+        }
         elseif ($companyId) {
             $qb->andWhere('a.company = :companyId')
-               ->setParameter('companyId', $companyId);
+                ->setParameter('companyId', $companyId);
         }
         elseif ($userId) {
             $qb->innerJoin('a.jobOffer', 'jo')
-               ->andWhere('jo.user = :userId')
-               ->setParameter('userId', $userId);
+                ->andWhere('jo.user = :userId')
+                ->setParameter('userId', $userId);
         }
 
-        //  Pagination
-        if ($limit > 0) {
-            $qb->setMaxResults($limit);
-        }
-        if ($skip > 0) {
-            $qb->setFirstResult($skip);
-        }
+        //--------------------------------
+        // Pagination
+        //--------------------------------
 
-        $results = $qb->getQuery()->getArrayResult();
+        $qb
+            ->setFirstResult(max(0, $skip))
+            ->setMaxResults(max(1, $limit));
 
-        //  Restructuring data tree for candidate and nested image
+        $results = $qb
+            ->getQuery()
+            ->getArrayResult();
+
+        //--------------------------------
+        // Restructure candidate tree
+        //--------------------------------
+
         if (!empty($scheme['candidate'])) {
-            return array_map(static function (array $row) {
-                $candidateData = [];
-                $imageData = [];
+            return array_map(
+                static function (array $row): array {
+                    $candidateData = [];
+                    $imageData = [];
+                    foreach ($row as $key => $value) {
+                        if (str_starts_with($key, 'candidate_image_')) {
+                            $realKey = str_replace(
+                                'candidate_image_',
+                                '',
+                                $key
+                            );
 
-                foreach ($row as $key => $value) {
-                    if (str_starts_with($key, 'candidate_image_')) {
-                        $realImgKey = str_replace('candidate_image_', '', $key);
-                        $imageData[$realImgKey] = $value;
-                        unset($row[$key]);
-                    } elseif (str_starts_with($key, 'candidate_')) {
-                        $realKey = str_replace('candidate_', '', $key);
-                        $candidateData[$realKey] = $value;
-                        unset($row[$key]);
+                            $imageData[$realKey] = $value;
+                            unset($row[$key]);
+                            continue;
+                        }
+
+                        if (str_starts_with($key, 'candidate_')) {
+                            $realKey = str_replace(
+                                'candidate_',
+                                '',
+                                $key
+                            );
+                            $candidateData[$realKey] = $value;
+                            unset($row[$key]);
+                        }
                     }
-                }
 
-                if (!empty($imageData) && array_filter($imageData, static fn($v) => $v !== null)) {
-                    $candidateData['image'] = $imageData;
-                }
+                    if (
+                        !empty($imageData)
+                        && array_filter(
+                            $imageData,
+                            static fn ($value) => $value !== null
+                        )
+                    ) {
+                        $candidateData['image'] = $imageData;
+                    }
 
-                if (!empty($candidateData)) {
-                    $row['candidate'] = $candidateData;
-                }
-
-                return $row;
-            }, $results);
+                    if (!empty($candidateData)) {
+                        $row['candidate'] = $candidateData;
+                    }
+                    return $row;
+                },
+                $results
+            );
         }
 
         return $results;
     }
 
 
-
-    #[Override]
-    public function find($id, $lockMode = null, $lockVersion = null)
-    {
-        return parent::find($id, $lockMode, $lockVersion);
-    }
-
-
     #[Override]
     public function findById(string $id): ?Interview
     {
-        throw new \Exception('Not implemented');
+        /** @var InterviewEntity|null $entity */
+        $entity = $this->find($id);
+
+        if ($entity === null) {
+            return null;
+        }
+        return $this->mapper->toDomain($entity);
     }
 
 
-    #[Override]
-    public function save(Interview $interview): void
-    {
-        throw new \Exception('Not implemented');
-    }
-
-
+    /**
+     * Count Interviews
+     */
     public function countInterviews(array $criteria): int 
     {
         $qb = $this->createQueryBuilder('i')

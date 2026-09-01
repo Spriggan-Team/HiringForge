@@ -19,7 +19,7 @@ interface CompanyRepositoryInterface{
 
 
     /**
-     * @throws RessourceNotFound
+     * @throws ResourceNotFoundException
      */
     public function get(string $companyId): Company;
 

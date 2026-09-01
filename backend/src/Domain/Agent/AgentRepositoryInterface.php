@@ -11,7 +11,7 @@ interface AgentRepositoryInterface
      * then returned the response 
      * @param string                $uuid represents the uniq identifier of an actor stored in the bdd
      * @return Agent
-     * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
+     * @throws ResourceNotFoundException    this exception should be throw when the ressouce does not exist in bdd
      * return the specified actor requested if founded in the bdd storage
      */
     public function findById(string $uuid): Agent;
@@ -22,7 +22,7 @@ interface AgentRepositoryInterface
      * (or registration)
      * @param ?string $uuid - the id of the agent to look for
      * @param ?string $email - the associated email (if available)
-     * @throws RessourceNotFound
+     * @throws ResourceNotFoundException
      */
     public function exists(?string $uuid=null, ?string $email =null): KnownIdentity;
 
@@ -30,7 +30,7 @@ interface AgentRepositoryInterface
     /**
      * This function is meant to retreive an actor from the bdd uisng his email
      * @return Agent                the retriving actor (user, candidate, agent ...)
-     * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
+     * @throws ResourceNotFoundException    this exception should be throw when the ressouce does not exist in bdd
      */
     public function findByEmail(string $email): Agent;
 

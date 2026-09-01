@@ -19,7 +19,7 @@ class DeleteAgentUsecase{
      * validation
      * @param string $authorId the identifiant of the author of the account (linked to the agent)
      * @param string $agentId  the identifiant of the account to delete
-     * @throws \Exception|RessourceNotFound - exception
+     * @throws \Exception|ResourceNotFoundException - exception
      */
     public function execute(string $authorId, string $agentId): void
     {

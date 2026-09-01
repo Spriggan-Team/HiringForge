@@ -24,12 +24,16 @@ interface AccountRepositoryInterface
      * This function throw  an Exception that indicates wether or not an user exist
      * @param ?string                   $uuid
      * @param ?string                   $email
-     * @throws RessourceNotFound        This exception should be sent when a ressource is not found in bdd
+     * @throws ResourceNotFoundException        This exception should be sent when a ressource is not found in bdd
      * @return KnownUserIdentity        contains basics information about user
      */
     public function assertExist(?string $uuid = null, ?string $email = null): KnownIdentity;
 
 
+    /**
+     * Retreive user light model
+     */
+    public function getAccountLightModel(string $uuid): ?AccountLightModel;
 
     /**
      * Throws no exception
@@ -45,14 +49,14 @@ interface AccountRepositoryInterface
     
     /**
      * This function hepl us changing the email in the bdd
-     * @throws \Exception|RessourceNotFound
+     * @throws \Exception|ResourceNotFoundException
      */
     public function changeEmail(string $old, string $new): void;
 
 
     /**
      * @param string                                         $uuid is the account's id
-     * @throws RessourceNotFound|InvalidArgumentException    This is raised when an account is not identify in the bdd
+     * @throws ResourceNotFoundException|InvalidArgumentException    This is raised when an account is not identify in the bdd
      * @return UserProfileItem                                  This is a view of all basics info about the account. It represents it profile information
      */
     public function fetchView(string $id);
@@ -62,7 +66,7 @@ interface AccountRepositoryInterface
      * Retreive an image related  to an account id 
      * Warning: Ensure this function is  used after identity verification
      *          as it does not fo such a thing
-     * @throws RessourceNotFound throwned when the user is not found
+     * @throws ResourceNotFoundException throwned when the user is not found
      * @return StaticMedia|null
     */
     public function getProfileImage(string $id): ?StaticMedia;

@@ -1,7 +1,19 @@
 
+// Time
+
 export interface Time{
     hours: number ; minutes: number
 }
+
+
+export interface TimeRange {
+  startTime: Time;
+  endTime: Time;
+}
+
+//------------------
+//-----
+//------------------
 
 export interface Location{
     id?: string,
@@ -29,9 +41,9 @@ export type EntityAction =  "edit" | "duplicate" | "delete" | null
 
 
 
-//----------------------------
-// FRONTEND / API & SHARED TYPES
-//----------------------------
+//---------------------------------------
+// FRONTEND / API & SHARED TYPES - UI
+//---------------------------------------
 
 /**
  * Shared types used across multiple layers of the application,
@@ -69,3 +81,36 @@ export interface JobOfferState {
     inactive: boolean;
 }
 
+
+//--------------------------
+//-- UI & Services only
+//--------------------------
+
+//-- Seacrh
+
+export interface CandidateSearchItem extends AutoCompleteSearchResultItem {
+  email: string;
+  firstName: string;
+  applicationId: string;
+  candidateId: string;
+  jobTitle: string;
+};
+
+
+export interface AutoCompleteSearchResultItem {
+  id: string;
+  image?: string;
+  label: string;
+  sublabel?: string;
+  [key: string]: unknown; 
+}
+
+
+//----------------------------
+//------ API Only
+//----------------------------
+
+export interface PendingRequest<T> {
+    promise: Promise<T>;
+    signal?: AbortSignal;
+}

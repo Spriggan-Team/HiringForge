@@ -54,6 +54,10 @@ class CreateEmploymentOffer
             applicationId: $command->applicationId
         ); 
 
+        if(!$applicationContext){
+            throw new \DomainException("Application not found");
+        }
+
         //-- Slient notification update
         try{
             // notification Data

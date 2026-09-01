@@ -4,8 +4,9 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\DiscriminationMap\A
 
 
 use App\Domain\Shared\KnownIdentity;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\File\StaticMedia;
+use App\Domain\Shared\Account\AccountLightModel;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\Account\AccountRole;
 
@@ -21,13 +22,46 @@ class AccountRepository implements AccountRepositoryInterface
 
     
     #[Override]
+    public function getAccountLightModel(
+        string $uuid
+    ): ?AccountLightModel {
+        $data = $this->em
+            ->createQueryBuilder()
+            ->select(
+                'a.id AS id',
+                'a.firstName AS firstName',
+                'a.lastName AS lastName',
+                'a.email AS email',
+                'IDENTITY(a.image) AS imageId'
+            )
+            ->from(AccountEntity::class, 'a')
+            ->where('a.id = :uuid')
+            ->setParameter('uuid', $uuid)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($data === null) {
+            return null;
+        }
+
+        return new AccountLightModel(
+            id: $data['id'],
+            firstName: $data['firstName'],
+            lastName: $data['lastName'],
+            email: $data['email'],
+            imageId: $data['imageId'],
+        );
+    }
+    
+
+    #[Override]
     public function getProfileImage(string $id): ?StaticMedia
     {
         /** @var AccountEntity|null $account */
         $account = $this->em->find(AccountEntity::class, $id);
 
         if (!$account) {
-            throw new RessourceNotFound(
+            throw new ResourceNotFoundException(
                 sprintf('No account found with id "%s".', $id)
             );
         }
@@ -53,7 +87,7 @@ class AccountRepository implements AccountRepositoryInterface
             ->find($accountId);
 
         if ($account === null) {
-            throw new RessourceNotFound(
+            throw new ResourceNotFoundException(
                 'Account not found when modifying image.'
             );
         }
@@ -87,7 +121,7 @@ class AccountRepository implements AccountRepositoryInterface
     public function assertExist(?string $uuid = null, ?string $email = null): KnownIdentity
     {
         if (!$uuid && !$email) {
-            throw new RessourceNotFound();
+            throw new ResourceNotFoundException();
         }
 
         $qb = $this->em->createQueryBuilder()
@@ -103,7 +137,7 @@ class AccountRepository implements AccountRepositoryInterface
 
         $accountData = $qb->getQuery()->getOneOrNullResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
         if (!$accountData) {
-            throw new RessourceNotFound();
+            throw new ResourceNotFoundException();
         }
 
 
@@ -136,7 +170,7 @@ class AccountRepository implements AccountRepositoryInterface
                         ->getRepository(AccountEntity::class)
                         ->findOneBy([ "email" => $old ]);
         if(!$account)
-            throw new RessourceNotFound();
+            throw new ResourceNotFoundException();
         $account->setEmail($new);
 
         $this->em->persist($account);
@@ -150,7 +184,7 @@ class AccountRepository implements AccountRepositoryInterface
                         ->getRepository(AccountEntity::class)
                         ->findOneBy([ "email" => $email ]);
         if(!$account)
-            throw new RessourceNotFound();
+            throw new ResourceNotFoundException();
         $account->setPassword($hash);
 
         $this->em->persist($account);

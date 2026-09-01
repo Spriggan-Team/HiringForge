@@ -6,7 +6,7 @@ use App\Api\Responder\ApiResponse;
 use App\Domain\File\StaticMedia;
 use App\Domain\Candidate\Candidate;
 use App\Domain\Candidate\CandidateLightModel;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 
 use App\Domain\Candidate\CandidateRepositoryInterface;
 use App\Domain\Exception\UnauthorizedAction;
@@ -167,7 +167,7 @@ class CandidateRepository implements CandidateRepositoryInterface
         ]);
 
         if(!$entity){
-            throw new RessourceNotFound("Candidate not found");
+            throw new ResourceNotFoundException("Candidate not found");
         }
         $candidate = $this->mapper->toDomain($entity);
         return $candidate;
@@ -208,7 +208,7 @@ class CandidateRepository implements CandidateRepositoryInterface
             ->getOneOrNullResult(); // Assoc array
 
         if (!$result) {
-            throw new RessourceNotFound("Candidate with ID {$candidateId} not found.");
+            throw new ResourceNotFoundException("Candidate with ID {$candidateId} not found.");
         }
 
         // Image
@@ -253,7 +253,7 @@ class CandidateRepository implements CandidateRepositoryInterface
         $candidate = $this->em->find(CandidateEntity::class, $candidateId);
 
         if(!$candidate){
-            throw new RessourceNotFound('Candidate not found');
+            throw new ResourceNotFoundException('Candidate not found');
         }
 
         /** @var array<int, CandidateResumeEntity> $resumes */
@@ -299,7 +299,7 @@ class CandidateRepository implements CandidateRepositoryInterface
         );
 
         if (!$candidate) {
-            throw new RessourceNotFound('Candidate not found');
+            throw new ResourceNotFoundException('Candidate not found');
         }
 
         $repository = $this->em->getRepository(

@@ -16,20 +16,24 @@ import TimeSVG from "/src/assets/svg/time/time-svgrepo-com.svg?react"
 
 //-- CSS Modules
 import styles from "./SchedulingAside.module.css"
-import { mockCalendarEvents } from "../../../core/mock/events";
 import type { Time } from "../../../features/shared/global";
+import { CardPlaceholder } from "../../../layout/components/cards/placeholder.php/card.placeholder";
 
 
 interface SchedulingAsideProps{
     date: Date;
-    events?: CalendarEvent[];
+    events: CalendarEvent[];
     className?: string;
+    onPrev?:(currentLenght: number) => void;
+    onNext?: (currentLenght: number) => void;
 }
 
 const SchedulingAside: React.FC<SchedulingAsideProps> = ({
     date,
     events = [],
 
+    onNext,
+    onPrev,
     className
 }) => {
     const { t } = useTranslation();
@@ -45,22 +49,26 @@ const SchedulingAside: React.FC<SchedulingAsideProps> = ({
                 </div>
 
                 {/** NAVIGATION ARROWS */}
-                <ArrowNavigation />
+                <ArrowNavigation 
+                    onPrevious={()=> onPrev?.(events.length)}
+                    onNext={()=> onNext?.(events.length)}
+                />
             </div>
 
             {/** ITEMS */}
             <div className={`${styles.items} scrollbar`}>
                 {
-                    mockCalendarEvents.map((event,index)=>{
-                        if(index > 2) return null;
-                        return (
-                            <EventCard 
-                                t={t}
-                                key={index}
-                                event={event}
-                            />
-                        );
-                    })
+                    events.length > 0 ?
+                        events.map((event,index)=>{
+                            return (
+                                <EventCard 
+                                    t={t}
+                                    key={index}
+                                    event={event}
+                                />
+                            );
+                        }) :
+                        <CardPlaceholder text="Aucun entretien" />
                 }
             </div>
         </div>
@@ -76,6 +84,7 @@ interface EventCardProps{
     className?: string;
     event: CalendarEvent;
     t:  TFunction<"translation", undefined>;
+    imageUrls?: string[]
 }
 
 
@@ -83,6 +92,7 @@ const EventCard: React.FC<EventCardProps> = ({
     t,
     event,
     className,
+    imageUrls = []
 }) => {
     const today = new Date();
 
@@ -90,7 +100,6 @@ const EventCard: React.FC<EventCardProps> = ({
         if (!event.time.end || !isSameDay(today, event.date)) {
             return 0;
         }
-
         const elapsed = getDeltaSecondeTime(
             event.time.start,
             {
@@ -108,6 +117,17 @@ const EventCard: React.FC<EventCardProps> = ({
     })();
 
     const formatTime = ({ hours, minutes }: Time) =>`${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    const [images, memberNames] = event.members.reduce(
+        (acc, current) => {
+            acc[0].push(current.image ?? "");
+            acc[1].push(current.name);
+
+            return acc;
+        },
+        [[], []] as [string[], string[]]
+    );
+
+    const membersOutOfDisplayRange = (memberNames.length > 3 ? memberNames.length - 3 : memberNames.length);
 
     return (
         <div className={`${styles.event} ${className} card`}>
@@ -126,10 +146,13 @@ const EventCard: React.FC<EventCardProps> = ({
                 )}
 
                 <Title title={event.title} />
-
-                <span className={styles.desc}>
-                    {event.note}
-                </span>
+                {
+                    event.note && (
+                        <span className={styles.desc}>
+                            {event.note}
+                        </span>
+                    )
+                }
             </div>
 
             <div className={styles.dotedSeparator} />
@@ -155,14 +178,22 @@ const EventCard: React.FC<EventCardProps> = ({
                 <div className={styles.members}>
                     <div className={styles.images}>
                         {/* avatars */}
-                        <img src="https://www.studio-pop-art.fr/cdn/shop/products/portrait-homme-465158.webp?v=1690383976&width=1445" alt="" />
-                        <img src="https://www.bragard.fr/14489-large_default/leo-veste-homme.jpg" alt="" />
+                        {
+                            images.map((img, index)=>(
+                                <img 
+                                    key={`${img}-${index}`}
+                                    src={img ?? ""} 
+                                    alt="image" 
+                                />
+                            ))
+                        }
                     </div>
-
-                    <div className={styles.txt}>
-                        <span>Julia K, Ivan M</span>
-                        <span>+5 {t("global.messages.more")}</span>
-                    </div>
+                    {
+                        <div className={styles.txt}>
+                            <span>{memberNames.slice(0, membersOutOfDisplayRange).join(', ')}</span>
+                            {membersOutOfDisplayRange > 3 && <span>+{membersOutOfDisplayRange} {t("global.messages.more")}</span>}
+                        </div>
+                    }
                 </div>
             </div>
         </div>

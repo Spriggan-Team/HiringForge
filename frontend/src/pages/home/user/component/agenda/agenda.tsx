@@ -16,6 +16,7 @@ import RightToLeftArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-dow
 //-- CSS Styles
 import styles from "./Agenda.module.css"
 import { formatMinutesIntoTime } from "../../../../../utils/format";
+import { CardPlaceholder } from "../../../../../layout/components/cards/placeholder.php/card.placeholder";
 
 
 
@@ -54,15 +55,17 @@ const Agenda: React.FC<AgendaProps> = ({
         <div className={styles.container}>
             <Title title={t("userHome.agenda.title")} />
             {
-                agenda.map((item, key)=>(
-                    <AgendaItem 
-                        key={key}
-                        time={formatMinutesIntoTime(item.minutes)}
-                        subject={item.type}
-                        person={`${item.candidate.firstName} ${item.candidate.lastName}`}
-                        separatorColor={item.type ? colorScheme[item.type] : "#6e6868" }
-                    />
-                ))
+                agenda.length > 0 ? 
+                    agenda.map((item, key)=>(
+                        <AgendaItem 
+                            key={key}
+                            time={formatMinutesIntoTime(item.minutes)}
+                            subject={item.type}
+                            person={`${item.candidate.firstName} ${item.candidate.lastName}`}
+                            separatorColor={item.type ? colorScheme[item.type] : "#6e6868" }
+                        />
+                    ))
+                    : <CardPlaceholder text="Aucun entretien prévue" />
             }
         </div>
     );

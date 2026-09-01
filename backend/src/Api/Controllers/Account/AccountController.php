@@ -14,7 +14,7 @@ use App\Application\Usecases\Account\AccountPasswordRenitializer;
 use App\Application\Usecases\Account\VerificationCodeSender;
 use App\Domain\ApplicationErrorCode;
 use App\Domain\Exception\EmailAlreadyRegistered;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 
 
 use Exception;
@@ -124,7 +124,7 @@ class AccountController extends AbstractController
                 code: ApplicationErrorCode::INVALID_OTP
             )->toJsonResponse();
         }
-        catch(RessourceNotFound $notFound){
+        catch(ResourceNotFoundException $notFound){
             return ApiResponse::error(
                 message: 'Nothing Found',
                 throwable: $notFound,

@@ -56,6 +56,28 @@
   box-sizing: border-box;
 }
 
+.modalForm input[type="number"],
+.modalForm select {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #1f2937;
+  background-color: #f9fafb;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  box-sizing: border-box;
+  appearance: none;
+}
+
+.modalForm input[type="number"]:focus,
+.modalForm select:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
 .modalForm input:focus,
 .modalForm textarea:focus,
 .searchInput:focus {

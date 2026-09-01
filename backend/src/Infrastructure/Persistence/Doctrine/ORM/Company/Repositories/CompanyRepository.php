@@ -4,7 +4,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Company\Repositories;
 
 use App\Domain\Company\Company;
 use App\Domain\Company\CompanyRepositoryInterface;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 
@@ -67,7 +67,7 @@ class CompanyRepository extends ServiceEntityRepository
     {
         $entity = $this->find($companyId);
         if(!$entity){
-            throw new RessourceNotFound("Company not found");
+            throw new ResourceNotFoundException("Company not found");
         }
         $domain = $this->mapper->toDomainEntity($entity);
         return $domain;

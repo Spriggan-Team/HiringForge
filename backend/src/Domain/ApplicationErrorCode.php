@@ -5,6 +5,7 @@ namespace App\Domain;
 enum ApplicationErrorCode: string{
     //-- global
     case RESSOURCE_CREATION_FAILED = "ressources_creation_failed";
+    case UNABLE_RESOURCE_DELETION = 'unable_ressource_deletion';
 
     //-- otp
     case EXPIRED_OTP = "expired_otp";
@@ -31,4 +32,7 @@ enum ApplicationErrorCode: string{
 
     //-- resume
     case UNALLOW_RESUME_DELETION = "unallow_deletion_resume";
+
+    //-- Exception
+    case CONCURRENT_INTERVIEWS_FOUNDED = "concurrent_interview_founded";
 }
