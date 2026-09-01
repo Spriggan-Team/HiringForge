@@ -10,6 +10,7 @@ import { navigateTo } from "../../../App";
 import PublicJobQueries from "../../../api/services/public/queries";
 import { useAppContext, useCandidateContext, useCurrentCandidate } from "../../../hooks/context";
 import RouteScheme from "../../../route.scheme";
+import CandidatesQueries from "../../../api/services/candidate/queries";
 
 
 import { ConfirmModal } from "../../../layout/components/conform.box";
@@ -19,10 +20,10 @@ import TipTapRenderer from "../../../layout/components/editors/tiptap/tiptap.ren
 
 import SearchSVGComponent from "/src/assets/svg/menu/search-svgrepo-com.svg?react";
 import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.svg?react";
+// import { Pagination } from "../../../layout/components/navigation/pagination/pagination";
 
 
 import styles from "./PublicJobPage.module.css";
-import CandidatesQueries from "../../../api/services/candidate/queries";
 
 
 const PAGINATION_LIMIT = 15;
@@ -73,12 +74,14 @@ const PublicJobPage = () => {
 
         try {
             const response = await PublicJobQueries.getPublicJobs({
-            search: searchContext.title,
-            address: searchContext.address,
-            limit: PAGINATION_LIMIT,
-            skip: currentSkip,
-            locale: i18n.language,
+                search: searchContext.title,
+                address: searchContext.address,
+                limit: PAGINATION_LIMIT,
+                skip: currentSkip,
+                locale: i18n.language,
             });
+
+            console.log({jobOffer: response})
 
             setJobOffers(response.items);
             setTotalJobs(response.total);
@@ -371,16 +374,16 @@ const PublicJobPage = () => {
 
                                 {/* Gallery */}
                                 {selectedJobDetails.images && selectedJobDetails.images.length > 0 && (
-                                <div className={styles.section}>
-                                    <h4 className={styles.sectionTitle}>Galerie</h4>
-                                    <div className={styles.imageGallery}>
-                                        {selectedJobDetails.images.map((imgUrl, index) => (
-                                            <div key={index} className={styles.galleryImageWrapper}>
-                                            <img src={imgUrl} alt="Aperçu poste" />
-                                            </div>
-                                        ))}
+                                    <div className={styles.section}>
+                                        <h4 className={styles.sectionTitle}>Galerie</h4>
+                                        <div className={styles.imageGallery}>
+                                            {selectedJobDetails.images.map((imgUrl, index) => (
+                                                <div key={index} className={styles.galleryImageWrapper}>
+                                                    <img src={imgUrl} alt="Aperçu poste" />
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
                                 )}
                             </div>
                         </div>

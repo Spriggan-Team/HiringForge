@@ -26,12 +26,13 @@ import PasswordSVG from "/src/assets/svg/security/password-protection-privacy-ac
 //-- CSS - Styles
 import styles from './style.module.css'
 import { AccountRole } from '../../core/enums/AccountRole';
+import { useAppNavigate } from '../../hooks/navigation';
 
 
 
 const Login = () => {
     const { t } = useTranslation();
-    const navigate = useNavigate();
+    const navigate = useAppNavigate();
     const { setPopup, setLoading } = useAppContext();
 
     const [animateBtn, setAnimateBtn] = useState(false);
@@ -64,10 +65,10 @@ const Login = () => {
         setPopup({ status: "success", message: t("login.apiResponse.success") });
 
         if(role === AccountRole.USER){
-            navigate(RouteScheme.userHome);
+            navigate(RouteScheme.userHome, { reloadNavState: true });
         }
         else if(role === AccountRole.CANDIDATE){
-            navigate(RouteScheme.jobs)
+            navigate(RouteScheme.jobs, { reloadNavState: true  })
         }
     };
 

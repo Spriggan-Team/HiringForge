@@ -10,6 +10,7 @@ export interface NavigateOptions {
   persistMenu?: boolean;
   state?: Record<string, any>;
   from?: AppRoute;
+  reloadNavState?: boolean //Complete reload of the page
 }
 
 
@@ -24,7 +25,8 @@ export const useAppNavigate = () => {
       menuId,
       persistMenu = true,
       state: customState,
-      from
+      from,
+      reloadNavState = false
     } = options;
 
     let finalRoute: string = route;
@@ -50,6 +52,12 @@ export const useAppNavigate = () => {
       if (queryString) {
         finalRoute += `?${queryString}`;
       }
+    }
+
+    //-- Complete reload of page
+    if (reloadNavState) {
+      window.location.href = finalRoute;
+      return;
     }
 
     // Current route values (Pattern & Location réelle)
