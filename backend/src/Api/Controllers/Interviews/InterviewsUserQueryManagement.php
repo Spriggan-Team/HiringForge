@@ -5,9 +5,6 @@ namespace App\Api\Controllers\Interviews;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Api\Controllers\Helpers\ApiControllerHelpers;
-use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
-use App\Domain\File\MediaStorageInterface;
-
 
 use App\Domain\Interviews\InterviewsRepositoryInterface;
 use App\Domain\Interviews\InterviewStatus;
@@ -116,7 +113,7 @@ class InterviewsUserQueryManagement extends AbstractController{
      *  - limit: number
      */
     #[Route('/agenda', methods: ['GET'])]
-    public function getRecentForToday(
+    public function getRecentByDate(
         Request $request
     ): JsonResponse
     {
@@ -134,7 +131,7 @@ class InterviewsUserQueryManagement extends AbstractController{
             $skip = $request->query->getInt('skip', 0);
             $limit = $request->query->getInt('limit', 10);
 
-            $results = $this->interviewsRepository->getTodayInterviewAgenda(
+            $results = $this->interviewsRepository->getInterviewAgenda(
                 userId: $user->getId(),
                 skip: $skip,
                 limit: $limit,
@@ -164,7 +161,7 @@ class InterviewsUserQueryManagement extends AbstractController{
      *  - statuses?: InterviewsStatus
      */
     #[Route('/job_offers', methods: ['GET'])]
-    public function getUserInterviews(
+    public function getUserInterviewsWithPagination(
         Request $request
     ): JsonResponse {
         try {
@@ -235,5 +232,59 @@ class InterviewsUserQueryManagement extends AbstractController{
         }
     }
 
+
+    /**
+     * Retreive all interview existing within a month
+     * Queries:
+     *      - currentMonth: string ISO
+     */
+    #[Route('/calendar', methods: ['GET'])]
+    public function getUserInterviewCalendar(
+        Request $request
+    ){
+        try{
+            /** @var AuthenticatedPerson $user */
+            $user = $this->getUser();
+            $currentMonthParam = $request->query->get("currentMonth");
+
+            if(!$currentMonthParam){
+                return ApiResponse::error(
+                    message: "\'currentMonth\' query is mandatory"
+                )->toJsonResponse();
+            }
+
+            $currentMonth = new \DateTimeImmutable($currentMonthParam);
+            $results = $this->interviewsRepository->getCalendarCollectionViews(userId: $user->getId(), month: $currentMonth) ?? [];
+
+            return ApiResponse::success(
+                message: "Everyhing is ok",
+                data: $results
+            )->toJsonResponse();
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: "Something went wrong while retreiving interviws calendar shape",
+                throwable: $error
+            )->toJsonResponse();
+        }
+    }
+
+
+    #[Route('/calendar/day', methods: ['GET'])]
+    public function getInterviewsByDays(
+        string $interviewId
+    )
+    {
+        try{
+            /** @var AuthenticatedPerson $user */
+            $user = $this->getUser();
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: "Something went wrong while retreiving details interviw",
+                throwable: $error
+            )->toJsonResponse();
+        } 
+    }
 }
 

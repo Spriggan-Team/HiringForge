@@ -3,6 +3,7 @@ import React from "react";
 import styles from "../Interviews.module.css";
 import type { Interview } from "../interviews.section";
 import { InterviewStatus, InterviewType } from "../../../../../../features/interviews/interviews";
+import { formatDateSafely, safeParsingDate } from "../../../../../../utils/format";
 
 
 interface InterviewRowProps {
@@ -22,9 +23,7 @@ const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
   getInitials,
 }) => {
   const scheduleDate = new Date(interview.scheduledAt);
-  scheduleDate.setMinutes(
-    scheduleDate.getMinutes() + interview.minutes
-  );
+  const parsedDate =safeParsingDate(interview.scheduledAt)
 
   return (
     <tr className={isUpdating ? styles.rowDisabled : ""}>
@@ -58,17 +57,25 @@ const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
       <td data-label="Date & Heure">
         <div className={styles.dateCell}>
           <span className={styles.dateText}>
-            {scheduleDate.toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
+            {
+              parsedDate
+                ? parsedDate.toLocaleDateString("fr-FR", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "Date invalide"
+            }
           </span>
+
           <span className={styles.timeText}>
-            {new Date(interview.scheduledAt).toLocaleTimeString("fr-FR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+            {
+              parsedDate &&
+                parsedDate.toLocaleTimeString("fr-FR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+            }
           </span>
         </div>
       </td>

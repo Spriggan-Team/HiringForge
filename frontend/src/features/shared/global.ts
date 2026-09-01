@@ -1,7 +1,19 @@
 
+// Time
+
 export interface Time{
     hours: number ; minutes: number
 }
+
+
+export interface TimeRange {
+  startTime: Time;
+  endTime: Time;
+}
+
+//------------------
+//-----
+//------------------
 
 export interface Location{
     id?: string,

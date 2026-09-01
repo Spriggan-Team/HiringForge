@@ -28,6 +28,39 @@ export const formatDateSafely = (dateString: string | null | undefined): string 
     return isNaN(date.getTime()) ? "—" : format(date, 'dd MMMM yyyy');
 };
 
+/** Parse date safely */
+export const safeParsingDate = (value: unknown): Date | null => {
+    //Symfony date
+    if (
+        typeof value === "object" &&
+        value !== null &&
+        "date" in value
+    ) {
+        const parsedDate = new Date(
+            (value as { date: string }).date
+        );
+
+        return isNaN(parsedDate.getTime())
+            ? null
+            : parsedDate;
+    }
+
+    if (typeof value === "string" || typeof value === "number") {
+        const parsedDate = new Date(value);
+
+        return isNaN(parsedDate.getTime())
+            ? null
+            : parsedDate;
+    }
+
+    if (value instanceof Date) {
+        return isNaN(value.getTime()) ? null : value;
+    }
+
+    return null;
+};
+
+
 
 //-- Trandfrom date into elapsed/remaining-time time
 export function formatRemainingTime(
@@ -93,6 +126,11 @@ export const formatSalary = (salary?: {
     return parts.join(" - ");
 };
 
+
+
+//---------------------
+//--- DATES
+//---------------------
 
 
 //-- Get elapsed time

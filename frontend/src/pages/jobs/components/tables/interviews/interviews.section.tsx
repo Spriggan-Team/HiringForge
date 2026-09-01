@@ -51,11 +51,13 @@ const getInterviewsCacheKey = ({
     skip,
     limit,
     statuses,
+    search
 }: {
     jobId?: string;
     companyId?: string;
     skip: number;
     limit: number;
+    search?: string;
     statuses?: InterviewStatusValue[] | null;
 }) => {
     return JSON.stringify({
@@ -66,6 +68,7 @@ const getInterviewsCacheKey = ({
         statuses: statuses
             ? [...statuses].sort()
             : null,
+        search: search?.trim() || null,
     });
 };
 
@@ -135,7 +138,6 @@ export default function InterviewsSection({
   // Cache & Refs
     // Interview
   const interviewsCache = useRef(new Map<string, InterviewsQueryCache>());
-  const pendingRequests = useRef(new Map<string, PendingInterviewRequest>());
 
     //-- image
   const imageUrlCache = useRef<Map<string, string>>(new Map()); // image url ...
@@ -159,10 +161,7 @@ export default function InterviewsSection({
   //--------------------
   //-- CAHCHE HANDLERS
   //--------------------
-  
-  const invalidateInterviewsCache = useCallback(() => {
-    interviewsCache.current.clear();
-  }, []);
+
 
   const invalidateImageCache = useCallback(() => {
     imageUrlCache.current.forEach((url) => URL.revokeObjectURL(url));
@@ -206,6 +205,7 @@ export default function InterviewsSection({
           companyId,
           skip,
           limit,
+          search,
           statuses,
       });
 
@@ -224,20 +224,6 @@ export default function InterviewsSection({
       }
 
       //--------------------------------
-      // PENDING REQUEST
-      //--------------------------------
-      const pending = pendingRequests.current.get(key);
-
-      if (pending) {
-          if (!pending?.signal?.aborted) {
-              console.log("Interviews pending reused", key);
-              return pending.promise;
-          }
-          //-- Clear killed requst
-          pendingRequests.current.delete(key);
-      }
-
-      //--------------------------------
       // CACHE MISS
       //--------------------------------
 
@@ -249,7 +235,8 @@ export default function InterviewsSection({
               skip,
               limit,
               statuses,
-              signal 
+              signal ,
+              search
           })
           .then(async (responseData) => {
             const mappedInterviews = await Promise.all(
@@ -281,13 +268,15 @@ export default function InterviewsSection({
                       }
                   }
 
+                  console.log("Format Date: ", value.startDate)
+
                   return {
                       ...value,
                       id: value.id,
                       jobTitle,
                       candidate:`${value.candidate.firstName} ${value.candidate.lastName}`,
                       email: value.candidate.email,
-                      scheduledAt:  formatDateSafely(value.startDate.date),
+                      scheduledAt:  formatDateSafely(value.startDate),
                       locationOrLink: value.url,
                       status: value.status,
                       avatarUrl: image,
@@ -306,15 +295,7 @@ export default function InterviewsSection({
             interviewsCache.current.set(key, result);
             return result;
           })
-          .finally(() => {
-              pendingRequests.current.delete(key);
-          });
-
-
-      pendingRequests.current.set(key, {
-          promise: request,
-          signal,
-      });
+          .finally(() => {});
 
       return request;
   }), [jobId, companyId, jobTitle]);
@@ -362,13 +343,14 @@ export default function InterviewsSection({
           //--------------------------------
 
           if (mode === "replace") {
-              abortControllerRef.current?.abort();
-              abortControllerRef.current = new AbortController();
-              setIsLoading(true);
+            invalidateImageCache();
+            abortControllerRef.current?.abort();
+            setIsLoading(true);
           }
           else{
             setIsLoadingMore(true)
           }
+          abortControllerRef.current = new AbortController();
 
           const controller = abortControllerRef.current;
           const signal = controller?.signal;
@@ -425,7 +407,7 @@ export default function InterviewsSection({
               // Pagination
               //--------------------------------
 
-              setSkip(skip + result.data.length);
+              setSkip(prevSkip => (mode === "replace" ? result.data.length : prevSkip + result.data.length));
               setHasMore(result.hasMore);
           }
           catch (error: any) {
@@ -437,15 +419,12 @@ export default function InterviewsSection({
               }
           }
           finally {
-              if (
-                  mode !== "replace" ||
-                  controller === abortControllerRef.current
-              ) {
-                  setIsLoading(false);
-              }
-              else{
+            if (mode === "replace") {
+                setIsLoading(false);
+            }
+            else {
                 setIsLoadingMore(false);
-              }
+            }
           }
       },
       [requestInterviews]
@@ -458,7 +437,11 @@ export default function InterviewsSection({
 
   // Reload the complete list when creating an interview
   const refreshInterviews = useCallback(async () => {
-      invalidateInterviewsCache();
+      abortControllerRef.current?.abort();
+      interviewsCache.current.clear();
+      
+      setSkip(0);
+      setHasMore(true);
 
       await fetchInterviews({
           skip: 0,
@@ -476,18 +459,14 @@ export default function InterviewsSection({
 
   //-- Trigger Filtering
   useEffect(() => {
-      fetchInterviews({
-          skip: 0,
-          mode: "replace",
-          search: debouncedSearch,
-          statuses: filters.statuses,
-      });
-
-  }, [
-      debouncedSearch,
-      filters.statuses,
-      fetchInterviews,
-  ]);
+    setSkip(0);
+    fetchInterviews({
+      skip: 0,
+      mode: "replace",
+      search: debouncedSearch,
+      statuses: filters.statuses,
+    });
+  }, [debouncedSearch, filters.statuses]);
 
   
   // Infinite Scroll Observer
@@ -554,9 +533,24 @@ export default function InterviewsSection({
   const handleCreateInterview = useCallback(
     async (payload: CreateInterviewFormData) => {
       try{
+        console.log(payload)
         await InterviewsServices.createInterview({
           ...payload,
         });
+  
+        await refreshInterviews();
+
+        updateJob?.(prev => {
+          if (!prev) return prev;
+          return {
+              ...prev,
+              cardinal: {
+                  ...(prev.cardinal ?? {}),
+                  interviews: (prev.cardinal?.interviews ?? 0) + 1
+              }
+          };
+        });
+
       }
       catch(error){
           if(error instanceof ConcurrentInterviewsException){
@@ -565,7 +559,6 @@ export default function InterviewsSection({
           console.log("Something went wrong while creating offer", error);
           throw error;
       }
-      refreshInterviews();
     },
     [jobId, refreshInterviews]
   );
@@ -582,9 +575,18 @@ export default function InterviewsSection({
       
       setInterviews((prev) => prev.filter((item) => item.id !== id));
       setSkip(skip => skip > 0 ? skip - 1 : skip);
-      deleteInterviewFromCache(id);
+      interviewsCache.current.clear();
 
       setLoading({state: false, subtitle: t('interviews.apiResponses.success.delete')});
+      updateJob?.((prev)=>{
+        if(!prev) return prev;
+        return ({
+          ...prev, 
+          cardinal:{
+            ...(prev.cardinal??{}), 
+            interviews: Math.max(0,(prev.cardinal?.interviews ?? 0) - 1 )}
+        })
+      })
     } 
     catch (error) {
       if(error instanceof UnableResourceDeletion){
@@ -596,7 +598,13 @@ export default function InterviewsSection({
     finally {
       setIsUpdating(null);
     }
-  }, []);
+  }, [
+    deleteInterviewFromCache,
+    setLoading,
+    setPopup,
+    t,
+    updateJob
+  ]);
 
 
 
@@ -626,9 +634,15 @@ export default function InterviewsSection({
     }
     finally {
       setIsUpdating(null);
-      setLoading({state: false, subtitle: t('global.messages.error')})
+      setLoading({ state: false });
     }
-  }, []);
+  }, [
+    deleteInterviewFromCache,
+    setLoading,
+    setPopup,
+    t,
+    updateJob
+  ]);
 
 
   return (
@@ -648,12 +662,11 @@ export default function InterviewsSection({
           onOpenGenerateModal={() => {
             setModal({
               isOpen: true,
-              title: 'Création d\'un entrtien',
+              title: t('interviews.modal.createTitle', 'Création d\'un entretien'),
               content: <GenerateInterviewModal
                         onClose={() => {
                           setModal(null)
                         }}
-                        updateJob={updateJob}
                         onSubmit={handleCreateInterview}
                       />
             });
@@ -698,10 +711,10 @@ export default function InterviewsSection({
 
           {/* Sentinelle Infinite Scroll */}
           <div ref={observerTargetRef} className={styles.sentinelContainer}>
-            {isLoading && (
-              <div className={styles.loadingSpinner}>Chargement des entretiens...</div>
-            )}
-            {!hasMore && interviews.length > 0 && (
+            {(isLoading || isLoadingMore) && (
+                <div className={styles.loadingSpinner}>Chargement des entretiens...</div>
+              )}
+            {!hasMore && interviews.length > 0 && (!(isLoading || isLoadingMore)) && (
               <span className={styles.endOfListText}>
                 Tous les entretiens ont été chargés.
               </span>

@@ -1,11 +1,11 @@
 import type { SymfonyDateTime } from "../shared/global";
 
 export class InterviewStatus {
-  static readonly CLOSED = 'closed'; //ok
+  static readonly CLOSED = 'closed'; // indicate manual closure/cancellation (handled: ok)
   static readonly MISSED = 'missed';
-  static readonly SCHEDULED = 'scheduled'; //ok
+  static readonly SCHEDULED = 'scheduled'; //(handled: ok)
   static readonly IN_PROGRESS = 'in_progress';
-  static readonly COMPLETED = 'completed'; //ok
+  static readonly COMPLETED = 'completed'; //(handled: ok)
 }
 
 export type InterviewStatusValue = (typeof InterviewStatus)[keyof typeof InterviewStatus];
@@ -45,13 +45,15 @@ export type InterviewWithCandidateData = BaseInterviewData & {
 
 export type BaseInterviewData = {
   id: string;
-  startDate: SymfonyDateTime; // ISO 8601
+  title?:string,
+  startDate: string; // ISO 8601
   minutes: number;
   status: InterviewStatus;
   description?: string;
   url?: string;
   type?: InterviewTypeValue;
   candidateApproval?: boolean
+  rejectionReason?: string | null;
 };
 
 

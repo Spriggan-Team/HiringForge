@@ -76,6 +76,7 @@ interface InterviewsRepositoryInterface
      * @return array<int, array{
      *      id: string,
      *      type: string,
+     *      title: string,
      *      candidate: array{
      *          id: string,
      *          firstName: string,
@@ -85,10 +86,11 @@ interface InterviewsRepositoryInterface
      *      },
      *      description?: string,
      *      startDate: \DateTimeImmutable,
+     *      rejectionReason?: string,
      *      minutes: int
      * }>
      */
-    public function getTodayInterviewAgenda(
+    public function getInterviewAgenda(
         string $userId, 
         int $skip,
         int $limit,
@@ -112,6 +114,66 @@ interface InterviewsRepositoryInterface
      */
     public function cancelInterviewPlansForApplication(string $recruiterId, string $applicationId): void;
 
+
+    /**
+     * Retrieve the user's interviews for a given month, grouped by day.
+     *
+     * @return array<string, array<int, array{
+     *     id: string,
+     *     startDate: string,
+     *     title: ?string,
+     *     type: ?InterviewType,
+     *     status: InterviewStatus
+     * }>>
+     *
+     * The array key represents the interview day using the `Y-m-d` format.
+     */
+    public function getCalendarCollectionViews(
+        string $userId,
+        \DateTimeImmutable $month
+    ): array;
+
+
+    /**
+     * Get interview details.
+     *
+     * @return array{
+     *     id: string,
+     *     startDate: string,
+     *     title: ?string,
+     *     type: ?InterviewType,
+     *     status: InterviewStatus,
+     *     description: string,
+     *     candidateApproval: bool,
+     *     rejectionReason: ?string,
+     *     createdAt: string
+     * }
+     */
+    public function getInterviewDetails(
+        string $userId,
+        string $interviewId
+    ): array;
+
+
+    /**
+     * Get interview details scheduled for a specific day.
+     *
+     * @return array<int, array{
+     *     id: string,
+     *     startDate: string,
+     *     title: ?string,
+     *     type: ?InterviewType,
+     *     status: InterviewStatus,
+     *     description: ?string,
+     *     candidateApproval: bool,
+     *     rejectionReason: ?string,
+     *     createdAt: string
+     * }>
+     */
+    public function getInterviewDetailsByDay(
+        string $userId,
+        \DateTimeImmutable $day
+    ): array;
 
     /**
      * Retrieve interviews related to a specific job linked to a recruiter (user),

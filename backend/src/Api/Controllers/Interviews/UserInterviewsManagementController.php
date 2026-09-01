@@ -14,6 +14,7 @@ use App\Application\Usecases\Interviews\InterviewsEraser;
 use App\Domain\ApplicationErrorCode;
 use App\Domain\Exception\ConcurrentInterviewsException;
 use App\Domain\Exception\UnableResourceDeletion;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -24,6 +25,13 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route("/interviews/users")]
 class UserInterviewsManagementController extends AbstractController
 {
+    public function __construct(
+        private LoggerInterface $logger
+    )
+    {
+        ApiResponse::init($logger);
+    }
+
     /**
      * Create interviews
      */
@@ -59,7 +67,8 @@ class UserInterviewsManagementController extends AbstractController
                 code: ApplicationErrorCode::CONCURRENT_INTERVIEWS_FOUNDED
             )->toJsonResponse();
         }
-        catch(\Exception $error){
+        catch(\Throwable $error){
+            ApiResponse::$logger->error("Something went wrong ", [$error]);
             return ApiResponse::error(
                 message: "Something went wrong while fetching interviews",
                 statusCode: 400,
@@ -69,6 +78,7 @@ class UserInterviewsManagementController extends AbstractController
     }
 
 
+    
     #[Route('/{interviewId}/delete', methods: ['DELETE'])]
     public function deleteInterviews(
         string $interviewId,
