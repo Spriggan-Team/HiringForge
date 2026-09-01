@@ -48,6 +48,23 @@ class CandidateApplicationController extends AbstractController
 
     
     /**
+     * 
+     */
+    #[Route('/', methods: ['GET'])]
+    public function getMyApplication()
+    {
+        try{
+
+        }
+        catch(\Exception $error){
+            return ApiResponse::error(
+                message: "Something went wrong while retreiving candidate applications"
+            );
+        }
+    }
+
+    
+    /**
      * Retreive job ids of 
      * all related applications this user
      */
