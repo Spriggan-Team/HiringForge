@@ -9,6 +9,7 @@ final readonly class ApplicationContext
         public string $candidateId,
         public string $jobTitle,
         public string $companyName,
-        public string $recruiterId
+        public string $recruiterId,
+        public string $jobId,
     ) {}
 }

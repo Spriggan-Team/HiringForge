@@ -151,8 +151,6 @@ const getInterviewsTag = (text: string)=>{
 
 const getInterviewStatusClassName = (status: string)=>{
         switch(status){
-            case InterviewStatus.CANCELLED:
-                return styles.interviewCancel
             case InterviewStatus.COMPLETED:
                 return styles.interviewComplete
             case InterviewStatus.CLOSED:

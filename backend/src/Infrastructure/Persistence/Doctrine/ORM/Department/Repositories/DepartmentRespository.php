@@ -4,7 +4,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Department\Repositories;
 
 use App\Domain\Department\Department;
 use App\Domain\Department\DepartmentRepositoryInterface;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 
 
 use Override;
@@ -33,7 +33,7 @@ final class DepartmentRespository extends ServiceEntityRepository
         $entity = $this->find($id);
 
         if(!$entity){
-            throw new RessourceNotFound(
+            throw new ResourceNotFoundException(
                 "Department not found"
             );
         }
@@ -100,7 +100,7 @@ final class DepartmentRespository extends ServiceEntityRepository
         else {
             $entity = $this->find($domain->id());
             if ($entity === null) {
-                throw new RessourceNotFound('Department not found.');
+                throw new ResourceNotFoundException('Department not found.');
             }
             $this->mapper->updateEntity($entity, $domain);
         }

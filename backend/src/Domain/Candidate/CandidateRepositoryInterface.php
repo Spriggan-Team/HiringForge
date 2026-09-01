@@ -30,7 +30,7 @@ interface CandidateRepositoryInterface
     /**
      * @param string                $uuid represents the uniq identifier of an actor stored in the bdd
      * @return Candidate
-     * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
+     * @throws ResourceNotFoundException    this exception should be throw when the ressouce does not exist in bdd
      * return the specified actor requested if founded in the bdd storage
      */
     public function findById(string $uuid): ?Candidate;
@@ -40,7 +40,7 @@ interface CandidateRepositoryInterface
     /**
      * This function is meant to retreive an actor from the bdd uisng his email
      * @return Candidate                the retriving actor (user, candidate, agent ...)
-     * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
+     * @throws ResourceNotFoundException    this exception should be throw when the ressouce does not exist in bdd
      */
     public function findByEmail(string $email): Candidate;
 
@@ -62,7 +62,7 @@ interface CandidateRepositoryInterface
     /**
      * Retreive meta data about an user's resumes
      * @throws \Exception this is thrown whenever something get wrong while exeuting the operation 
-     * @throws RessourceNotFound no candidate found
+     * @throws ResourceNotFoundException no candidate found
      * @return array< StaticMedia>  - returns an array media corresponding to the related cvs 
      */
     public function getResumeFiles(string $candidateId): array;

@@ -1,137 +1,141 @@
+import { useTranslation } from "react-i18next";
 import React, { useEffect, useRef, useState } from "react";
 
-import type { CreateInterviewFormData } from "../../../../../../features/interviews/interviews";
-import type { CandidateLightModel } from "../../../../../../features/candidates/candidates";
-import { useDebounce } from "../../../../../../hooks/timer";
+import { INTERVIEW_TYPES, InterviewType, type CreateInterviewFormData, type InterviewTypeValue } from "../../../../../../features/interviews/interviews";
+
+import type { CandidateSearchItem } from "../../../../../../features/shared/global";
+import { CandidateApplicationSelector } from "../../../../../components/selector/candidate.application.selector";
+import { useAppContext } from "../../../../../../hooks/context";
+import type { CompleteJobView } from "../../../../../../features/jobs/JobOffer";
+
 
 import styles from "./GenerateInterviewModal.module.css"
 
 
-
-
 export interface GenerateInterviewModalProps {
-  jobId: string;
   onClose: () => void;
+  /**@throws {Error}  */
   onSubmit: (payload: CreateInterviewFormData) => Promise<void>;
-  fetchCandidatesApi: (
-    jobId: string,
-    search: string,
-    limit: number
-  ) => Promise<CandidateLightModel[]>;
+  updateJob?: React.Dispatch<React.SetStateAction<CompleteJobView | null>>
 }
 
 export const GenerateInterviewModal: React.FC<GenerateInterviewModalProps> = ({
-  jobId,
   onClose,
   onSubmit,
-  fetchCandidatesApi,
+  updateJob
 }) => {
+  const { t } = useTranslation();
+  const { setPopup, setKpiData, setLoading } = useAppContext();
+
   const [formData, setFormData] = useState<CreateInterviewFormData>({
     candidateId: "",
+    applicationId: "",
+    minutes: 60,
     title: "",
     description: "",
     scheduledAt: "",
     url: "",
+    type: undefined,
   });
 
-  const [candidateSearch, setCandidateSearch] = useState("");
-  const [candidateOptions, setCandidateOptions] = useState<CandidateLightModel[]>([]);
-  const [selectedCandidate, setSelectedCandidate] = useState<CandidateLightModel | null>(null);
-
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isLoadingCandidates, setIsLoadingCandidates] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState<CandidateSearchItem | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // -- Select Candidates cantainer ref
-  const dropdownContainerRef = useRef<HTMLDivElement | null>(null);
-
-  const debouncedCandidateSearch = useDebounce(candidateSearch, 300);
-
-  // --- Handle close (candidates dropdown with outsider click)
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownContainerRef.current &&
-        !dropdownContainerRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-
-  // Dynamic loading of candidates
-  useEffect(() => {
-    if (selectedCandidate) return;
-
-    let isMounted = true;
-    const loadCandidates = async () => {
-      setIsLoadingCandidates(true);
-      try {
-        const candidates = await fetchCandidatesApi(jobId, debouncedCandidateSearch, 7);
-        if (isMounted) {
-          setCandidateOptions(candidates);
-        }
-      }
-      catch (error) {
-        console.error("Erreur lors de la récupération des candidats:", error);
-      }
-      finally {
-        if (isMounted) setIsLoadingCandidates(false);
-      }
-    };
-
-    loadCandidates();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [jobId, debouncedCandidateSearch, fetchCandidatesApi, selectedCandidate]);
-
-
+  //-------------------
   //-- Handle selected candidates
-  const handleSelectCandidate = (candidate: CandidateLightModel) => {
+  //--------------------
+  const handleSelectCandidate = (candidate: CandidateSearchItem | null) => {
     setSelectedCandidate(candidate);
-    setFormData((prev) => ({ ...prev, candidateId: candidate.id }));
-    setCandidateSearch("");
-    setIsDropdownOpen(false);
+    setFormData(prev => ({
+        ...prev,
+        candidateId: candidate?.candidateId ?? "",
+        applicationId: candidate?.applicationId ?? "",
+    }));
   };
 
 
-  //-- Handle removed candidates
-  const handleRemoveCandidate = () => {
-    setSelectedCandidate(null);
-    setFormData((prev) => ({ ...prev, candidateId: "" }));
-    setCandidateSearch("");
-  };
-
-
+  //--------------------
   //-- handle submit
-  const handleSubmit = async (e: React.FormEvent) => {
+  //---------------
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
-    if (!formData.candidateId || !formData.scheduledAt) {
-      alert("Veuillez sélectionner un candidat et définir une date.");
-      return;
+    //-----------------------
+    //-- Check Requirements
+    //-----------------------
+    if (!selectedCandidate) {
+        setPopup({
+            status: "error",
+            message: t(
+                'global.validation.candidateFieldMandatory'
+            ),
+        });
+        return;
     }
 
+    if (!formData.scheduledAt) {
+        setPopup({
+            status: "error",
+            message: "Veuillez définir une date.",
+        });
+        return;
+    }
+
+    if (formData.minutes <= 0) {
+        setPopup({
+            status: "error",
+            message: "La durée doit être supérieure à 0.",
+        });
+        return;
+    }
+
+    //-----------------------
+    //-- Start Submitting
+    //-----------------------
+    
     try {
+      setLoading({state: true, subtitle: t('interviews.message.interviewCreation') });
       setIsSubmitting(true);
-      await onSubmit(formData);
+      if(!selectedCandidate){
+        setPopup({status: "error", message: t('global.validation.candidateFieldMandatory')})
+        return;
+      }
+
+      const payload = {
+          ...formData,
+          scheduledAt: new Date(
+              formData.scheduledAt
+          ).toISOString(),
+      };
+
+      await onSubmit(payload);
+
+      //-- Update Global kpi
+      setKpiData((prev)=>{
+        if(!prev) return prev;
+        return ({...prev, scheduledInterviews: (prev.scheduledInterviews ?? 0) + 1  });
+      });
+
+
+      updateJob?.((prev)=>{
+        if(!prev) return null;
+        return ({...prev, cardinal:{ ...prev.cardinal, interviews: (prev.cardinal.interviews ?? 0) + 1 }})
+      });
+
+      //-- Complete submit -> close 
       onClose();
+
+      setLoading({state: false, subtitle: t('interviews.apiResponses.success.save')})
     }
     catch (err) {
       console.error("Erreur lors de la génération de l'entretien", err);
+      setLoading({state: false})
     }
     finally {
       setIsSubmitting(false);
     }
   };
+
 
 
   const getInitials = (firstName: string, lastName: string) => {
@@ -143,95 +147,6 @@ export const GenerateInterviewModal: React.FC<GenerateInterviewModalProps> = ({
     <div className={styles.modalCard}>
       <h3>Générer un nouvel entretien</h3>
       <form onSubmit={handleSubmit} className={styles.modalForm}>
-        {/* Candidates Selection */}
-        <div className={styles.fieldGroup}>
-          <label>Candidat *</label>
-
-          {selectedCandidate ? (
-            <div className={styles.selectedCandidateCard}>
-              <div className={styles.selectedCandidateInfo}>
-                {selectedCandidate.avatarUrl ? (
-                  <img
-                    src={selectedCandidate.avatarUrl}
-                    alt={`${selectedCandidate.firstName} ${selectedCandidate.lastName}`}
-                    className={styles.candidateAvatar}
-                  />
-                ) : (
-                  <div className={styles.candidateAvatarFallback}>
-                    {getInitials(selectedCandidate.firstName, selectedCandidate.lastName)}
-                  </div>
-                )}
-
-                <span className={styles.candidateName}>
-                  {selectedCandidate.firstName} {selectedCandidate.lastName}
-                </span>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleRemoveCandidate}
-                className={styles.btnRemoveCandidate}
-                title="Changer de candidat"
-              >
-                ✕
-              </button>
-            </div>
-          ) : (
-            <div className={styles.customSelectContainer} ref={dropdownContainerRef}>
-              <input
-                type="text"
-                required={!formData.candidateId}
-                placeholder="Rechercher un candidat..."
-                value={candidateSearch}
-                onFocus={() => setIsDropdownOpen(true)}
-                onChange={(e) => {
-                  setCandidateSearch(e.target.value);
-                  setIsDropdownOpen(true);
-                }}
-                className={styles.searchInput}
-              />
-
-              {isDropdownOpen && (
-                <ul className={styles.dropdownList}>
-                  {isLoadingCandidates ? (
-                    <li className={styles.dropdownState}>Chargement...</li>
-                  ) : candidateOptions.length === 0 ? (
-                    <li
-                      className={styles.dropdownState}
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      Aucun candidat trouvé
-                    </li>
-                  ) : (
-                    candidateOptions.map((candidate) => (
-                      <li
-                        key={candidate.id}
-                        onClick={() => handleSelectCandidate(candidate)}
-                        className={styles.dropdownOption}
-                      >
-                        {candidate.avatarUrl ? (
-                          <img
-                            src={candidate.avatarUrl}
-                            alt={`${candidate.firstName} ${candidate.lastName}`}
-                            className={styles.candidateAvatar}
-                          />
-                        ) : (
-                          <div className={styles.candidateAvatarFallback}>
-                            {getInitials(candidate.firstName, candidate.lastName)}
-                          </div>
-                        )}
-                        <span className={styles.candidateName}>
-                          {candidate.firstName} {candidate.lastName}
-                        </span>
-                      </li>
-                    ))
-                  )}
-                </ul>
-              )}
-            </div>
-          )}
-        </div>
-
         {/* Title */}
         <label>
           Titre de l'entretien (optionnel)
@@ -245,6 +160,15 @@ export const GenerateInterviewModal: React.FC<GenerateInterviewModalProps> = ({
           />
         </label>
 
+        {/** Candidate */}
+        <div>
+          Candidat / Candidature *
+          <CandidateApplicationSelector
+            value={selectedCandidate}
+            onChange={handleSelectCandidate}
+          />
+        </div>
+
         {/* Date */}
         <label>
           Date et heure *
@@ -256,6 +180,56 @@ export const GenerateInterviewModal: React.FC<GenerateInterviewModalProps> = ({
               setFormData((prev) => ({ ...prev, scheduledAt: e.target.value }))
             }
           />
+        </label>
+
+        {/** Duration */}
+        <label>
+          Durée de l'entretien (minutes) *
+          <input
+              type="number"
+              min={1}
+              placeholder="60"
+              value={formData.minutes || ""}
+              onChange={(e) =>
+                  setFormData(prev => ({
+                      ...prev,
+                      minutes: Number(e.target.value),
+                  }))
+              }
+              required
+          />
+        </label>
+
+
+        <label>
+            Type d'entretien
+            <select
+                value={formData.type ?? ""}
+                onChange={(e) =>
+                    setFormData(prev => ({
+                        ...prev,
+                        type: e.target.value
+                            ? e.target.value as InterviewTypeValue
+                            : undefined,
+                    }))
+                }
+            >
+                <option value="">
+                    Sélectionner un type
+                </option>
+                {
+                  INTERVIEW_TYPES.map((type, key)=>{
+                    const text = renderInterviewType(type);
+                    if(!text) return null;
+                    return (
+                      <option key={key} value={type}>{text}</option>
+                    )
+                  })
+                }
+                <option value=''>
+                    Inconnu
+                </option>
+            </select>
         </label>
 
         {/* Video URL  */}
@@ -296,7 +270,13 @@ export const GenerateInterviewModal: React.FC<GenerateInterviewModalProps> = ({
           <button
             type="submit"
             className={styles.btnPrimary}
-            disabled={isSubmitting || !formData.candidateId}
+            disabled={
+                isSubmitting ||
+                !formData.candidateId ||
+                !formData.applicationId ||
+                !formData.scheduledAt ||
+                formData.minutes <= 0
+            }
           >
             {isSubmitting ? "Génération..." : "Générer"}
           </button>
@@ -305,3 +285,17 @@ export const GenerateInterviewModal: React.FC<GenerateInterviewModalProps> = ({
     </div>
   );
 };
+
+
+
+
+const renderInterviewType = (text: InterviewTypeValue)=>{
+  switch(text){
+    case InterviewType.RH_INTERVIEWS:
+       return "Entretien RH";
+    case InterviewType.TECHNICAL_INTERVIEWS:
+        return "Entretien technique";
+    default:
+        return null
+  }
+}

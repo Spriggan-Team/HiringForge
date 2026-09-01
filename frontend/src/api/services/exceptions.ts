@@ -3,6 +3,7 @@ import { ExceptionWithPayload } from "../exceptions";
 //--- Global
 export class ResourceCreationFailed extends ExceptionWithPayload{};
 export class ResourceNotFound extends ExceptionWithPayload{};
+export class UnableResourceDeletion extends ExceptionWithPayload{};
 
 //--OTP
 export class InvalidOTP extends ExceptionWithPayload {}

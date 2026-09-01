@@ -54,15 +54,15 @@ class BulkApplicationStatusChange
         );
 
         //  Build and dispatch notifications post-persistence
-        $applicationIdentity = $this->applicationRepository->getApplicationIdentity($ids[0]);
-        if(!$applicationIdentity){
+        $applicationContext = $this->applicationRepository->getApplicationContext($ids[0]);
+        if(!$applicationContext){
             return;
         }
 
         $notifications = [];
         foreach ($statuses as $applicationId => $currentStatus) {
             $notifications[] = Notification::create(
-                accountId: $applicationIdentity['recruiterId'],
+                accountId: $applicationContext->recruiterId,
                 recipientId: $userId,
                 type: NotificationType::JOB_APPLICATIONS_STATUS_SHIFT,
                 data: JobApplicationStatusShiftData::create(

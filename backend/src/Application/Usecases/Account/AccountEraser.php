@@ -12,7 +12,7 @@ class AccountEraser
     {}
 
     /**
-     * @throws RessourceNotFound is thrown when no user if found
+     * @throws ResourceNotFoundException is thrown when no user if found
      */
     public function execute(
         string $id,

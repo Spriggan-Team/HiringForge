@@ -3,12 +3,12 @@
 namespace App\Domain\Department;
 
 
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 
 
 interface DepartmentRepositoryInterface{
     /**
-     * @throws \Exception | RessourceNotFound
+     * @throws \Exception | ResourceNotFoundException
      */
     public function  get(int $id): Department;
 

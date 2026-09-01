@@ -19,11 +19,10 @@ interface UserRepositoryInterface
 
 
 
-
     /**
      * This function verify if a specific user exist & is registered in the 
      * database.
-     * @throws RessourceNotFound tell if an user has been found or not
+     * @throws ResourceNotFoundException tell if an user has been found or not
      */
     public function assertExist(?string $uuid = null, ?string $email = null): KnownIdentity;
 
@@ -43,7 +42,7 @@ interface UserRepositoryInterface
      * 
      * This function must only be use when your want to apply a consequent/very important rules.
      * This function is meant to retreive an actor from the bdd uisng his email.
-     * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
+     * @throws ResourceNotFoundException    this exception should be throw when the ressouce does not exist in bdd
      * @return ?User                the retriving actor (user, candidate, agent ...)
      */
     public function findByEmail(string $email): User;
@@ -54,7 +53,7 @@ interface UserRepositoryInterface
      * This function must only be use when your want to apply a consequent/very important rules
      * @param string                $uuid represents the uniq identifier of an actor stored in the bdd
      * @return ?User
-     * @throws RessourceNotFound    this exception should be throw when the ressouce does not exist in bdd
+     * @throws ResourceNotFoundException    this exception should be throw when the ressouce does not exist in bdd
      * return the specified actor requested if founded in the bdd storage
      */
     public function findById(string $uuid): User;
@@ -70,4 +69,13 @@ interface UserRepositoryInterface
 
     /** Handle user deltion (recruiter) */
     public function delete(string $id): void;
+
+
+    /**
+     * @return array{
+     *      lastName: string,
+     *      firstName: string;
+     * }
+     */
+    public function getLightModelById(string $userId): ?array;
 }

@@ -25,7 +25,7 @@ class AccountEmailRenitializer
      * This function enforce special security for 
      * changin email. It allow an user/account to modify its email knowing its credentials informations and with 
      * an OTP verifictaion code
-     * @throws RessourceNotFound Is thrown when no user is found in the bdd
+     * @throws ResourceNotFoundException Is thrown when no user is found in the bdd
      * @throws \DomainException  Is thrown when a domain exception is raised; here it is when the provided password doesn't match the user
      */
     public function execute(

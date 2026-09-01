@@ -3,7 +3,6 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories;
 
 use App\Domain\JobOffer\JobOffer;
-use App\Domain\Exception\RessourceNotFound;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
 use App\Domain\JobOffer\JobOfferVisibilityStatus;
 use App\Domain\JobOffer\JobPublicationStatus;
@@ -54,7 +53,7 @@ class JobOfferRepository implements JobOfferRepositoryInterface
             ->getOneOrNullResult();
 
         if ($result === null || $result['authorId'] === null) {
-            throw new RessourceNotFound(
+            throw new ResourceNotFoundException(
                 "Author of job id not found"
             );
         }
@@ -179,7 +178,7 @@ class JobOfferRepository implements JobOfferRepositoryInterface
             "user" => $accountId
         ]);
         if(!$entity){
-           throw new RessourceNotFound("Ressource not found"); 
+           throw new ResourceNotFoundException("Ressource not found"); 
         }
         return JobOfferEntityMapper::toDomain($entity);
     }
@@ -331,7 +330,7 @@ class JobOfferRepository implements JobOfferRepositoryInterface
     {
         $entity = $this->manager->find(JobOfferEntity::class, $uuid);
         if(!$entity)
-            throw new RessourceNotFound();
+            throw new ResourceNotFoundException();
         
         $this->manager->remove($entity);
         $this->manager->flush();

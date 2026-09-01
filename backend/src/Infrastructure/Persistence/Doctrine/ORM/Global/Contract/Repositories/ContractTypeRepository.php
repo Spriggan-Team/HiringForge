@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Contract\Repositories;
 
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Shared\Contract\ContractType;
 
 use App\Domain\Shared\Contract\ContractTypeRepositoryInterface;
@@ -34,7 +34,7 @@ final class ContractTypeRepository
 
 
         if(!$entity){
-            throw new RessourceNotFound(
+            throw new ResourceNotFoundException(
                 "Contract type not found"
             );
         }

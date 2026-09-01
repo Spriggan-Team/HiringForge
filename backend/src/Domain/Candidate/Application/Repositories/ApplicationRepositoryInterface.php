@@ -4,13 +4,12 @@ namespace App\Domain\Candidate\Application\Repositories;
 
 use App\Domain\Candidate\Application\Application;
 use App\Domain\Candidate\Application\JobApplicationStatus;
-use App\Domain\Candidate\Application\Pipeline\PipelineStageCriteria;
 use App\Domain\Candidate\Application\Pipeline\PipelineStageType;
+
 use App\Domain\Candidate\CandidateLightModel;
 use App\Domain\Exception\UnauthorizedAction;
+
 use App\Domain\File\StaticMedia;
-use App\Domain\Interviews\InterviewStatus;
-use App\Domain\Interviews\InterviewType;
 
 interface ApplicationRepositoryInterface
 {
@@ -36,7 +35,6 @@ interface ApplicationRepositoryInterface
     public function assertApplicationBelongsToCandidate(string $candidateId, string $applicationId): void;
 
 
-
     /**
      * Retreive application candidates pipeline
      * 
@@ -49,6 +47,7 @@ interface ApplicationRepositoryInterface
      */
     public function getCandidatesPipeline(string $recruiterId, int $skip, int $limit): array;
 
+    
 
     /** 
      * retrive applications candidate for stage
@@ -76,18 +75,20 @@ interface ApplicationRepositoryInterface
     public function getStatusesByIds(array $applicationIds): array;
 
 
+
     /**
-     * @return array{
-     *  applicationId: string,
-     *  candidateId: string,
-     *  companyId: string,
-     *  recruiterId: string
-     * }
+     * Retrieves the contextual information associated with an application.
+     *
+     * The returned context contains the identifiers and descriptive data
+     * required by application use cases without loading the complete
+     * Application aggregate.
+     *
+     * @param string $applicationId The application identifier.
+     *
+     * @return ApplicationContext|null The application context, or null when
+     *                                 no application matches the given identifier.
      */
-    public function getApplicationIdentity(string $applicationId): ?array;
-
-
-    public function getApplicationContext(string $applicationId): ApplicationContext;
+    public function getApplicationContext(string $applicationId): ?ApplicationContext;
 
     /**
      * Get candidates idntity

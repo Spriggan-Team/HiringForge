@@ -27,7 +27,8 @@
 
         "validation":{
             "required": "requis",
-            "optionnal": "optionnel"
+            "optionnal": "optionnel",
+            "candidateFieldMandatory": "Vous devez impérativement selectionné un candidat"
         },
         
         "connexion":{
@@ -46,6 +47,7 @@
             "loading": "Chargement",
             "unexpectedErrorReload": "Une erreur inattendue est survenue. Veuillez recharger la page."
         },
+
 
 
         "text":{

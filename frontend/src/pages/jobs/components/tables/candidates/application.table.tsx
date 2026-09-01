@@ -47,14 +47,14 @@ const getApplicationsCacheKey = ({
     skip,
     limit,
     search,
-    status,
+    statuses,
 }: {
     jobId?: string;
     companyId?: string;
     skip: number;
     limit: number;
     search?: string;
-    status?: ApplicationStatusValue[] | null;
+    statuses?: ApplicationStatusValue[] | null;
 }) => {
     return [
         jobId ?? "all-jobs",
@@ -62,7 +62,7 @@ const getApplicationsCacheKey = ({
         `skip:${skip}`,
         `limit:${limit}`,
         `search:${search?.trim().toLowerCase() ?? ""}`,
-        `status:${[...(status ?? [])].sort().join(",")}`,
+        `statuses:${[...(statuses ?? [])].sort().join(",")}`,
     ].join("|");
 };
 
@@ -72,7 +72,7 @@ const getApplicationsCacheKey = ({
 //-----------------------
 
 interface ApplicationFilters{
-  status: ApplicationStatusValue[] | null
+  statuses: ApplicationStatusValue[] | null
 }
 
 const fetchApplicationsApi = async (
@@ -121,7 +121,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
   const [applicationFilters, setApplicationFilters] = useState<ApplicationFilters>({
-    status: null
+    statuses: null
   });
 
   const [activeApplication, setActiveApplication] = useState<{applicationId: string; candidateId: string} | null>(null);
@@ -171,7 +171,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
       skip,
       limit,
       search,
-      status,
+      statuses,
       signal,
       mode = "replace",
   }: {
@@ -180,7 +180,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
       skip: number;
       limit: number;
       search?: string;
-      status?: ApplicationStatusValue[] | null;
+      statuses?: ApplicationStatusValue[] | null;
       signal?: AbortSignal;
       mode?: FetchMode;
   }): Promise<ApplicationsQueryCache> => {
@@ -191,7 +191,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
           skip,
           limit,
           search,
-          status,
+          statuses,
       });
 
       //----------------------------------
@@ -231,7 +231,7 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
               skip,
               limit,
               search,
-              status,
+              statuses,
           },
           signal
       )
@@ -304,102 +304,6 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
   };
 
 
-  //-- Loading applications
-  const fetchApplications = async ({
-      mode,
-      skip,
-      search,
-      signal,
-  }: {
-      mode: FetchMode;
-      skip: number;
-      search?: string;
-      signal?: AbortSignal;
-  }) => {
-      loadedRef.current = true;
-      try {
-          const result = await requestApplications({
-              jobId,
-              companyId,
-              skip,
-              limit: PAGE_SIZE,
-              search,
-              status: applicationFilters.status,
-              signal,
-              mode,
-          });
-
-          //--------------------------------
-          // Pagination
-          //--------------------------------
-
-          setSkip(skip);
-          setHasMore(result.hasMore);
-
-          //--------------------------------
-          // Secondary resources
-          //--------------------------------
-
-          handleCandidateProfilImage(result.data);
-          return result;
-      }
-      catch (error: any) {
-          if (error.name !== "AbortError") {
-              console.error(
-                  "Error while fetching applications",
-                  error
-              );
-          }
-
-          throw error;
-      }
-      finally {
-          loadedRef.current = false;
-      }
-  };
-
-
-  //  Method for REFRESHING / RESETTING (New search, change of job/company)
-  const handleResetAndFetch = useCallback(
-      async (searchTerm: string) => {
-          setIsLoading(true)
-          await fetchApplications({
-              mode: "replace",
-              skip: 0,
-              search: searchTerm || undefined,
-          });
-          setIsLoading(false)
-      },
-      [
-        jobId,
-        companyId,
-        applicationFilters.status,
-      ]
-  );
-  
-
-  //--  Pagination
-  const handleFetchMore = useCallback(async () => {
-      if (isLoadingMore || !hasMore) {
-          return;
-      }
-
-      setIsLoadingMore(true);
-      await fetchApplications({
-          mode: "append",
-          skip: skip + PAGE_SIZE,
-          search: debouncedSearch || undefined,
-      });
-      setIsLoading(false);
-
-  }, [
-      skip,
-      hasMore,
-      isLoadingMore,
-      debouncedSearch,
-  ]);
-
-
   //--  load candidate image
   const handleCandidateProfilImage = useCallback(async (data: Application[]) => {
       for (const application of data) {
@@ -440,6 +344,123 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
         }
       }
   },[]);
+
+
+  //-- Loading applications
+  const fetchApplications = useCallback(async ({
+      mode,
+      skip,
+      search,
+      signal,
+  }: {
+      mode: FetchMode;
+      skip: number;
+      search?: string;
+      signal?: AbortSignal;
+  }) => {
+      loadedRef.current = true;
+      try {
+          const result = await requestApplications({
+              jobId,
+              companyId,
+              skip,
+              limit: PAGE_SIZE,
+              search,
+              statuses: applicationFilters.statuses,
+              signal,
+              mode,
+          });
+
+          //--------------------------------
+          // Pagination
+          //--------------------------------
+
+          setSkip(skip);
+          setHasMore(result.hasMore);
+
+          //--------------------------------
+          // Secondary resources
+          //--------------------------------
+
+          handleCandidateProfilImage(result.data);
+          return result;
+      }
+      catch (error: any) {
+          if (error.name !== "AbortError") {
+              console.error(
+                  "Error while fetching applications",
+                  error
+              );
+          }
+
+          throw error;
+      }
+      finally {
+          loadedRef.current = false;
+      }
+  }, [
+      jobId,
+    companyId,
+    applicationFilters.statuses,
+    handleCandidateProfilImage
+  ]);
+
+
+  //  Method for REFRESHING / RESETTING (New search, change of job/company, apply filters)
+  const handleResetAndFetch = useCallback(
+      async (searchTerm: string) => {
+        setIsLoading(true)
+        try{
+          await fetchApplications({
+              mode: "replace",
+              skip: 0,
+              search: searchTerm || undefined,
+          });
+        }
+        catch(error){
+          console.log("Something went wrong while resuting job application current view")
+        }
+        finally{
+          setIsLoading(false)
+        }
+      },
+      [fetchApplications]
+  );
+  
+
+  //-- Reset view observer
+  useEffect(() => {
+    handleResetAndFetch(debouncedSearch);
+  }, [
+      debouncedSearch,
+      jobId,
+      companyId,
+      applicationFilters.statuses,
+      handleResetAndFetch
+  ]);
+
+  //--  Pagination
+  const handleFetchMore = useCallback(async () => {
+      if (isLoadingMore || !hasMore) {
+          return;
+      }
+
+      setIsLoadingMore(true);
+      await fetchApplications({
+          mode: "append",
+          skip: skip + PAGE_SIZE,
+          search: debouncedSearch || undefined,
+      });
+      setIsLoading(false);
+
+  }, [
+      skip,
+      hasMore,
+      isLoadingMore,
+      debouncedSearch,
+  ]);
+
+
 
 
   //-- Get CV file
@@ -495,20 +516,6 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
       };
   },[hasMore, handleFetchMore]);
 
-
-  //-- Observe filters change
-  useEffect(() => {
-      fetchApplications({
-          mode: "replace",
-          skip: 0,
-          search: debouncedSearch || undefined,
-      });
-  }, [
-      applicationFilters,
-      debouncedSearch,
-      jobId,
-      companyId,
-  ]);
 
 
   // --- Handlers change of statut & actions ---
@@ -678,8 +685,8 @@ export default function ApplicationsTable({ jobId, companyId }: ApplicationsTabl
     <div className={styles.container}>
       <ApplicationSearchHeader 
         t={t}
-        onFilterValueChange={({status})=>{
-          setApplicationFilters({status})
+        onFilterValueChange={({statuses})=>{
+          setApplicationFilters({statuses})
         }}
         search={search}
         onSearchChange={setSearch}

@@ -81,7 +81,7 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                                         key={index}
                                         defaultDate={today}
                                         className={className}
-                                        disable={!isSameCurrentMonth}
+                                        disable={!isSameCurrentMonth || today > d}
                                         onClick={(date)=> setPendingDate(date)}
                                     />
                                 )
@@ -126,7 +126,6 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
 
     onClick,
     disable,
-
     className
 }) => {
     const ref = useRef<CalendarHandleContext>(null);
@@ -135,18 +134,18 @@ const CalendarDayView: React.FC<CalendarDayViewProps> = ({
         <CalendarDay
             ref={ref}
             disable={disable}
-            className={className}
+            className={`${className} ${disable ? styles.disable : ""}`}
             date={date ?? defaultDate}
             scheduleTask={tasks}
             onClick={onClick}
         >
-            <CalendarEvent
+            {/* <CalendarEvent
                 date={date}
                 onSave={() => {}}
                 onClose={() => {
                     ref.current?.requestClose(true);
                 }}
-            />
+            /> */}
         </CalendarDay>
     );
 };

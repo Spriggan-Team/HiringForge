@@ -3,30 +3,26 @@ import styles from './SearchAutocomplete.module.css';
 
 // SVG imports configurés sous forme de composants React
 import CandidateIcon from '/src/assets/svg/menu/candidate-for-elections-svgrepo-com.svg?react';
+import type { AutoCompleteSearchResultItem } from '../../../../../features/shared/global';
 
-export interface Item {
-  id: string;
-  image?: string;
-  label: string;
-  sublabel?: string;
-  [key: string]: unknown; 
-}
 
-interface SearchAutocompleteProps {
-  onSearch: (query: string) => Promise<Item[]>;
-  onSelect: (item: Item | null) => void;
+type SearchAutocompleteProps<T extends AutoCompleteSearchResultItem> = {
+  onSearch: (query: string) => Promise<T[]>;
+  onSelect: (item: T | null) => void;
   debounceMs?: number;
   maxResults?: number;
   placeholder?: string;
-  groupBy?: (item: Item) => string;
-  renderItem?: (item: Item) => React.ReactNode;
-  initialValue?: Item | null;
+  groupBy?: (item: T) => string;
+  renderItem?: (item: T) => React.ReactNode;
+  initialValue?: T | null;
   
   //-- styles
   className?: string;
 }
 
-export function SearchAutocomplete({
+export function SearchAutocomplete<
+  T extends AutoCompleteSearchResultItem
+>({
   onSearch,
   onSelect,
   debounceMs = 300,
@@ -36,12 +32,12 @@ export function SearchAutocomplete({
   renderItem,
   initialValue = null,
   className = ""
-}: SearchAutocompleteProps) {
+}: SearchAutocompleteProps<T>) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Item[]>([]);
+  const [results, setResults] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<Item | null>(initialValue);
+  const [selectedItem, setSelectedItem] = useState<T | null>(initialValue);
   
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -83,7 +79,7 @@ export function SearchAutocomplete({
     return () => clearTimeout(timer);
   }, [query, debounceMs, onSearch, selectedItem]);
 
-  const handleSelect = (item: Item) => {
+  const handleSelect = (item: T | null) => {
     setSelectedItem(item);
     setIsOpen(false);
     setQuery('');
@@ -100,7 +96,7 @@ export function SearchAutocomplete({
   
   // Group By sections
   const groupedResults = groupBy
-    ? displayedResults.reduce<Record<string, Item[]>>((acc, item) => {
+    ? displayedResults.reduce<Record<string, T[]>>((acc, item) => {
         const group = groupBy(item) || 'Autres';
         if (!acc[group]) 
             acc[group] = [];
@@ -205,13 +201,13 @@ export function SearchAutocomplete({
 }
 
 // Sub-component propre et fortement typé
-interface ItemRowProps {
-  item: Item;
-  onSelect: (item: Item) => void;
-  renderCustom?: (item: Item) => React.ReactNode;
+type ItemRowProps<T extends AutoCompleteSearchResultItem> = {
+  item: T;
+  onSelect: (item: T) => void;
+  renderCustom?: (item: T) => React.ReactNode;
 }
 
-function ItemRow({ item, onSelect, renderCustom }: ItemRowProps) {
+function ItemRow<T extends AutoCompleteSearchResultItem>({ item, onSelect, renderCustom }: ItemRowProps<T>) {
   if (renderCustom) {
     return (
       <div onClick={() => onSelect(item)} className={styles.itemRowCustom}>

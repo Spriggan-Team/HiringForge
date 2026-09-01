@@ -16,6 +16,8 @@ use Doctrine\ORM\Mapping as ORM;
 class InterviewEntity
 {
     #[ORM\Id]
+    #[ORM\GeneratedValue('CUSTOM')]
+    #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
     #[ORM\Column(type: 'guid', unique: true)]
     private ?string $id = null;
 
@@ -70,12 +72,12 @@ class InterviewEntity
     }
 
     public static function create(
-        string $id,
         \DateTimeImmutable $startDate,
         int $minutes,
         string $description,
         ApplicationEntity $application,
         UserEntity $user,
+        ?string $id = null,
         ?string $title = null,
         ?string $url = null,
         InterviewStatus $status = InterviewStatus::SCHEDULED,

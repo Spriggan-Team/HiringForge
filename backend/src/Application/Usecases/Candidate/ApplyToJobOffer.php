@@ -61,7 +61,7 @@ class ApplyToJobOffer
      * The resume is analyzed only once. Subsequent applications
      * reuse the skills already extracted from the candidate's resume.
      *
-     * @throws RessourceNotFound|\DomainException
+     * @throws ResourceNotFoundException|\DomainException
      */
     public function execute(string $candidateId, string $offerId, string $fileId): string
     {

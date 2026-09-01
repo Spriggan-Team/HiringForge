@@ -83,7 +83,7 @@ interface RecruiterJobOfferQueryRepositoryInterface
     /**
      * This return a view of a offer in the bdd.
      * if userId specified, it only returns those associated to this user
-     *  @throws RessourceNotFound
+     *  @throws ResourceNotFoundException
      *  @return JobOfferListItem
      */
     public function fetchJobOfferViewById(

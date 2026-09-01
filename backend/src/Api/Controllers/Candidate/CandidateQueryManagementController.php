@@ -8,7 +8,7 @@ use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Domain\Candidate\CandidateRepositoryInterface;
 use App\Domain\Candidate\CandidateSkillRepositoryInterface;
 
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Shared\Account\AccountRole;
 
 use Psr\Log\LoggerInterface;
@@ -123,7 +123,7 @@ class CandidateQueryManagementController extends AbstractController
                 message: "Context retrieved successfully"
             )->toJsonResponse();
         }
-        catch (RessourceNotFound $e) { 
+        catch (ResourceNotFoundException $e) { 
             return ApiResponse::error(
                 message: "Candidate not found",
                 statusCode: Response::HTTP_NOT_FOUND,

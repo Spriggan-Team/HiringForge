@@ -17,7 +17,7 @@ class AuthentificateAccountUseCase
 
     /**
      * This one is to authenticate account
-     * @throws RessourceNotFound|DomainException  This is an exception that can be throw when something is not correct
+     * @throws ResourceNotFoundException|DomainException  This is an exception that can be throw when something is not correct
      *                          or do not the the buisness logic in the data provided
      * @return string
      */

@@ -49,7 +49,7 @@ interface JobOfferRepositoryInterface
 
 
     /**
-     * @throws RessourceNotFound
+     * @throws ResourceNotFoundException
      */
     public function findById(string $accountId, string $offerId): JobOffer;
 
@@ -60,6 +60,9 @@ interface JobOfferRepositoryInterface
     public function findAll(string $accountId, string $offerId): array;
 
 
+    /**
+     * Retreive job title
+     */
     public function getTitle(string $jobId): string;
 
 

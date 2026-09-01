@@ -2,7 +2,7 @@
 
 namespace App\Domain\OTP;
 
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Shared\Account\AccountFlowPurpose;
 
 
@@ -14,7 +14,7 @@ interface OTPRepositoryInterface
      * This function is able to return a specific type of verification token stored in the bdd.
      * Precisely it returns the last one of them registered
      * @param  string                $email the email associated
-     * @throws RessourceNotFound     Indicate that a ressource has not been found or detected
+     * @throws ResourceNotFoundException     Indicate that a ressource has not been found or detected
      * @param  AccountFlowPurpose 
      * @return OTP
      */
@@ -40,7 +40,7 @@ interface OTPRepositoryInterface
      *
      * @param string $email The email address used to locate the associated account.
      * @param OTP $otp The Domain Object containing the updated state (e.g., incremented attempts).
-     * * @throws RessourceNotFound If no matching account or existing OTP token is found in the database.
+     * * @throws ResourceNotFoundException If no matching account or existing OTP token is found in the database.
      * @return void
      */
     public function update(string $email, OTP $otp): void;

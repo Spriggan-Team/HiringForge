@@ -9,22 +9,75 @@ import InterviewsServices from "../../../../../api/services/interviews/command";
 import JobQueries from "../../../../../api/services/jobs/queries";
 
 import type { CandidateLightModel } from "../../../../../features/candidates/candidates";
-import { INTERVIEW_STATUSES, type CreateInterviewFormData } from "../../../../../features/interviews/interviews";
+import { INTERVIEW_STATUSES, InterviewStatus, type CreateInterviewFormData, type InterviewStatusValue, type InterviewTypeValue } from "../../../../../features/interviews/interviews";
 
 
 import InterviewRow from "./components/interviews.table.row";
+import InterviewFilters from "./components/interview.filters";
 import { InterviewToolbar } from "./components/interview.toolbar";
 import { GenerateInterviewModal } from "./components/generate.interview.modal";
 
 
 import styles from "./Interviews.module.css";
+import { ConcurrentInterviewsException } from "../../../../../api/services/interviews/exceptions";
+import { UnableResourceDeletion } from "../../../../../api/services/exceptions";
+import type { CompleteJobView } from "../../../../../features/jobs/JobOffer";
+import { formatDateSafely } from "../../../../../utils/format";
+import type { PendingRequest } from "../../../../../features/shared/global";
 
 
 
-const STATUS_OPTIONS= INTERVIEW_STATUSES;
+//-----------------
+//-- Query Cache
+//-----------------
+
+interface InterviewsQueryCache {
+    data: Interview[];
+    hasMore: boolean;
+    fetchedAt: number;
+}
+
+type FetchMode = "replace" | "append";
+
+const CACHE_DURATION = 1000 * 60 * 5;
+const PAGE_LIMIT = 10;
 
 
 
+
+const getInterviewsCacheKey = ({
+    jobId,
+    companyId,
+    skip,
+    limit,
+    statuses,
+}: {
+    jobId?: string;
+    companyId?: string;
+    skip: number;
+    limit: number;
+    statuses?: InterviewStatusValue[] | null;
+}) => {
+    return JSON.stringify({
+        jobId: jobId ?? null,
+        companyId: companyId ?? null,
+        skip,
+        limit,
+        statuses: statuses
+            ? [...statuses].sort()
+            : null,
+    });
+};
+
+
+//-- Pendings Requets
+type PendingInterviewRequest = PendingRequest<InterviewsQueryCache>;
+
+/**
+ * ------------------
+ * --- Page
+ * ------------------
+ */
 export interface Interview {
   id: string;
   jobTitle: string;
@@ -32,10 +85,11 @@ export interface Interview {
   email: string;
   scheduledAt: string;
   locationOrLink?: string;
-  status: string;
-  avatarUrl?: string;
+  status: InterviewStatusValue;
+  minutes: number;
+  avatarUrl?: string | null;
+  candidateApproval?: boolean;
 }
-
 
 
 export interface InterviewsSectionProps {
@@ -44,36 +98,52 @@ export interface InterviewsSectionProps {
     title: string;
   };
   companyId?: string;
+  updateJob?: React.Dispatch<React.SetStateAction<CompleteJobView | null>>
 }
 
+interface InterviewsFilters{
+  statuses: InterviewStatusValue[] | null
+}
 
 
 export default function InterviewsSection({
   job: { id: jobId, title: jobTitle },
   companyId,
+  updateJob
 }: InterviewsSectionProps) {
   const { t } = useTranslation();
-  const { setModal } = useAppContext() ;
+  const { setModal, setPopup, setLoading } = useAppContext() ;
 
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
-  // Recherche
+  // Recherche & Filters
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearch = useDebounce(searchQuery, 350);
+  const [filters, setFilters] = useState<InterviewsFilters>({ statuses: null });
 
   // Pagination & Infinite Scroll
-  const [page, setPage] = useState(1);
+  const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const isLoadingRef = useRef(false);
+
+  //-- Loading State
+  const [isLoading, setIsLoading] = useState(false); //-- Reset page 
+  const [isLoadingMore, setIsLoadingMore] = useState(false);//-- New page
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isFetchingMoreRef = useRef(false); // locker
 
   // Cache & Refs
-  const loadedPagesRef = useRef<Set<number>>(new Set());
+    // Interview
+  const interviewsCache = useRef(new Map<string, InterviewsQueryCache>());
+  const pendingRequests = useRef(new Map<string, PendingInterviewRequest>());
+
+    //-- image
+  const imageUrlCache = useRef<Map<string, string>>(new Map()); // image url ...
+
+  //--HTML ELEMENT
   const tableContainerRef = useRef<HTMLDivElement | null>(null);
   const observerTargetRef = useRef<HTMLDivElement | null>(null);
 
-  const PAGE_LIMIT = 10;
 
   const getInitials = useCallback((name: string) => {
     if (!name) return "";
@@ -85,103 +155,371 @@ export default function InterviewsSection({
       .slice(0, 2);
   }, []);
 
-  // --- Fetch Candidates
-  const fetchCandidatesApi = useCallback(
-    async (targetJobId: string, search: string, limit: number): Promise<CandidateLightModel[]> => {
-      return await JobQueries.getJobCandidates({
-        jobId: targetJobId,
-        search,
-        limit,
+
+  //--------------------
+  //-- CAHCHE HANDLERS
+  //--------------------
+  
+  const invalidateInterviewsCache = useCallback(() => {
+    interviewsCache.current.clear();
+  }, []);
+
+  const invalidateImageCache = useCallback(() => {
+    imageUrlCache.current.forEach((url) => URL.revokeObjectURL(url));
+    imageUrlCache.current.clear();
+  }, []);
+  
+  const deleteInterviewFromCache = useCallback((interviewId: string) => {
+      interviewsCache.current.forEach((cache, key) => {
+          const exists = cache.data.some(
+              item => item.id === interviewId
+          );
+
+          if (!exists) return;
+
+          interviewsCache.current.set(key, {
+              ...cache,
+              data: cache.data.filter(
+                  item => item.id !== interviewId
+              ),
+          });
       });
-    },
-    []
-  );
+  }, []);
 
-  // --- FETCH ENTRETIENS ---
-  const fetchInterviewsPage = useCallback(
-    async (pageToFetch: number) => {
-      if (loadedPagesRef.current.has(pageToFetch) || isLoadingRef.current) return;
 
-      try {
-        isLoadingRef.current = true;
-        setIsLoadingMore(true);
-
-        const responseData = await InterviewsQueries.getRecruiterJobOfferInterviews({
+  //-- Api handlers
+  const requestInterviews = useCallback((async ({
+      skip,
+      limit,
+      statuses,
+      search,
+      signal
+  }: {
+      skip: number;
+      limit: number;
+      search?: string;
+      statuses?: InterviewStatusValue[] | null;
+      signal?: AbortSignal 
+  }): Promise<InterviewsQueryCache> => {
+      const key = getInterviewsCacheKey({
           jobId,
-          skip: pageToFetch,
-          limit: PAGE_LIMIT,
-        });
+          companyId,
+          skip,
+          limit,
+          statuses,
+      });
 
-        if (!responseData || responseData.length === 0) {
-          setHasMore(false);
-          loadedPagesRef.current.add(pageToFetch);
-          return;
-        }
+      //--------------------------------
+      // CACHE HIT
+      //--------------------------------
 
-        const mappedInterviews: Interview[] = responseData.map((value: any) => ({
-          id: value.id,
-          jobTitle: jobTitle,
-          candidate: `${value.candidate.firstName} ${value.candidate.lastName}`,
-          email: value.candidate.email,
-          scheduledAt: format(new Date(value.startDate), "yyyy-MM-dd'T'HH:mm:ss"),
-          locationOrLink: value.url,
-          status: value.status,
-          avatarUrl: value.candidate.avatarUrl,
-        }));
+      const cached = interviewsCache.current.get(key);
+      if (
+          cached &&
+          Date.now() - cached.fetchedAt < CACHE_DURATION
+      ) {
+          console.log("Interviews cache HIT", key);
 
-        loadedPagesRef.current.add(pageToFetch);
-
-        setInterviews((prev) => {
-          const combined = [...prev, ...mappedInterviews];
-          const uniqueMap = new Map(combined.map((item) => [item.id, item]));
-          return Array.from(uniqueMap.values());
-        });
-
-        if (responseData.length < PAGE_LIMIT) {
-          setHasMore(false);
-        }
+          return cached;
       }
-      catch (error) {
-        console.error("Erreur lors de la récupération des entretiens :", error);
+
+      //--------------------------------
+      // PENDING REQUEST
+      //--------------------------------
+      const pending = pendingRequests.current.get(key);
+
+      if (pending) {
+          if (!pending?.signal?.aborted) {
+              console.log("Interviews pending reused", key);
+              return pending.promise;
+          }
+          //-- Clear killed requst
+          pendingRequests.current.delete(key);
       }
-      finally {
-        isLoadingRef.current = false;
-        setIsLoadingMore(false);
-      }
-    },
-    [jobId, jobTitle]
+
+      //--------------------------------
+      // CACHE MISS
+      //--------------------------------
+
+      console.log("Interviews cache MISS", key);
+
+      const request = InterviewsQueries.getRecruiterJobOfferInterviews({
+              jobId,
+              companyId,
+              skip,
+              limit,
+              statuses,
+              signal 
+          })
+          .then(async (responseData) => {
+            const mappedInterviews = await Promise.all(
+              responseData.map(async (value) => {
+                  const candidateId = value.candidate.id;
+
+                  let image =
+                      imageUrlCache.current.get(candidateId) ?? null;
+
+                  if (!image) {
+                      try {
+                          const blob =
+                              await InterviewsQueries.getCandidateImage({
+                                  candidateId,
+                                  interviewId: value.id,
+                              });
+
+                          image = URL.createObjectURL(blob);
+
+                          imageUrlCache.current.set(
+                              candidateId,
+                              image
+                          );
+                      }
+                      catch {
+                          console.warn(
+                              `Unable to fetch image for ${candidateId}`
+                          );
+                      }
+                  }
+
+                  return {
+                      ...value,
+                      id: value.id,
+                      jobTitle,
+                      candidate:`${value.candidate.firstName} ${value.candidate.lastName}`,
+                      email: value.candidate.email,
+                      scheduledAt:  formatDateSafely(value.startDate.date),
+                      locationOrLink: value.url,
+                      status: value.status,
+                      avatarUrl: image,
+                      minutes: value.minutes,
+                      candidateApproval: value.candidateApproval,
+                  };
+              })
+            );
+
+            const result: InterviewsQueryCache = {
+                data: mappedInterviews,
+                hasMore: mappedInterviews.length === limit,
+                fetchedAt: Date.now(),
+            };
+
+            interviewsCache.current.set(key, result);
+            return result;
+          })
+          .finally(() => {
+              pendingRequests.current.delete(key);
+          });
+
+
+      pendingRequests.current.set(key, {
+          promise: request,
+          signal,
+      });
+
+      return request;
+  }), [jobId, companyId, jobTitle]);
+
+  //------------------
+  //--- Update Cache
+  //------------------
+
+  const updateInterviewInCache = (
+      interviewId: string,
+      update: Partial<Interview>
+  ) => {
+      interviewsCache.current.forEach((cache, key) => {
+          const exists = cache.data.some(
+              item => item.id === interviewId
+          );
+          if (!exists) return;
+
+          interviewsCache.current.set(key, {
+              ...cache,
+              data: cache.data.map(item =>
+                  item.id === interviewId
+                      ? { ...item, ...update }
+                      : item
+              ),
+          });
+      });
+  };
+
+  const fetchInterviews = useCallback(
+      async ({
+          skip,
+          mode,
+          search = "",
+          statuses = null,
+      }: {
+          skip: number;
+          mode: FetchMode;
+          search?: string;
+          statuses?: InterviewStatusValue[] | null;
+      }) => {
+
+          //--------------------------------
+          // Replace = new query
+          //--------------------------------
+
+          if (mode === "replace") {
+              abortControllerRef.current?.abort();
+              abortControllerRef.current = new AbortController();
+              setIsLoading(true);
+          }
+          else{
+            setIsLoadingMore(true)
+          }
+
+          const controller = abortControllerRef.current;
+          const signal = controller?.signal;
+
+          try {
+
+              const result = await requestInterviews({
+                  skip,
+                  limit: PAGE_LIMIT,
+                  search,
+                  statuses,
+                  signal,
+              });
+
+              //--------------------------------
+              // Ignore obsolete response
+              //--------------------------------
+
+              if (
+                  mode === "replace" &&
+                  controller !== abortControllerRef.current
+              ) {
+                  return;
+              }
+
+              //--------------------------------
+              // Replace
+              //--------------------------------
+
+              if (mode === "replace") {
+                  setInterviews(result.data);
+              }
+
+              //--------------------------------
+              // Append
+              //--------------------------------
+
+              else {
+                  setInterviews(prev => {
+                      const existingIds = new Set(
+                          prev.map(item => item.id)
+                      );
+
+                      return [
+                          ...prev,
+                          ...result.data.filter(
+                              item => !existingIds.has(item.id)
+                          ),
+                      ];
+                  });
+              }
+
+              //--------------------------------
+              // Pagination
+              //--------------------------------
+
+              setSkip(skip + result.data.length);
+              setHasMore(result.hasMore);
+          }
+          catch (error: any) {
+              if (error?.name !== "AbortError") {
+                  console.error(
+                      "Erreur récupération entretiens:",
+                      error
+                  );
+              }
+          }
+          finally {
+              if (
+                  mode !== "replace" ||
+                  controller === abortControllerRef.current
+              ) {
+                  setIsLoading(false);
+              }
+              else{
+                setIsLoadingMore(false);
+              }
+          }
+      },
+      [requestInterviews]
   );
 
+
+  //-------------------
+  // - Event Handlers
+  //--------------------
 
   // Reload the complete list when creating an interview
-  const refreshInterviews = useCallback(() => {
-    loadedPagesRef.current.clear();
-    setInterviews([]);
-    setHasMore(true);
-    setPage(1);
-    fetchInterviewsPage(1);
-  }, [fetchInterviewsPage]);
+  const refreshInterviews = useCallback(async () => {
+      invalidateInterviewsCache();
+
+      await fetchInterviews({
+          skip: 0,
+          mode: "replace",
+          search: debouncedSearch,
+          statuses: filters.statuses,
+      });
+  }, [
+      fetchInterviews,
+      debouncedSearch,
+      filters.statuses,
+  ]);
 
 
 
-  // Trigger pagination
+  //-- Trigger Filtering
   useEffect(() => {
-    fetchInterviewsPage(page);
-  }, [page, fetchInterviewsPage]);
+      fetchInterviews({
+          skip: 0,
+          mode: "replace",
+          search: debouncedSearch,
+          statuses: filters.statuses,
+      });
+
+  }, [
+      debouncedSearch,
+      filters.statuses,
+      fetchInterviews,
+  ]);
 
   
   // Infinite Scroll Observer
   useEffect(() => {
     const target = observerTargetRef.current;
     const container = tableContainerRef.current;
-
-    if (!target || !hasMore || isLoadingMore) 
-      return;
-
+    
+    if (!target || !hasMore) return;
+    
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingRef.current) {
-          setPage((prevPage) => prevPage + 1);
+      ([entry]) => {
+        if (
+          !entry.isIntersecting ||
+          isFetchingMoreRef.current ||
+          isLoadingMore ||
+          !hasMore
+        ) {
+          return;
+        }
+
+        isFetchingMoreRef.current = true;
+
+        try{
+          fetchInterviews({
+            skip,
+            mode: "append",
+            search: debouncedSearch,
+            statuses: filters.statuses,
+          });
+        }
+        finally{
+          isFetchingMoreRef.current = false;
         }
       },
       {
@@ -192,133 +530,183 @@ export default function InterviewsSection({
     );
 
     observer.observe(target);
+    return () =>  observer.disconnect();
+  }, [
+      hasMore,
+      isLoadingMore,
+      skip,
+      fetchInterviews,
+      debouncedSearch,
+      filters.statuses,
+  ]);
 
-    return () => {
-      observer.disconnect();
-    };
-  }, [hasMore, isLoadingMore]);
-
-
-
-  // Locally Filter Search
-  const filteredInterviews = useMemo(() => {
-    if (!debouncedSearch.trim()) return interviews;
-    const query = debouncedSearch.toLowerCase();
-
-    return interviews.filter(
-      (item) =>
-        item.candidate.toLowerCase().includes(query) ||
-        item.email.toLowerCase().includes(query) ||
-        item.jobTitle.toLowerCase().includes(query)
-    );
-  }, [interviews, debouncedSearch]);
+  
+  //-- Cleaning
+  useEffect(()=>{
+    return ()=>{
+      invalidateImageCache()
+    }
+  },[])
 
 
 
   // Submit creation 
   const handleCreateInterview = useCallback(
     async (payload: CreateInterviewFormData) => {
-      await InterviewsServices.createInterview({
-        ...payload,
-        jobId,
-      });
+      try{
+        await InterviewsServices.createInterview({
+          ...payload,
+        });
+      }
+      catch(error){
+          if(error instanceof ConcurrentInterviewsException){
+            setPopup({status: "error", message: t('interviews.apiResponses.error.concurrentInterviewsFounded')})
+          }
+          console.log("Something went wrong while creating offer", error);
+          throw error;
+      }
       refreshInterviews();
     },
     [jobId, refreshInterviews]
   );
 
 
+
+
   // Action: Cancel interview
-  const handleCancel = useCallback(async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     setIsUpdating(id);
     try {
-      await InterviewsServices.cancelInterview(id);
-      setInterviews((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, status: "cancel" } : item
-        )
-      );
-    }
+      setLoading({state: true, subtitle: t('interviews.message.deleteInterview')});
+      await InterviewsServices.deleteInterview(id);
+      
+      setInterviews((prev) => prev.filter((item) => item.id !== id));
+      setSkip(skip => skip > 0 ? skip - 1 : skip);
+      deleteInterviewFromCache(id);
+
+      setLoading({state: false, subtitle: t('interviews.apiResponses.success.delete')});
+    } 
     catch (error) {
-      console.error("Erreur lors de l'annulation de l'entretien :", error);
+      if(error instanceof UnableResourceDeletion){
+        setPopup({status: 'error', message: t('interviews.apiResponses.error.interviewAlreadyConfirmed')});
+      }
+      console.error("Erreur lors de la suppression de l'entretien", error);
+      setLoading({state: false})
     }
     finally {
       setIsUpdating(null);
     }
   }, []);
 
-  
+
+
+  const handleCancel = useCallback(async (id: string) => {
+    setIsUpdating(id);
+    setLoading({state: true, subtitle: t('interviews.message.cancelIntervicew')});
+    try {
+
+        await InterviewsServices.cancelInterview(id);
+        const update = {
+            status: InterviewStatus.CLOSED,
+        };
+        setInterviews(prev =>
+            prev.map(item =>
+                item.id === id
+                    ? { ...item, ...update }
+                    : item
+            )
+        );
+        updateInterviewInCache(id, update);
+    }
+    catch (error) {
+        console.error(
+            "Erreur lors de l'annulation de l'entretien",
+            error
+        );
+    }
+    finally {
+      setIsUpdating(null);
+      setLoading({state: false, subtitle: t('global.messages.error')})
+    }
+  }, []);
 
 
   return (
-    <div className={styles.tableCard}>
+    <div className={styles.container}>
       {/* Header */}
-      <InterviewToolbar
-        t={t}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        totalCount={filteredInterviews.length}
-        onOpenGenerateModal={() => {
-          setModal({
-            isOpen: true,
-            title: 'Création d\'un entrtien',
-            content: <GenerateInterviewModal
-              jobId={jobId}
-              onClose={() => {
-                setModal(null)
-              }}
-              onSubmit={handleCreateInterview}
-              fetchCandidatesApi={fetchCandidatesApi}
-            />
-          });
-        }}
-      />
+      <div className={styles.filters}>
+        <InterviewFilters 
+          onFilterValueChange={({statuses}) => setFilters({statuses})}
+        />
+      </div>
+      <div className={styles.tableCard}>
+        <InterviewToolbar
+          t={t}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          totalCount={interviews.length}
+          onOpenGenerateModal={() => {
+            setModal({
+              isOpen: true,
+              title: 'Création d\'un entrtien',
+              content: <GenerateInterviewModal
+                        onClose={() => {
+                          setModal(null)
+                        }}
+                        updateJob={updateJob}
+                        onSubmit={handleCreateInterview}
+                      />
+            });
+          }}
+        />
 
-      {/* Tableau d'entretiens */}
-      <div className={styles.tableContainer} ref={tableContainerRef}>
-        <table className={styles.interviewsTable}>
-          <thead>
-            <tr>
-              <th>Candidat</th>
-              <th>Offre d'emploi</th>
-              <th>Date & Heure</th>
-              <th>Lieu / Lien</th>
-              <th>Statut</th>
-              <th className={styles.textRight}>Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {filteredInterviews.length === 0 && !isLoadingMore ? (
+        {/* Tableau d'entretiens */}
+        <div className={styles.tableContainer} ref={tableContainerRef}>
+          <table className={styles.interviewsTable}>
+            <thead>
               <tr>
-                <td colSpan={6} className={styles.emptyState}>
-                  Aucun entretien trouvé.
-                </td>
+                <th>Candidat</th>
+                <th>Offre d'emploi</th>
+                <th>Date & Heure</th>
+                <th>Lieu / Lien</th>
+                <th>Statut</th>
+                <th className={styles.textRight}>Actions</th>
               </tr>
-            ) : (
-              filteredInterviews.map((interview) => (
-                <InterviewRow
-                  key={interview.id}
-                  interview={interview}
-                  isUpdating={isUpdating === interview.id}
-                  onCancel={handleCancel}
-                  getInitials={getInitials}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
+            </thead>
 
-        {/* Sentinelle Infinite Scroll */}
-        <div ref={observerTargetRef} className={styles.sentinelContainer}>
-          {isLoadingMore && (
-            <div className={styles.loadingSpinner}>Chargement des entretiens...</div>
-          )}
-          {!hasMore && interviews.length > 0 && (
-            <span className={styles.endOfListText}>
-              Tous les entretiens ont été chargés.
-            </span>
-          )}
+            <tbody>
+              {interviews.length === 0 && !isLoading ? (
+                <tr>
+                  <td colSpan={6} className={styles.emptyState}>
+                    Aucun entretien trouvé.
+                  </td>
+                </tr>
+              ) : (
+                interviews.map((interview) => (
+                  <InterviewRow
+                    key={interview.id}
+                    interview={interview}
+                    onDelete={handleDelete}
+                    onCancel={handleCancel}
+                    getInitials={getInitials}
+                    isUpdating={isUpdating === interview.id}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
+
+          {/* Sentinelle Infinite Scroll */}
+          <div ref={observerTargetRef} className={styles.sentinelContainer}>
+            {isLoading && (
+              <div className={styles.loadingSpinner}>Chargement des entretiens...</div>
+            )}
+            {!hasMore && interviews.length > 0 && (
+              <span className={styles.endOfListText}>
+                Tous les entretiens ont été chargés.
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>

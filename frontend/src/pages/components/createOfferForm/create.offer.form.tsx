@@ -4,13 +4,13 @@ import { useAppContext } from "../../../hooks/context";
 
 import type { CreateOfferPayload } from "../../../features/employment/offer";
 
-import { SearchAutocomplete, type Item as AutoCompleteSearchResultItem } from "../../../layout/components/form/input/autocomplete/search.autocomplete";
-import ApplicationQueries from "../../../api/services/application/queries";
-
-import type { CandidateApplication } from "../../../api/services/application/response";
+import { SearchAutocomplete } from "../../../layout/components/form/input/autocomplete/search.autocomplete";
 
 /** Style */
 import styles from "./CreateOfferForm.module.css";
+import { candidateSearchService } from "../../../services/CandidateSearchService";
+import type { AutoCompleteSearchResultItem, CandidateSearchItem } from "../../../features/shared/global";
+import { CandidateApplicationSelector } from "../selector/candidate.application.selector";
 
 
 interface CreateOfferFormProps {
@@ -28,14 +28,6 @@ interface CreateOfferFormProps {
 }
 
 
-type SelectedCandidateApplicationEntity = {
-  email: string;
-  firstName: string;
-  applicationId: string;
-  candidateId: string;
-  jobTitle: string;
-};
-
 
 /**
  * Employment offer
@@ -45,10 +37,10 @@ type SelectedCandidateApplicationEntity = {
 export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({  onSubmit }) => {
     const { setModal, setPopup } = useAppContext();
 
-    const [selectedCandidateApplicationEntity, setSelectedCandidateApplicationEntity] = useState<
-                                                                                            (AutoCompleteSearchResultItem & SelectedCandidateApplicationEntity) | null
-                                                                                        >(null); //-- selected Candidate serach result
-
+    const [
+        selectedCandidateApplicationEntity, 
+        setSelectedCandidateApplicationEntity
+    ] = useState<CandidateSearchItem | null>(null); //-- selected Candidate serach result
 
     const [scheduledEndDate, setScheduledEndDate] = useState<string>("");
 
@@ -58,19 +50,15 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({  onSubmit }) =
     const [salary, setSalary] = useState<number | "">("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    //-- Caches
-    const imageCache = useRef<Record<string, string>>({}); // Clear image cache
-    const searchCache = useRef<Record<string, AutoCompleteSearchResultItem[]>>({}); //api research cache
-
 
     //-- handle submit
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
 
-        if(Object.values(searchCache.current).length < 1){
+        if (!selectedCandidateApplicationEntity) {
             setPopup({ 
                 status: "warning", 
-                message: "Vous ne pouvez pas faire d'offre d'embauche sans sélectionner un candidat." 
+                message: "Vous devez sélectionner un candidat avant de créer une offre d'embauche." 
             });
             return;
         }
@@ -81,14 +69,8 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({  onSubmit }) =
         }
 
         setIsSubmitting(true);
-        const cacheKey = `${selectedCandidateApplicationEntity.candidateId}_${selectedCandidateApplicationEntity.applicationId}`;
 
         try {
-            let avatarUrl = null;
-            if(imageCache.current[cacheKey]){
-                avatarUrl = imageCache.current[cacheKey];
-                delete imageCache.current[cacheKey];
-            }
 
             const payload = {
                 message,
@@ -103,7 +85,7 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({  onSubmit }) =
                 expiredAt: new Date(expiredAt).toISOString(),
                 scheduledEndDate: new Date(scheduledEndDate).toISOString(),
                 jobTitle: selectedCandidateApplicationEntity.jobTitle as string,
-                avatarUrl: avatarUrl,
+                avatarUrl: selectedCandidateApplicationEntity?.image,
             };
 
             console.log("GEN Employment: ", payload)
@@ -119,99 +101,22 @@ export const CreateOfferForm: React.FC<CreateOfferFormProps> = ({  onSubmit }) =
     };
 
 
-
-    //-- handle search
-    const handleOnSearch = useCallback(async (query: string) => {
-        try {
-            const cleanQuery = query.trim().toLocaleLowerCase();
-            const data: CandidateApplication[] = await ApplicationQueries.searchCandidateByApplication(query);
-            
-            if(searchCache.current[cleanQuery]){
-                return searchCache.current[cleanQuery];
-            }
-
-            // Promise.all est indispensable ici
-            const items = await Promise.all(
-                data.map(async (value) => {
-                    const cacheKey = `${value.candidateId}_${value.applicationId}`;
-                    let image: string | null = null;
-
-                    if (imageCache.current[cacheKey]) {
-                        image = imageCache.current[cacheKey];
-                    } 
-                    else {
-                        try {
-                            const blob = await ApplicationQueries.getCandidateProfilImage({
-                                candidateId: value.candidateId,
-                                applicationId: value.applicationId
-                            });
-
-                            if (blob && blob.size > 0) {
-                                const url = URL.createObjectURL(blob);
-                                image = url;
-                                imageCache.current[cacheKey] = url;
-                            }
-                        } catch (error) {
-                            console.warn(`Erreur de récupération image pour le candidat ${value.candidateId}:`, error);
-                        }
-                    }
-
-                    return {
-                        ...value,
-                        id: value.candidateId,
-                        image: image ?? undefined, 
-                        jobTitle: value.jobTitle,
-                        label: `${value.firstName} ${value.lastName}`,
-                        sublabel: value.jobTitle,
-                        applicationId: value.applicationId,
-                    };
-                })
-            );
-
-            searchCache.current[cleanQuery] = items;
-            return items;
-        }
-        catch (error) {
-            console.warn("Erreur lors de la recherche de candidat :", error);
-            return []; 
-        }
-    }, []);
-
-
-
-    //-- Cleaning Up Image URLs During Deconstruction
-    useEffect(() => {
-        return () => {
-            Object.values(imageCache.current).forEach((url) => {
-                URL.revokeObjectURL(url);
-            });
-        };
-    }, []);
-
-
-
     return (
         <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.formGroup}>
                 <label className={styles.label}>Candidat / Candidature *</label>
-                <SearchAutocomplete 
-                    onSearch={handleOnSearch}
-                    onSelect={(item) => {
-                        setSelectedCandidateApplicationEntity(item as (AutoCompleteSearchResultItem & SelectedCandidateApplicationEntity) | null)
-                    }}
-                    placeholder="Tapez le nom d'une candidature"
-                    debounceMs={300}
-                    maxResults={5}
-                    className={styles.autocompleteInput}
+                <CandidateApplicationSelector
+                    value={selectedCandidateApplicationEntity}
+                    onChange={setSelectedCandidateApplicationEntity}
                 />
-                {selectedCandidateApplicationEntity && (
+                {/* {selectedCandidateApplicationEntity && (
                     <div style={{ marginTop: '16px', padding: '12px', background: '#f1f5f9', borderRadius: '6px' }}>
                         <small style={{ color: '#64748b' }}>ID prêt à être envoyé au backend :</small>
                         <code style={{ display: 'block', fontWeight: 'bold', color: '#0f172a' }}>
                             {selectedCandidateApplicationEntity.id}
                         </code>
                     </div>
-                )}
+                )} */}
             </div>
 
 

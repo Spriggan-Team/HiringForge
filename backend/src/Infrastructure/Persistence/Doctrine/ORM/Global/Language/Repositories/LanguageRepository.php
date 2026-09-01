@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\Repositories;
 
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Shared\Language\Language;
 use App\Domain\Shared\Language\LanguageRepositoryInterface;
 
@@ -32,7 +32,7 @@ final class LanguageRepository extends ServiceEntityRepository
         $entity = $this->find($id);
 
         if(!$entity){
-            throw new RessourceNotFound(
+            throw new ResourceNotFoundException(
                 "Language not found"
             );
         }

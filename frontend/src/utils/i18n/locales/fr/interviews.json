@@ -6,6 +6,24 @@
             "inputs":{
                 "candidate": ""
             }
+        },
+        "message":{
+            "interviewCreation": "Création d'un entretien",
+            "deleteInterview": "Suppression de l'entretien",
+            "cancelIntervicew": "Annulation de l'entretien"
+        },
+        "apiResponses":{
+            "success":{
+                "save": "Entretien enregistré avec succès",
+                "delete": "Succès de la suppression",
+                "cancel":"Annulation avec success"
+            },
+            "error":{
+                "cannotCancelInterview": "Impossible d'annuler l'entretien",
+                "cannotDeleteInterviewcauseAlreadyAccepted": "Impossible de supprimer  l'entretien car déjà accepté",
+                "concurrentInterviewsFounded": "Un autre entretien est déjà programmé sur ce créneau horaire. Veuillez choisir un autre horaire.",
+                "interviewAlreadyConfirmed": "Cet entretien ne peut pas être supprimé car il a déjà été confirmé par le candidat. Vous pouvez toutefois l’annuler."
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ export const ApiResponseCode = {
     //-- global
     RESSOURCE_NOT_FOUND: "ressource_not_found",
     RESSOURCE_CREATION_FAILED: "ressources_creation_failed",
+    UNABLE_RESOURCE_DELETION: 'unable_ressource_deletion',
 
     //-- otp
     EXPIRED_OTP: "expired_otp",
@@ -32,6 +33,8 @@ export const ApiResponseCode = {
     //-- resume
     UNALLOW_RESUME_DELETION: "unallow_deletion_resume",
 
+    //---- Interviews
+    CONCURRENT_INTERVIEWS_FOUNDED: "concurrent_interview_founded"
 } as const;
 
 

@@ -4,8 +4,7 @@
 namespace App\Api\Controllers\Department;
 
 use App\Api\Responder\ApiResponse;
-use App\Domain\Exception\RessourceNotFound;
-use App\Domain\Company\CompanyRepositoryInterface;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Department\DepartmentRepositoryInterface;
 use App\Application\Usecases\Department\DepartmentGenerator;
 
@@ -92,7 +91,7 @@ class DepartmentController extends AbstractController
             $department = $generator->execute($command);
             return ApiResponse::success(data: $department, statusCode:  Response::HTTP_CREATED)->toJsonResponse();
         }
-        catch(RessourceNotFound $e){
+        catch(ResourceNotFoundException $e){
             return ApiResponse::error(message: 'Company not found', statusCode:  Response::HTTP_NOT_FOUND )->toJsonResponse();
         }   
         catch(\Exception $e){

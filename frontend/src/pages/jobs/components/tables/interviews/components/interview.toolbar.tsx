@@ -13,6 +13,7 @@ interface InterviewToolbarProps {
   totalCount: number;
 }
 
+
 export const InterviewToolbar: React.FC<InterviewToolbarProps> = ({
   t,
   searchQuery,
@@ -28,13 +29,13 @@ export const InterviewToolbar: React.FC<InterviewToolbarProps> = ({
       </div>
 
       <div className={styles.toolbarActions}>
-        <input
+        {/* <input
           type="text"
           placeholder="Rechercher un candidat, un email..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className={styles.searchInput}
-        />
+        /> */}
         <button
           type="button"
           onClick={onOpenGenerateModal}

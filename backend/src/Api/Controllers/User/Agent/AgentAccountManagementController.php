@@ -12,7 +12,7 @@ use App\Application\Usecases\Agent\DeleteAgentUsecase;
 use App\Domain\ApplicationErrorCode;
 use App\Domain\OTP\Exceptions\OTPException;
 use App\Domain\Exception\RessourceAlreadyRegistered;
-use App\Domain\Exception\RessourceNotFound;
+use App\Domain\Exception\ResourceNotFoundException;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -94,7 +94,7 @@ class AgentAccountManagementController extends AbstractController{
                         message: "Operation successfully executed"
                     )->toJsonResponse();
         }
-        catch(RessourceNotFound $notFound){
+        catch(ResourceNotFoundException $notFound){
             return ApiResponse::error(
                         code: ApplicationErrorCode::ACCOUNT_NOT_FOUND,
                         throwable: $notFound

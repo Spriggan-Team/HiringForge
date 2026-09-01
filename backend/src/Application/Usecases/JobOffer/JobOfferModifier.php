@@ -18,7 +18,7 @@ class JobOfferModifier
  
     /**
      * Usecase: Update job offer information
-     * @throws RessourceNotFound|\DomainException|\LogicException
+     * @throws ResourceNotFoundException|\DomainException|\LogicException
      */
     public function execute(
         string $userId,

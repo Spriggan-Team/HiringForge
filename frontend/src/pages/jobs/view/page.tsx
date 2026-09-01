@@ -67,11 +67,9 @@ type ViewModeTypes =
 const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
     const { t } = useTranslation()
     const { setNavbar } = useAppContext();
-    const { viewedJob } = useUserJobContext();
+    const { viewedJob, setViewedJob } = useUserJobContext();
 
     const { id } = useParams(); 
-    const [currentJob, setCurrentJob] = useState<CompleteJobView | null>(null);
-
 
     /** -- Initialize data --- */
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -89,15 +87,13 @@ const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
             setError(null);
             
             if(viewedJob){
-                setCurrentJob(viewedJob);
                 return;
             }
-
 
             const data = await JobQueries.getJobView(jobId);
             const metrics = await JobQueries.getJobSummaryById(jobId);
 
-            setCurrentJob({
+            setViewedJob({
                 ...data,
                 applications: metrics.candidatesCount,
                 views: metrics.viewsCount,
@@ -133,7 +129,7 @@ const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
 
     //-- Top Nav options --
     const options = useMemo(() => {
-        if(!currentJob)
+        if(!viewedJob)
             return [];
         return([
             {
@@ -145,28 +141,28 @@ const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
             {
                 mode: "candidates" as ViewModeTypes,
                 current: viewMenu === "candidates",
-                count: currentJob.cardinal?.candidates ?? 0,
+                count: viewedJob.cardinal?.candidates ?? 0,
                 onClick: () => setViewMenu("candidates"),
                 text: t("global.candidate.candidateLabel", {
-                    count: currentJob.cardinal?.candidates ?? 0,
+                    count: viewedJob.cardinal?.candidates ?? 0,
                 }),
             },
             {
                 mode: "interviews" as ViewModeTypes,
                 current: viewMenu === "interviews",
-                count: currentJob.cardinal?.interviews ?? 0,
+                count: viewedJob.cardinal?.interviews ?? 0,
                 onClick: () => setViewMenu("interviews"),
                 text: t("global.interview.interviewLabel", {
-                    count: currentJob.cardinal?.interviews ?? 0,
+                    count: viewedJob.cardinal?.interviews ?? 0,
                 }),
             },
             {
                 mode: "offers" as ViewModeTypes,
                 current: viewMenu === "offers",
-                count: currentJob.cardinal?.employmentOffers ?? 0,
+                count: viewedJob.cardinal?.employmentOffers ?? 0,
                 onClick: () => setViewMenu("offers"),
                 text: t("global.offer.offerLabel", {
-                    count: currentJob.cardinal?.employmentOffers ?? 0,
+                    count: viewedJob.cardinal?.employmentOffers ?? 0,
                 }),
             },
             {
@@ -176,7 +172,7 @@ const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
                 text: t("global.statistics.statistics_other"),
             },
         ]);
-    }, [viewMenu, currentJob?.cardinal, t]);
+    }, [viewMenu, viewedJob?.cardinal, t]);
 
 
     /**-- Styles & design --- */
@@ -184,11 +180,11 @@ const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
 
 
     useEffect(()=>{
-        if(!currentJob)
+        if(!viewedJob)
             return;
         const computed = getComputedStyle(document.documentElement);
 
-        const status = currentJob?.activityStatus ?? currentJob?.publicationStatus;
+        const status = viewedJob?.activityStatus ?? viewedJob?.publicationStatus;
         const text = renderStatus(t, status);
 
         const txtColor = computed.getPropertyValue(jobStatusStyles[status]?.txtColor);
@@ -201,19 +197,19 @@ const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
             borderRadius: 10
         })
 
-    },[jobsViewData, currentJob])
+    },[jobsViewData, viewedJob])
 
 
     /** Global Side effects */
     useEffect(()=>{
-        if(!currentJob)
+        if(!viewedJob)
             return;
-        console.log({currentJob})
+        console.log({viewedJob})
         
         //--Navbar
         const linkData = [
             { route: RouteScheme.userJobs, text: t("jobs.jobs"), current: false },
-            { route: RouteScheme.createJob, text: currentJob?.title, current: true }
+            { route: RouteScheme.createJob, text: viewedJob?.title, current: true }
         ];
 
         setNavbar({
@@ -229,14 +225,14 @@ const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
         return ()=>{
             setNavbar(null);
         };
-    },[setNavbar, currentJob])
+    },[setNavbar, viewedJob])
 
 
     /** -- RENDER --- */
 
     if (isLoading) return <div>Chargement de l'offre...</div>;
     if (error) return <div>{error}</div>;
-    if (!currentJob) return <div>Aucune offre trouvée.</div>;
+    if (!viewedJob) return <div>Aucune offre trouvée.</div>;
 
     return (
         <main className={styles.main}>
@@ -244,7 +240,7 @@ const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
             <div className={styles.pannel}>
                 {/** LEFT */}
                 <div className={styles.left}>
-                    <Title title={currentJob.title} fontSize="25px"/>
+                    <Title title={viewedJob.title} fontSize="25px"/>
                     <InfoPill  {...infoPillSettings} />
                 </div>
                 
@@ -290,16 +286,21 @@ const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
             <div className={styles.widget}>
                 {
                     viewMenu === "overview" ? 
-                        (<JobOverviewSection jobView={currentJob} />)
+                        (<JobOverviewSection jobView={viewedJob} />)
                     : viewMenu === "candidates" ? 
-                        (<CandidatesViewSection jobId={currentJob.id} />)
+                        (<CandidatesViewSection 
+                            jobId={viewedJob.id} 
+                        />)
                     : viewMenu == "interviews" ?
-                        (<InterviewsSection  job={{ id: currentJob.id, title: currentJob.title }} />)
+                        (<InterviewsSection  
+                            job={{ id: viewedJob.id, title: viewedJob.title }} 
+                            updateJob={setViewedJob}
+                        />)
                     : viewMenu == "offers" ?
-                        (<OffersSection jobId={currentJob.id} />)
+                        (<OffersSection jobId={viewedJob.id} />)
                     : viewMenu === "statistics" ?
                         (<JobStatisticsSection 
-                            jobId={currentJob.id}
+                            jobId={viewedJob.id}
                         />)
                     : null
                 }
