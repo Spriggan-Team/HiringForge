@@ -1,13 +1,72 @@
 
-import { intercept } from "../../../utils/utils";
 import { authGet,  } from "../../http";
+import { intercept } from "../../../utils/utils";
 
 import type { ApiResponse, ErrorApiResponse } from "../response.types";
 
-import type { CurrentCandidateContextResponse, GetResumeCollection } from "./responses";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
-import type { Skill } from "../../../features/shared/global";
 
+import type { Skill } from "../../../features/shared/global";
+import type { 
+    ApplicationsViewResponse, 
+    ApplicationViewDetialsResponse,
+    CandidateApplicationStatsResponse,
+    CurrentCandidateContextResponse,
+    GetResumeCollection
+} from "./responses";
+import type { ApplicationMenu } from "../../../features/application/application";
+
+
+
+/**
+ * Get candidates Applications
+ */
+const getMyApplications = async ({
+    skip = 0,
+    limit = 10,
+    menu,
+}:{
+    skip?: number;
+    limit?: number;
+    menu: ApplicationMenu;
+})=>{
+    const params = new URLSearchParams();
+    
+    if(skip) params.set("skip", String(skip));
+    if(limit) params.set("skip", String(limit));
+    if(menu) params.set("skip", String(menu));
+
+    const url = `/applications/candidate/my-applications?${params.toString()}`
+    const response = await authGet<ApplicationsViewResponse>(url);
+
+    return response.data
+}
+
+
+/**
+ * Get Applications stats for candidate
+ */
+const getApplicationsSats = async ()=>{
+    const response = await authGet<CandidateApplicationStatsResponse>(`/applications/candidate/stats`);
+    return response.data;
+}
+
+
+const getApplicationViewDetails = async({
+    applicationId,
+    locale
+}:{
+    applicationId: string,
+    locale?: string
+})=>{
+    const params = new URLSearchParams();
+    if(locale) params.append("locale", String(locale));
+
+    const url = `/applications/candidate/${applicationId}?${params.toString()}`;
+    const response = await authGet<ApplicationViewDetialsResponse>(url);
+    
+    return response.data;
+}
 
 
 /**
@@ -24,6 +83,12 @@ const getCandidateDescription = async ()=>{
     }
 }
 
+
+
+/**
+ * Skills for candidates
+ * @returns 
+ */
 const getCandidateSkills = async()=>{
     try{
         const response = await authGet<ApiResponse<Skill[]>>(`/candidates/profile/skills`);
@@ -34,6 +99,8 @@ const getCandidateSkills = async()=>{
     }
 }
 
+
+
 /**
  * Retreive job ids
  * related to the current candidate
@@ -41,7 +108,7 @@ const getCandidateSkills = async()=>{
 const getCandidateApplicationJobIds = async ():  Promise<Record<string, boolean>>=>{
     try{
         const response = await authGet<ApiResponse<string[]>>(
-            '/applications/jobs/ids'
+            '/applications/candidate/jobs/ids'
         );
 
         const map: Record<string, boolean> = {};
@@ -130,10 +197,15 @@ const Queries = {
     getResumes,
     getResumeContent,
     getCandidateProfileImage,
+
+    getMyApplications,
+    getApplicationsSats,
+    getApplicationViewDetails,
     
     getCandidateSkills,
     getCandidateDescription,
     getCurrentCandidateContext,
+
     getCandidateApplicationJobIds
 }
 

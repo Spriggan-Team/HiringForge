@@ -4,27 +4,28 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories;
 
 use App\Api\Responder\ApiResponse;
 use App\Domain\Candidate\Application\Application;
-use App\Domain\JobOffer\JobOfferRepositoryInterface;
 use App\Domain\Exception\ApplicationNotFoundException;
 
 use App\Domain\Candidate\Application\JobApplicationStatus;
-use App\Domain\Candidate\Application\Pipeline\PipelineStageCriteria;
 use App\Domain\Candidate\Application\Pipeline\PipelineStageCriteriaResolver;
 use App\Domain\Candidate\Application\Repositories\ApplicationContext;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 use App\Domain\Candidate\Application\Repositories\CandidateApplication;
 use App\Domain\Candidate\Application\Pipeline\PipelineStageType;
+use App\Domain\Candidate\Application\Repositories\ApplicationMenu;
 use App\Domain\Candidate\CandidateLightModel;
-
+use App\Domain\EmploymentOffer\EmploymentOfferStatus;
 use App\Domain\File\StaticMedia;
-use App\Domain\Interviews\InterviewStatus;
-use App\Domain\Interviews\InterviewType;
 
-use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
-use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateResumeEntity;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateResumeEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer\EmploymentOfferEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\Repositories\Resolvser\ApplicationStatusResolver;
 
 
 use Doctrine\Persistence\ManagerRegistry;
@@ -42,14 +43,454 @@ class JobOfferApplicationRepository
 
     public function __construct(
         ManagerRegistry $registry,
-        JobOfferRepositoryInterface $jobRepository
+        private readonly ApplicationStatusResolver $statusResolver
     )
     {
         return parent::__construct($registry, ApplicationEntity::class);
     }
 
+
+    /**
+     * Retrieve application details for a candidate.
+     *
+     * @return array{
+     *     contractType: string,
+     *     location: array{
+     *         city: string,
+     *         street: string,
+     *         postalCode: string,
+     *         country: string
+     *     },
+     *     content: string,
+     *     skills: array<int, array{
+     *         id: string,
+     *         name: string
+     *     }>,
+     *     department?: array{
+     *         id: string,
+     *         name: string
+     *     }
+     * }
+     */
+    #[Override]
+    public function getApplicationDetails(
+        string $candidateId,
+        string $applicationId,
+        string $code = 'fr'
+    ): array {
+        $results = $this->createQueryBuilder('a')
+            ->select(
+                'c.label AS contractType',
+
+                'addr.city AS city',
+                'addr.street AS street',
+                'addr.postalCode AS postalCode',
+                'addr.country AS country',
+
+                'jd.id AS departmentId',
+                'jd.label AS departmentName',
+
+                'j.content AS content',
+
+                's.id AS skillId',
+                'st.name AS skillName'
+            )
+            ->innerJoin('a.jobOffer', 'j')
+            ->innerJoin('j.address', 'addr')
+            ->innerJoin('j.contractType', 'c')
+            ->leftJoin('j.department', 'jd')
+            ->leftJoin('j.skills', 'js')
+            ->leftJoin('js.skill', 's')
+            ->leftJoin(
+                's.translations',
+                'st',
+                'WITH',
+                'st.language = :code'
+            )
+            ->where('a.id = :applicationId')
+            ->andWhere('a.candidate = :candidateId')
+            ->setParameter('applicationId', $applicationId)
+            ->setParameter('candidateId', $candidateId)
+            ->setParameter('code', $code)
+            ->getQuery()
+            ->getArrayResult();
+
+        if (empty($results)) {
+            throw new \DomainException(
+                'Application not found or access denied.'
+            );
+        }
+
+        $first = $results[0];
+
+        $skills = [];
+
+        foreach ($results as $result) {
+            if (
+                $result['skillId'] !== null &&
+                $result['skillName'] !== null
+            ) {
+                $skills[$result['skillId']] = [
+                    'id' => $result['skillId'],
+                    'name' => $result['skillName'],
+                ];
+            }
+        }
+
+        $details = [
+            'contractType' => $first['contractType'],
+
+            'location' => [
+                'city' => $first['city'],
+                'street' => $first['street'],
+                'postalCode' => $first['postalCode'],
+                'country' => $first['country'],
+            ],
+
+            'content' => $first['content'],
+
+            'skills' => array_values($skills),
+        ];
+
+        if (
+            $first['departmentId'] !== null &&
+            $first['departmentName'] !== null
+        ) {
+            $details['department'] = [
+                'id' => $first['departmentId'],
+                'name' => $first['departmentName'],
+            ];
+        }
+
+        return $details;
+    }
+
     
-  
+    //------------------------------------------
+    //--- FECTH CLLECTIONS WITH PAGINATIONS
+    //------------------------------------------
+    
+    /**
+     * Get candidate applications collection.
+     *
+     * @return array{
+     *     data: array<int, array{
+     *         id: string,
+     *         job: array{
+     *             title: string,
+     *             image: array{
+     *                 name: string,
+     *                 mime: string
+     *             }
+     *         },
+     *         company: array{
+     *             id: string,
+     *             name: string,
+     *             logo: array{
+     *                 name: string,
+     *                 mime: string
+     *             }
+     *         },
+     *         status: JobApplicationStatus,
+     *         appliedAt: string,
+     *         updatedAt: string
+     *     }>,
+     *     total: int
+     * }
+     */#[Override]
+    public function getApplicationsViewCollection(
+        string $candidateId,
+        int $skip = 0,
+        int $limit = 15,
+        ApplicationMenu $sectionType = ApplicationMenu::ALL
+    ): array {
+        /*
+        * Retrieve the base application collection.
+        *
+        * Interviews and employment offers are intentionally not joined here
+        * to avoid duplicated rows caused by one-to-many relations.
+        */
+        $applications = $this->createQueryBuilder('a')
+            ->select(
+                'a.id AS id',
+                'a.appliedAt AS appliedAt',
+                'a.updatedAt AS updatedAt',
+                'a.status AS applicationStatus',
+
+                'c.id AS companyId',
+                'c.name AS companyName',
+                'cf.name AS logoName',
+                'cf.mime AS logoMime',
+
+                'j.title AS jobTitle',
+                'jf.name AS jobImageName',
+                'jf.mime AS jobImageMime'
+            )
+            ->innerJoin('a.company', 'c')
+            ->leftJoin('c.logo', 'cf')
+            ->innerJoin('a.jobOffer', 'j')
+            ->leftJoin(
+                'j.images',
+                'jm',
+                'WITH',
+                'jm.isMain = true'
+            )
+            ->leftJoin('jm.file', 'jf')
+            ->where('a.candidate = :candidateId')
+            ->setParameter('candidateId', $candidateId)
+            ->orderBy('a.updatedAt', 'DESC')
+            ->setFirstResult($skip)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        if (empty($applications)) {
+            return [];
+        }
+
+        $applicationIds = array_column($applications, 'id');
+
+        /*
+        * Retrieve interview statuses grouped by application.
+        */
+        $interviews = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select(
+                'IDENTITY(i.application) AS applicationId',
+                'i.status AS status'
+            )
+            ->from(InterviewEntity::class, 'i')
+            ->where('i.application IN (:applicationIds)')
+            ->setParameter('applicationIds', $applicationIds)
+            ->getQuery()
+            ->getArrayResult();
+
+        /*
+        * Retrieve employment offer statuses grouped by application.
+        */
+        $employmentOffers = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select(
+                'IDENTITY(eo.application) AS applicationId',
+                'eo.status AS status'
+            )
+            ->from(EmploymentOfferEntity::class, 'eo')
+            ->where('eo.application IN (:applicationIds)')
+            ->setParameter('applicationIds', $applicationIds)
+            ->getQuery()
+            ->getArrayResult();
+
+        /*
+        * Group interview statuses by application.
+        */
+        $interviewsByApplication = [];
+
+        foreach ($interviews as $interview) {
+            $applicationId = $interview['applicationId'];
+
+            $interviewsByApplication[$applicationId][] =
+                $interview['status'];
+        }
+
+        /*
+        * Group employment offer statuses by application.
+        */
+        $employmentOffersByApplication = [];
+
+        foreach ($employmentOffers as $employmentOffer) {
+            $applicationId = $employmentOffer['applicationId'];
+
+            $employmentOffersByApplication[$applicationId][] =
+                $employmentOffer['status'];
+        }
+
+        /*
+        * Resolve the effective application status.
+        */
+        $resolvedApplications = array_map(
+            function (array $application) use (
+                $interviewsByApplication,
+                $employmentOffersByApplication
+            ): array {
+                $applicationId = $application['id'];
+
+                $interviewStatuses =
+                    $interviewsByApplication[$applicationId] ?? [];
+
+                $employmentOfferStatuses =
+                    $employmentOffersByApplication[$applicationId] ?? [];
+
+                $resolvedStatus = $this->statusResolver->resolve(
+                    $application['applicationStatus'],
+                    $interviewStatuses,
+                    $employmentOfferStatuses
+                );
+
+                return [
+                    'id' => $applicationId,
+
+                    'job' => [
+                        'title' => $application['jobTitle'],
+                        'image' => [
+                            'name' => $application['jobImageName'],
+                            'mime' => $application['jobImageMime'],
+                        ],
+                    ],
+
+                    'company' => [
+                        'id' => $application['companyId'],
+                        'name' => $application['companyName'],
+                        'logo' => [
+                            'name' => $application['logoName'],
+                            'mime' => $application['logoMime'],
+                        ],
+                    ],
+
+                    'status' => $resolvedStatus,
+
+                    'appliedAt' => $application['appliedAt']
+                        ->format(DATE_ATOM),
+
+                    'updatedAt' => $application['updatedAt']
+                        ->format(DATE_ATOM),
+                ];
+            },
+            $applications
+        );
+
+        /*
+        * Filter the collection using the resolved status.
+        */
+        return array_values(
+            array_filter(
+                $resolvedApplications,
+                fn (array $application): bool =>
+                    $this->matchesMenu(
+                        $application['status'],
+                        $sectionType
+                    )
+            )
+        );
+    }
+    
+    /**
+     * Check whether an application status belongs to a menu section.
+     */
+    private function matchesMenu(
+        JobApplicationStatus $status,
+        ApplicationMenu $sectionType
+    ): bool {
+        return match ($sectionType) {
+            ApplicationMenu::ALL => true,
+            ApplicationMenu::PENDING =>
+                !in_array(
+                    $status,
+                    [
+                        JobApplicationStatus::INTERVIEW_SCHEDULED,
+                        JobApplicationStatus::IN_INTERVIEW,
+                        JobApplicationStatus::OFFER_ACCEPTED,
+                        JobApplicationStatus::OFFER_DECLINED,
+                    ],
+                    true
+                ),
+
+            ApplicationMenu::INTERVIEW =>
+                in_array(
+                    $status,
+                    [
+                        JobApplicationStatus::INTERVIEW_SCHEDULED,
+                        JobApplicationStatus::IN_INTERVIEW,
+                    ],
+                    true
+                ),
+
+            ApplicationMenu::COMPLETED =>
+                in_array(
+                    $status,
+                    [
+                        JobApplicationStatus::OFFER_ACCEPTED,
+                        JobApplicationStatus::OFFER_DECLINED,
+                    ],
+                    true
+                ),
+        };
+    }
+
+
+    //------------------------------------------
+    //------------------------------------------
+    //------------------------------------------
+
+
+    /**
+     * Get candidate application statistics.
+     *
+     * @return array{
+     *     hiredCount: int,
+     *     pendingCount: int,
+     *     interviewCount: int,
+     *     completedCount: int,
+     *     applicationCount: int
+     * }
+     */
+    #[Override]
+    public function getCandidateApplicationStats(string $candidateId): array
+    {
+        $result = $this->createQueryBuilder('a')
+            ->select(
+                'COUNT(DISTINCT a.id) AS applicationCount',
+                'COUNT(DISTINCT i.id) AS interviewCount',
+
+                'COUNT(DISTINCT CASE 
+                    WHEN employment.status = :acceptedStatus 
+                    THEN employment.id 
+                    ELSE NULL 
+                END) AS hiredCount',
+
+                'COUNT(DISTINCT CASE 
+                    WHEN employment.status = :sentStatus 
+                    THEN employment.id 
+                    ELSE NULL 
+                END) AS pendingCount',
+
+                'COUNT(DISTINCT CASE 
+                    WHEN employment.status IN (:completedStatuses) 
+                    THEN employment.id 
+                    ELSE NULL 
+                END) AS completedCount'
+            )
+            ->leftJoin('a.employmentOffers', 'employment')
+            ->leftJoin('a.interviews', 'i')
+            ->where('a.candidate = :candidateId')
+            ->setParameter('candidateId', $candidateId)
+            ->setParameter(
+                'acceptedStatus',
+                EmploymentOfferStatus::ACCEPTED
+            )
+            ->setParameter(
+                'sentStatus',
+                EmploymentOfferStatus::SENT
+            )
+            ->setParameter(
+                'completedStatuses',
+                [
+                    EmploymentOfferStatus::ACCEPTED,
+                    EmploymentOfferStatus::DECLINED,
+                    EmploymentOfferStatus::EXPIRED,
+                ]
+            )
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'hiredCount' => (int) $result['hiredCount'],
+            'pendingCount' => (int) $result['pendingCount'],
+            'interviewCount' => (int) $result['interviewCount'],
+            'completedCount' => (int) $result['completedCount'],
+            'applicationCount' => (int) $result['applicationCount'],
+        ];
+    }
+
 
     /**
      * Asserts that an application exists by its ID.

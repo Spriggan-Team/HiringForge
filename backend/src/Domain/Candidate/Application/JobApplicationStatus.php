@@ -41,14 +41,16 @@ enum JobApplicationStatus: string
             self::RECEIVED->value => [self::SHORTLISTED, self::SCREENING, self::REJECTED, self::WITHDRAWN],
             self::SHORTLISTED->value => [self::SCREENING, self::INTERVIEW_SCHEDULED, self::REJECTED, self::WITHDRAWN],
             self::SCREENING->value => [self::INTERVIEW_SCHEDULED, self::ASSESSMENT,  self::REJECTED, self::WITHDRAWN],
+            
             self::INTERVIEW_SCHEDULED->value => [self::IN_INTERVIEW, self::REJECTED, self::WITHDRAWN],
             self::IN_INTERVIEW->value => [self::ASSESSMENT, self::INTERVIEW_SCHEDULED,  self::OFFER_PENDING, self::REJECTED, self::WITHDRAWN],
+
             self::ASSESSMENT->value => [self::INTERVIEW_SCHEDULED, self::OFFER_PENDING, self::REJECTED, self::WITHDRAWN],
             self::OFFER_PENDING->value => [self::OFFER_ACCEPTED, self::OFFER_DECLINED,  self::REJECTED, self::WITHDRAWN],
             self::OFFER_ACCEPTED->value => [self::HIRED, self::WITHDRAWN],
-            
             // Statuts terminaux
             self::OFFER_DECLINED->value => [],
+
             self::HIRED->value => [],
             self::REJECTED->value => [],
             self::WITHDRAWN->value => [],

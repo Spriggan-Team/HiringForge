@@ -46,7 +46,6 @@ class Notification {
     - id: string
     - type: string
     - data: JSON
-    - isRead: boolean
     - createdAt: DateTime
     - readAt: DateTime
 }

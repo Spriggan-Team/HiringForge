@@ -21,11 +21,91 @@ interface ApplicationRepositoryInterface
      */
     public function assertExists(string $id): void;
 
+    
+    /**
+     * Get candidate application statistics.
+     *
+     * @return array{
+     *     hiredCount: int,
+     *     pendingCount: int,
+     *     interviewCount: int,
+     *     completedCount: int,
+     *     applicationCount: int
+     * }
+     */
+    public function getCandidateApplicationStats(
+        string $candidateId,
+    ): array;
+
+
+    /**
+     * Get candidate applications collection.
+     *
+     * @return array{
+     *     data: array<int, array{
+     *         id: string,
+     *         job: array{
+     *             title: string,
+     *             image: array{
+     *                 name: string,
+     *                 mime: string
+     *             }
+     *         },
+     *         company: array{
+     *             id: string,
+     *             name: string,
+     *             logo: array{
+     *                 name: string,
+     *                 mime: string
+     *             }
+     *         },
+     *         status: JobApplicationStatus,
+     *         appliedAt: string,
+     *         updatedAt: string
+     *     }>,
+     *     total: int
+     * }
+    */
+    public function getApplicationsViewCollection(
+        string $candidateId,
+        int $skip  = 0,
+        int $limit = 15,
+        ApplicationMenu $sectionType = ApplicationMenu::ALL
+    ): array;
+
+
+
+    /**
+     * Retrieve application details for a candidate.
+     *
+     * @return array{
+     *     contractType: string,
+     *     location: array{
+     *         city: string,
+     *         street: string,
+     *         postalCode: string,
+     *         country: string
+     *     },
+     *     content: string,
+     *     skills: array<int, array{
+     *         id: string,
+     *         name: string
+     *     }>,
+     *     department?: array{
+     *         id: string,
+     *         name: string
+     *     }
+     * }
+     */
+    public function getApplicationDetails(string $candidateId, string $applicationId, string $code = 'fr'): array;
+
+
 
     /**
      * Verify if a resume id linke to an application
      */
     public function hasApplicationsUsingResume(string $candidateId, string $resumeId): bool; 
+
 
     /**
      * Verifies that the application belongs to the current candidate.

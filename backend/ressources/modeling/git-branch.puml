@@ -2,7 +2,7 @@
 * main
 ** deploy
 ** FORGE-1
-*** feature/profil
 *** feature/application
 *** feature/interview
+*** feature/*
 @endwbs

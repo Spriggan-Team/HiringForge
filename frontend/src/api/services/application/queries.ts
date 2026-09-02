@@ -16,10 +16,6 @@ import type { ApplicationStatusValue } from "../../../features/application/appli
 
 
 //--------------------
-//--- Candidate
-//--------------------
-
-//--------------------
 //--- Recruiter
 //--------------------
 

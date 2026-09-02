@@ -7,7 +7,6 @@ import { ActiveEmploymentOfferExistsException } from "../exceptions";
 import { ApiResponseCode, HttpBadResponse, type ApiResponseError } from "../../exceptions";
 
 
-
 const updateApplicationsStatus = async (selectedIds: string[], status: string)=>{
     await authPatch(`/users/applications/status/change/bulk`, {ids: selectedIds, newStatus: status})
 }

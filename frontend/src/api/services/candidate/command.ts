@@ -22,7 +22,7 @@ const apply = async ({
     fileId: string
 })=>{
     try{
-        const response = await authPost<ApiResponse<string>>(`/applications/${jobId}/apply`, { fileId });
+        const response = await authPost<ApiResponse<string>>(`/applications/candidates/${jobId}/apply`, { fileId });
         return response.data;
     }
     catch(error){

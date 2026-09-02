@@ -40,9 +40,8 @@ entity "NOTIFICATION" as notification {
     * recipient_account_id : CHAR(36) [FK]
     * type : VARCHAR(255)
     * data : JSON
-    * is_read : BOOLEAN
     * created_at : DATETIME
-    read_at : DATETIME
+    * read_at : DATETIME
 }
 
 entity "VERIFICATION_TOKEN" as verification_token {

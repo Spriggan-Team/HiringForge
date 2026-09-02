@@ -1,11 +1,14 @@
+import type { ApplicationStatusValue, ApplicationView, ApplicationViewDetails, CandidateApplicationStats } from "../../../features/application/application";
 import type { ResumeFileMetada } from "../../../features/candidates/candidates";
 import type { ApiResponse } from "../response.types";
 
 
+//---------------
+//--- Account & File
+//-----------------
 
 export type CurrentCandidateContextResponse = ApiResponse<CurrentUser>;
 export type GetResumeCollection = ApiResponse<ResumeFileMetada[]>;
-
 
 export interface CurrentUser {
     id: string;
@@ -23,4 +26,18 @@ export interface CurrentUser {
     }
 }
 
+//---------------
+//--- Applications
+//-----------------
 
+export type ApplicationsViewResponse = ApiResponse<PaginatedApplicationsResponse>;
+
+export type CandidateApplicationStatsResponse = ApiResponse<CandidateApplicationStats>;
+
+export type ApplicationViewDetialsResponse = ApiResponse<ApplicationViewDetails>;
+
+
+interface PaginatedApplicationsResponse {
+    data: ApplicationView[];
+    total: number;
+}

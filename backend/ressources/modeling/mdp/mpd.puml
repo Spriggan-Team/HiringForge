@@ -54,9 +54,8 @@ entity "NOTIFICATION" as notification {
     * recipient_account_id : CHAR(36) [FK]
     * type : VARCHAR(255)
     * data : JSON
-    * is_read : BOOLEAN
     * created_at : DATETIME
-    read_at : DATETIME
+    * read_at : DATETIME
 }
 
 ' --- CORE / ACTEURS ---
@@ -296,7 +295,6 @@ file ||--o{ resume : "file_id"
 candidate ||--o{ job_offer_views : "candidate_id"
 candidate ||--o{ application : "candidate_id"
 candidate ||--o{ employment_offer : "candidate_id"
-candidate ||--o{ interview : "candidate_id"
 candidate ||--o{ resume : "candidate_id"
 candidate ||--o{ candidate_skill : "candidate_id"
 

@@ -129,6 +129,7 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
                         logoUrl: data.company.logoUrl ?? null,
                     },
                 });
+                initialializeUserKpis();
             }
             else if(role === AccountRole.CANDIDATE){
                 const data = await CandidatesQueries.getCurrentCandidateContext();
@@ -171,7 +172,7 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
     }, [setCurrentActor]);
 
 
-    //-- Load Kpis
+    //-- Load Recruiter Kpis
     const initialializeUserKpis = useCallback(async ()=>{
         try{ 
             // kpis
@@ -187,7 +188,6 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
 
     useEffect(()=>{
         initializeAccountData();
-        initialializeUserKpis();
     },[initializeAccountData])
 
     //----------------------

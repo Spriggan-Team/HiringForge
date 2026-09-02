@@ -114,6 +114,9 @@ export const ALLOWED_STATUS_TRANSITIONS: Record<ApplicationStatusValue, Applicat
 };
 
 
+//---------------------
+//--- UI & API
+//--------------------
 
 export interface Application {
   id: string;
@@ -132,3 +135,76 @@ export interface Application {
     status: InterviewStatusValue
   }[]
 }
+
+
+//---------------------
+//-- Candidate only
+//--------------------
+export interface CandidateApplicationStats
+{
+  hiredCount: number;
+  pendingCount: number;
+  interviewCount: number;
+  completedCount: number;
+  applicationCount: number;
+}
+
+//--------------------
+//-- API Only
+//-------------------------
+
+
+/**
+ * Light weight model for applications collection
+ */
+export interface ApplicationView{
+    id: string;
+    job:{
+        title: string
+        image: string;
+    }
+    company:{
+        name: string;
+        logo: string;
+    },
+    status: ApplicationStatusValue; //-- used here (status relative to interview, decision or pending)
+    appliedAt: string;    
+}
+
+
+/**
+ * -------------------------------------
+ * APPLICATION DETAILS (FOR CANDIDATE)
+ * -------------------------------------
+ */
+
+/**
+ * Represents the complete application data by combining
+ * the application overview with its detailed information.
+ */
+export type ApplicationDetails = ApplicationView & ApplicationViewDetails;
+
+
+export interface ApplicationViewDetails {
+    contractType: string;
+
+    location: {
+        city?: string;
+        street?: string;
+        postalCode?: string;
+        country?: string;
+    };
+
+    content: Record<string, unknown>;
+
+    skills: Array<{
+        id: string;
+        name: string;
+    }>;
+}
+
+export type ApplicationMenu =
+    | "ALL"
+    | "PENDING"
+    | "INTERVIEW"
+    | "COMPLETED";

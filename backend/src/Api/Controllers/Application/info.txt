@@ -1,3 +1,4 @@
 
 
 Here we handle job application / candidature
+    - CandidateApplicationController : deal with both queries and command
