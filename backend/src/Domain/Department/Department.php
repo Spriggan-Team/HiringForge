@@ -134,6 +134,10 @@ class Department{
     //-- SETTERS
     //-----------------
 
+    public function setId(?int $id){
+        $this->id = $id;
+        return $this;
+    }
 
     public function setParent(?Department $parent){
         $this->parent = $parent;

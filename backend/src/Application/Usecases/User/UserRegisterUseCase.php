@@ -62,8 +62,9 @@ class UserRegisterUseCase
         // -- Check if email already exists
         try{
             $identity = $this->userRepository->assertExist(email: $email->value());
-            if($identity)
+            if($identity){
                 throw new EmailAlreadyRegistered("This user already exists"); 
+            }
         }
         catch(ResourceNotFoundException){}
 
@@ -85,7 +86,10 @@ class UserRegisterUseCase
                 AccountFlowPurpose::SIGN_UP
             );
             
-            $otp->verify($command->verificationCode, $this->hasher);
+            $isValid = $otp->verify($command->verificationCode, $this->hasher);
+            if(!$isValid){
+                throw new OTPException(message: "OTP verification invalid", isInvalid: true);
+            }
         }
         catch (ResourceNotFoundException) {
             throw new OTPException(message: "No verification code found for this account.", isInvalid: true);
@@ -147,7 +151,7 @@ class UserRegisterUseCase
                         $filesFailedGeneric[] = $result->originalName;
                         $company->removeVideoPresentation();
                     },
-                    successCallback: function ()use(&$params){
+                    successCallback: function ()use(&$params, &$successfulUploasParams){
                         $successfulUploasParams[] = $params;
                     }
                 );
@@ -162,7 +166,7 @@ class UserRegisterUseCase
 
         // -- Method for handling single upload (static media)
         $uploadMedia = function($file, MediaStorageParams $params, callable $onAttach, callable $onDetach) 
-            use (&$filesFailedGeneric, &$filesFailedSize, &$successfulUploads, $user) {
+            use (&$filesFailedGeneric, &$filesFailedSize, &$successfulUploads, $user, &$successfulUploasParams) {
                 try {
                     $staticMedia = $this->mediaFactory->createStaticMedia($file);
                     
@@ -175,7 +179,7 @@ class UserRegisterUseCase
                             $filesFailedGeneric[] = $result->originalName;
                             $onDetach($staticMedia);
                         },
-                        successCallback: function($result) use (&$successfulUploads, &$params) {
+                        successCallback: function($result) use (&$successfulUploads, &$params, &$successfulUploasParams) {
                             $successfulUploads[] = $result->storedName;
                             $successfulUploasParams[] = $params;
                         }

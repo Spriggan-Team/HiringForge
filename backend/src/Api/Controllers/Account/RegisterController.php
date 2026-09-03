@@ -121,27 +121,27 @@ class RegisterController extends AbstractController
     ): JsonResponse
     {
         try {
-            /** @var InputBag FormData stored in request by Symfony  */
+            /** @var \Symfony\Component\HttpFoundation\InputBag $inputBag FormData stored in request by Symfony  */
             $inputBag = $request->request;
 
             $command = new RegisterUserCommand(
-                firstName: trim($inputBag->get("firstName")),
-                lastName: trim($inputBag->get("lastName")),
-                companyName: trim($inputBag->get('companyName')),
-                email: trim($inputBag->get('email')),
-                siret: trim($inputBag->get('siret')),
-                password: $inputBag->get('password'),
+                firstName: $this->getString($inputBag, "firstName"),
+                lastName: $this->getString($inputBag, "lastName"),
+                companyName: $this->getString($inputBag, 'companyName'),
+                email: $this->getString($inputBag, 'email'),
+                siret: $this->getString($inputBag,'siret'),
+                password: $this->getString($inputBag, 'password'),
                 images: $request->files->get('images', []), //-- company images
                 profileImage: $request->files->get("profileImage", null), 
                 videoPresentation: $request->files->get('videoPresentation',null),
-                description: trim($inputBag->get("description", null)),
+                description: $this->getNullableString($inputBag, "description"),
                 logo: $request->files->get("logo"),
-                verificationCode: trim( $inputBag->get("verificationCode", null)),
+                verificationCode: $this->getString( $inputBag, "verificationCode"),
                 address:  Address::create(
-                    city: trim($inputBag->get("city")),
-                    street: trim($inputBag->get("street")),
-                    postalCode: trim($inputBag->get("postalCode")),
-                    country: trim($inputBag->get("country")),
+                    city: $this->getString($inputBag, "city"),
+                    street: $this->getString($inputBag, "street"),
+                    postalCode: $this->getString($inputBag, "postalCode"),
+                    country: $this->getString($inputBag, "country"),
                 )
             );
 
@@ -211,4 +211,27 @@ class RegisterController extends AbstractController
         }
     }
 
+
+    private function getString(
+        \Symfony\Component\HttpFoundation\InputBag $input,
+        string $key
+    ): string {
+        return trim((string) $input->get($key, ''));
+    }
+
+
+    private function getNullableString(
+        \Symfony\Component\HttpFoundation\InputBag $input,
+        string $key
+    ): ?string {
+        $value = $input->get($key);
+
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+
+        return $value === '' ? null : $value;
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Domain\User;
 
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Shared\Address;
 use App\Domain\Shared\KnownIdentity;
 
@@ -17,6 +18,11 @@ interface UserRepositoryInterface
     */
     public function save(User $user): void;
 
+
+    /**
+     * Check an user existance in bdd
+     */
+    public function exists(string $userId): bool;
 
 
     /**

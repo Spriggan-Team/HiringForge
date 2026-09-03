@@ -99,9 +99,7 @@ class VerificationTokenEntity
 
     public function setCodeHash(string $code_hash):static
     {
-        if(!$this->code_hash){
-            $this->code_hash = $code_hash;
-        }
+        $this->code_hash = $code_hash;
         return $this;
     }
 

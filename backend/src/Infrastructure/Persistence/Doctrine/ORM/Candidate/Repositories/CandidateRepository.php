@@ -383,14 +383,6 @@ class CandidateRepository implements CandidateRepositoryInterface
             );
         }
 
-        ApiResponse::$logger->error("Exécution du repository");
-        ApiResponse::$logger->error(json_encode([
-            'entity_firstName' => $entity->getFirstName(),
-            'entity_lastName' => $entity->getLastName(),
-            'entity_email' => $entity->getEmail(),
-            'entity_description' => $entity->getDescription(),
-        ]));
-
         $this->em->flush();
 
         return $entity->getId();

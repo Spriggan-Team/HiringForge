@@ -98,7 +98,7 @@ class AccountEntity
 
     public function getPassword():string { return $this->password; }
 
-    public function getDescription(): string { return $this->description; }
+    public function getDescription(): ?string { return $this->description; }
 
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     

@@ -3,10 +3,10 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories;
 
 use App\Domain\Exception\ResourceCreationRejected;
+use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\User\User as DomainEntity;
 use App\Domain\Shared\KnownIdentity;
 
-use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Shared\Account\AccountRole;
 use App\Domain\User\UserLightModel;
 use App\Domain\User\UserRepositoryInterface;
@@ -26,6 +26,19 @@ class UserRepository implements UserRepositoryInterface
     public function __construct(private EntityManagerInterface $em){}
 
 
+    #[Override]
+    public function exists(string $userId): bool
+    {
+        $result = $this->em->createQueryBuilder()
+            ->select('1')
+            ->from(UserEntity::class, 'u')
+            ->where('u.id = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result !== null;
+    }
 
     #[Override]
     public function getLightModelById(string $userId): ?array

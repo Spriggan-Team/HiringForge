@@ -12,6 +12,8 @@ interface MediaStorageInterface
      * @param ?string                                $storedFileName         An array containing all the failed or skipped file 
      *                                                                                  if not provided an uniq name will be design the the file (using an algorithm...)
      * 
+     * 
+     * 
      * @param callable(MediaUploadResult): void     $successCallback
      * @param callable(MediaUploadResult): void     $errorCallback
      * 

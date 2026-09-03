@@ -60,7 +60,10 @@ class CandidateRegisterUsecase
                 AccountFlowPurpose::SIGN_UP
             );
 
-            $otp->verify($command->verificationCode, $this->hasher);
+            $isValid = $otp->verify($command->verificationCode, $this->hasher);
+            if (!$isValid) {
+                throw new OTPException(message: "Invalid verification code.", isInvalid: true);
+            }
         }
         catch (ResourceNotFoundException) {
             throw new OTPException(message: "No verification code found for this account.", isInvalid: true);

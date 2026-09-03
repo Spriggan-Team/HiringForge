@@ -5,8 +5,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Department\Repositories;
 use App\Domain\Department\Department;
 use App\Domain\Department\DepartmentRepositoryInterface;
 use App\Domain\Exception\ResourceNotFoundException;
-
-
+use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use Override;
 use App\Infrastructure\Persistence\Doctrine\ORM\Department\DepartmentEntity;
 
@@ -78,11 +77,11 @@ final class DepartmentRespository extends ServiceEntityRepository
 
 
     
-    public function save(Department $domain, bool $flush = true): void
+    public function save(Department $domain, bool $flush = true): Department
     {
         if ($domain->id() === null) {
             $company = $this->getEntityManager()->getReference(
-                DepartmentEntity::class,
+                CompanyEntity::class,
                 $domain->companyId()
             ) ?? null;
             
@@ -108,6 +107,9 @@ final class DepartmentRespository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+
+        $domain->setId($entity?->getId());
+        return $domain;
     }
 
 

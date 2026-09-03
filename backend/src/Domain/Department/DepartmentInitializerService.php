@@ -67,7 +67,7 @@ class DepartmentInitializerService
                 description: $data['description'] ?? null
             );
 
-            $this->departmentRepository->save($parentDepartment);
+            $parent = $this->departmentRepository->save($parentDepartment);
 
             if (!empty($data['children'])) {
                 foreach ($data['children'] as $childData) {
@@ -75,7 +75,7 @@ class DepartmentInitializerService
                         label: $childData['label'],
                         code: $childData['code'],
                         companyId: $company->id(),
-                        parent: $parentDepartment
+                        parent: $parent
                     );
 
                     $this->departmentRepository->save($childDepartment);

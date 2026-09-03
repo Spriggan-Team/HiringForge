@@ -37,9 +37,9 @@ class StaticMedia extends Media
         string $name,
         float $size,
         string $mime, 
+        \DateTimeImmutable $createdAt,
         ?string $originalName = null,
         ?int $id =null,
-        \DateTimeImmutable $createdAt,
     ){
         return new self(id: $id, name: $name, size: $size, mime: $mime, originalName: $originalName, createdAt: $createdAt);
     }

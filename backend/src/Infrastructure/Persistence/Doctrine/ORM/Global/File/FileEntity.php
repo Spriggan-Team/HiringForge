@@ -79,7 +79,7 @@ class FileEntity
     )]
     private AccountEntity  $accountImage;
 
-    //-------------------
+    //-------------------------
     //  Construct
     //-------------------------
 

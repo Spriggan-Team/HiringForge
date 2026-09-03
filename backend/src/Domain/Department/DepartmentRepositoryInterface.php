@@ -14,7 +14,7 @@ interface DepartmentRepositoryInterface{
 
     public function findTreeByCompany(string $companyId, bool $onlyActive = false): array;
 
-    public function save(Department $domain, bool $flush = true): void;
+    public function save(Department $domain, bool $flush = true): Department;
 
     public function remove(Department $entity, bool $flush = true): void;
 

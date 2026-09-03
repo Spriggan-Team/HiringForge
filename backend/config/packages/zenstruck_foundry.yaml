@@ -1,0 +1,16 @@
+when@dev: &dev
+    zenstruck_foundry:
+        persistence:
+            flush_once: true
+        
+        make_factory:
+            default_namespace: 'App\Tests\Support\Factory'
+
+
+    services:
+       App\Tests\Support\Factory\:
+           resource: '%kernel.project_dir%/tests/Support/Factory'
+           autowire: true
+           autoconfigure: true
+
+when@test: *dev

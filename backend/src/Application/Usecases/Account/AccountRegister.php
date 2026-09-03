@@ -6,6 +6,7 @@ class AccountRegister
 {
     public function __construct(
         public ?string $userId = null,
+        public array $failedUploads = [],
 
         /** @var string[] */
         public array $filesFailedGeneric = [],
