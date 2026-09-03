@@ -141,12 +141,12 @@ class UserRegisterUseCase
                 $timedMedia = $this->mediaFactory->createTimedMedia($command->videoPresentation);
                 $company->addVideoPresentation($timedMedia);
                 
-                $parmas = AccountStorageParams::companyVideoPresentation(
+                $params = AccountStorageParams::companyVideoPresentation(
                     companyId: $company->id(),
                 );
                 $this->storage->store(
                     file: $command->videoPresentation,
-                    params: $parmas,          
+                    params: $params,          
                     errorCallback: function($result) use (&$company, &$filesFailedGeneric) {
                         $filesFailedGeneric[] = $result->originalName;
                         $company->removeVideoPresentation();
@@ -179,7 +179,11 @@ class UserRegisterUseCase
                             $filesFailedGeneric[] = $result->originalName;
                             $onDetach($staticMedia);
                         },
-                        successCallback: function($result) use (&$successfulUploads, &$params, &$successfulUploasParams) {
+                        successCallback:  function($result) use (
+                            &$successfulUploads,
+                            $params,
+                            &$successfulUploasParams
+                        ) {
                             $successfulUploads[] = $result->storedName;
                             $successfulUploasParams[] = $params;
                         }

@@ -21,3 +21,5 @@
 /.phpunit.cache/
 ###< phpunit/phpunit ###
 *.snapshot
+
+/***/qdrant_init/**

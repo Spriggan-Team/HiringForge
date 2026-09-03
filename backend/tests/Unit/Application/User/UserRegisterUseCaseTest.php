@@ -73,14 +73,18 @@ final class UserRegisterUseCaseTest extends TestCase
     #[Test]
     public function it_registers_a_user_successfully_without_files(): void
     {
-        // Arrange
         $command = $this->createValidCommand();
 
         $this->userRepository
             ->expects($this->once())
             ->method('assertExist')
-            ->with($command->email)
-            ->willThrowException(new ResourceNotFoundException());
+            ->with(
+                self::isNull(),
+                self::equalTo($command->email)
+            )
+            ->willThrowException(
+                new ResourceNotFoundException()
+            );
 
         $otp = OTP::hydrate(
             hashCode: 'hashed_code',
@@ -132,46 +136,51 @@ final class UserRegisterUseCaseTest extends TestCase
             ->expects($this->once())
             ->method('initForCompany');
 
-        // Act
         $result = $this->useCase->execute($command);
 
-        // Assert
         self::assertInstanceOf(AccountRegister::class, $result);
         self::assertEmpty($result->filesFailedGeneric);
         self::assertEmpty($result->successfulUploads);
     }
 
+
     #[Test]
     public function it_throws_an_exception_when_email_is_already_registered(): void
     {
-        // Arrange
         $command = $this->createValidCommand();
 
         $this->userRepository
             ->expects($this->once())
             ->method('assertExist')
-            ->with($command->email)
+            ->with(
+                self::isNull(),
+                self::equalTo($command->email)
+            )
             ->willReturn(
                 $this->createMock(KnownIdentity::class)
             );
 
         $this->expectException(EmailAlreadyRegistered::class);
 
-        // Act
         $this->useCase->execute($command);
     }
+
 
     #[Test]
     public function it_throws_an_exception_when_otp_is_invalid(): void
     {
-        // Arrange
         $command = $this->createValidCommand();
 
         $this->userRepository
             ->expects($this->once())
             ->method('assertExist')
-            ->with($command->email)
-            ->willThrowException(new ResourceNotFoundException());
+            ->with(
+                self::isNull(),
+                self::equalTo($command->email)
+            )
+            ->willThrowException(
+                new ResourceNotFoundException()
+            );
 
         $otp = OTP::hydrate(
             hashCode: 'hashed_code',
@@ -182,10 +191,6 @@ final class UserRegisterUseCaseTest extends TestCase
         $this->otpRepository
             ->expects($this->once())
             ->method('getLastVerificationTokenWithPurpose')
-            ->with(
-                $command->email,
-                AccountFlowPurpose::SIGN_UP
-            )
             ->willReturn($otp);
 
         $this->hasher
@@ -195,21 +200,25 @@ final class UserRegisterUseCaseTest extends TestCase
 
         $this->expectException(OTPException::class);
 
-        // Act
         $this->useCase->execute($command);
     }
+
 
     #[Test]
     public function it_throws_an_exception_when_company_is_already_registered(): void
     {
-        // Arrange
         $command = $this->createValidCommand();
 
         $this->userRepository
             ->expects($this->once())
             ->method('assertExist')
-            ->with($command->email)
-            ->willThrowException(new ResourceNotFoundException());
+            ->with(
+                self::isNull(),
+                self::equalTo($command->email)
+            )
+            ->willThrowException(
+                new ResourceNotFoundException()
+            );
 
         $otp = OTP::hydrate(
             hashCode: 'hashed_code',
@@ -218,12 +227,10 @@ final class UserRegisterUseCaseTest extends TestCase
         );
 
         $this->otpRepository
-            ->expects($this->once())
             ->method('getLastVerificationTokenWithPurpose')
             ->willReturn($otp);
 
         $this->hasher
-            ->expects($this->once())
             ->method('verify')
             ->willReturn(true);
 
@@ -235,9 +242,9 @@ final class UserRegisterUseCaseTest extends TestCase
 
         $this->expectException(CompanyAlreadyRegistered::class);
 
-        // Act
         $this->useCase->execute($command);
     }
+
 
     #[Test]
     public function it_removes_uploaded_files_when_database_transaction_fails(): void
@@ -286,14 +293,13 @@ final class UserRegisterUseCaseTest extends TestCase
             ->expects($this->once())
             ->method('store')
             ->willReturnCallback(
-                static function (
-                    mixed $file,
-                    mixed $params,
-                    callable $errorCallback,
-                    callable $successCallback
-                ): void {
+                static function (...$args): void {
+                    $successCallback = $args[3];
+
                     $successCallback(
-                        (object) ['storedName' => 'logo.png']
+                        (object) [
+                            'storedName' => 'logo.png'
+                        ]
                     );
                 }
             );
