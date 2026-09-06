@@ -28,4 +28,11 @@ interface VectorServiceInterface
      * @return array{skill_id: string, score: float}|null
      */
     public function searchClosestSkillByVector(array $vector, float $threshold = 0.88): ?array;
+
+
+    /**
+     * Ensure a collectio exits in the vec bdd
+     * If does not then it is  created 
+     */
+    public function ensureCollectionExists(string $collection = "skills"): void;
 }

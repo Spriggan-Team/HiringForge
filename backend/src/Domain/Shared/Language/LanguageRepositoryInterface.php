@@ -12,4 +12,6 @@ interface LanguageRepositoryInterface{
      * @return array<int, Language>
     */
     public function getAll(): array;
+
+    public function findIdByCode(string $code): ?int; //the id
 }

@@ -202,4 +202,9 @@ class EmploymentOffer
         $this->scheduledEndDate = $scheduledEndDate;
         return $this;
     }
+
+    public function markAsAccepted():void
+    {
+        
+    }
 }

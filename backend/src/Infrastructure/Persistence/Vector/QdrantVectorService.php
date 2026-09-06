@@ -24,6 +24,34 @@ class QdrantVectorService implements VectorServiceInterface
     }
 
     /**
+     * Ensure a collection exists in the vec bdd
+     * If does not then it is created 
+     */
+    #[Override]
+    public function ensureCollectionExists(string $collection = "skills"): void
+    {
+        try {
+            $response = $this->httpClient->request('GET', $this->qdrantRootUrl . '/collections/' . $collection);
+            $statusCode = $response->getStatusCode();
+        }
+        catch (\Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface $e) {
+            $statusCode = $e->getResponse()->getStatusCode();
+        }
+
+        // Create collection
+        if ($statusCode === 404) {
+            $this->httpClient->request('PUT', $this->qdrantRootUrl . '/collections/' . $collection, [
+                'json' => [
+                    'vectors' => [
+                        'size' => 1024,
+                        'distance' => 'Cosine'
+                    ]
+                ]
+            ]);
+        }
+    }
+
+    /**
      * @return array{skill_id:string, score:float}|null
      */
     public function searchClosestSkill(
@@ -71,7 +99,7 @@ class QdrantVectorService implements VectorServiceInterface
             'json' => [
                 'points' => [
                     [
-                        'id' => crc32($skillId),
+                        'id' => $skillId,
                         'vector' => $vec,
                         'payload' => [
                             'skill_id' => $skillId
@@ -81,7 +109,10 @@ class QdrantVectorService implements VectorServiceInterface
             ]
         ]);
 
-        $response->getStatusCode();
+        $statusCode = $response->getStatusCode();
+        if ($statusCode !== 200) {
+            throw new \RuntimeException("Qdrant error: " . $response->getContent(false));
+        }
     }
 
     
@@ -122,6 +153,9 @@ class QdrantVectorService implements VectorServiceInterface
     }
 
 
+    //--------------------
+    //-- Utils/Helpers
+    //-------------------
     
     private function extractClosestPoint(array $data): ?array
     {
@@ -155,4 +189,7 @@ class QdrantVectorService implements VectorServiceInterface
             'score' => (float) $score,
         ];
     }
+
+
+
 }

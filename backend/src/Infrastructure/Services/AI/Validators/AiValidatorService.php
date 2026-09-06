@@ -68,12 +68,13 @@ ou
 {"is_same": false}
 PROMPT;
         try{
-            $response = $this->httpClient->request("POST", $this->ollamaRootUrl . "/generate", [
+            $response = $this->httpClient->request("POST", $this->ollamaRootUrl . "/api/generate", [
                 'json' => [
                     "model" => $this->ollamaChatModel,
                     "prompt" => $prompt,
                     "stream" => false,
                     "format" => 'json',
+                    "timeout" => 120,
                     "options" => [
                         "temperature" => 0.0
                     ]

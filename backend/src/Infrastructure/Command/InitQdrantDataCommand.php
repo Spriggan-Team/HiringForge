@@ -42,6 +42,7 @@ class InitQdrantDataCommand extends Command
         for ($i = 0; $i < $maxTries; $i++) {
             try {
                 $response = $this->httpClient->request('GET', $this->qdrantHost . '/readyz');
+
                 if ($response->getStatusCode() === 200) {
                     $ready = true;
                     break;
@@ -55,53 +56,63 @@ class InitQdrantDataCommand extends Command
         }
 
         if (!$ready) {
-            $io->error('Qrant doent respond after some sleeping time');
+            $io->error('Qrant doesn\'t respond after some sleeping time');
             return Command::FAILURE;
         }
 
         //-- Verify if collections exist
+// 1. D'abord, on s'assure que la collection existe (on la crée vide si elle n'existe pas)
         try {
             $response = $this->httpClient->request('GET', $this->qdrantHost . '/collections/' . $collectionName);
-            if ($response->getStatusCode() === 200) {
-                $io->success("Collection << '{$collectionName}' >> already exist. No requrie actions.");
-                return Command::SUCCESS;
+            if ($response->getStatusCode() !== 200) {
+                // Créer la collection vide si elle n'existe pas (adaptez la taille du vecteur selon vos besoins, ex: 384 ou 1536)
+                $this->httpClient->request('PUT', $this->qdrantHost . '/collections/' . $collectionName, [
+                    'json' => [
+                        'vectors' => [
+                            'size' => 384, // Remplacez par la dimension de vos vecteurs (ex: 768 ou 1536 selon votre modèle Ollama)
+                            'distance' => 'Cosine'
+                        ]
+                    ]
+                ]);
             }
-        }
-        catch (\Exception $e) {
-            // 404: if collections doesn't exist
+        } catch (\Exception $e) {
+            // Si la collection n'existe pas, on la crée
+            $this->httpClient->request('PUT', $this->qdrantHost . '/collections/' . $collectionName, [
+                'json' => [
+                    'vectors' => [
+                        'size' => 384,
+                        'distance' => 'Cosine'
+                    ]
+                ]
+            ]);
         }
 
-        // Restore existing snapshot
-        $snapshotPath = '/qdrant_init_data/skills_snapshot.snapshot';
-        $io->text("Restoring of skills snapshot ...");
-// Restauration du snapshot via l'API Qdrant
-        $snapshotPath = '/qdrant_init_data/skills_snapshot.snapshot'; // Assurez-vous du nom exact du fichier
+        // 2. Chemin du fichier sur le disque accessible par le conteneur PHP
+        $localPath = '/var/www/html/src/Infrastructure/docker/qdrant_init/skills_backup.snapshot';
 
-        // 1. Vérifier si le fichier existe et est lisible par le conteneur PHP
-        if (!file_exists($snapshotPath)) {
-            $io->error("Le fichier de snapshot est introuvable au chemin : " . $snapshotPath);
-            $io->text("Astuce : Vérifiez le nom du fichier et son montage dans docker-compose.yml.");
+        if (!file_exists($localPath)) {
+            $io->error("Le fichier de snapshot est introuvable : " . $localPath);
             return Command::FAILURE;
         }
 
-        $io->text("Restauration du snapshot de compétences...");
+        $io->text("Restauration du snapshot par upload direct...");
         try {
-            $response = $this->httpClient->request('POST', $this->qdrantHost . '/collections/' . $collectionName . '/snapshots/recover', [
-                'json' => [
-                    'location' => 'file://' . $snapshotPath
-                ]
+            $response = $this->httpClient->request('POST', $this->qdrantHost . '/collections/' . $collectionName . '/snapshots/upload?priority=snapshot', [
+                'body' => [
+                    'snapshot' => fopen($localPath, 'r'),
+                ],
             ]);
 
             if ($response->getStatusCode() === 200) {
                 $io->success("Snapshot restored with success !");
                 return Command::SUCCESS;
             } else {
-                $io->error("Failed to restore snapshot.");
-                return Command::FAILURE;
+                $io->warning("Le snapshot n'a pas pu être restauré (fichier potentiellement incompatible). La collection vide est prête.");
+                return Command::SUCCESS; // On renvoie SUCCESS pour ne pas bloquer le démarrage de l'app
             }
         }
         catch (\Exception $e) {
-            $io->error("Error when calling for Qdrant : " . $e->getMessage());
+            $io->error("Error when calling Qdrant : " . $e->getMessage());
             return Command::FAILURE;
         }
     }

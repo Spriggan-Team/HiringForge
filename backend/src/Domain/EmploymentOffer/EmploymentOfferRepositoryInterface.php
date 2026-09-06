@@ -7,6 +7,11 @@ use  App\Domain\Candidate\Application\JobApplicationStatus;
 interface EmploymentOfferRepositoryInterface
 {
     /**
+     * Check if a candidate has rightfully access to an employment offer
+     */
+    public function assertCandidateAccess(string $candidateId, string $employmentOfferId): void;
+
+    /**
      * Check if application has some active employment offer  
      */
     public function hasActiveOffer(string $applicationId): bool;

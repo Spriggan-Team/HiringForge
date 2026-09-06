@@ -3,10 +3,11 @@
 namespace App\Infrastructure\Services\Skills;
 
 use App\Domain\Shared\Language\LanguageRepositoryInterface;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Language\LanguageEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillEntity;
 
-
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * For Runtime Skill Batch/Cache management
@@ -19,7 +20,10 @@ class SkillBatchCache
     /** @var array<string, LanguageEntity> */
     private array $languageCache = [];
 
-    public function __construct(private readonly LanguageRepositoryInterface $languageRepository) {}
+    public function __construct(
+        private readonly LanguageRepositoryInterface $languageRepository,
+        private readonly EntityManagerInterface $entityManager    
+    ) {}
 
     /**
      * Manege language cache to avoid N+1 SELECT queries
@@ -27,11 +31,12 @@ class SkillBatchCache
     public function getLanguage(string $locale): LanguageEntity
     {
         if (!isset($this->languageCache[$locale])) {
-            $language = $this->languageRepository->findByCode($locale);
-            if (!$language) {
+            $languageId = $this->languageRepository->findIdByCode($locale);
+            if (!$languageId) {
                 throw new \RuntimeException("Language '$locale' not found.");
             }
-            $this->languageCache[$locale] = $language;
+            
+            $this->languageCache[$locale] = $this->entityManager->getReference(LanguageEntity::class, $languageId);
         }
 
         return $this->languageCache[$locale];

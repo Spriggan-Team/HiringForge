@@ -4,8 +4,9 @@ import { ApiResponseCode, HttpBadResponse, type ApiResponseCodeType } from "./ex
 
 const port = import.meta.env.VITE_API_PORT;
 const host = import.meta.env.VITE_API_HOST;
+const protocol = import.meta.env.VITE_API_PROTOCOL;
 
-const baseURL  = `http://${host}:${port}/api`;
+const baseURL  = `${protocol}://${host}:${port}/api`;
 const DEV = import.meta.env.DEV;
 
 

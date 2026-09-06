@@ -22,6 +22,10 @@ class SkillVectorMatcher
         private readonly ?AiValidatorServiceInterface $aiValidator = null
     ) {}
 
+    public function ensureColectionExist(string $collection = "skills"){
+        $this->vectorService->ensureCollectionExists($collection);
+    }
+
 
     public function generateEmbedding(string $name): ?array
     {

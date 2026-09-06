@@ -14,7 +14,7 @@ class EmbeddingProvider implements EmbeddingProviderInterface
     public function __construct(
         string $ollamaRootUrl,
         private HttpClientInterface $httpClient,
-        string $ollamaEmbedderModel = "bge-m3",
+        string $ollamaEmbedderModel = "bge-m3:567m",
     ){
         $this->ollamaEmbedderModel = $ollamaEmbedderModel;
         $this->ollamaRootUrl = $ollamaRootUrl;
@@ -25,21 +25,21 @@ class EmbeddingProvider implements EmbeddingProviderInterface
     {
         $response = $this->httpClient->request(
             'POST',
-            $this->ollamaRootUrl . '/api/embed',
+            $this->ollamaRootUrl . '/api/embeddings',
             [
                 'json' => [
                     'model' => $this->ollamaEmbedderModel,
-                    'input' => $prompt,
+                    'prompt' => $prompt,
                 ],
             ]
         );
 
         $data = $response->toArray();
 
-        if (!isset($data['embeddings'][0])) {
+        if (!isset($data['embedding'])) {
             throw new \RuntimeException('No embedding returned by Ollama.');
         }
 
-        return $data['embeddings'][0];
+        return $data['embedding'];
     }
 }

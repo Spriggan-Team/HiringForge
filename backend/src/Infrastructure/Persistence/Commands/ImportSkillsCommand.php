@@ -8,6 +8,8 @@ use App\Infrastructure\Persistence\Doctrine\ORM\Global\Skill\SkillAliasEntity;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+
+
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -35,7 +37,7 @@ class ImportSkillsCommand extends Command
         $this->addOption('source', 's', InputOption::VALUE_OPTIONAL, 'Source à importer (esco ou onet)', 'esco');
         $this->addOption(
             'vector-search',
-            'vs',
+            'x',
             InputOption::VALUE_NONE,
             'Enable vector search'
         );
@@ -65,16 +67,17 @@ class ImportSkillsCommand extends Command
         $source = $input->getOption('source');
         $enableVectorSearch = $input->getOption('vector-search');
 
+
         $config = match ($source) {
             'esco' => [
                 'paths' => [
                     __DIR__ . "/../../../data/csv/esco/skills_fr.csv",
                 ],
                 'mapping' => [
-                    'name'          => 5, // Colonne 5 : preferredLabel
-                    'altLabels'     => 6, // Colonne 6 : altLabels
-                    'external_code' => 2, // Colonne 2 : URI / Code
-                    'canonicalName' => 5, // Colonne 5 : preferredLabel
+                    'name'          => 4, // Colonne E : preferredLabel
+                    'altLabels'     => 5, // Colonne F : altLabels
+                    'external_code' => 1, // Colonne B : conceptUri (URI uniqu)
+                    'canonicalName' => 4, // Colonne E : preferredLabel
                 ],
                 'locale'    => 'fr',
                 'delimiter' => ',',
@@ -84,11 +87,11 @@ class ImportSkillsCommand extends Command
                     __DIR__ . "/../../../data/csv/onet/onet_software_skills.csv",
                 ],
                 'mapping' => [
-                    'name'          => 3,    // Colonne 3 : "Microsoft Access", "MapInfo"...
-                    'canonicalName' => 3,    // Colonne 3 :  same as name
-                    'altLabels'     => 3, // There is no dedicated altLabels column in this CSV file
-                    'external_code' => null, // ⚠️   NOT the code for Col 1! (That's the business code, not the tool.)
-                    'category'      => 5,    // Colonne 5 : "Data base user interface..."
+                    'name'          => 2,    // Colonne C : Nom du logiciel/compétence
+                    'canonicalName' => 2,    // Same as name
+                    'altLabels'     => null, 
+                    'external_code' => 0,    // Colonne A
+                    'category'      => 4,    // Colonne E : Catégory (ex: Spreadsheet software)
                 ],
                 'locale'    => 'en',
                 'delimiter' => ',',
@@ -103,16 +106,23 @@ class ImportSkillsCommand extends Command
 
         $locale = $config['locale'] ?? 'fr';
 
-        $getVal = function (array $row, ?int $excelColumn): string {
-            if ($excelColumn === null || $excelColumn < 1) {
+        $getVal = function (array $row, ?int $index): string {
+            if ($index === null || $index < 0) {
                 return '';
             }
-            $phpIndex = $excelColumn - 1;
-            return isset($row[$phpIndex]) ? trim(mb_convert_encoding($row[$phpIndex], 'UTF-8', 'UTF-8')) : '';
+            return isset($row[$index]) ? trim(mb_convert_encoding($row[$index], 'UTF-8', 'UTF-8')) : '';
         };
 
-        $totalImported = 0;
+        //---------------
+        //--- Count
+        //-----------------
+
         $batchSize = 200;
+        $totalRowsRead = 0;
+        $totalImported = 0;
+        $skippedEmpty  = 0;
+        $skippedExisting = 0;
+        $skippedDuplicate = 0;
         $failedEntityCount = 0;
 
         //--------------------------------
@@ -122,8 +132,7 @@ class ImportSkillsCommand extends Command
         $output->writeln("<info>Pre-loading database cache to prevent memory leaks...</info>");
 
         $processedAliases = [];
-        $rawAliases = $this->em->getConnection()
-            ->fetchAllAssociative('SELECT LOWER(alias) as alias FROM skill_aliases');
+        $rawAliases = $this->em->getConnection()->fetchAllAssociative('SELECT LOWER(alias) as alias FROM skill_aliases');
 
         foreach ($rawAliases as $row) {
             $processedAliases[md5($row['alias'])] = true;
@@ -134,13 +143,16 @@ class ImportSkillsCommand extends Command
         $processedCodes = [];
         $codeColumn = ($source === 'esco') ? 'esco_uri' : 'onet_code';
 
-        $rawCodes = $this->em->getConnection()
-            ->fetchAllAssociative("SELECT $codeColumn as code FROM skills WHERE $codeColumn IS NOT NULL");
+        $rawCodes = $this->em->getConnection()->fetchAllAssociative("SELECT $codeColumn as code FROM skills WHERE $codeColumn IS NOT NULL");
 
         foreach ($rawCodes as $row) {
             $processedCodes[md5($row['code'])] = true;
         }
         unset($rawCodes);
+
+
+        $processSlugsInRun = []; //-- Local cache for dealing with slug
+
 
         //--------------------------------
         // SEEDINGS
@@ -160,6 +172,11 @@ class ImportSkillsCommand extends Command
                 $skillVectors = []; // Initialize vector-array for embeddings
 
                 while (($row = @fgetcsv($handle, 4096, $config['delimiter'])) !== FALSE) {
+                    $totalRowsRead++;
+                    if ($totalRowsRead % 200 === 0) {
+                        $output->writeln("[$source] Rows processed: $totalRowsRead (Imported: $totalImported | Existing: $skippedExisting | Empty: $skippedEmpty | Duplicates: $skippedDuplicate)");
+                    }
+
                     //-- Ensure doctrine is open
                     $this->ensureEntityManagerIsOpen();
 
@@ -169,6 +186,7 @@ class ImportSkillsCommand extends Command
                     $canonicalName = $getVal($row, $config['mapping']['canonicalName'] ?? null);
 
                     if (empty($name)) {
+                        $skippedEmpty++;
                         continue;
                     }
 
@@ -181,6 +199,12 @@ class ImportSkillsCommand extends Command
                     $codeHash = !empty($externalCode) ? md5($externalCode) : null;
 
                     if ($codeHash && isset($processedCodes[$codeHash])) {
+                        $skippedExisting++;
+                        continue;
+                    }
+
+                    if(isset($processSlugsInRun[$slugHash])){ // Avoid duplicate slug
+                        $skippedDuplicate++;
                         continue;
                     }
 
@@ -200,8 +224,11 @@ class ImportSkillsCommand extends Command
                             shouldIndex: false, 
                             iaValidation: true,
                             enableVectorSearch: (bool)$enableVectorSearch,
-                            allowAutoBatchProcessing: true
+                            allowAutoBatchProcessing: true,
+                            output: $output
                         );
+
+                        $processSlugsInRun[$slugHash] = true;
 
                         if (!empty($vector)) {
                             $skillVectors[] = [
@@ -213,6 +240,9 @@ class ImportSkillsCommand extends Command
                     }
                     catch (\Exception $e) {
                         $failedEntityCount++;
+                        if ($failedEntityCount <= 5) {
+                            $output->writeln("<error>Error on row: " . $e->getMessage() . "</error>");
+                        }
                         $this->ensureEntityManagerIsOpen();
                         continue;
                     }
@@ -261,12 +291,12 @@ class ImportSkillsCommand extends Command
                     if ($i % $batchSize === 0) {
                         try {
                             $this->em->flush();
-                            $this->em->clear();
-                            
-                            $this->matcher->clearPendingBatchCache();
 
                             if ($this->vectorService) {
                                 foreach ($skillVectors as $item) {
+                                    if(empty($item['id'])){
+                                        continue;
+                                    }
                                     $this->vectorService->indexSkill(
                                         skillId: $item['id'],
                                         skillName: $item['name'],
@@ -274,8 +304,13 @@ class ImportSkillsCommand extends Command
                                     );
                                 }
                             }
+
+                            $this->em->clear();
+                            $this->matcher->clearPendingBatchCache();
                         }
                         catch (\Exception $e) {
+                            $output->writeln("<error>Batch Error: " . $e->getMessage() . "</error>");
+
                             $this->em->clear();
                             $this->matcher->clearPendingBatchCache();
                             $failedEntityCount += count($skillVectors);
@@ -284,7 +319,7 @@ class ImportSkillsCommand extends Command
 
                         $skillVectors = [];
                         gc_collect_cycles();
-                        $output->writeln("[$source] Imported: $i skills...");
+                        $output->writeln("[$source] Imported: $totalImported skills... (Skipped -> Empty: $skippedEmpty | Existing: $skippedExisting | Duplicates: $skippedDuplicate)");
                     }
                 }
 
@@ -297,19 +332,22 @@ class ImportSkillsCommand extends Command
                 try {
                     $this->ensureEntityManagerIsOpen();
                     $this->em->flush();
-                    $this->em->clear();
 
                     if ($this->vectorService) {
                         foreach ($skillVectors as $item) {
-                            $this->vectorService->indexSkill(
-                                skillId: $item['id'],
-                                skillName: $item['name'],
-                                vector: $item['vector']
-                            );
+                            if(!empty($item['id'])){
+                                $this->vectorService->indexSkill(
+                                    skillId: $item['id'],
+                                    skillName: $item['name'],
+                                    vector: $item['vector']
+                                );
+                            }
                         }
                     }
+                    $this->em->clear();
                 }
                 catch (\Exception $e) {
+                    $output->writeln("<error>Final Batch Error: " . $e->getMessage() . "</error>");
                     $this->em->clear();
                 }
 

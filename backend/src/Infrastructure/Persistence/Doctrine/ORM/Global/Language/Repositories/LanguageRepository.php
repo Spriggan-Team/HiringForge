@@ -60,4 +60,21 @@ final class LanguageRepository extends ServiceEntityRepository
         $domain = $this->mapper->toDomain($entity);
         return $domain;
     }
+
+
+    #[Override]
+    public function findIdByCode(string $code): ?int
+    {
+        try {
+            return (int) $this->createQueryBuilder('l')
+                ->select('l.id')
+                ->where('l.code = :code')
+                ->setParameter('code', $code)
+                ->getQuery()
+                ->getSingleScalarResult();
+        }
+        catch (\Doctrine\ORM\NoResultException) {
+            return null;
+        }
+    }
 }

@@ -18,7 +18,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 
 use Override;
-
+use Symfony\Component\Console\Output\OutputInterface;
 
 class SkillMatcherService  implements SkillMatcherServiceInterface
 {
@@ -29,7 +29,9 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
         private readonly SkillVectorMatcher $vectorMatcher,
         private readonly CandidateSkillRepositoryInterface $candidateSkillRepository,
         private readonly SkillRepositoryInterface $skillRepository,
-    ) {}
+    ) {
+        $this->vectorMatcher->ensureColectionExist("skills");
+    }
 
 
     #[Override]
@@ -126,7 +128,32 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
     
 
     /**
-     * Find or create skill entity
+     * Finds an existing skill or creates a new one.
+     * 
+     * The resolution process follows several sequential steps:
+     * 1. Checks the current batch cache for a pending skill.
+     * 2. Matches by exact unique codes (ESCO URI or O*NET code).
+     * 3. Matches by slug on the main name (existing translation search).
+     * 4. Matches by known aliases (synonyms).
+     * 5. Optional semantic vector search (via Qdrant / Ollama).
+     * 6. Creates a new skill entity and its translation if no match is found.
+     *
+     * @param string      $name                     The skill name (e.g., "Microsoft Access").
+     * @param string      $canonicalName            The canonical reference name for the skill.
+     * @param string      $locale                   The language code for the translation (default: "en").
+     * @param string|null $escoUri                  Optional ESCO URI for official identification.
+     * @param string|null $onetCode                 Optional O*NET code for official identification.
+     * @param string|null $skillKey                 Custom batch caching key.
+     * @param bool        $shouldFlush              Triggers an immediate database flush.
+     * @param bool        $shouldIndex              Triggers immediate vector indexing in Qdrant.
+     * @param bool        $iaValidation             Enables AI semantic validation during vector matching.
+     * @param bool        $enableVectorSearch       Enables vector search (Step 4) if no text/code match is found.
+     * @param bool        $allowAutoBatchProcessing Stores the skill in the batch cache for subsequent passes.
+     *
+     * @return array{0: SkillEntity, 1: ?array} Returns an array containing the Skill entity (existing or created) 
+     *                                          and the associated embedding vector (or null if not generated).
+     *
+     * @throws \Exception In case of a critical error during persistence or external calls.
      */
     public function findOrCreateSkill(
         string $name,
@@ -140,6 +167,7 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
         bool $iaValidation = true,
         bool $enableVectorSearch = false,
         bool $allowAutoBatchProcessing = true,
+        ?OutputInterface $output = null
     ): array {
         $language = $this->batchCache->getLanguage($locale);
         $effectiveKey = $skillKey ?? $escoUri ?? $onetCode ?? $this->normalizer->normalize($canonicalName, $locale);
@@ -182,7 +210,9 @@ class SkillMatcherService  implements SkillMatcherServiceInterface
         // STEP 4: Vector Search
         $vector = null;
         if ($enableVectorSearch) {
+            // $output->writeln("<info>Génération du vecteur pour : " . $name . "</info>");
             $vector = $this->vectorMatcher->generateEmbedding($name);
+            // $output->writeln("<comment>Vecteur généré, taille : " . count($vector) . "</comment>");
             if (!empty($vector)) {
                 $candidateSkill = $this->vectorMatcher->findMatchingConcept($name, $vector, $iaValidation);
                 if ($candidateSkill) {
