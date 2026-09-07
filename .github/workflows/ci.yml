@@ -63,7 +63,7 @@ jobs:
         env:
           DATABASE_URL: "mysql://root:root@127.0.0.1:3306/ats_recruitment?serverVersion=11.4.2-MariaDB&charset=utf8mb4"
           APP_ENV: test
-          KERNEL_CLASS: "App\\Kernel"
+
 
       - name: Run PHPUnit Unit & Integration Tests
         working-directory: backend
