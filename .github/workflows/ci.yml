@@ -26,7 +26,7 @@ jobs:
             echo "Waiting for MariaDB..."
             sleep 2
           done
-          
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -57,13 +57,15 @@ jobs:
         working-directory: backend
         run: |
           php bin/console cache:clear --env=test
+          php bin/console doctrine:database:create --env=test --if-not-exists
           php bin/console doctrine:schema:update --force --env=test
           php bin/console app:seed-languages
         env:
-          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/ats_recruitment_test?serverVersion=11.4.2-MariaDB&charset=utf8mb4"
+          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/ats_recruitment?serverVersion=11.4.2-MariaDB&charset=utf8mb4"
+          APP_ENV: test
 
       - name: Run PHPUnit Unit & Integration Tests
         working-directory: backend
         run: vendor/bin/phpunit tests/Unit tests/Integration
         env:
-          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/ats_recruitment_test?serverVersion=11.4.2-MariaDB&charset=utf8mb4"
+          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/ats_recruitment?serverVersion=11.4.2-MariaDB&charset=utf8mb4"
