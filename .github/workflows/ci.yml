@@ -1,0 +1,63 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: mariadb:11.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ats_recruitment_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping -h localhost" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.5.3
+          extensions: mbstring, xml, ctype, iconv, pdo_mysql, pdo_sqlite
+          tools: composer
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        working-directory: backend
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        working-directory: backend
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Prepare doctrine database (Test)
+        working-directory: backend
+        run: |
+          php bin/console cache:clear --env=test
+          php bin/console doctrine:database:create --env=test --if-not-exists
+          php bin/console doctrine:schema:update --force --env=test
+          php bin/console app:seed-languages
+        env:
+          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/ats_recruitment_test?serverVersion=11.4.2-MariaDB&charset=utf8mb4"
+
+      - name: Run PHPUnit Unit & Integration Tests
+        working-directory: backend
+        run: vendor/bin/phpunit tests/Unit tests/Integration
+        env:
+          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/ats_recruitment_test?serverVersion=11.4.2-MariaDB&charset=utf8mb4"
