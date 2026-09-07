@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Support\Fixtures;
+namespace App\Tests\Support\Helpers;
 
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -10,7 +10,7 @@ final class FileFixtureFactory
     public static function createFakeImage(): UploadedFile
     {
         $filePath = tempnam(sys_get_temp_dir(), 'test_img_');
-        // Génère une image PNG minimale valide de 1x1 px
+        // Create min valid image (1x1)
         file_put_contents($filePath, base64_decode('iVBORw0KGgoAAAANSU8PUAAABJRU5ErkJggg=='));
 
         return new UploadedFile(

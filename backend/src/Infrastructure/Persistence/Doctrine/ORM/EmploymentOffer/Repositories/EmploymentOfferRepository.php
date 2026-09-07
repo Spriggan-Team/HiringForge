@@ -25,6 +25,12 @@ class EmploymentOfferRepository extends ServiceEntityRepository
 
 
     #[Override]
+    public function assertCandidateAccess(string $candidateId, string $employmentOfferId): void
+    {
+        throw new \Exception('Not implemented');
+    }
+
+    #[Override]
     public function hasActiveOffer(string $applicationId): bool
     {
         $result = $this->createQueryBuilder('o')

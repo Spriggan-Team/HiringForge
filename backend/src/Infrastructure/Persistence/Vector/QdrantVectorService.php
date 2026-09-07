@@ -115,6 +115,21 @@ class QdrantVectorService implements VectorServiceInterface
         }
     }
 
+
+    public function upsretSkillBatch(array $points): void
+    {
+        $this->ensureCollectionExists("skills");
+        $response = $this->httpClient->request('PUT', "{$this->qdrantRootUrl}/collections/skills/points", [
+            'json' => [
+                'points' => $points,
+            ],
+        ]);
+
+        if ($response->getStatusCode() !== 200) {
+            throw new \RuntimeException("Qdrant error : " .$response->getContent(false));
+        }
+    }
+
     
 
     #[Override]

@@ -21,6 +21,12 @@ interface VectorServiceInterface
      */
     public function indexSkill(string $skillId, string $skillName, ?array $vector = null) : void;
 
+    /**
+     * Manage bulk insertion for skills collection
+     */
+    public function upsretSkillBatch(array $points): void;
+
+
     /** 
      * Finds the nearest skill directly from a float[] array.
      *

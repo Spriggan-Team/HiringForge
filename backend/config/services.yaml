@@ -61,6 +61,13 @@ services:
     App\Api\Controllers\:
         resource: '../src/Api/Controllers'
         tags: ['controller.service_arguments']
+    
+    #-------------------------------
+    #-- App Fixtures
+    #--------------------------------
+    App\Tests\Support\Fixtures\:
+        resource: '../tests/Support/Fixtures/'
+        tags: ['doctrine.fixture.orm']
 
     #----------------------------
     #   Domain (Composition Root/Bootstrap)
