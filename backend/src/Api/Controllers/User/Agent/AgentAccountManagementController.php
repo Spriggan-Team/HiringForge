@@ -6,7 +6,7 @@ use App\Api\Responder\ApiResponse;
 use App\Domain\Shared\Account\AccountRole;
 use App\Application\DTO\Agent\CreateAgentCommand;
 use App\Application\DTO\Auth\AuthenticatedPerson;
-use App\Application\Usecases\Agent\CreateAgentUseCase;
+use App\Application\Usecases\Agent\CreateAgentUsecase;
 use App\Application\Usecases\Agent\DeleteAgentUsecase;
 
 use App\Domain\ApplicationErrorCode;
@@ -35,7 +35,7 @@ class AgentAccountManagementController extends AbstractController{
     #[Route("/create", methods: "POST")]
     public function create(
         Request $request,
-        CreateAgentUseCase $usecase
+        CreateAgentUsecase $usecase
     ): JsonResponse{
         try{
             $data = json_decode($request->getContent(), true);

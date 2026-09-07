@@ -8,7 +8,8 @@ use App\Domain\User\UserRepositoryInterface;
 
 
 
-class DeleteAgentUsecase{
+class DeleteAgentUsecase
+{
     public function __construct(
         private AgentRepositoryInterface $agentRepository,
         private UserRepositoryInterface $userRepository

@@ -2,7 +2,7 @@
 
 namespace App\Application\Usecases\Agent;
 
-class AssignRoleUseCase
+class AssignRoleUsecase
 {
     
 }

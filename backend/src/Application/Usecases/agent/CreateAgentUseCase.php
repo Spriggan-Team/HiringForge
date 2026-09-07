@@ -21,7 +21,7 @@ use App\Domain\User\UserRepositoryInterface;
 
 
 
-class CreateAgentUseCase
+class CreateAgentUsecase
 {
     public function __construct(
         private AccountRepositoryInterface $repository,
