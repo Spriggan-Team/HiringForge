@@ -17,13 +17,16 @@ jobs:
           MYSQL_DATABASE: ats_recruitment_test
         ports:
           - 3306:3306
-        options:  >-
-          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=10
+
 
     steps:
+      - name: Wait for MariaDB
+        run: |
+          until mysqladmin ping -h 127.0.0.1 -uroot -proot --silent; do
+            echo "Waiting for MariaDB..."
+            sleep 2
+          done
+          
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -54,7 +57,6 @@ jobs:
         working-directory: backend
         run: |
           php bin/console cache:clear --env=test
-          php bin/console doctrine:database:create --env=test --if-not-exists
           php bin/console doctrine:schema:update --force --env=test
           php bin/console app:seed-languages
         env:
