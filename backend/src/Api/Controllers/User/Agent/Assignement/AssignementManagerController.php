@@ -5,9 +5,8 @@ namespace App\Api\Controllers\User\Agent\Assignement;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Agent\CreateAssignementCommand;
 use App\Application\DTO\Auth\AuthenticatedPerson;
-
-use App\Domain\Shared\Account\AccountRole;
 use App\Application\Usecases\Agent\Assignement\CreateAssignementUsecase;
+use App\Domain\Shared\Account\AccountRole;
 
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
