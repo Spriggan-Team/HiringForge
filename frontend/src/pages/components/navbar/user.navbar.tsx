@@ -1,12 +1,14 @@
 
-import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect} from "react";
+import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
 //-- Services
 import { useAppContext, useCurrentUser } from "../../../hooks/context";
 import AuthServices from "../../../api/services/auth/auth";
 import RouteScheme from "../../../route.scheme";
+import NotificationQueries from "../../../api/services/notification/queries";
+import { useAppNavigate } from "../../../hooks/navigation";
 
 //-- Custom Components
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/dropdown/menu.dropdown";
@@ -16,10 +18,11 @@ import NotificationRingSVGComponent from "/src/assets/svg/menu/alarm-alert-bell-
 
 //-- SVG Components
 // import DownArrowSVGComponent from "/src/assets/svg/menu/down-arrow-5-svgrepo-com.svg?react"
+import ProfileSVGComponent from "/src/assets/svg/person/profile-svgrepo-com.svg?react"
 
 //-- CSS Styles
 import styles from "./UserNavBar.module.css"
-import NotificationQueries from "../../../api/services/notification/queries";
+
 
 
 export interface NavBarProps{
@@ -33,8 +36,8 @@ const UserNavBar: React.FC<NavBarProps> = ({
 }) => {
     const { t } = useTranslation();
     const user = useCurrentUser();
-    const navigate = useNavigate();
-    
+    const navigate = useAppNavigate();
+
     const { 
         navbar, 
         setPopup,
@@ -84,7 +87,9 @@ const UserNavBar: React.FC<NavBarProps> = ({
 
     useEffect(()=>{
         countUnreadNotification();
-    },[])
+    },[]);
+
+    console.log({user})
 
     return (
         <div className={`${styles.container} ${className}`}>
@@ -135,7 +140,40 @@ const UserNavBar: React.FC<NavBarProps> = ({
                         </span>
                     )}
                 </div>
+                {/** Profil menu */}
+                <ProfileMenu 
+                    t={t}
+                    handleLogout={handleLogout}
+                    handleNavigation={(route)=>{
+                        navigate(route)
+                    }}
+                />
+            </div>
 
+        </div>
+    );
+}
+ 
+export default UserNavBar;
+
+
+
+/**  */
+
+interface ProfileMenuProps{
+    t: TFunction;
+    handleLogout: ()=> void;
+    handleNavigation: (route: string) => void;
+}
+
+const ProfileMenu: React.FC<ProfileMenuProps> = ({ 
+    t,
+    handleLogout,
+    handleNavigation
+}) => {
+    return (
+        <div>
+            
                 {/** User profile */}
                 <MenuDrawer>
                     {/* On laisse le Trigger gérer la flèche grâce à displayArrowDown (par défaut à true) */}
@@ -159,10 +197,18 @@ const UserNavBar: React.FC<NavBarProps> = ({
                         className={styles.profileDropdown}
                         position="initial-absolute"
                     >
+                        {/** Mon profil */}
+                        <MenuDrawerItem
+                            onClick={()=> handleNavigation(RouteScheme.userProfile)}
+                            className={`${styles.drawerItem} ${styles.myProfile}`}
+                        >
+                            <ProfileSVGComponent height={15} width={15} />
+                            <span>{t("global.menu.myProfile", "Mon profil")}</span>
+                        </MenuDrawerItem>
                         {/** Logout */}
                         <MenuDrawerItem
                             onClick={handleLogout}
-                            className={styles.logoutItem}
+                            className={`${styles.drawerItem} ${styles.logoutItem}`}
                         >
                             <svg 
                                 width="16" 
@@ -182,11 +228,6 @@ const UserNavBar: React.FC<NavBarProps> = ({
                         </MenuDrawerItem>
                     </MenuDrawerBody>
                 </MenuDrawer>
-                
-            </div>
-
         </div>
     );
 }
- 
-export default UserNavBar;

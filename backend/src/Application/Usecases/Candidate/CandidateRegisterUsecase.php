@@ -110,6 +110,7 @@ class CandidateRegisterUsecase
             $this->storage->store(
                 file: $command->image,
                 params: $params,
+                storedFileName: $staticImage->name,
                 errorCallback: function ($result) use (&$candidate, &$failedUploads) {
                     $failedUploads[] = $result->originalName;
                     $candidate->removeImage();
@@ -138,6 +139,7 @@ class CandidateRegisterUsecase
             $this->storage->store(
                 file: $command->cv,
                 params: $params,
+                storedFileName: $staticCV->name,
                 errorCallback: function ($result) use (&$candidate, &$failedUploads) {
                     $failedUploads[] = $result->originalName;
                     $candidate->removeCv();
@@ -165,7 +167,7 @@ class CandidateRegisterUsecase
                     ownerId: $mediaPayload['ownerId'],
                     purpose: $mediaPayload['mediaPurpose'],
                     ownerType: $mediaPayload['ownerType'],
-                    storedFileName: $$mediaPayload['storedFileName'],
+                    storedFileName: $mediaPayload['storedFileName'],
                     scope: MediaStorageScope::PRIVATE,
                 );
                 $this->storage->remove(

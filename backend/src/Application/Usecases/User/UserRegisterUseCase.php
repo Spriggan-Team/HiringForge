@@ -171,10 +171,10 @@ class UserRegisterUseCase
                     $staticMedia = $this->mediaFactory->createStaticMedia($file);
                     
                     $onAttach($staticMedia);
-                    $params->storedFileName = $staticMedia->name;
                     $this->storage->store(
                         file: $file,
                         params: $params,
+                        storedFileName: $staticMedia->name,
                         errorCallback: function($result) use (&$filesFailedGeneric, $onDetach, $staticMedia) {
                             $filesFailedGeneric[] = $result->originalName;
                             $onDetach($staticMedia);

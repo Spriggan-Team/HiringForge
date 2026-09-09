@@ -18,7 +18,8 @@ import { AccountRole } from "../core/enums/AccountRole";
 import { getSession } from "../core/auth.helpers";
 import { type RecruiterDashboardKpis } from "../features/dashboard/KpiData";
 
-import { COUNTDOWN_EXPIRED_STORAGE_KEY,  DraggableCountdown, type DraggableCountdownProps } from "../layout/components/draggable.contdown";
+//-- Const
+import { COUNTDOWN_EXPIRED_STORAGE_KEY,  COUNTDOWN_LABEL_STORAGE_KEY,  DraggableCountdown, type DraggableCountdownProps } from "../layout/components/draggable.contdown";
 
 
 
@@ -45,7 +46,7 @@ interface AppContextProps{
 
     //-- Countdown
     countdown: DraggableCountdownProps | null;
-    setCountdown: (param: DraggableCountdownProps | null) => void;
+    setCountdown: (param: DraggableCountdownProps | null) => void; // modify state & clear the countndow and all associated dependencies
 
     //-- Current Actor
     currentActor: CurrentActor | null;
@@ -96,6 +97,7 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
         const expiration = localStorage.getItem(COUNTDOWN_EXPIRED_STORAGE_KEY);
         return expiration ? {} : null;
     });
+
     
     // navbar
     const [navbar, setNavbar] = useState<UserAppNavBarProps | null>(null); // user navbar
@@ -129,6 +131,7 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
                         logoUrl: data.company.logoUrl ?? null,
                     },
                 });
+                
                 initialializeUserKpis();
             }
             else if(role === AccountRole.CANDIDATE){
@@ -198,6 +201,8 @@ const AppContextProvider: React.FC<AppContextProviderProps> = ({children}) => {
         setCountdownState((prev) => {
             // Close dropdown
             if (props === null) {
+                localStorage.removeItem(COUNTDOWN_EXPIRED_STORAGE_KEY);
+                localStorage.removeItem(COUNTDOWN_LABEL_STORAGE_KEY);
                 return null;
             }
             // Countdown djà actif

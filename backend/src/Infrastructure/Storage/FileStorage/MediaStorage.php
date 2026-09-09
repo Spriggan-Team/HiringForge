@@ -53,7 +53,7 @@ class MediaStorage implements MediaStorageInterface
             throw new \Exception("[MediaStorage::strore] Such a class of file is not supported yet!!");
         }
         $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($file->getPathname());
-        $path = $this->pathResolver->resolveStoragePath(
+        $path = $this->pathResolver->resolveDirectoryPath(
             mimeType: $mime, 
             params: $params,
         );
@@ -63,7 +63,7 @@ class MediaStorage implements MediaStorageInterface
         }
 
         $extension = $file->guessExtension() ?: 'bin';
-        $fileName = $storedFileName ?? (Uuid::v4()->toRfc4122() . '.' . $extension);
+        $fileName = $storedFileName ?? $params->storedFileName ?? (Uuid::v4()->toRfc4122() . '.' . $extension);
 
         $uploadResult = new MediaUploadResult(
             originalName: $file->getClientOriginalName() ?? "unknow",

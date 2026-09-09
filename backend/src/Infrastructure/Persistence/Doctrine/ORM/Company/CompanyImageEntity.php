@@ -25,6 +25,9 @@ class CompanyImageEntity
     #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $isMain = false;
+
     /**-----------------------
      * Relations
      ---------------------------*/
@@ -45,6 +48,7 @@ class CompanyImageEntity
     private CompanyEntity $company;
 
 
+
     //-------------------
     //  Constructions...
     //-------------------
@@ -59,6 +63,12 @@ class CompanyImageEntity
     //  GETTERS
     //------------------------
 
+    public function isMain(): bool
+    {
+        return $this->isMain;
+    }
+
+
 
     public function getId(): int
     {
@@ -69,5 +79,16 @@ class CompanyImageEntity
     public function getImage(): FileEntity
     {
         return $this->image;
+    }
+
+    //--------------
+    //-- SETTERS
+    //-------------
+    
+    public function setIsMain(bool $isMain): self
+    {
+        $this->isMain = $isMain;
+
+        return $this;
     }
 }

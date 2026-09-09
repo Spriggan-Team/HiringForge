@@ -142,6 +142,7 @@ export const CandidateRegisterPage: React.FC = () => {
           message: t("register.apiResponse.registering.success")
       });
 
+      setCountdown(null); //-- clear countdonw
       navigateTo(navigation, RouteScheme.login);
     }
     catch(error){

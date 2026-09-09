@@ -19,8 +19,8 @@ export interface DraggableCountdownProps {
 }
 
 
-export const COUNTDOWN_EXPIRED_STORAGE_KEY = "otp.countdown.expiresAt";
-export const COUNTDOWN_LABEL_STORAGE_KEY = "otp.countdown.label";
+export const COUNTDOWN_EXPIRED_STORAGE_KEY = "otp.countdown.expiresAt"; //-- !Important has it is used in the app context
+export const COUNTDOWN_LABEL_STORAGE_KEY = "otp.countdown.label";       //-- ! Important has it is beeing used in the app context
 
 export const DraggableCountdown: React.FC<DraggableCountdownProps> = ({
   t,

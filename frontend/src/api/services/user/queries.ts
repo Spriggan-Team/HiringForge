@@ -1,11 +1,12 @@
 
-import type {  UserContextApiResponse } from "./response";
+import type {  UserContextApiResponse, UserProfileDataResponse } from "./response";
 import type { RecruiterDashboardKpis } from "../../../features/dashboard/KpiData";
 
 import { intercept } from "../../../utils/utils";
-import { authGet, generateAuthorizationBearerHeader, get } from "../../http";
+
 import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
+import { authGet, generateAuthorizationBearerHeader, get } from "../../http";
 
 
 
@@ -32,17 +33,24 @@ const getCurrentUserContext = async ()=>{
     }
 }
 
+/**
+ * Retreive user profile related info
+ */
+const getProfileData = async ()=>{
+    const response = await authGet<UserProfileDataResponse>('/profile/view');
+    return response.data;
+}
 
 
+//-- Queries
+const Queries =  { 
+    getKPI,
+    getCurrentUserContext,
+    getProfileData
+};
 
-const UserQueriesServices = intercept<
-    {
-        getKPI: typeof getKPI,
-        getCurrentUserContext: typeof getCurrentUserContext
-    },
-   ApiResponse | ErrorApiResponse
->(
-    { getKPI, getCurrentUserContext },
+const UserQueriesServices = intercept<typeof Queries, ApiResponse | ErrorApiResponse>(
+    Queries,
     undefined,
     (method, result) => handleGenericApiResponseAfter(method, result)
 )

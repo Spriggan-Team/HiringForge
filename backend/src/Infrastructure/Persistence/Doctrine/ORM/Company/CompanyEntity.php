@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Company;
 
+use App\Infrastructure\Persistence\Doctrine\ORM\Department\DepartmentEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\Address\AddressEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
@@ -72,11 +73,20 @@ class CompanyEntity
     /** @var Collection<int, CompanyImageEntity> */
     private ?Collection $companyImages = null;
 
+    #[ORM\OneToMany(
+        targetEntity: DepartmentEntity::class,
+        mappedBy: "company",
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    private Collection $departments;
+
 
     #[ORM\OneToMany(
         mappedBy: "company",
         cascade:['persist', 'remove'],
-        targetEntity: UserEntity::class
+        targetEntity: UserEntity::class,
+        orphanRemoval: true
     )]
     /** @var Collection<int, UserEntity> */
     private Collection $recruiters;
@@ -91,6 +101,7 @@ class CompanyEntity
         $this->createdAt = new \DateTimeImmutable();
         $this->companyImages = new ArrayCollection();
         $this->companyAddresses = new ArrayCollection();
+        $this->departments = new ArrayCollection();
     }
 
     public static function create(
@@ -140,7 +151,7 @@ class CompanyEntity
     }
 
     /**
-    * @return Collection<int, CompanyImageEntity>
+    * @return <int, CompanyImageEntity>
     */
     public function getImages(){
         return $this->companyImages;
@@ -148,6 +159,14 @@ class CompanyEntity
 
     public function getCreatedAt(){
         return $this->createdAt;
+    }
+
+
+    /**
+     * @return Collection<int,DepartmentEntity>
+     */
+    public function getDepartmants(){
+        return $this->departments;
     }
 
     /**
@@ -237,6 +256,22 @@ class CompanyEntity
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+        return $this;
+    }
+
+    public function addDepartment(DepartmentEntity $department): static
+    {
+        if(!$this->departments->contains($department)){
+            $this->departments->add($department);
+        }
+        return $this;
+    }
+
+    public function removeDepartment(DepartmentEntity $department): static
+    {
+        if($this->departments->contains($department)){
+            $this->departments->removeElement($department);
+        }
         return $this;
     }
 }

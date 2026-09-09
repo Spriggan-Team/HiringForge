@@ -85,7 +85,9 @@ services:
     #--- Company
     App\Domain\Company\CompanyRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Company\Repositories\CompanyRepository
-
+    
+    App\Domain\Company\CompanyViewRepositoryInterface: 
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Company\Repositories\CompanyViewRepository
 
     #------ User ------
     App\Domain\User\UserRepositoryInterface:

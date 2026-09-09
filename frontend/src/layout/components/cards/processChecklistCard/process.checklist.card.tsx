@@ -61,8 +61,8 @@ const ProcessChecklistCard: React.FC<ProcessChecklistCardProps> = ({
 
             <ul className={styles.list}>
                 {
-                    checkList.map((text)=> (
-                        <li className={styles.checkListItem}>
+                    checkList.map((text, index)=> (
+                        <li key={index} className={styles.checkListItem}>
                             <OKCircleSVG color={primaryColor} width={25} height={25}/>
                             <span>{text}</span>
                         </li>

@@ -77,7 +77,8 @@
             "stats": "Statistiques",
             "myApplications": "Mes applications",
             "myOffers": "Mes offres",
-            "MyInterviews": "Entretiens"
+            "MyInterviews": "Entretiens",
+            "myProfile": "Mon espace"
         },
         "navbar":{},
         

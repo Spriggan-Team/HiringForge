@@ -38,6 +38,7 @@ import CandidateProfilPage from './pages/candidate/profile/candidate.profile.pag
 import CandidateContextProvider from './context/candidate.context'
 import CreateJobPage from './pages/jobs/form/create.job.page'
 import ModifyJobPage from './pages/jobs/form/modify.job.page'
+import UserProfilPage from './pages/user/profil/profil.page'
 
 
 
@@ -103,6 +104,8 @@ function App() {
                 <Route path={RouteScheme.userOffer} element={<UserOffersPage />} />
                 {/** STATS */}
                 <Route path={RouteScheme.userStats} element={<UserStatsPage />}/>
+                {/** PROFIL PAGE */}
+                <Route path={RouteScheme.userProfile} element={<UserProfilPage />} />
             </Route>
 
             {/** EXCLUSIVE CANDIDATES */}

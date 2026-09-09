@@ -21,6 +21,9 @@ const RouteScheme = {
     JobApplication: "/jobs/:id/apply",
     candidateApplications: "/candidate/applications",
 
+    //-- USER
+    userProfile: "/user/profile",
+
     //-- USER CANDIDATES
     userCandidate: "/user/candidates",
 
@@ -32,7 +35,7 @@ const RouteScheme = {
     userJobs: "/user/jobs",
     userJobView: "/user/jobs/:id",
 
-    //-- User (recruteur) & Agents
+    //-- User (recruteur &/| Agents)
     createJob: "/jobs/create",
     modifyJob: "/jobs/create/:id",
 

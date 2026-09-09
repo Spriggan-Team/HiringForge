@@ -10,6 +10,18 @@ use App\Domain\Shared\KnownIdentity;
 interface UserRepositoryInterface 
 {
     /**
+     * Retreive information about recruiter
+     * @return array{
+     *  firstName: string,
+     *  lastName: string,
+     *  description: string,
+     *  email: string,
+     *  image: string,
+     * }
+     */
+    public function getRecruiterView(string $userId): array;
+
+    /**
      * A method to save a new ressource in storage/bdd
      * @param  User $user represents the user to persist
      * @return void 

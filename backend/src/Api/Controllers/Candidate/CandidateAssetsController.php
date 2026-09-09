@@ -52,6 +52,7 @@ class CandidateAssetsController extends AbstractController
                 )->toJsonResponse();
             }
             $candidateId = $candidate->getId();
+            
 
             if(!$this->candidateRepository->exists($candidateId)){
                 return ApiResponse::error(
@@ -71,6 +72,7 @@ class CandidateAssetsController extends AbstractController
                 mimeType: $image->mime,
                 params: $params
             );
+            ApiResponse::$logger->error("LOG CANDIDATE FILE PATH: " . $fullPathFile);
                     
             /** Binary response */
             return new BinaryFileResponse(
@@ -79,8 +81,9 @@ class CandidateAssetsController extends AbstractController
         }
         catch(\Exception $error){
             return ApiResponse::error(
-                message: "Something went wrong",
-                statusCode: 400
+                message: "Something went wrong while retreiving candidate profile assets/media",
+                statusCode: 400,
+                throwable: $error
             )->toJsonResponse();
         }
     }

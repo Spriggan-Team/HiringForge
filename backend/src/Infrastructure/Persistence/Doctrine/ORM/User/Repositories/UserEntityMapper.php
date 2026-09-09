@@ -3,11 +3,13 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories;
 
+use App\Api\Responder\ApiResponse;
 use App\Domain\File\StaticMedia;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\User\User as DomainEntity;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Global\File\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
 
@@ -21,7 +23,7 @@ class UserEntityMapper
         DomainEntity $user, 
         CompanyEntity $companyProxy, 
     ): UserEntity {
-        return UserEntity::create(
+        $entity = UserEntity::create(
             id: $user->id(),
             email: $user->email(),
             firstName: $user->firstName(),
@@ -31,6 +33,16 @@ class UserEntityMapper
             company: $companyProxy,     // Reçu depuis le repository
             userRole: $user->role(),        // Reçu depuis le repository
         );
+
+        $image = null;
+        if($user->image()){
+            $img = $user->image();
+            $image =  FileEntity::create(name: $img->name, mime: $img->mime, size: $img->size, originalName: $img->originalName);
+        }
+
+        $entity->setImage($image);
+
+        return $entity;
     }
 
     /**

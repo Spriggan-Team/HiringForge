@@ -3,7 +3,8 @@
 namespace App\Domain\Company;
 
 
-interface CompanyRepositoryInterface{
+interface CompanyRepositoryInterface
+{
 
     /** 
      * Save a company if already not registered

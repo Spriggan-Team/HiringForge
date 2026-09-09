@@ -61,12 +61,12 @@ export const RECRUITER_STEPS: StepItem[] = [
 
 
 export interface AsideFormState{
-        country: string,
-        postalCode: string,
-        city: string,
-        street: string,
-        logo: File | null,
-        images:  File[],
+    country: string,
+    postalCode: string,
+    city: string,
+    street: string,
+    logo: File | null,
+    images:  File[],
 }
 
 

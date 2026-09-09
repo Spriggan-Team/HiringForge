@@ -27,13 +27,15 @@ import './variable.css'
 
 createRoot(document.getElementById('root')!).render(
 <StrictMode>
-    <AppContextProvider>
-        <AppPopup />
-        <AppSpinner />
-        <AppModal />
-        <BrowserRouter>
-            <AppRoutes />
-        </BrowserRouter>
-    </AppContextProvider>
+    <div style={{ width: "100%", height: "100%"}}>
+        <AppContextProvider>
+            <AppPopup />
+            <AppSpinner />
+            <AppModal />
+            <BrowserRouter>
+                <AppRoutes />
+            </BrowserRouter>
+        </AppContextProvider>
+    </div>
 </StrictMode>
 )

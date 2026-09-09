@@ -38,8 +38,11 @@ class DepartmentEntity implements JsonSerializable
     // --- RELATIONS ---
 
     // Scope per Entreprise / Organisation
-    #[ORM\ManyToOne(targetEntity: CompanyEntity::class)]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\ManyToOne(
+        targetEntity: CompanyEntity::class,
+        inversedBy: 'departments'    
+    )]
+    #[ORM\JoinColumn(nullable: false,)]
     private ?CompanyEntity $company = null;
 
     // hierarchy : Parent (ex: "Engineering")

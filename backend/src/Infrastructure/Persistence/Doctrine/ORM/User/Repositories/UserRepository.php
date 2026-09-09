@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories;
 
+use App\Api\Responder\ApiResponse;
 use App\Domain\Exception\ResourceCreationRejected;
 use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\User\User as DomainEntity;
@@ -24,6 +25,49 @@ use Override;
 class UserRepository implements UserRepositoryInterface
 {
     public function __construct(private EntityManagerInterface $em){}
+
+    /**
+     * Retrieve information about recruiter.
+     *
+     * @return array{
+     *     firstName: string,
+     *     lastName: string,
+     *     description: ?string,
+     *     email: string,
+     *     image: ?string
+     * }
+     */
+    #[Override]
+    public function getRecruiterView(string $userId): array
+    {
+        $result = $this->em->createQueryBuilder()
+            ->select(
+                'u.lastName AS lastName',
+                'u.firstName AS firstName',
+                'u.description AS description',
+                'u.email AS email',
+                'i.name AS image'
+            )
+            ->from(UserEntity::class, 'u')
+            ->leftJoin('u.image', 'i')
+            ->where('u.id = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($result === null) {
+            throw new \RuntimeException('Recruiter not found.');
+        }
+
+        return [
+            'firstName' => $result['firstName'],
+            'lastName' => $result['lastName'],
+            'description' => $result['description'],
+            'email' => $result['email'],
+            'image' => $result['image'],
+        ];
+    }
+
 
 
     #[Override]
@@ -84,6 +128,9 @@ class UserRepository implements UserRepositoryInterface
     public function findById(string $uuid): DomainEntity
     {
         $entity = $this->em->find(UserEntity::class, $uuid);
+        // $account = $this->em->find(AccountEntity::class, $uuid);
+        // ApiResponse::$logger->error("user Account entity: " . json_encode($account));
+        // ApiResponse::$logger->error("Account id: " . json_encode($uuid));
         if(!$entity){
             throw new ResourceNotFoundException("[USER] This id is not registered");
         }

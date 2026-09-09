@@ -6,10 +6,10 @@ use App\Api\Controllers\Helpers\ApiControllerHelpers;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Application\Query\JobOffer\Repositories\JobOfferAnalyticsRepositoryInterface;
+
 use App\Domain\Company\CompanyRepositoryInterface;
+use App\Domain\Company\CompanyViewRepositoryInterface;
 
-
-use App\Domain\File\MediaStorageInterface;
 use App\Domain\Shared\AccountStorageParams;
 use App\Domain\Shared\PathResolverInterface;
 use App\Domain\User\UserRepositoryInterface;
@@ -17,7 +17,6 @@ use App\Domain\User\UserRepositoryInterface;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 
 use Symfony\Component\HttpFoundation\Response;
@@ -43,7 +42,85 @@ class UserQueryManagement extends AbstractController
     }
 
 
-    
+    /**
+     * Retrieve profile details for the authenticated recruiter.
+     *
+     * Query:
+     *  - companyId: string
+     */
+    #[Route('/profile/view', methods: ['GET'])]
+    public function getProfileView(
+        Request $request,
+        CompanyViewRepositoryInterface $companyRepository,
+        UserRepositoryInterface $userRepository
+    ): JsonResponse {
+        try {
+            /** @var AuthenticatedPerson $user */
+            $user = $this->getUser();
+
+            $companyId = $request->query->get('companyId');
+
+            $companyData = $companyRepository->getCompanyViewById($companyId);
+            $userData = $userRepository->getRecruiterView($user->getId());
+
+            //-- Build public image uri
+                //-- Company
+            $companyImageParams = AccountStorageParams::companyImages(
+                companyId: $companyId
+            );
+
+            if ($companyData['images']['main'] !== null) {
+                $companyData['images']['main'] = $this->resolvePublicImageUrl(
+                    request: $request,
+                    params: $companyImageParams,
+                    pathResolver: $this->pathResolver,
+                    fileName: $companyData['images']['main']
+                );
+            }
+
+            $companyData['images']['others'] = array_map(
+                fn (string $fileName) => $this->resolvePublicImageUrl(
+                    request: $request,
+                    params: $companyImageParams,
+                    pathResolver: $this->pathResolver,
+                    fileName: $fileName
+                ),
+                $companyData['images']['others']
+            );
+
+                //-- User
+            if ($userData['image'] !== null) {
+                $userData['image'] = $this->resolvePublicImageUrl(
+                    request: $request,
+                    params: AccountStorageParams::recruiterProfile(
+                        companyId: $companyId 
+                    ),
+                    pathResolver: $this->pathResolver,
+                    fileName: $userData['image']
+                );
+            }
+
+
+            return ApiResponse::success(
+                data: [
+                    'company' => $companyData,
+                    'user' => $userData,
+                ]
+            )->toJsonResponse();
+        }
+        catch (\Throwable $error) {
+            return ApiResponse::error(
+                message: 'Something went wrong while retrieving profile information.',
+                throwable: $error
+            )->toJsonResponse();
+        }
+    }
+
+
+        
+    /**
+     * Get user kpis data
+     */
     #[Route("/kpi", methods: ['GET'], name: "view_kpi_metrics")]
     public function getKpi(
         JobOfferAnalyticsRepositoryInterface $jobOfferQueryRepository
@@ -79,10 +156,8 @@ class UserQueryManagement extends AbstractController
     #[Route("", methods: ['GET'])]
     public function getCurrentUserContext(
         Request $request,
-        UserRepositoryInterface $userQueryRepository,
+        UserRepositoryInterface $userRepository,
         CompanyRepositoryInterface $companyRepository,
-        MediaStorageInterface $mediaStorage,
-        #[Autowire('%kernel.project_dir%')] string $projectDir
     ): JsonResponse {
         try {
             /** @var AuthenticatedPerson|null $authenticatedUser */
@@ -99,7 +174,7 @@ class UserQueryManagement extends AbstractController
             // Retrieving the User Profile
             //----------------------------------------
 
-            $user = $userQueryRepository->findById($authenticatedUser->getId());
+            $user = $userRepository->findById($authenticatedUser->getId());
 
             if (!$user) {
                 return ApiResponse::error(
@@ -113,6 +188,7 @@ class UserQueryManagement extends AbstractController
             //--------------------------------------
 
             $avatar = null;
+            ApiResponse::$logger->error("Company has image: " . json_encode($user->image()));
             if ($user->image()) {
                 $avatar = $this->resolvePublicImageUrl(
                     request: $request,
@@ -123,6 +199,7 @@ class UserQueryManagement extends AbstractController
                     ),
                     mime: $user->image()->mime,
                 );
+                ApiResponse::$logger->error("Company user url : " . $avatar);
             }
 
             $userData = [
@@ -170,6 +247,7 @@ class UserQueryManagement extends AbstractController
                             mime: $company->logo()->mime,
                             pathResolver: $this->pathResolver
                         );
+                        ApiResponse::$logger->error("Company logo url : " . $logoURL);
                     }
 
                     $companyData = [
