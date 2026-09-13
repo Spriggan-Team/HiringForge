@@ -9,14 +9,20 @@ use App\Domain\Shared\KnownIdentity;
 
 interface UserRepositoryInterface 
 {
+
     /**
-     * Retreive information about recruiter
+     * Retrieve information about recruiter.
+     *
      * @return array{
-     *  firstName: string,
-     *  lastName: string,
-     *  description: string,
-     *  email: string,
-     *  image: string,
+     *     firstName: string,
+     *     lastName: string,
+     *     description: ?string,
+     *     email: string,
+     *     image: ?array{
+     *         id: int,
+     *         name: string,
+     *         mime: string,      
+     *     }
      * }
      */
     public function getRecruiterView(string $userId): array;

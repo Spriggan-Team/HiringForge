@@ -1,0 +1,199 @@
+.container {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    padding: 0 34px 22px;
+    box-sizing: border-box;
+}
+
+.children {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    gap: 15px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+}
+
+.children::-webkit-scrollbar {
+    display: none;
+}
+
+.slide {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+}
+
+.arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+
+    width: 28px;
+    height: 28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+
+    color: #475569;
+    background-color: #ffffff;
+
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+
+    cursor: pointer;
+
+    transform: translateY(-50%);
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        opacity 0.2s ease,
+        transform 0.2s ease;
+}
+
+.arrow:hover:not(:disabled) {
+    color: #2565f7;
+    border-color: #cbd5e1;
+    background-color: #f8fafc;
+    transform: translateY(-50%) scale(1.05);
+}
+
+.arrow:active:not(:disabled) {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.arrow:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.leftArrow {
+    left: 0;
+}
+
+.rightArrow {
+    right: 0;
+}
+
+.indicators {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    transform: translateX(-50%);
+}
+
+.indicator,
+.activeIndicator {
+    flex-shrink: 0;
+
+    height: 6px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    transition:
+        width 0.2s ease,
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.indicator {
+    width: 6px;
+    background-color: #cbd5e1;
+}
+
+.indicator:hover {
+    background-color: #94a3b8;
+    transform: scale(1.15);
+}
+
+.activeIndicator {
+    width: 18px;
+    background-color: #2565f7;
+}
+
+.arrow:focus-visible,
+.indicator:focus-visible,
+.activeIndicator:focus-visible {
+    outline: 2px solid #2565f7;
+    outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding-left: 30px;
+        padding-right: 30px;
+        padding-bottom: 20px;
+    }
+
+    .children {
+        gap: 10px;
+    }
+
+    .arrow {
+        width: 27px;
+        height: 27px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding-left: 25px;
+        padding-right: 25px;
+        padding-bottom: 18px;
+    }
+
+    .children {
+        gap: 8px;
+    }
+
+    .arrow {
+        width: 25px;
+        height: 25px;
+    }
+
+    .arrow svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .indicators {
+        gap: 5px;
+    }
+
+    .indicator {
+        width: 5px;
+        height: 5px;
+    }
+
+    .activeIndicator {
+        width: 15px;
+        height: 5px;
+    }
+}

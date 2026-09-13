@@ -6,6 +6,7 @@ use App\Domain\Department\Department;
 use App\Domain\Department\DepartmentRepositoryInterface;
 use App\Domain\Exception\ResourceNotFoundException;
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
+
 use Override;
 use App\Infrastructure\Persistence\Doctrine\ORM\Department\DepartmentEntity;
 
@@ -23,6 +24,28 @@ final class DepartmentRespository extends ServiceEntityRepository
         private DepartmentMapper $mapper
     ){
         parent::__construct($registery, DepartmentEntity::class);
+    }
+
+
+    /**
+     * Return all associated departments for a specific company based on its id
+     * 
+     * @return list<array{
+     *     id: int,
+     *     name: string,
+     *     parentId: ?int
+     * }>
+     */
+    #[Override]
+    public function findDepartmentCollectionByCompanyId(string $companyId): array
+    {
+        return $this->createQueryBuilder('d')
+            ->select('d.id, d.label AS name, p.id AS parentId')
+            ->leftJoin('d.parent', 'p') // Utiliser leftJoin si un département peut n'avoir aucun parent
+            ->where('d.company = :companyId')
+            ->setParameter('companyId', $companyId)
+            ->getQuery()
+            ->getArrayResult();
     }
 
 

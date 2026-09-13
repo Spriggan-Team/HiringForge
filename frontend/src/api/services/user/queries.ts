@@ -6,13 +6,13 @@ import { intercept } from "../../../utils/utils";
 
 import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
-import { authGet, generateAuthorizationBearerHeader, get } from "../../http";
+import { authGet, } from "../../http";
 
 
 
 const getKPI = async ()=>{
     try{
-        const kpiData = await get<ApiResponse<RecruiterDashboardKpis>>(`/users/kpi`, generateAuthorizationBearerHeader());
+        const kpiData = await authGet<ApiResponse<RecruiterDashboardKpis>>(`/users/kpi`);
         return kpiData.data;
     }
     catch(error){
@@ -36,8 +36,17 @@ const getCurrentUserContext = async ()=>{
 /**
  * Retreive user profile related info
  */
-const getProfileData = async ()=>{
-    const response = await authGet<UserProfileDataResponse>('/profile/view');
+const getProfileData = async ({
+    companyId
+}: {
+    companyId: string
+})=>{
+    const params = new URLSearchParams();
+    params.append('companyId', companyId);
+    
+    const url = `/users/profile/view?${params.toString()}`;
+    const response = await authGet<UserProfileDataResponse>(url);
+    
     return response.data;
 }
 

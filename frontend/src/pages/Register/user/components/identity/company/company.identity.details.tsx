@@ -7,15 +7,15 @@ import BasicInput from "../../../../../../layout/components/form/input/basic.inp
 import FormWrapper, { FormHint, FormInputs, FormSubmitSection, FormTitle } from "../../../../../../layout/components/form/form.wrapper";
 import VideoInput from "../../../../../../layout/components/form/input/video/video.input";
 import BrandButton from "../../../../../../layout/components/buttons/brand.button";
+import CustomTextarea from "../../../../../../layout/components/form/input/textarea/custom.textarea";
 
 
 //-- SVG Components
 import PersonSVG from '/src/assets/svg/person/person-2-svgrepo-com.svg?react';
-
+import SiretSVG from '/src/assets/svg/person/diaspora-svgrepo-com.svg?react';
 
 //-- custom styles
 import styles from "./style.module.css"
-import CustomTextarea from "../../../../../../layout/components/form/input/textarea/custom.textarea";
 
 
 
@@ -50,7 +50,7 @@ const CompanyIdentityDetail: React.FC<IdentityDetailProps> = ({
                         required
                     />
                     <BasicInput
-                        svg={PersonSVG}
+                        svg={SiretSVG}
                         inputName="siret"
                         className="faint-border"
                         placeholder={t("userRegister.form.companyInfo.inputs.siret.label")}

@@ -16,7 +16,7 @@ import RightToLeftArrowSVG from '/src/assets/svg/arrows/back-arrow-direction-dow
 //-- CSS Styles
 import styles from "./Agenda.module.css"
 import { formatMinutesIntoTime } from "../../../../../utils/format";
-import { CardPlaceholder } from "../../../../../layout/components/cards/placeholder.php/card.placeholder";
+import { CardPlaceholder } from "../../../../../layout/components/cards/placeholder/card.placeholder";
 
 
 

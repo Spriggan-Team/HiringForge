@@ -41,6 +41,13 @@ final class AccountStorageParams
         );
     }
 
+
+    /**
+     * -----------------------
+     * Company
+     * ----------------------
+     */
+
     public static function candidateProfileImage(
         string $candidateId,
         ?string $storedFileName = null,

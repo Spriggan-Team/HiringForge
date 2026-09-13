@@ -14,9 +14,13 @@ interface MediaUploaderProps {
   file: File | null;
   onFileChange: (file: File | null) => void;
   titleKey?: ParseKeys; // title of the section
+  leadingText?: string | null; // text for leading
+  
   buttonTaglineKey?: ParseKeys; // text on import button
   defaultIcon?: React.ReactNode; // display default svg if needed
+  
   extensions?:string;
+  className?: string;
   inputAttributes?: InputHTMLAttributes<HTMLInputElement>
   
 }
@@ -26,9 +30,14 @@ interface MediaUploaderProps {
 export const MediaUploader: React.FC<MediaUploaderProps> = ({
   file,
   onFileChange,
+  
   titleKey = "global.logo.text" as ParseKeys,
   buttonTaglineKey = "userRegister.form.aside.downloadAssets.logo.tagline" as ParseKeys,
+  
+  leadingText,
   defaultIcon,
+  className,
+  
   extensions= "PNG, JPG ...",
   inputAttributes
 }) => {
@@ -52,10 +61,10 @@ export const MediaUploader: React.FC<MediaUploaderProps> = ({
 
 
   return (
-    <div className={styles.downloadLogoSection}>
+    <div className={`${styles.downloadLogoSection} ${className ?? ""}`}>
       <h4 className={styles.title}>
         {t(titleKey)}{" "}
-        <span className={styles.faintTxt}>({t("global.validation.optionnal")})</span>
+        <span className={styles.faintTxt}>{leadingText ?? ` (${t("global.validation.optionnal")})`}</span>
       </h4>
 
       <div className={styles.downloadBox}>

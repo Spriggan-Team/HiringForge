@@ -18,7 +18,7 @@ import { navigateTo } from '../../../App';
 //-- Custom components 
 import RegisterationHeader from '../components/registeration.header';
 import  RegisterationSteps, { type StepItem } from '../components/registeration.steps';
-import MediaUploader from '../components/media.uploader';
+import MediaUploader from '../../components/uploader/media.uploader';
 
 
 import AccountAccess from '../components/access/account.access';

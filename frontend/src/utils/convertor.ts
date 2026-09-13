@@ -64,6 +64,10 @@ export function objectToFormData(
     return formData;
 }
 
+
+
+
+
 const mapKey = (key: string, transformMap?: Record<string, string>): string => {
     return transformMap?.[key] ?? key;
 };
@@ -86,3 +90,102 @@ export const formatLocation = (location?: {
     .filter(Boolean)
     .join(", ");
 };
+
+
+/**
+ * Recursively converts an object into a FormData instance.
+ *
+ * Nested objects are represented using bracket notation:
+ * `company.name`
+ * becomes `company[name]`.
+ *
+ * Arrays are represented using indexed bracket notation:
+ * `images[0][file]`, `images[1][file]`, etc.
+ *
+ * File and Blob instances are appended directly without serialization.
+ * FileList instances are converted into indexed file entries.
+ *
+ * Null and undefined values are ignored.
+ * Primitive values are converted to strings.
+ *
+ * @param obj The object to convert.
+ * @param form Optional existing FormData instance to append to.
+ * @param transformMap Optional map used to transform property names.
+ * @param parentKey Internal key used during recursive traversal.
+ *
+ * @returns The resulting FormData instance.
+ */
+export function objectToDeepFormData(
+    obj: Record<string, unknown>,
+    form?: FormData,
+    transformMap?: Record<string, string>,
+    parentKey?: string
+): FormData {
+    const formData = form ?? new FormData();
+
+    const appendValue = (
+        key: string,
+        value: unknown
+    ): void => {
+        if (value === null || value === undefined) {
+            return;
+        }
+
+        // Files and blobs must be appended directly.
+        if (value instanceof File || value instanceof Blob) {
+            formData.append(key, value);
+            return;
+        }
+
+        // Handle FileList.
+        if (value instanceof FileList) {
+            Array.from(value).forEach((file, index) => {
+                appendValue(`${key}[${index}]`, file);
+            });
+
+            return;
+        }
+
+        // Handle arrays.
+        if (Array.isArray(value)) {
+            value.forEach((item, index) => {
+                appendValue(`${key}[${index}]`, item);
+            });
+
+            return;
+        }
+
+        // Recursively handle nested objects.
+        if (typeof value === 'object') {
+            Object.entries(value as Record<string, unknown>).forEach(
+                ([childKey, childValue]) => {
+                    const mappedChildKey = mapKey(
+                        childKey,
+                        transformMap
+                    );
+
+                    const nestedKey = `${key}[${mappedChildKey}]`;
+                    appendValue(nestedKey, childValue);
+                }
+            );
+
+            return;
+        }
+
+        // Handle primitive values.
+        formData.append(key, String(value).trim());
+    };
+
+    Object.entries(obj).forEach(([key, value]) => {
+        const mappedKey = mapKey(key, transformMap);
+        const rootKey = parentKey
+            ? `${parentKey}[${mappedKey}]`
+            : mappedKey;
+
+        appendValue(rootKey, value);
+    });
+
+    return formData;
+}
+
+

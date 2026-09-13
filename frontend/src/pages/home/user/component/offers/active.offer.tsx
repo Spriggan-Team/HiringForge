@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { activeJobOfferData } from "../../../../../core/mock/job.data";
 import JobQueries from "../../../../../api/services/jobs/queries";
 import type { JobOfferViewLightModel } from "../../../../../features/jobs/JobOffer";
-import { CardPlaceholder } from "../../../../../layout/components/cards/placeholder.php/card.placeholder";
+import { CardPlaceholder } from "../../../../../layout/components/cards/placeholder/card.placeholder";
 import { useAppNavigate } from "../../../../../hooks/navigation";
 
 

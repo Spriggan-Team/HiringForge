@@ -13,7 +13,7 @@ import ViewAllLink from "../../../../../layout/components/link/view.all.link";
 
 //-- CSS styles
 import styles from "./RecentActionPool.module.css"
-import { CardPlaceholder } from "../../../../../layout/components/cards/placeholder.php/card.placeholder";
+import { CardPlaceholder } from "../../../../../layout/components/cards/placeholder/card.placeholder";
 
 
 interface RecentActionPoolProps{

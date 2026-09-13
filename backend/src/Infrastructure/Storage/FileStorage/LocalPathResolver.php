@@ -89,6 +89,8 @@ class LocalPathResolver implements PathResolverInterface
             default                                                => $this->appendPath($base, 'others'),
         };
 
+
+
         if ($params->ownerId) {
             $path = $this->appendPath($path, $params->ownerId);
         }
@@ -172,4 +174,33 @@ class LocalPathResolver implements PathResolverInterface
         };
     }
 
+
+    /**
+     * Return MIME type guessed by file extension.
+     */
+    public function resolveMimeType(string $fileName): string
+    {
+        $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+        return match ($extension) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'svg' => 'image/svg+xml',
+
+            'pdf' => 'application/pdf',
+
+            'mp4' => 'video/mp4',
+            'webm' => 'video/webm',
+            'mov' => 'video/quicktime',
+            'avi' => 'video/x-msvideo',
+
+            'mp3' => 'audio/mpeg',
+            'wav' => 'audio/wav',
+            'ogg' => 'audio/ogg',
+
+            default => 'application/octet-stream',
+        };
+    }
 }

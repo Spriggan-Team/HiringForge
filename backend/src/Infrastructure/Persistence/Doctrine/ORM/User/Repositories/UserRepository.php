@@ -34,7 +34,11 @@ class UserRepository implements UserRepositoryInterface
      *     lastName: string,
      *     description: ?string,
      *     email: string,
-     *     image: ?string
+     *     image: ?array{
+     *         id: int,
+     *         name: string,
+     *         mime: string,      
+     *     }
      * }
      */
     #[Override]
@@ -46,7 +50,9 @@ class UserRepository implements UserRepositoryInterface
                 'u.firstName AS firstName',
                 'u.description AS description',
                 'u.email AS email',
-                'i.name AS image'
+                'i.id AS imageId',
+                'i.name AS imageName',
+                'i.mime AS imageMime'
             )
             ->from(UserEntity::class, 'u')
             ->leftJoin('u.image', 'i')
@@ -64,7 +70,12 @@ class UserRepository implements UserRepositoryInterface
             'lastName' => $result['lastName'],
             'description' => $result['description'],
             'email' => $result['email'],
-            'image' => $result['image'],
+            
+            'image' => $result['imageId'] ? [
+                'id' => $result['imageId'],
+                'name' => $result['imageName'],
+                'mime' => $result['imageMime'],
+            ] : null,
         ];
     }
 

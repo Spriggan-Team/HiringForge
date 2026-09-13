@@ -146,7 +146,8 @@ class UserRegisterUseCase
                 );
                 $this->storage->store(
                     file: $command->videoPresentation,
-                    params: $params,          
+                    params: $params,
+                    storedFileName: $timedMedia->name,      
                     errorCallback: function($result) use (&$company, &$filesFailedGeneric) {
                         $filesFailedGeneric[] = $result->originalName;
                         $company->removeVideoPresentation();

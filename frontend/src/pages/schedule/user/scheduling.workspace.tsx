@@ -234,6 +234,11 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
         }
     },[])
 
+
+    //--------------
+    //-- Render
+    //---------------
+
     return (
         <div className={styles.container}>
             {/** CALENDAR */}

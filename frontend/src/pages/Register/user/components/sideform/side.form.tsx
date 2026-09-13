@@ -10,7 +10,7 @@ import AddSVG from "/src/assets/svg/add/add-svgrepo-com.svg?react";
 
 import styles from "./style.module.css";
 import type { ParseKeys } from "i18next";
-import MediaUploader from "../../../components/media.uploader";
+import MediaUploader from "../../../../components/uploader/media.uploader";
 import AddressFields from "../../../components/address.fields";
 
 

@@ -1,0 +1,129 @@
+.card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    min-width: 0;
+
+    padding: 12px 14px;
+    box-sizing: border-box;
+
+    gap: 12px;
+
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.card:hover {
+    border-color: #cbd5e1;
+
+    box-shadow:
+        0 4px 8px rgba(15, 23, 42, 0.06);
+
+    transform: translateY(-1px);
+}
+
+.text {
+    min-width: 0;
+
+    color: #1e293b;
+
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+
+    overflow-wrap: anywhere;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+
+    flex-shrink: 0;
+
+    gap: 4px;
+}
+
+.actionButton,
+.removeButton {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.15s ease;
+}
+
+.actionButton {
+    color: #64748b;
+    background-color: transparent;
+}
+
+.actionButton:hover {
+    color: #2565f7;
+    background-color: #eff6ff;
+}
+
+.removeButton {
+    color: #64748b;
+    background-color: transparent;
+
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.removeButton:hover {
+    color: #dc2626;
+    background-color: #fef2f2;
+}
+
+.actionButton:active,
+.removeButton:active {
+    transform: scale(0.92);
+}
+
+.actionButton:focus-visible,
+.removeButton:focus-visible {
+    outline: 2px solid #2565f7;
+    outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+    .text {
+        font-size: 0.88rem;
+    }
+
+    .actionButton,
+    .removeButton {
+        width: 28px;
+        height: 28px;
+    }
+}

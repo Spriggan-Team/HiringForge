@@ -57,20 +57,7 @@ class UserManagementController extends AbstractController
             $formData = $request->request;
             $videoFile = $request->files->get("videoPresentation");
 
-            $command = new ChangeUserProfileCommand(
-                uuid: $user->getId(),
-                name: $formData->get('name'),
-                siret: $formData->get('siret'),
-                addImages: $request->files->get('images[add]', []),
-                deleteImages: (array) $formData->get('images[delete]', []),
-                address:  Address::create(
-                    city: $formData->get("address[city]"),
-                    street: $formData->get('address[street]'),
-                    postalCode: $formData->get("address[postalCode]"),
-                    country: $formData->get("address[country]")
-                ),
-                videoPresentation: $videoFile
-            );
+            // $command = ;
 
             $failedUploads = $handler->execute($command);
 

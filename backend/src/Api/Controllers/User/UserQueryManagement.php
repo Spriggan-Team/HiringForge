@@ -65,39 +65,84 @@ class UserQueryManagement extends AbstractController
 
             //-- Build public image uri
                 //-- Company
+
+            if($companyData['logo']){
+                $companyData['logo'] = [
+                    "id" => $companyData['logo']["id"],
+                    "url" => $this->resolvePublicImageUrl(
+                        request: $request,
+                        params: AccountStorageParams::companyLogo(
+                            companyId: $companyId
+                        ),
+                        pathResolver: $this->pathResolver,
+                        fileName: $companyData['images']['main']['name'],
+                        mime: $companyData['images']['main']['mime']
+                    )
+                ];
+            }
+            
             $companyImageParams = AccountStorageParams::companyImages(
                 companyId: $companyId
             );
 
+                //-- main image
             if ($companyData['images']['main'] !== null) {
-                $companyData['images']['main'] = $this->resolvePublicImageUrl(
-                    request: $request,
-                    params: $companyImageParams,
-                    pathResolver: $this->pathResolver,
-                    fileName: $companyData['images']['main']
-                );
+                $companyData['images']['main'] = [
+                    "id" => $companyData['images']['main']['id'],
+                    "url" => $this->resolvePublicImageUrl(
+                        request: $request,
+                        params: $companyImageParams,
+                        pathResolver: $this->pathResolver,
+                        fileName: $companyData['images']['main']['name'],
+                        mime: $companyData['images']['main']['mime']
+                    )
+                ];
             }
 
+                //-- other image
             $companyData['images']['others'] = array_map(
-                fn (string $fileName) => $this->resolvePublicImageUrl(
-                    request: $request,
-                    params: $companyImageParams,
-                    pathResolver: $this->pathResolver,
-                    fileName: $fileName
-                ),
+                fn ($data) =>[ 
+                    'id' => $data['id'],
+                    "url" => $this->resolvePublicImageUrl(
+                        request: $request,
+                        params: $companyImageParams,
+                        pathResolver: $this->pathResolver,
+                        fileName: $data['name'],
+                        mime: $data['mime']
+                    )
+                ],
                 $companyData['images']['others']
             );
 
+            if($companyData['videoPresentation']){
+                $companyData['videoPresentation'] = [
+                    "id"  => $companyData['videoPresentation']["id"],
+                    "url" =>  $this->resolvePublicImageUrl(
+                        request: $request,
+                        params: AccountStorageParams::companyVideoPresentation(
+                            companyId: $companyId 
+                        ),
+                        pathResolver: $this->pathResolver,
+                        fileName: $companyData['videoPresentation']['name'],
+                        mime: $companyData['videoPresentation']['mime']
+                    )
+                ];
+            }
+
                 //-- User
             if ($userData['image'] !== null) {
-                $userData['image'] = $this->resolvePublicImageUrl(
-                    request: $request,
-                    params: AccountStorageParams::recruiterProfile(
-                        companyId: $companyId 
-                    ),
-                    pathResolver: $this->pathResolver,
-                    fileName: $userData['image']
-                );
+                $userData['image'] = [
+                    "id" =>  $userData['image']['id'],
+                    "url" => $this->resolvePublicImageUrl(
+                        request: $request,
+                        params: AccountStorageParams::recruiterProfile(
+                            companyId: $companyId 
+                        ),
+                        pathResolver: $this->pathResolver,
+                        fileName: $userData['image']['name'],
+                        mime: $userData['image']['mime']
+                    )
+                ];
             }
 
 

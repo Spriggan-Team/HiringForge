@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 //--Services
 import StatsQueries from "../../../../../api/services/stats/queries";
 import { buildLineChartDefaultParams, ViewModelFactory } from "../../../../../utils/view.model.factory";
-import { LineChartPlaceholder } from "../../../../../layout/components/cards/placeholder.php/linechart.placeholder";
+import { LineChartPlaceholder } from "../../../../../layout/components/cards/placeholder/linechart.placeholder";
 import { formatDateInputValue, getTimeframeCacheKey, parseFrenchDate, shiftDate } from "../../../../../utils/dates";
 
 //-- Custom Components

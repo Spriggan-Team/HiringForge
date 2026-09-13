@@ -103,4 +103,10 @@ interface PathResolverInterface
      * Resolve merging  path (or path compenent)
      */
     public function appendPath(string $base, string ...$segments): string;
+
+    
+    /**
+     * Return MIME type guessed by file extension.
+     */
+    public function resolveMimeType(string $fileName): string;
 }

@@ -19,4 +19,15 @@ interface DepartmentRepositoryInterface{
     public function remove(Department $entity, bool $flush = true): void;
 
     public function exists(int $id): bool;
+
+    /**
+     * Return all associated departments for a specific company based on its id
+     * 
+     * @return list<array{
+     *     id: int,
+     *     name: string,
+     *     parentId: ?int
+     * }>
+     */
+    public function findDepartmentCollectionByCompanyId(string $companyId): array; 
 }

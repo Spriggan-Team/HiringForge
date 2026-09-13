@@ -17,7 +17,7 @@ import TimeSVG from "/src/assets/svg/time/time-svgrepo-com.svg?react"
 //-- CSS Modules
 import styles from "./SchedulingAside.module.css"
 import type { Time } from "../../../features/shared/global";
-import { CardPlaceholder } from "../../../layout/components/cards/placeholder.php/card.placeholder";
+import { CardPlaceholder } from "../../../layout/components/cards/placeholder/card.placeholder";
 
 
 interface SchedulingAsideProps{
