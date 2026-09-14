@@ -123,8 +123,8 @@ function App() {
                 <Route path={RouteScheme.candidateApplications} element={<CandidateApplicationPage />} />
                 {/** MY INTERVIEWS */}
                 <Route path={RouteScheme.candidateInterviews} element={<CandidateInterviewsPage />} />
-                {/* * MY EMPLOYMENT OFFERS
-                <Route path={RouteScheme.candidateOffers} element={<CandidateOfferPage />} /> */}
+                {/* * MY EMPLOYMENT OFFERS*/}
+                <Route path={RouteScheme.candidateOffers} element={<CandidateOfferPage  />} /> 
                 {/** MY  PROFIL */}
                 <Route path={RouteScheme.candidateProfile} element={<CandidateProfilPage />} />
             </Route>

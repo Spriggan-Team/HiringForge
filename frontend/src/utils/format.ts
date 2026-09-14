@@ -22,11 +22,25 @@ return name
  */
 
 //-- Format date
-export const formatDateSafely = (dateString: string | null | undefined): string => {
-    if (!dateString) return "—";
-    const date = new Date(dateString);
-    return isNaN(date.getTime()) ? "—" : format(date, 'dd MMMM yyyy');
+export const formatDateSafely = (
+    date: string | null | undefined | { date: string }
+): string => {
+    if (!date) {
+        return "—";
+    }
+
+    const dateString =
+        typeof date === "string"
+            ? date
+            : date.date;
+
+    const parsedDate = new Date(dateString);
+
+    return isNaN(parsedDate.getTime())
+        ? "—"
+        : format(parsedDate, "dd MMMM yyyy");
 };
+
 
 /** Parse date safely */
 export const safeParsingDate = (value: unknown): Date | null => {

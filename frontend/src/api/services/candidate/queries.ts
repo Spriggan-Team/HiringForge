@@ -32,9 +32,12 @@ const getMyApplications = async ({
 })=>{
     const params = new URLSearchParams();
     
-    if(skip) params.set("skip", String(skip));
-    if(limit) params.set("skip", String(limit));
-    if(menu) params.set("skip", String(menu));
+    if(skip) 
+        params.set("skip", String(skip));
+    if(limit) 
+        params.set("limit", String(limit));
+    if(menu) 
+        params.set("menu", String(menu));
 
     const url = `/applications/candidate/my-applications?${params.toString()}`
     const response = await authGet<ApplicationsViewResponse>(url);

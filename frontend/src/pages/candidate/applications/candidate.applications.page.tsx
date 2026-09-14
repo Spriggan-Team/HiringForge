@@ -174,12 +174,14 @@ const CandidateApplicationPage: React.FC<CandidateApplicationPageProps> = () => 
     const fetchApplicationStats = useCallback(async()=>{
         try{
             const results = await CandidatesQueries.getApplicationsSats();
+            console.log("STATS", results)
             setApplicationsStats(results);
         }
         catch(error){
             console.warn("Something went wrong : ", error)
         }
     },[]);
+
 
         //-- Feth details
     const fetchApplicationDetails = useCallback(
@@ -225,33 +227,29 @@ const CandidateApplicationPage: React.FC<CandidateApplicationPageProps> = () => 
     //------------------
 
     useEffect(() => {
-        const fetchData = async () => {
-            const applications = await fetchApplicationCollection();
+        fetchApplicationStats();
+        fetchApplicationCollection();
+    }, [fetchApplicationCollection, fetchApplicationStats]);
 
-            const collections = Object.values(applications)
-            if (collections.length > 0) {
-                await fetchApplicationDetails(collections[0].id);
-            }
-            else {
-                setCurrentApplicationDetailsView(null);
-            }
-        };
 
-        fetchData();
+    //-- Init (Require Once)
+    useEffect(() => {
+        const firstId = currentApplicationCollection?.order[0];
+
+        if (!firstId) {
+            setCurrentApplicationDetailsView(null);
+            return;
+        }
+
+        fetchApplicationDetails(firstId);
     }, [
-        fetchApplicationCollection,
+        currentApplicationCollection,
         fetchApplicationDetails
     ]);
 
 
-    //-- Init (Require Once)
-    useEffect(()=>{
-        fetchApplicationStats();
-    },[fetchApplicationStats])
-
-
     return (
-        <div className={styles.container}>
+        <main className={styles.main}>
             {/** Components Header */}
             <div className={styles.headers}>
                 <Title title="Mes applications" />
@@ -299,13 +297,16 @@ const CandidateApplicationPage: React.FC<CandidateApplicationPageProps> = () => 
                 {/** CONTENT DETAILS */}
                 <div className={styles.detials}>
                     {
-                        currentApplicationViewDetails && (
+                        currentApplicationViewDetails ? (
                             <ApplicationContent details={currentApplicationViewDetails} /> 
-                        )
+                        ) :
+                        <div className={styles.placeholder}>
+                            Aucune selection
+                        </div>
                     }
                 </div>
             </div>
-        </div>
+        </main>
     );
 }
 
@@ -467,8 +468,13 @@ interface BadgeProps{
 
 
 const Badge: React.FC<BadgeProps> = ({text}) => {
+   const cleanText = text
+        .replace(/_/g, ' ')
+        .toLowerCase()
+        .replace(/^./, char => char.toUpperCase());
+
     return (
-        <div className={styles.text} >{text}</div>
+        <div className={styles.badge} >{cleanText}</div>
     );
 }
  

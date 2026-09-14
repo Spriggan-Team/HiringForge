@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 
 /**  Services */
 import { useAppContext } from "../../../../../hooks/context";
-import { type FlatOffer, EmploymentOfferStatus } from "../../../../../features/employment/offer";
+import { type FlatOffer, type RecruiterEmploymentOffer, EmploymentOfferStatus } from "../../../../../features/employment/offer";
 import EmploymentOffersQueries from "../../../../../api/services/employment/queries";
 
 //-- Custom Components
@@ -19,7 +19,6 @@ import EmploymentOffersServices from "../../../../../api/services/employment/com
 import styles from "./EmploymentOffersSection.module.css";
 import { useTranslation } from "react-i18next";
 import { formatDateSafely, getInitials } from "../../../../../utils/format";
-import type { EmploymentOfferQueryData } from "../../../../../api/services/employment/response";
 import ApplicationQueries from "../../../../../api/services/application/queries";
 
 
@@ -68,7 +67,7 @@ export default function EmploymentOffersSection({
                 setHasMore(false);
             }
 
-            const offersPromises = rawData.map(async (data: EmploymentOfferQueryData): Promise<FlatOffer> => {
+            const offersPromises = rawData.map(async (data: RecruiterEmploymentOffer): Promise<FlatOffer> => {
                 let avatarUrl: string | null = null;
                 const cache = imageURLsCache.current;
 

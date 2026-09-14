@@ -160,7 +160,7 @@ const Login = () => {
                 >
                     <LogoSVG className={styles.logo} width={113} height={113} />
                     <div className={styles.upperH}>
-                        <h1 className={styles.title}>DigitalCop ATS</h1>
+                        <h1 className={styles.title}>{t("global.appName")}</h1>
                         <p className={styles.undertxt}>
                             {mode === "ResetPassword" ? t("forgottenPassword.tagline") : t("login.tagline")}
                         </p>

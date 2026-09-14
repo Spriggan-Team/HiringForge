@@ -22,12 +22,23 @@ const apply = async ({
     fileId: string
 })=>{
     try{
-        const response = await authPost<ApiResponse<string>>(`/applications/candidates/${jobId}/apply`, { fileId });
+        const response = await authPost<ApiResponse<string>>(`/applications/candidate/${jobId}/apply`, { fileId });
         return response.data;
     }
     catch(error){
         throw error;
     }
+}
+
+
+const addView = async(jobId: string)=>{
+  try{
+    console.log("Add view")
+    await authPost(`/candidates/jobs/${jobId}/view`);
+  }
+  catch(error){
+    throw error;
+  }
 }
 
 
@@ -113,6 +124,8 @@ const updateCandidateProfileDetails = async (
 
 const Services = { 
     apply,
+    addView,
+
     uploadResume,
     removeResume,
     updateCandidateProfileDetails

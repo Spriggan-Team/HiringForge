@@ -1,11 +1,13 @@
 import { intercept } from "../../../utils/utils";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
-import { authGet } from "../../http";
+import { authGet, authPatch } from "../../http";
 import type { ApiResponseError } from "../../exceptions";
 
 import { type ApiResponse, } from "../response.types";
-import type {  EmploymentOfferQueryResponse } from "./response";
+import type {  CandidateEmploymentOfferResponse, CandidateEmploymentOffersStats, EmploymentOfferQueryResponse } from "./response";
+import type { OfferFilter } from "../../../features/employment/offer";
+
 
 
 //-- Recruiters
@@ -43,9 +45,73 @@ const getUserEmploymentOffer = async(
 }
 
 
+//----------------------
+//------- Candidate
+//-----------------------
+
+/**
+ * Retreive employment offer for candidate
+ */
+async function getCandidateEmploymentOffers({
+    skip = 0,
+    limit = 15,
+    jobTitle,
+    menu = "ALL"
+}:{
+    skip?: number;
+    limit?: number;
+    jobTitle?: string;
+    menu: "PENDING" | "ACCEPTED" | "COMPLETED" | "REJECTED" | "ALL" 
+})
+{
+    try{
+        const params = new URLSearchParams();
+        params.set("skip", String(skip));
+        params.set("limit", String(limit));
+        params.set("menu", menu);
+        if(jobTitle) params.set("jobTitle", jobTitle)
+        
+        const url = `/candidates/employment_offers${params.toString() ? `?${params.toString()}` : ''}`
+        const response = await authGet<CandidateEmploymentOfferResponse>(url);
+
+        return response.data;
+    }
+    catch(error){
+        throw error;
+    }
+} 
+
+
+/**
+ * Retreives candidates stats
+ * @returns 
+ */
+async function getCandidateEmploymentOfferStats() {
+    try{
+        const url = '/candidates/employment_offers/stats';
+        const resposne = await authGet<CandidateEmploymentOffersStats>(url);
+        return resposne.data;
+    }
+    catch(error){
+        throw error;
+    }
+}
+
+
+
+
+
+//--------------------------
+//-- Queries
+//--------------------------
+
 
 const Queries =  {
-    getUserEmploymentOffer
+    getUserEmploymentOffer,
+
+    //-- candidate
+    getCandidateEmploymentOffers,
+    getCandidateEmploymentOfferStats,
 }
 
 

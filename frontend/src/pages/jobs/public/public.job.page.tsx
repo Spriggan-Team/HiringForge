@@ -24,6 +24,7 @@ import LocationSVGComponent from "/src/assets/svg/location/location-svgrepo-com.
 
 
 import styles from "./PublicJobPage.module.css";
+import CandidateServices from "../../../api/services/candidate/command";
 
 
 const PAGINATION_LIMIT = 15;
@@ -88,11 +89,11 @@ const PublicJobPage = () => {
 
             // Auto select first item if none selected or on fresh search
             if (response.items.length > 0 && (resetSkip || !selectedJobId)) {
-            setSelectedJobId(response.items[0].id);
+                setSelectedJobId(response.items[0].id);
             }
             else if (response.items.length === 0) {
-            setSelectedJobId(null);
-            setSelectedJobDetails(null);
+                setSelectedJobId(null);
+                setSelectedJobDetails(null);
             }
         }
         catch (err) {
@@ -116,21 +117,25 @@ const PublicJobPage = () => {
         if (!selectedJobId) return;
 
         const fetchDetail = async () => {
-        setIsDetailsLoading(true);
-        try {
-            const details = await PublicJobQueries.getDetailsAboutPublicJob(selectedJobId);
-            setSelectedJobDetails(details);
-        }
-        catch (err) {
-            console.error("Error fetching job details", err);
-        }
-        finally {
-            setIsDetailsLoading(false);
-        }
+            setIsDetailsLoading(true);
+            try {
+                const details = await PublicJobQueries.getDetailsAboutPublicJob(selectedJobId);
+                setSelectedJobDetails(details);
+
+                if(currentActor && currentActor.type == "candidate"){
+                    await CandidateServices.addView(selectedJobId);
+                }
+            }
+            catch (err) {
+                console.error("Error fetching job details", err);
+            }
+            finally {
+                setIsDetailsLoading(false);
+            }
         };
 
         fetchDetail();
-    }, [selectedJobId]);
+    }, [selectedJobId, currentActor]);
 
   
     const handleApplyClick = (id: string) => {
@@ -270,7 +275,7 @@ const PublicJobPage = () => {
 
                                         {job.salary?.min && (
                                             <span className={styles.badgeSalary}>
-                                                💰 {job.salary.min} - {job.salary.max} {job.salary.currency}
+                                                💰 {job.salary?.min} - {job.salary?.max} {job.salary?.currency}
                                             </span>
                                         )}
                                     </div>
@@ -334,8 +339,12 @@ const PublicJobPage = () => {
                                 
                                 <div className={styles.jobActionArea}>
                                     <button 
-                                        onClick={()=>handleApplyClick(selectedJobDetails.id)}
+                                        onClick={()=>{
+                                            console.log(!!selectedJobDetails.id && !!appliedJobIds[selectedJobDetails.id])
+                                            handleApplyClick(selectedJobDetails.id)
+                                        }}
                                         className={getPostulateBtnClass(selectedJobDetails.id)}
+                                        disabled={selectedJobDetails.id && appliedJobIds[selectedJobDetails.id] ? true : false}
                                     >
                                         {t("jobs.buttons.applyNow", "Postuler maintenant")}
                                     </button>

@@ -1,0 +1,732 @@
+.container {
+    width: 100%;
+    min-height: 100%;
+    padding: 32px;
+    box-sizing: border-box;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+}
+
+.eyebrow {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #7b8190;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #17191f;
+}
+
+.header p {
+    margin: 8px 0 0;
+    color: #747985;
+    font-size: 15px;
+}
+
+
+/* =========================================
+   Stats
+========================================= */
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.statCard {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    border: 1px solid #e8e9ed;
+    border-radius: 14px;
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.15s ease;
+}
+
+.statCard:hover {
+    border-color: #d5d7de;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+}
+
+.statValue {
+    font-size: 27px;
+    line-height: 1;
+    font-weight: 700;
+    color: #17191f;
+}
+
+.statLabel {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #747985;
+}
+
+
+/* =========================================
+   Filters
+========================================= */
+
+.filters {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e8e9ed;
+    margin-bottom: 22px;
+}
+
+.filter,
+.filterActive {
+    border: 0;
+    border-radius: 8px;
+    padding: 9px 14px;
+    background: transparent;
+    color: #6f7480;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.filter:hover {
+    background: #f5f6f8;
+    color: #292c34;
+}
+
+.filterActive {
+    background: #2563EB;
+    color: #fff;
+}
+
+
+/* =========================================
+   Error
+========================================= */
+
+.error {
+    margin-bottom: 18px;
+    padding: 12px 14px;
+    border: 1px solid #f0cccc;
+    border-radius: 9px;
+    background: #fff5f5;
+    color: #a33a3a;
+    font-size: 14px;
+}
+
+
+/* =========================================
+   Content
+========================================= */
+
+.content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(360px, 0.8fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.listSection {
+    min-width: 0;
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.sectionHeader h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #1c1e24;
+}
+
+.sectionHeader span {
+    display: block;
+    margin-top: 3px;
+    color: #858a94;
+    font-size: 13px;
+}
+
+.loading {
+    padding: 50px 20px;
+    text-align: center;
+    color: #858a94;
+}
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    border: 1px dashed #dfe1e6;
+    border-radius: 14px;
+    text-align: center;
+}
+
+.emptyIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    color: #8b909a;
+    font-size: 25px;
+}
+
+.empty h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #30333a;
+}
+
+.empty p {
+    margin: 7px 0 0;
+    color: #858a94;
+    font-size: 14px;
+}
+
+
+/* =========================================
+   Offer cards
+========================================= */
+
+.offerList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.offerCard,
+.offerCardSelected {
+    padding: 18px;
+    border: 1px solid #e6e7eb;
+    border-radius: 13px;
+    background: #fff;
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.offerCard:hover {
+    border-color: #d4d6dc;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.offerCardSelected {
+    border-color: #30333a;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.offerTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.company {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.logo,
+.detailsLogo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 1px solid #e7e8ec;
+    border-radius: 10px;
+    background: #f5f6f8;
+}
+
+.logo {
+    width: 46px;
+    height: 46px;
+}
+
+.logo img,
+.detailsLogo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.logo span,
+.detailsLogo span {
+    font-size: 17px;
+    font-weight: 700;
+    color: #555a65;
+}
+
+.company strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #6f7480;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.company h3 {
+    margin: 0;
+    color: #1d2026;
+    font-size: 16px;
+    font-weight: 650;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.awaiting {
+    background: #fff4d9;
+    color: #966b00;
+}
+
+.accepted {
+    background: #e8f7ee;
+    color: #257447;
+}
+
+.completed {
+    background: #edf0f5;
+    color: #555b67;
+}
+
+.rejected {
+    background: #fcebec;
+    color: #a2444b;
+}
+
+.expired {
+    background: #f1f1f3;
+    color: #737780;
+}
+
+.default {
+    background: #f1f2f4;
+    color: #626771;
+}
+
+.offerMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 17px;
+    color: #626771;
+    font-size: 13px;
+}
+
+.offerMeta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.offerMeta b {
+    font-weight: 700;
+    color: #424650;
+}
+
+.expiration {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #eeeeef;
+    color: #8a6a17;
+    font-size: 12px;
+}
+
+
+/* =========================================
+   Details
+========================================= */
+
+.details {
+    position: sticky;
+    top: 20px;
+    min-height: 420px;
+    padding: 22px;
+    border: 1px solid #e5e6ea;
+    border-radius: 15px;
+    background: #fff;
+}
+
+.detailsEmpty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 420px;
+    text-align: center;
+}
+
+.detailsEmpty span {
+    font-weight: 650;
+    color: #3b3e46;
+}
+
+.detailsEmpty p {
+    margin-top: 7px;
+    color: #8a8e97;
+    font-size: 13px;
+}
+
+.detailsHeader {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.detailsLogo {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+}
+
+.detailsHeader > div:last-child > span {
+    color: #747985;
+    font-size: 13px;
+}
+
+.detailsHeader h2 {
+    margin: 3px 0 0;
+    color: #1b1d22;
+    font-size: 19px;
+    line-height: 1.3;
+}
+
+.detailsStatus {
+    margin-top: 18px;
+}
+
+.detailBlock {
+    margin-top: 24px;
+}
+
+.detailLabel {
+    display: block;
+    margin-bottom: 7px;
+    color: #7d828d;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.salary {
+    color: #202329;
+    font-size: 23px;
+}
+
+.salary small {
+    margin-left: 4px;
+    color: #7c818b;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.dateGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.dateGrid div {
+    padding: 12px;
+    border-radius: 9px;
+    background: #f7f7f8;
+}
+
+.dateGrid span {
+    display: block;
+    margin-bottom: 5px;
+    color: #7e838d;
+    font-size: 11px;
+}
+
+.dateGrid strong {
+    color: #34373e;
+    font-size: 13px;
+}
+
+.message {
+    margin: 0;
+    padding: 13px;
+    border-radius: 9px;
+    background: #f7f7f8;
+    color: #555a64;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.rejectionBox {
+    margin-top: 22px;
+    padding: 13px;
+    border-radius: 9px;
+    background: #fff5f5;
+}
+
+.rejectionBox span {
+    color: #9a454b;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.rejectionBox p {
+    margin: 5px 0 0;
+    color: #694146;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   Actions
+========================================= */
+
+.actions {
+    display: flex;
+    gap: 9px;
+    margin-top: 28px;
+}
+
+.acceptButton,
+.refuseButton {
+    min-height: 42px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s ease;
+}
+
+.acceptButton:hover,
+.refuseButton:hover {
+    transform: translateY(-1px);
+}
+
+.acceptButton:disabled,
+.refuseButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.acceptButton {
+    flex: 1;
+    background: #2563EB;
+    color: #fff;
+}
+
+.refuseButton {
+    background: #f1f1f3;
+    color: #5c6069;
+}
+
+
+/* =========================================
+   Pagination
+========================================= */
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.pagination button {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid #e2e3e7;
+    border-radius: 8px;
+    background: #fff;
+    color: #4d515a;
+    cursor: pointer;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: #f6f6f7;
+}
+
+.pagination button:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.pagination span {
+    min-width: 30px;
+    text-align: center;
+    color: #676c76;
+    font-size: 13px;
+}
+
+
+/* =========================================
+   Modal
+========================================= */
+
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(20, 22, 27, 0.42);
+}
+
+.modal {
+    width: min(460px, 100%);
+    padding: 24px;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.modal h2 {
+    margin: 0;
+    color: #1c1e23;
+    font-size: 19px;
+}
+
+.modal p {
+    margin: 10px 0 0;
+    color: #737883;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.reasonInput {
+    width: 100%;
+    margin-top: 18px;
+    padding: 12px;
+    box-sizing: border-box;
+    resize: vertical;
+    border: 1px solid #dedfe4;
+    border-radius: 9px;
+    outline: none;
+    color: #33363d;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.reasonInput:focus {
+    border-color: #9da1aa;
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 22px;
+}
+
+.modalActions > button {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 8px;
+    background: #f1f2f4;
+    color: #50545d;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
+/* =========================================
+   Responsive
+========================================= */
+
+@media (max-width: 1050px) {
+    .content {
+        grid-template-columns: 1fr;
+    }
+
+    .details {
+        position: static;
+    }
+
+    .statsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 650px) {
+    .container {
+        padding: 20px 14px;
+    }
+
+    .header h1 {
+        font-size: 24px;
+    }
+
+    .statsGrid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .filters {
+        overflow-x: auto;
+    }
+
+    .filter,
+    .filterActive {
+        white-space: nowrap;
+    }
+
+    .offerTop {
+        flex-direction: column;
+    }
+
+    .offerMeta {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .dateGrid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -9,7 +9,6 @@ import RouteScheme from "../../../route.scheme";
 import { useAppContext } from "../../../hooks/context";
 import { jobStatusStyles } from "../../../context/styles";
 import {  jobsViewData } from "../../../core/mock/job.data";
-import type { CompleteJobView } from "../../../features/jobs/JobOffer";
 import type { EntityAction } from "../../../features/shared/global";
 import JobQueries from "../../../api/services/jobs/queries";
 import UserJobContextProvider, { useUserJobContext } from "../../../context/user.job.context";
@@ -18,18 +17,18 @@ import UserJobContextProvider, { useUserJobContext } from "../../../context/user
 import Title from "../../../layout/components/text/title/title";
 import JobOverviewSection from "../components/tables/overview/job.overview.section";
 import BreadCrumbs from "../../../layout/components/navigation/auth/link/bread.crumbs";
-import SimpleButton from "../../../layout/components/buttons/simple/simple.button";
+// import SimpleButton from "../../../layout/components/buttons/simple/simple.button";
 import TopBarNavigation from "../../../layout/components/navigation/topbar/topbar.navigation";
 import InfoPill, { type InfoPillProps } from "../../../layout/components/badges/pill/info.pill";
-import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/dropdown/menu.dropdown";
+// import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/dropdown/menu.dropdown";
 import CandidatesViewSection from "../components/tables/candidates/application.table";
 import InterviewsSection from "../components/tables/interviews/interviews.section";
 import OffersSection from "../components/tables/employment/employment.offer.section";
 import { JobStatisticsSection } from "../components/tables/stats/job.statistics.sections";
 
 //-- SVG Components
-import EditSVG from "/src/assets/svg/menu/edit-2-svgrepo-com.svg?react"
-import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-svgrepo-com.svg?react"
+// import EditSVG from "/src/assets/svg/menu/edit-2-svgrepo-com.svg?react"
+// import VerticalOptionsSVGComponent from "/src/assets/svg/menu/options-vertical-svgrepo-com.svg?react"
 
 //-- CSS styles
 import styles from "./PrivateJobViewPage.module.css"
@@ -245,7 +244,7 @@ const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
                 </div>
                 
                 {/** RIGHT */}
-                <div className={styles.right}>
+                {/* <div className={styles.right}>
                     <SimpleButton>
                         <div className={styles.editBtn}>
                             <EditSVG width={15} height={15} className={styles.editsvg}/>
@@ -272,7 +271,7 @@ const PrivateJobViewContent: React.FC<UserPageSinglePageProps> = () => {
                         </MenuDrawerBody>
                     </MenuDrawer>
                     
-                </div>
+                </div> */}
             </div>
 
             {/** View Mode (Naviagtion)*/}

@@ -5,7 +5,8 @@ import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
 import type { ApiResponseError } from "../../exceptions";
 import type { ApiResponse } from "../response.types";
-import { authDel, authPost } from "../../http";
+
+import { authDel, authPatch, authPost } from "../../http";
 import type { EmploymentSavedResponse } from "./response";
 
 
@@ -14,14 +15,7 @@ import type { EmploymentSavedResponse } from "./response";
 //--- Recruiter
 //-------------------
 
-const accept = async()=>{
-    try{
 
-    }
-    catch(error){
-        throw error;
-    }
-}
 
 const create = async(employment: CreateOfferPayload)=>{
     try{
@@ -58,6 +52,7 @@ const cancelOffer = async (employmentOfferId: string)=>{
 }
 
 
+
 const deleteOffer = async (id: string)=>{
     try{
 
@@ -68,13 +63,59 @@ const deleteOffer = async (id: string)=>{
 }
 
 
+//-------------------------
+//--- Candidate
+//-------------------------
+
+/**
+ * A way for candidate to accept or reject an employment offer
+ * @param params 
+ */
+async function handleAcceptEmploymentOffer({
+    employmentId
+}:{
+    employmentId: string
+}) {
+    try{
+        const url = `/candidates/employment_offers/accept`;
+        await authPatch(url, { employmentId });
+    }
+    catch(error){
+        throw error;
+    }
+}
+
+/**
+ * handle refgusing
+ * @param param0 
+ */
+async function handleRefuseEmploymentOffer({
+    employmentId,
+    rejectionReason
+}:{
+    employmentId: string,
+    rejectionReason: string
+}) {
+    try{
+        const url = `/candidates/employment_offers/refuse`;
+        await authPatch(url, { employmentId, rejectionReason });
+    }
+    catch(error){
+        throw error;
+    }
+}
+
+
 //-- Services
 const Services = { 
     create, 
     cancelOffer ,
     deleteOffer,
-    accept
+
+    handleAcceptEmploymentOffer,
+    handleRefuseEmploymentOffer
 }
+
 
 const EmploymentOffersServices = intercept<
     typeof Services,
