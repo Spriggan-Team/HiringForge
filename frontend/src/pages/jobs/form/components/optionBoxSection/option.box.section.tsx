@@ -10,6 +10,7 @@ import { navigateTo } from "../../../../../App";
 import { jobStatusStyles } from "../../../../../context/styles";
 import LanguageQueries from "../../../../../api/services/Language/queries";
 import SkillServices from "../../../../../api/services/shared/skill.service";
+import { useUserJobContext } from "../../../../../context/user.job.context";
 
 //-- Custom components
 import Title from "../../../../../layout/components/text/title/title";
@@ -22,6 +23,7 @@ import InputLabel from "../../../../../layout/components/form/input/input.label"
 import LanguageSelectionWorkflow from "../../../../../layout/components/selectors/language/language.selection.workflow.";
 import SimpleButton from "../../../../../layout/components/buttons/simple/simple.button";
 import  { DrawerBuilder,  } from "../../../../../layout/components/menu/dropdown/menu.dropdown";
+import type { JobFormProps } from "../job.form.page";
 
 
 //-- SVG Components
@@ -30,8 +32,6 @@ import DateSVGComponent from "/src/assets/svg/catalog/date-svgrepo-com.svg?react
 
 //-- CSS Module
 import styles from "./OptionBoxSection.module.css"
-import type { JobFormProps } from "../job.form.page";
-import { useUserJobContext } from "../../../../../context/user.job.context";
 
 
 
@@ -39,7 +39,7 @@ interface OptionBoxSectionProps{
     onClose?: ()=>void;
     onComplete?: (job: JobView)=>void;
     className?: string;
-    formType: JobFormProps['formType']
+    formType: JobFormProps['formType'];
 }
 
 
@@ -114,7 +114,13 @@ const OptionBoxSection: React.FC<OptionBoxSectionProps> = ({
                         {(["published", "draft", "closed"] as const).map(status =>{
                             if(formType === "create" && status === "closed" ){
                                 return null;
-                            } 
+                            }
+
+                            // A candidate has already postulate
+                            if(formType == "modify" && status == "draft" && editingJob.cardinal.candidates > 0)
+                            { 
+                                return null;
+                            }
 
                             return (
                                 <CheckBoxInput

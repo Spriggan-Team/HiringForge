@@ -19,7 +19,8 @@ import { handleGenericApiResponseAfter } from "../../api-response-handler";
  * @returns 
  */
 const createJob = async(
-    currentJob: JobView
+    currentJob: JobView,
+    images: File[] = []
 )=>{
     try{
         const data = {
@@ -66,7 +67,11 @@ const createJob = async(
  */
 const updateJob = async (job: JobView)=>{
   try{
-    await authPut(`/job_offers/${job.id}/update`, job);
+    const body = {
+      ...job,
+      skills: job.skills.map((skill)=>skill.id) ?? []
+    }
+    await authPut(`/job_offers/${job.id}/update`, body);
   }
   catch(error){
     throw error;

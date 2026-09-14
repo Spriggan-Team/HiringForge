@@ -21,7 +21,7 @@ class ContractTypeEntity
     private ?string $country = null;
 
     //-- provided by application
-    #[ORM\Column(type: "boolean")]
+    #[ORM\Column(name: "is_default" , type: "boolean")]
     private bool $default = false;
 
     //-- organization that ave created this type

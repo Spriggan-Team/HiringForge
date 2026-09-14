@@ -27,10 +27,10 @@ import styles from "./InfoBoxSection.module.css"
 
 
 interface InfoBoxSectionProps{
-
 }
 
-const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
+const InfoBoxSection: React.FC<InfoBoxSectionProps> = ({
+}) => {
     const { t } = useTranslation();
     const currentUser = useCurrentUser();
     
@@ -38,8 +38,16 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
     const { editingJob, setEditingJob } = useUserJobContext();
 
     const [skillInput,    setSkillInput]    = useState<string>("");
-    const [searchSkills,  setSearchSkills]  = useState<{ id: string; name: string }[]>([]);
-    const [selectedSkill, setSelectedSkill] = useState<{ id: string; name: string } | null>(null);
+    const [searchSkills,  setSearchSkills]  = useState<{ 
+        id: string; 
+        name: string;
+        alias?: string
+    }[]>([]);
+    const [selectedSkill, setSelectedSkill] = useState<{ 
+        id: string; 
+        name: string;
+        alias?:string;
+    } | null>(null);
 
     const [jobContractTypes, setJobContractTypes] = useState<ContractType[]>([]);
     const [departmentList,   setDepartmentList]   = useState<Department[]>([]);
@@ -89,7 +97,8 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                 skillCacheRef.current.set(trimmed, data);
                 lastQueryRef.current = trimmed;
                 setSearchSkills(data);
-            } catch (error) {
+            }
+            catch (error) {
                 console.error("Skill search error:", error);
             }
         }, 400); // reduced from 1000ms → snappier UX
@@ -300,9 +309,9 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                         <div className={styles.inputSection}>
                             <div className={`${styles.skillDrawerWrapper} drawer`}>
                                 <MenuDrawer
-                                    onChange={(selected: { id: string; name: string }) => {
+                                    onChange={(selected: { id: string; name: string; alias?: string }) => {
                                         if (selected) {
-                                            setSkillInput(selected.name);
+                                            setSkillInput(selected.alias ?? selected.name);
                                             setSelectedSkill(selected);
                                         }
                                     }}
@@ -337,7 +346,7 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                                                     value={skill}
                                                     className={`${styles.selectItem} selectItem`}
                                                 >
-                                                    {skill.name}
+                                                    {skill.alias ?? skill.name}
                                                 </MenuDrawerItem>
                                             ))}
                                         </MenuDrawerBody>
@@ -360,7 +369,7 @@ const InfoBoxSection: React.FC<InfoBoxSectionProps> = () => {
                             {editingJob.skills.map(skill => (
                                 <JobSkill
                                     key={skill.id}
-                                    content={skill.name}
+                                    content={skill.alias ?? skill.name}
                                     onClose={() => handleRemoveSkill(skill.id)}
                                 />
                             ))}

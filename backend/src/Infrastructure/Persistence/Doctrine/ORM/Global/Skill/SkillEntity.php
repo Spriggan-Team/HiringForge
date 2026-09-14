@@ -40,7 +40,7 @@ class SkillEntity
     #[ORM\OneToMany(
         mappedBy: 'skill',
         targetEntity: SkillTranslationEntity::class,
-        cascade: ['persist'] // !!IMPORRTANT
+        cascade: ['persist'] // !!IMPORRTANT,
     )]
     /** @var Collection<int, SkillTranslationEntity> */
     private Collection $translations;

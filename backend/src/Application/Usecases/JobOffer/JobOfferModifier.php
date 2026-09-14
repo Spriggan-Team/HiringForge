@@ -2,6 +2,7 @@
 
 namespace App\Application\Usecases\JobOffer;
 
+use App\Api\Responder\ApiResponse;
 use App\Application\DTO\JobOffer\UpdateJobOfferRequest;
 use App\Domain\JobOffer\JobOfferExpertise;
 
@@ -81,7 +82,7 @@ class JobOfferModifier
         }
 
         if(!empty($command->skills)){
-            
+            $offer->changeSkillsId($command->skills ?? []);
         }
 
         // Statuts & Visibility
@@ -90,7 +91,9 @@ class JobOfferModifier
         }
 
         if ($command->publicationStatus !== null) {
+            ApiResponse::$logger->error("Publication state, current : ".$offer->publicationStatus()->value . " ; new : " . $command->publicationStatus);
             $offer->changePublicationStatus(JobPublicationStatus::from($command->publicationStatus));
+            ApiResponse::$logger->error("Publication state, current : ".$offer->publicationStatus()->value . " ; new : " . $command->publicationStatus);
         }
 
         if ($command->publicationDate !== null) {

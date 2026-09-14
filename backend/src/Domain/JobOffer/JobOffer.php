@@ -235,7 +235,7 @@ final class JobOffer
         return $this->images;
     }
 
-    /** @return array<int, Skill> */
+    /** @return array<int, string> */
     public function skillsId(): array
     {
         return $this->skillsId;
@@ -496,6 +496,7 @@ final class JobOffer
     }
     
 
+
     public function addSkill(string $skillsId): void
     {
         if ($this->isPublished()) {
@@ -530,6 +531,15 @@ final class JobOffer
         $this->touch();
     }
 
+
+    /**
+     * @param  array $skillsId
+     */
+    public function changeSkillsId(array $skillsId): static
+    {
+        $this->skillsId = $skillsId;
+        return $this;
+    }
 
 
     public function addLanguage(RequiredLanguage  $reqLanguage): void

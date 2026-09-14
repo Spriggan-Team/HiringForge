@@ -56,7 +56,7 @@ const PAGE_SIZE = 10;
 
 
 const DEFAULT_FILTERS: FilterState = {
-    publishedState: { draft: false, closed: false, published: true },
+    publishedState: { draft: true, closed: false, published: true },
     offerState: { active: true, pending: false, inactive: true },
     salary: 0,
     candidateCount: 0,

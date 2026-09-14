@@ -57,6 +57,7 @@ export interface PublicJobView {
     skills: {
         id: string;
         name: string;
+        alias?: string
     }[];
     categories: string[];
 

@@ -3,6 +3,7 @@
 
 namespace App\Api\Controllers\User\JobOffer\Mapper;
 
+use App\Api\Responder\ApiResponse;
 use App\Application\DTO\JobOffer\RequiredLanguageRequest;
 use App\Application\DTO\JobOffer\SalaryRequest;
 use App\Application\DTO\JobOffer\UpdateJobOfferRequest;

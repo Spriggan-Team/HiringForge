@@ -147,13 +147,31 @@ final class SkillRepository
 
         $translations = $transRepo->createQueryBuilder('st')
             ->select($selectedTranslationFields)
-            ->join('st.skill', 's') 
+            ->join('st.skill', 's')
             ->join('st.language', 'l')
-            ->where('(LOWER(st.name) LIKE :search OR LOWER(st.slug) LIKE :slugSearch)')
+            ->where(
+                'LOWER(st.name) LIKE :search
+                OR LOWER(st.slug) LIKE :slugSearch'
+            )
             ->andWhere('l.code = :locale')
             ->setParameter('search', $searchTerm)
             ->setParameter('slugSearch', $slugTerm)
             ->setParameter('locale', $locale)
+            ->orderBy(
+                'CASE
+                    WHEN LOWER(st.name) = :exactText THEN 0
+                    WHEN LOWER(st.name) LIKE :startsWith THEN 1
+                    WHEN LOWER(st.slug) = :exactSlug THEN 2
+                    ELSE 3
+                END',
+                'ASC'
+            )
+            ->setParameter('exactText', $text)
+            ->setParameter('startsWith', $text . '%')
+            ->setParameter(
+                'exactSlug',
+                preg_replace('/[^a-z0-9]+/', '', $text)
+            )
             ->setMaxResults($maxResults)
             ->getQuery()
             ->getArrayResult();
@@ -181,7 +199,7 @@ final class SkillRepository
             ->setParameter('search', $searchTerm)
             ->setParameter('slugSearch', $slugTerm)
             ->setParameter('locale', $locale);
-
+            
         // Exclude skills already found in the first step
         if (!empty($foundSkillIds)) {
             $aliasQuery->andWhere('s.id NOT IN (:excludedIds)')
@@ -195,6 +213,12 @@ final class SkillRepository
         return array_merge($translations, $aliases);
     }
     
+
+    /**
+     * --------------------------------------
+     * Helpers
+     * --------------------------------------
+     */
 
     /**
      * Builds the SELECT clause for SkillTranslationEntity

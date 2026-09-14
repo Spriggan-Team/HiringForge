@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\Mapper;
 
+use App\Api\Responder\ApiResponse;
 use App\Domain\File\StaticMedia;
 use App\Domain\JobOffer\JobOfferImage;
 use App\Domain\JobOffer\JobOffer as DomainEntity;
@@ -214,7 +215,39 @@ class JobOfferEntityMapper
         $doctrine->setMinSalary($offer->minSalary());
         $doctrine->setMaxSalary($offer->maxSalary());
 
-        // Relationships by Doctrine References(Proxy)
+        /**
+         * Skills 
+         * Domain: source of truth
+         */
+        $domainSkills = $offer->skillsId();
+
+        if (!empty($domainSkills)) {
+            ApiResponse::$logger->error("Job Skills " . json_encode($domainSkills));
+            $jobSkills = $doctrine->getSkills();
+
+            foreach ($jobSkills as $jobSkill) {
+                $skillId = $jobSkill->getSkill()->getId();
+
+                // Exist in doctrine but not in domain
+                if (!in_array($skillId, $domainSkills, true)) {
+                    $jobSkills->removeElement($jobSkill);
+                }
+            }
+
+            foreach ($domainSkills as $skillId) {
+                $exists = $jobSkills->exists(
+                    fn ($key, $jobSkill) =>
+                        $jobSkill->getSkill()->getId() === $skillId
+                );
+
+                if (!$exists) {
+                    $skill = $this->em->getReference(SkillEntity::class, $skillId);
+                    $jobSkills->add($skill);
+                }
+            }
+        }
+
+        // Departments
         if ($offer->departmentId()) {
             $doctrine->setDepartment(
                 $this->em->getReference(DepartmentEntity::class, $offer->departmentId())
@@ -223,14 +256,17 @@ class JobOfferEntityMapper
             $doctrine->setDepartment(null);
         }
 
+        //-- Contract type
         if ($offer->contractId()) {
             $doctrine->setContractType(
                 $this->em->getReference(ContractTypeEntity::class, $offer->contractId())
             );
-        } else {
+        }
+        else {
             $doctrine->setContractType(null);
         }
 
+        //-- Location Id
         if ($offer->locationId()) {
             $doctrine->setAddress(
                 $this->em->getReference(AddressEntity::class, $offer->locationId())

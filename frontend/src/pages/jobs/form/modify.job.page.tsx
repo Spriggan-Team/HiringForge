@@ -81,6 +81,7 @@ const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
                 const id = jobId ?? editingJob?.id;
                 const view = await JobQueries.getJobView(id);
                 
+                console.log({view});
                 setEditingJob(view);
                 console.log({view})
             }
@@ -103,7 +104,7 @@ const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
     },[editingJob])
 
     const handleUpdateJob = async (job: JobView)=>{
-        console.log("UPDATED JOB: ",job)
+        // console.log("UPDATED JOB: ",job)
         await JobServices.updateJob(job);
         return { offerId: job.id };
     }
