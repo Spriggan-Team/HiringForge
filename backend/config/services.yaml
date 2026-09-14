@@ -152,7 +152,13 @@ services:
     App\Domain\JobOffer\JobOfferImageRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\JobOfferImageRepository
 
+    App\Application\Query\JobOffer\Repositories\CandidateJobOfferRepositoryInterface:
+        alias:  App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\Queries\CandidateJobOfferRepository
+
     #-- Offers
+    App\Domain\EmploymentOffer\CandidateEmploymentOfferReaderInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer\Repositories\CandidateEmploymentOfferReader
+
     App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer\Repositories\EmploymentOfferRepository
 

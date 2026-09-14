@@ -59,16 +59,15 @@ class EmploymentOffer
         \DateTimeImmutable $createdAt,
         \DateTimeImmutable $expiredAt,
         \DateTimeImmutable $scheduledEndDate,
-        ?string $candidateId = null,
-        ?string $applicationId = null,
+        string $candidateId,
+        string $applicationId,
         ?float $salary = null,
         ?string $message = null,
         ?string $rejectionReason = null
-    ): self
-    {
+    ): self {
         $domain = new self(
-            applicationId: $applicationId,
-            candidateId: $candidateId
+            candidateId: $candidateId,
+            applicationId: $applicationId
         );
 
         $domain->id = $id;
@@ -82,8 +81,7 @@ class EmploymentOffer
 
         return $domain;
     }
-
-    
+        
     //----------------------
     //--- Getters
     //----------------------
@@ -203,8 +201,74 @@ class EmploymentOffer
         return $this;
     }
 
-    public function markAsAccepted():void
+    public function markAsAccepted(): void
     {
-        
+        $now = new \DateTimeImmutable();
+
+        if ($this->status !== EmploymentOfferStatus::SENT) {
+            throw new \DomainException(
+                sprintf(
+                    'Employment offer cannot be accepted from status "%s".',
+                    $this->status->value
+                )
+            );
+        }
+
+        if ($this->expiredAt <= $now) {
+            $this->status = EmploymentOfferStatus::EXPIRED;
+
+            throw new \DomainException(
+                'Employment offer has expired and cannot be accepted.'
+            );
+        }
+
+        if ($this->scheduledEndDate <= $now) {
+            throw new \DomainException(
+                'Employment offer cannot be accepted because its scheduled end date has passed.'
+            );
+        }
+
+        $this->status = EmploymentOfferStatus::ACCEPTED;
+        $this->rejectionReason = null;
+    }
+
+
+    public function markAsRejected(string $rejectionReason): void
+    {
+        $now = new \DateTimeImmutable();
+
+        if ($this->status !== EmploymentOfferStatus::SENT) {
+            throw new \DomainException(
+                sprintf(
+                    'Employment offer cannot be rejected from status "%s".',
+                    $this->status->value
+                )
+            );
+        }
+
+        if ($this->expiredAt <= $now) {
+            $this->status = EmploymentOfferStatus::EXPIRED;
+
+            throw new \DomainException(
+                'Employment offer has expired and cannot be rejected.'
+            );
+        }
+
+        if ($this->scheduledEndDate <= $now) {
+            throw new \DomainException(
+                'Employment offer cannot be rejected because its scheduled end date has passed.'
+            );
+        }
+
+        $rejectionReason = trim($rejectionReason);
+
+        if ($rejectionReason === '') {
+            throw new \DomainException(
+                'A rejection reason is required.'
+            );
+        }
+
+        $this->status = EmploymentOfferStatus::DECLINED;
+        $this->rejectionReason = $rejectionReason;
     }
 }

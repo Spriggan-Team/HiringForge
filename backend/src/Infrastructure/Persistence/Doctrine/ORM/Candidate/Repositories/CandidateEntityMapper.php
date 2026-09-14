@@ -21,6 +21,7 @@ class CandidateEntityMapper
         private CandidateSkillRepositoryInterface $candidateSkillRepo,
     ) {}
 
+
     public  function toDomain(
         CandidateEntity $entity,
     ): Domain
@@ -47,7 +48,7 @@ class CandidateEntityMapper
 
         foreach($candidateResumes as $cv){
             $resume = $cv->getFile();
-            $cvs =  StaticMedia::hydrate(
+            $cvs[] =  StaticMedia::hydrate(
                 id: $resume->getId(),
                 name: $resume->getName(), 
                 size: $resume->getSize(),

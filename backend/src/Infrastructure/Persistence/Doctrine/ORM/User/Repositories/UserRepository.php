@@ -2,7 +2,6 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories;
 
-use App\Api\Responder\ApiResponse;
 use App\Domain\Exception\ResourceCreationRejected;
 use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\User\User as DomainEntity;
@@ -169,12 +168,16 @@ class UserRepository implements UserRepositoryInterface
     {
         try{
             $company = $this->em->getReference(CompanyEntity::class, $user->companyId());
-            if(!$user->id()){
+            $entity = $this->em->find(
+                UserEntity::class,
+                $user->id()
+            );
+
+            if($entity === null || !$user->id()){
                 $entity = UserEntityMapper::toDoctrineEntity($user, $company);
                 $this->em->persist($entity);
             }
             else{
-                $entity = $this->em->find(UserEntity::class, $user->id());
                 UserEntityMapper::copy($user, $entity);
             }
 

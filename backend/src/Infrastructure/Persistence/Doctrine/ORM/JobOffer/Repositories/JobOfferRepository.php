@@ -6,8 +6,9 @@ use App\Domain\JobOffer\JobOffer;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
 use App\Domain\JobOffer\JobOfferVisibilityStatus;
 use App\Domain\JobOffer\JobPublicationStatus;
-
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferViewEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\Mapper\JobOfferEntityMapper;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
 
@@ -25,6 +26,36 @@ class JobOfferRepository implements JobOfferRepositoryInterface
     ){}
 
     
+    #[Override]
+    public function addView(
+        string $candidateId,
+        string $jobOfferId
+    ): void {
+        $candidate = $this->manager->getReference(
+            CandidateEntity::class,
+            $candidateId
+        );
+
+        $jobOffer = $this->manager->getReference(
+            JobOfferEntity::class,
+            $jobOfferId
+        );
+
+        if(!$candidate || !$jobOffer){ 
+            throw new \Exception("Candiate & Joboffer not found -> view cannot be created"); 
+        }
+
+        $view = JobOfferViewEntity::create(
+            candidate: $candidate,
+            jobOffer: $jobOffer
+        );
+        
+
+        $this->manager->persist($view);
+        $this->manager->flush();
+    }
+
+
     #[Override]
     public function exists(string $id): bool
     {

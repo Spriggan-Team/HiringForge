@@ -80,6 +80,7 @@ class UserRegisterUseCaseIntegrationTest extends KernelTestCase
             'L\'entreprise doit exister en BDD'
         );
     }
+    
 
     public function test_fails_and_rolls_back_if_otp_is_invalid(): void
     {

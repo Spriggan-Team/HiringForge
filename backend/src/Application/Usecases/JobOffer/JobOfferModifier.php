@@ -2,7 +2,6 @@
 
 namespace App\Application\Usecases\JobOffer;
 
-use App\Api\Responder\ApiResponse;
 use App\Application\DTO\JobOffer\UpdateJobOfferRequest;
 use App\Domain\JobOffer\JobOfferExpertise;
 

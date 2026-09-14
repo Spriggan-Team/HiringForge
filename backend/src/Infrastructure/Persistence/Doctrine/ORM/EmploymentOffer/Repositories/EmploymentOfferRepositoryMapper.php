@@ -21,7 +21,16 @@ class EmploymentOfferRepositoryMapper
     {
         return EmploymentOffer::hydrate(
             id: $entity->getId(),
-            applicationId: $entity->getApplication()?->getId(),
+
+            candidateId: $entity
+                ->getApplication()
+                ->getCandidate()
+                ->getId(),
+
+            applicationId: $entity
+                ->getApplication()
+                ->getId(),
+
             message: $entity->getMessage(),
             salary: $entity->getSalary(),
             status: $entity->getStatus(),
@@ -60,5 +69,17 @@ class EmploymentOfferRepositoryMapper
         $entity->setRejectionReason($domain->rejectionReason());
 
         return $entity;
+    }
+
+    public function copy(
+        EmploymentOffer $domain,
+        EmploymentOfferEntity $entity
+    ): void {
+        $entity->setStatus($domain->status());
+        $entity->setMessage($domain->message());
+        $entity->setSalary($domain->salary());
+        $entity->setRejectionReason($domain->rejectionReason());
+        $entity->setExpiredAt($domain->expiredAt());
+        $entity->setScheduledEndDate($domain->scheduledEndDate());
     }
 }

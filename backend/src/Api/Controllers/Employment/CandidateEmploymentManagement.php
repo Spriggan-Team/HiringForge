@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
-#[Route('/candidate')]
+#[Route('/candidates')]
 class CandidateEmploymentManagement extends AbstractController
 {
 
@@ -29,7 +29,7 @@ class CandidateEmploymentManagement extends AbstractController
     /**
      * Accept An employment offers
      * - Body : {
-     *      employementId: string
+     *      employmentId: string
      *  }
      */
     #[Route('/employment_offers/accept', methods: ['PATCH'])]
@@ -66,7 +66,8 @@ class CandidateEmploymentManagement extends AbstractController
     /**
      * Refuse An employment offers
      * - Body : {
-     *      employementId: string
+     *      employmentId: string
+     *      rejectionReason: string
      *  }
      */
     #[Route('/employment_offers/refuse', methods: ['PATCH'])]
@@ -81,7 +82,8 @@ class CandidateEmploymentManagement extends AbstractController
 
             $handler->execute(
                 candidateId: $candidate->getId(),
-                employmentOfferId: $body['employmentId']
+                employmentOfferId: $body['employmentId'],
+                rejectionReason: $body["rejectionReason"]
             );
 
             return ApiResponse::notice(

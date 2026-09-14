@@ -58,7 +58,7 @@ interface EmploymentOfferRepositoryInterface
     *          'id'?: bool,
     *          'title'?: bool
     *      }
-    * }
+    *   }
     *   $scheme Defines which fields should be returned and shapes both the query and the returned data.
     */
     public function fetchOfferProjection(?string $userId= null, ?string $companyId =null, ?string $jobId = null, array $scheme = ['id' => true], int $limit= 17, int $skip=0 ): array;
@@ -115,4 +115,22 @@ interface EmploymentOfferRepositoryInterface
      */
     public function delete(string $employmentId): void;
 
+
+    /**
+     * Assert active offer
+     */
+    public function assertNoActiveAcceptedOffer(
+        string $candidateId,
+        string $exceptEmploymentOfferId
+    ): void;
+
+
+    /**
+     * Allow user to accept an employment offer
+     */
+    public function accept(string $candidateId,  EmploymentOffer $employment): void;
+
+
+
+    public function refuse(string $candidateId,  EmploymentOffer $employment): void;
 }

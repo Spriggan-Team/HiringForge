@@ -6,6 +6,9 @@ use App\Domain\JobOffer\JobOffer;
 
 interface JobOfferRepositoryInterface
 {  
+    public function addView(string $candidateId, string $jobOfferId): void;
+
+    
     public function exists(string $id): bool;
 
     /**

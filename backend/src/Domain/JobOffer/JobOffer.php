@@ -9,7 +9,7 @@ use DateTimeImmutable;
 use DomainException;
 
 
-final class JobOffer
+class JobOffer
 {
     private string $id;
     private string $companyId;
@@ -333,6 +333,7 @@ final class JobOffer
         $this->locationId = $lacationId;
         return $this;
     }
+
 
     public function rename(string $newTitle): void
     {

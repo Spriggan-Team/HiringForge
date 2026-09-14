@@ -9,7 +9,15 @@ use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity]
-#[ORM\Table(name: "job_offer_views")]
+#[ORM\Table(
+    name: "job_offer_views",
+    uniqueConstraints: [
+        new ORM\UniqueConstraint(
+            name: "unique_candidate_job_offer_view",
+            columns: ["candidate_id", "job_offer_id"]
+        )
+    ]
+)]
 class JobOfferViewEntity
 {
     #[ORM\Id]
@@ -38,6 +46,17 @@ class JobOfferViewEntity
         $this->candidate = $candidate;
         $this->jobOffer = $jobOffer;
         $this->viewedAt = new \DateTimeImmutable();
+    }
+
+    public static function create(
+        CandidateEntity $candidate,
+        JobOfferEntity $jobOffer
+    ){
+        $self = new self(
+            candidate: $candidate,
+            jobOffer: $jobOffer
+        );
+        return $self;
     }
 
 

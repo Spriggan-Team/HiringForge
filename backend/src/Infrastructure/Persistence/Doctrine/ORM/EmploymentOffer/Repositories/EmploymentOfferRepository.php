@@ -2,9 +2,13 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer\Repositories;
 
+use App\Domain\Candidate\Application\JobApplicationStatus;
+use App\Domain\Candidate\CandidateStatus;
 use App\Domain\EmploymentOffer\EmploymentOffer as DomainEmploymentOffer;
 use App\Domain\EmploymentOffer\EmploymentOfferRepositoryInterface;
 use App\Domain\EmploymentOffer\EmploymentOfferStatus;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
+use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\CandidateEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\EmploymentOffer\EmploymentOfferEntity;
 
 use Doctrine\Persistence\ManagerRegistry;
@@ -25,10 +29,156 @@ class EmploymentOfferRepository extends ServiceEntityRepository
 
 
     #[Override]
-    public function assertCandidateAccess(string $candidateId, string $employmentOfferId): void
-    {
-        throw new \Exception('Not implemented');
+    public function refuse(
+        string $candidateId,
+        DomainEmploymentOffer $employment
+    ): void {
+        $entity = $this->findOneBy([
+            'id' => $employment->id(),
+        ]);
+
+        if ($entity === null) {
+            throw new \DomainException('Employment offer not found.');
+        }
+
+        $this->mapper->copy(
+            $employment,
+            $entity
+        );
+
+        $this->getEntityManager()->flush();
     }
+
+
+    #[Override]
+    public function accept(
+        string $candidateId,
+        DomainEmploymentOffer $employment
+    ): void {
+        $entity = $this->findOneBy([
+            'id' => $employment->id(),
+        ]);
+
+        if ($entity === null) {
+            throw new \DomainException('Employment offer not found.');
+        }
+
+        $em = $this->getEntityManager();
+
+        /*
+        * =========================
+        * Application -> HIRED
+        * =========================
+        */
+        $em->createQueryBuilder()
+            ->update(ApplicationEntity::class, 'a')
+            ->set(
+                'a.status',
+                ':applicationStatus'
+            )
+            ->where('a.candidate = :candidateId')
+            ->setParameter(
+                'applicationStatus',
+                JobApplicationStatus::HIRED
+            )
+            ->setParameter(
+                'candidateId',
+                $candidateId
+            )
+            ->getQuery()
+            ->execute();
+
+        /*
+        * =========================
+        * Candidate -> HIRED
+        * =========================
+        */
+        $em->createQueryBuilder()
+            ->update(CandidateEntity::class, 'c')
+            ->set(
+                'c.status',
+                ':candidateStatus'
+            )
+            ->where('c.id = :candidateId')
+            ->setParameter(
+                'candidateStatus',
+                CandidateStatus::HIRED
+            )
+            ->setParameter(
+                'candidateId',
+                $candidateId
+            )
+            ->getQuery()
+            ->execute();
+
+        /*
+        * =========================
+        * Employment offer
+        * =========================
+        */
+        $this->mapper->copy(
+            $employment,
+            $entity
+        );
+
+        $em->flush();
+    }
+
+    
+    public function assertNoActiveAcceptedOffer(
+        string $candidateId,
+        string $exceptEmploymentOfferId
+    ): void {
+        $exists = $this->createQueryBuilder('o')
+            ->select('1')
+            ->innerJoin('o.application', 'a')
+            ->where('a.candidate = :candidateId')
+            ->andWhere('o.id != :employmentOfferId')
+            ->andWhere('o.status = :status')
+            ->andWhere('o.expiredAt > :now')
+            ->andWhere('o.scheduledEndDate > :now')
+            ->setParameter('candidateId', $candidateId)
+            ->setParameter('employmentOfferId', $exceptEmploymentOfferId)
+            ->setParameter(
+                'status',
+                EmploymentOfferStatus::ACCEPTED
+            )
+            ->setParameter(
+                'now',
+                new \DateTimeImmutable()
+            )
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($exists !== null) {
+            throw new \DomainException(
+                'The candidate already has an active accepted employment offer.'
+            );
+        }
+    }
+
+    #[Override]
+    public function assertCandidateAccess(
+        string $candidateId,
+        string $employmentOfferId
+    ): void {
+        $result = $this->createQueryBuilder('o')
+            ->select('o.id')
+            ->innerJoin('o.application', 'oa')
+            ->where('o.id = :employmentOfferId')
+            ->andWhere('oa.candidate = :candidateId')
+            ->setParameter('employmentOfferId', $employmentOfferId)
+            ->setParameter('candidateId', $candidateId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($result === null) {
+            throw new \DomainException('You do not have access to this employment offer.');
+        }
+    }
+
+
 
     #[Override]
     public function hasActiveOffer(string $applicationId): bool
@@ -314,7 +464,8 @@ class EmploymentOfferRepository extends ServiceEntityRepository
         if (!empty($companyId)) {
             $conditions[] = $qb->expr()->eq('a.company', ':companyId');
             $qb->setParameter('companyId', $companyId);
-        } elseif (!empty($userId)) {
+        }
+        elseif (!empty($userId)) {
             $conditions[] = $qb->expr()->eq('j.user', ':userId');
             $qb->setParameter('userId', $userId);
         }
