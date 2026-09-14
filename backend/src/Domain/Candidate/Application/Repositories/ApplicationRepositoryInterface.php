@@ -24,7 +24,10 @@ interface ApplicationRepositoryInterface
     
     /**
      * Get candidate application statistics.
-     *
+     * - count application that owns at least one interview
+     * - count completed application
+     * - count pending application
+     * - count hired with application
      * @return array{
      *     hiredCount: int,
      *     pendingCount: int,

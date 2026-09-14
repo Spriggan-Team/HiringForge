@@ -91,9 +91,7 @@ class JobOfferModifier
         }
 
         if ($command->publicationStatus !== null) {
-            ApiResponse::$logger->error("Publication state, current : ".$offer->publicationStatus()->value . " ; new : " . $command->publicationStatus);
             $offer->changePublicationStatus(JobPublicationStatus::from($command->publicationStatus));
-            ApiResponse::$logger->error("Publication state, current : ".$offer->publicationStatus()->value . " ; new : " . $command->publicationStatus);
         }
 
         if ($command->publicationDate !== null) {

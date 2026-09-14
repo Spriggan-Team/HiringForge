@@ -88,11 +88,12 @@ class AccountController extends AbstractController
             return $res->toJsonResponse();
         }
         catch (Exception $exception) {
-            $res = ApiResponse::error(
+            $this->logger->error("Exception",[$exception]);
+            return ApiResponse::error(
                 message:'Nothing Found',
-                statusCode: 400, throwable: $exception
-            );
-            return $res->toJsonResponse();
+                statusCode: 400, 
+                throwable: $exception
+            )->toJsonResponse();
         }
     }
 
@@ -135,9 +136,9 @@ class AccountController extends AbstractController
         catch (Exception $exception)
         {
             return ApiResponse::error(
-                    'Nothing Found',
-                    throwable: $exception,
-                    statusCode: 400
+                'Nothing Found',
+                throwable: $exception,
+                statusCode: 400
             )->toJsonResponse();
         }
     }

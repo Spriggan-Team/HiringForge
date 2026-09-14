@@ -245,8 +245,21 @@ class JobOfferApplicationRepository
             ->getArrayResult();
 
         if (empty($applications)) {
-            return [];
+            return [
+                "data" => [],
+                "total" => 0
+            ];
         }
+
+        /**
+         * Totals applictaions
+         */
+        $total = (int) $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.candidate = :candidateId')
+            ->setParameter('candidateId', $candidateId)
+            ->getQuery()
+            ->getSingleScalarResult();
 
         $applicationIds = array_column($applications, 'id');
 
@@ -361,7 +374,7 @@ class JobOfferApplicationRepository
         /*
         * Filter the collection using the resolved status.
         */
-        return array_values(
+        $results =  array_values(
             array_filter(
                 $resolvedApplications,
                 fn (array $application): bool =>
@@ -371,7 +384,13 @@ class JobOfferApplicationRepository
                     )
             )
         );
+        // ApiResponse::$logger->error("Result/View: ".json_encode($results));
+        return [
+            'data' => $results,
+            'total' => $total,
+        ];
     }
+
     
     /**
      * Check whether an application status belongs to a menu section.
@@ -424,7 +443,10 @@ class JobOfferApplicationRepository
 
     /**
      * Get candidate application statistics.
-     *
+     * - count application that owns at least one interview
+     * - count completed application
+     * - count pending application (at least an employement offer)
+     * - count hired with application
      * @return array{
      *     hiredCount: int,
      *     pendingCount: int,
@@ -436,41 +458,58 @@ class JobOfferApplicationRepository
     #[Override]
     public function getCandidateApplicationStats(string $candidateId): array
     {
-        $result = $this->createQueryBuilder('a')
-            ->select(
-                'COUNT(DISTINCT a.id) AS applicationCount',
-                'COUNT(DISTINCT i.id) AS interviewCount',
-
-                'COUNT(DISTINCT CASE 
-                    WHEN employment.status = :acceptedStatus 
-                    THEN employment.id 
-                    ELSE NULL 
-                END) AS hiredCount',
-
-                'COUNT(DISTINCT CASE 
-                    WHEN employment.status = :sentStatus 
-                    THEN employment.id 
-                    ELSE NULL 
-                END) AS pendingCount',
-
-                'COUNT(DISTINCT CASE 
-                    WHEN employment.status IN (:completedStatuses) 
-                    THEN employment.id 
-                    ELSE NULL 
-                END) AS completedCount'
-            )
-            ->leftJoin('a.employmentOffers', 'employment')
-            ->leftJoin('a.interviews', 'i')
+        //-- All applications
+        $applicationCount = (int) $this->createQueryBuilder('a')
+            ->select('COUNT(DISTINCT a.id)')
             ->where('a.candidate = :candidateId')
+            ->setParameter('candidateId', $candidateId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // At least an interview
+        $interviewCount = (int) $this->createQueryBuilder('a')
+            ->select('COUNT(DISTINCT a.id)')
+            ->innerJoin('a.interviews', 'i')
+            ->where('a.candidate = :candidateId')
+            ->setParameter('candidateId', $candidateId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        //At least a sent offer
+        $pendingCount = (int) $this->createQueryBuilder('a')
+            ->select('COUNT(DISTINCT a.id)')
+            ->innerJoin('a.employmentOffers', 'employment')
+            ->where('a.candidate = :candidateId')
+            ->andWhere('employment.status = :sentStatus')
+            ->setParameter('candidateId', $candidateId)
+            ->setParameter(
+                'sentStatus',
+                EmploymentOfferStatus::SENT
+            )
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // At least an accepted employment offer
+        $hiredCount = (int) $this->createQueryBuilder('a')
+            ->select('COUNT(DISTINCT a.id)')
+            ->innerJoin('a.employmentOffers', 'employment')
+            ->where('a.candidate = :candidateId')
+            ->andWhere('employment.status = :acceptedStatus')
             ->setParameter('candidateId', $candidateId)
             ->setParameter(
                 'acceptedStatus',
                 EmploymentOfferStatus::ACCEPTED
             )
-            ->setParameter(
-                'sentStatus',
-                EmploymentOfferStatus::SENT
-            )
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // At least an offer with termiante status
+        $completedCount = (int) $this->createQueryBuilder('a')
+            ->select('COUNT(DISTINCT a.id)')
+            ->innerJoin('a.employmentOffers', 'employment')
+            ->where('a.candidate = :candidateId')
+            ->andWhere('employment.status IN (:completedStatuses)')
+            ->setParameter('candidateId', $candidateId)
             ->setParameter(
                 'completedStatuses',
                 [
@@ -480,16 +519,17 @@ class JobOfferApplicationRepository
                 ]
             )
             ->getQuery()
-            ->getSingleResult();
+            ->getSingleScalarResult();
 
         return [
-            'hiredCount' => (int) $result['hiredCount'],
-            'pendingCount' => (int) $result['pendingCount'],
-            'interviewCount' => (int) $result['interviewCount'],
-            'completedCount' => (int) $result['completedCount'],
-            'applicationCount' => (int) $result['applicationCount'],
+            'hiredCount' => $hiredCount,
+            'pendingCount' => $pendingCount,
+            'interviewCount' => $interviewCount,
+            'completedCount' => $completedCount,
+            'applicationCount' => $applicationCount,
         ];
     }
+
 
 
     /**

@@ -2,7 +2,6 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\Repositories\Mapper;
 
-use App\Api\Responder\ApiResponse;
 use App\Domain\File\StaticMedia;
 use App\Domain\JobOffer\JobOfferImage;
 use App\Domain\JobOffer\JobOffer as DomainEntity;
@@ -222,7 +221,6 @@ class JobOfferEntityMapper
         $domainSkills = $offer->skillsId();
 
         if (!empty($domainSkills)) {
-            ApiResponse::$logger->error("Job Skills " . json_encode($domainSkills));
             $jobSkills = $doctrine->getSkills();
 
             foreach ($jobSkills as $jobSkill) {
