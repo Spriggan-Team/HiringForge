@@ -44,7 +44,7 @@ class CompanyImageEntity
         targetEntity: CompanyEntity::class,
         inversedBy: "companyImages",
     )]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private CompanyEntity $company;
 
 
@@ -53,7 +53,11 @@ class CompanyImageEntity
     //  Constructions...
     //-------------------
 
-    public function __construct(CompanyEntity $user, FileEntity $image)
+    public function __construct(
+        CompanyEntity $user, 
+        FileEntity $image,
+        bool $isMain = false    
+    )
     {
         $this->company = $user;
         $this->image= $image;

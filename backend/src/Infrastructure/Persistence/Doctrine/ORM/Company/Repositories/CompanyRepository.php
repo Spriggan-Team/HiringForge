@@ -45,7 +45,9 @@ class CompanyRepository extends ServiceEntityRepository
     #[Override]
     public function save(Company $company): void
     {
-        $entity = $this->findOneBy(['name' => $company->name()]);
+        $entity = $this->findOneBy([
+            'id' => $company->id(),
+        ]);
 
         if (!$entity) {
             $entity = $this->mapper->toDoctrineEntity($company, $this);

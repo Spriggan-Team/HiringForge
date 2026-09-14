@@ -14,7 +14,7 @@ class TimedMedia extends Media
         string $name,        // the name (a uniq generated one)
         float  $size,        //stored in bytes
         string $mime,        // th mime type of the file
-        int  $duration,    //stored in seconds,
+        int  $duration,      //stored in seconds, can be equal to zero if object hydrated from bdd
         ?int $id = null,
         ?string $originalName = null,
         ?\DateTimeImmutable $createdAt = null,
@@ -31,6 +31,27 @@ class TimedMedia extends Media
         $this->duration = $duration;
     }
     
+    public static function hydrate(
+        string $name,        // the name (a uniq generated one)
+        float  $size,        //stored in bytes
+        string $mime,        // th mime type of the file
+        ?int $id ,
+        ?string $originalName ,
+        ?\DateTimeImmutable $createdAt ,
+        int  $duration = 0,     //stored in seconds, !Warning can be equal to zero if object hydrated from bdd
+
+    ){
+        return new self(
+            id: $id,
+            name: $name,
+            size: $size,
+            mime: $mime,
+            originalName: $originalName,
+            createdAt: $createdAt,
+            duration: $duration
+        );
+    }
+
     /**
      * Enforce time limitation and special type verification for a TimedMedia
      * @param string                 $type               #represents a specialisation of TimedMedia (audio ou video ...)

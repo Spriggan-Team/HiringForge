@@ -104,6 +104,18 @@ abstract class Account
         return $this;
     }
 
+    
+    public function changeLastName(string $lastName){
+        $this->lastName = $lastName;
+        return $this;
+    }
+
+    public function changeFirstName(string $firstName) : static {
+        $this->firstName = $firstName;
+        return $this;
+    }
+
+
     public function setEmail(EmailAddress $email): static
     {
         $this->email = $email;

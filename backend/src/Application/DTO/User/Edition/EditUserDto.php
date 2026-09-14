@@ -3,7 +3,7 @@
 
 namespace App\Application\DTO\User\Edition;
 
-use App\Application\DTO\EditImageDto;
+use App\Application\DTO\EditFileDto;
 
 final class EditUserDto
 {
@@ -15,5 +15,5 @@ final class EditUserDto
 
     public ?string $email = null;
 
-    public ?EditImageDto $image = null;
+    public ?EditFileDto $image = null;
 }

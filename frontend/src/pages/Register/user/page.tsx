@@ -228,7 +228,11 @@ const UserRegister = () => {
 
 
                     {/* SIDE FORM */}
-                    <SideForm asideFormRef={asideFormRef} form={asideFormState} setForm={setAsideFormState}   />
+                    <SideForm 
+                        form={asideFormState}
+                        asideFormRef={asideFormRef}
+                        setForm={setAsideFormState}
+                    />
                 </div>
             </div>
 

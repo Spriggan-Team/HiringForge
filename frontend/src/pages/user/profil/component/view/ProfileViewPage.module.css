@@ -127,6 +127,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-start;
+    flex-wrap: wrap;
     gap: 20px;
 }
 
@@ -145,6 +146,7 @@
     display: flex;
     gap: 16px;
     align-items: center;
+    flex-wrap: wrap;
     min-width: 0;
 }
 
@@ -788,7 +790,6 @@
     }
 
     .tagsSection {
-        grid-template-columns: 1fr 1fr;
     }
 
     .actionCard {

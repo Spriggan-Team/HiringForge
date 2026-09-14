@@ -50,7 +50,7 @@ interface AppContextProps{
 
     //-- Current Actor
     currentActor: CurrentActor | null;
-    setCurrentActor: (param: CurrentActor | null) => void;
+    setCurrentActor: React.Dispatch<React.SetStateAction<CurrentActor | null>>;
 
     //-- Kpi data
     kpiData: RecruiterDashboardKpis | null;

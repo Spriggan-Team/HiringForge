@@ -156,9 +156,15 @@ const ProfilePage: React.FC<ProfileViewPageProps> = ({
         setLocationFormError(null);
     };
 
+
+    /**
+     * ----------------
+     * Effects
+     * ----------------
+     */
+
     useEffect(() => {
         resetFromData(data);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data]);
 
     useEffect(() => {
@@ -343,12 +349,14 @@ const ProfilePage: React.FC<ProfileViewPageProps> = ({
         if (file) {
             setVideoRemoved(false);
             const url = URL.createObjectURL(file);
+            console.log({url})
             setVideoPreviewUrl(url);
             setVideoStatus("loading");
             setEditedData((prev) => ({
                 ...prev,
                 company: { ...(prev.company ?? {}), videoPresentation: { file } },
             }));
+            setVideoStatus("loaded")
         }
         event.target.value = "";
     };
@@ -380,6 +388,7 @@ const ProfilePage: React.FC<ProfileViewPageProps> = ({
     };
 
     const handleRemoveGalleryImage = (id: number) => {
+        console.log("Removed image id", id)
         setEditedData((prev) => ({
             ...prev,
             company: {
@@ -446,24 +455,37 @@ const ProfilePage: React.FC<ProfileViewPageProps> = ({
     const handleSaveProfilData = async () => {
         try {
             setLoading({ state: true, subtitle: "Modification des informations du profil" });
+            
+            console.log("editedData", editedData)
             await UserServices.changeProfilData(editedData);
             setPopup({ status: 'success', message: "Profil modifié avec succès" });
+
             setIsEditing(false);
             onSaved?.();
+            
         }
         catch (error) {
             console.warn("Something went wrong while changing profil data : ", error);
             setPopup({ status: 'error', message: "Une erreur est survenue lors de la modification des informations du profil" });
-        } finally {
+        }
+        finally {
             setLoading({ state: false });
         }
     };
+
+
 
     const handleCancelEdit = () => {
         resetFromData(data);
         setIsEditing(false);
     };
 
+
+    /**
+     * -------------
+     * Rendering
+     * --------------
+     */
 
     return (
         <div className={styles.container}>

@@ -3,7 +3,7 @@
 
 namespace App\Application\DTO\Company;
 
-use App\Application\DTO\EditImageDto;
+use App\Application\DTO\EditFileDto;
 use App\Application\DTO\Department\EditDepartmentDto;
 use App\Application\DTO\Location\EditLocationDto;
 
@@ -15,9 +15,9 @@ final class EditCompanyDto
 
     public ?string $description = null;
 
-    public ?EditImageDto $logo = null;
+    public ?EditFileDto $logo = null;
 
-    public ?EditImageDto $videoPresentation = null;
+    public ?EditFileDto $videoPresentation = null;
 
     /** @var EditDepartmentDto[] */
     public array $departmentsAdded = [];
@@ -36,4 +36,6 @@ final class EditCompanyDto
 
     /** @var int[] */
     public array $imagesRemoved = [];
+
+    public bool $logoProvided  = false;
 }

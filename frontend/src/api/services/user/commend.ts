@@ -6,7 +6,7 @@ import { intercept } from "../../../utils/utils";
 
 import type { ApiResponse, ErrorApiResponse } from "../response.types";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
-import { authPut, get } from "../../http";
+import { authPatch, authPut, get } from "../../http";
 import type { EditedProfileData } from "../../../features/users/user.profile";
 import { objectToDeepFormData,  } from "../../../utils/convertor";
 
@@ -14,7 +14,7 @@ import { objectToDeepFormData,  } from "../../../utils/convertor";
 
 const changeProfilData = async (data: EditedProfileData)=>{
     try{
-        await authPut<ApiResponse<RecruiterDashboardKpis>>(`/users/profile/change`, objectToDeepFormData(data as Record<string, unknown>));
+        await authPatch<ApiResponse<RecruiterDashboardKpis>>(`/users/profile/change`, objectToDeepFormData(data as Record<string, unknown>));
     }
     catch(error){
         console.error("Something went wrong", error)

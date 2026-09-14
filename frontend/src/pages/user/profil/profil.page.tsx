@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 import UserQueriesServices from '../../../api/services/user/queries';
-import { useCurrentUser } from '../../../hooks/context';
+import { useAppContext, useCurrentUser } from '../../../hooks/context';
 
 import EditProfilePage from './component/edit/edit.profile.page';
 import ProfilePage from './component/view/profile.page';
@@ -17,8 +17,24 @@ interface UserProfilPageProps
 
 const UserProfilPage: React.FC<UserProfilPageProps> = ({}) => {
     const user = useCurrentUser();
+    const {setNavbar} = useAppContext();
+
     const [isEditing, setIsEditing] = useState(false);
     const [profile, setProfile] = useState<UserProfileData | null>(null);
+
+    /**
+     * ---------------
+     *  Effects
+     * ---------------
+     */
+
+    useEffect(()=>{
+        setNavbar({ title: null, description: null });
+        return ()=>{
+            setNavbar(null)
+        }
+    },[])
+
 
     useEffect(()=> {
         const fetchData = async ()=>{
@@ -35,6 +51,13 @@ const UserProfilPage: React.FC<UserProfilPageProps> = ({}) => {
         }
         fetchData();
     }, [user]);
+
+
+    /**
+     * --------------
+     * Rendering
+     * ---------------
+     */
 
     if(!profile){
         return (

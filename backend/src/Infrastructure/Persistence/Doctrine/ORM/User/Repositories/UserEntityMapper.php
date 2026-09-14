@@ -3,7 +3,6 @@
 
 namespace App\Infrastructure\Persistence\Doctrine\ORM\User\Repositories;
 
-use App\Api\Responder\ApiResponse;
 use App\Domain\File\StaticMedia;
 use App\Domain\Shared\EmailAddress;
 use App\Domain\User\User as DomainEntity;
@@ -62,9 +61,10 @@ class UserEntityMapper
         }
        
         return DomainEntity::create(
+            userId:$doctrine->getId(),
+            image: $image,
             firstName: $doctrine->getFirstName(),
             lastName: $doctrine->getLastName(),
-            image: $image,
             email: EmailAddress::hydrate($doctrine->getEmail()),
             passwordHash: $doctrine->getPassword(),
             description: $doctrine->getDescription(),
@@ -79,20 +79,25 @@ class UserEntityMapper
      */
     public static function copy(DomainEntity $user, UserEntity $entity): void
     {
-        $image = null;
-        if($entity->getImage()){
-            $image = new StaticMedia(
-                name: $entity->getImage()->getName(),
-                size: $entity->getImage()->getSize(),
-                mime: $entity->getImage()->getMime(),
-                originalName: $entity->getImage()->getOriginalName()
+        $domainImage = $user->image();
+
+        if ($domainImage === null) {
+            $entity->setImage(null);
+        } else {
+            $imageEntity = FileEntity::create(
+                name: $domainImage->name,
+                size: $domainImage->size,
+                mime: $domainImage->mime,
+                originalName: $domainImage->originalName
             );
+
+            $entity->setImage($imageEntity);
         }
+
 
         $entity->setFirstName($user->firstName())
                ->setLastName($user->lastName())
                ->setEmail($user->email())
-               ->setImage($image)
                ->setPassword($user->passwordHash())
                ->setDescription($user->description());
     }

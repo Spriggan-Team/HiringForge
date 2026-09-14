@@ -2,10 +2,11 @@
 
 namespace App\Api\Controllers\User\Mapper;
 
+use App\Application\DTO\EditFileDto;
 use App\Application\DTO\Company\EditCompanyDto;
 use App\Application\DTO\Company\EditCompanyImageDto;
 use App\Application\DTO\Department\EditDepartmentDto;
-use App\Application\DTO\EditImageDto;
+
 use App\Application\DTO\Location\EditLocationDto;
 use App\Application\DTO\User\Edition\EditProfileDto;
 use App\Application\DTO\User\Edition\EditUserDto;
@@ -50,10 +51,13 @@ final class EditProfileMapper
         $dto->siret = $data['siret'] ?? null;
         $dto->description = $data['description'] ?? null;
 
-        $dto->logo = $this->mapImage(
-            $data['logo'] ?? [],
-            $files['logo'] ?? []
-        );
+        if(array_key_exists('logo', $data) || array_key_exists('logo', $files)){
+            $dto->logoProvided = true;
+            $dto->logo = $this->mapImage(
+                $data['logo'] ?? [],
+                $files['logo'] ?? []
+            );
+        }
 
         $dto->videoPresentation = $this->mapImage(
             $data['videoPresentation'] ?? [],
@@ -135,12 +139,12 @@ final class EditProfileMapper
     private function mapImage(
         array $data,
         array $files
-    ): ?EditImageDto {
+    ): ?EditFileDto {
         if ($data === [] && $files === []) {
             return null;
         }
 
-        $dto = new EditImageDto();
+        $dto = new EditFileDto();
 
         if (isset($data['id'])) {
             $dto->id = (int) $data['id'];

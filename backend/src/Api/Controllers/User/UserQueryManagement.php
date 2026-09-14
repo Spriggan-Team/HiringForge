@@ -66,17 +66,17 @@ class UserQueryManagement extends AbstractController
             //-- Build public image uri
                 //-- Company
 
-            if($companyData['logo']){
+            if ($companyData['logo'] !== null) {
                 $companyData['logo'] = [
-                    "id" => $companyData['logo']["id"],
-                    "url" => $this->resolvePublicImageUrl(
+                    'id' => $companyData['logo']['id'],
+                    'url' => $this->resolvePublicImageUrl(
                         request: $request,
                         params: AccountStorageParams::companyLogo(
                             companyId: $companyId
                         ),
                         pathResolver: $this->pathResolver,
-                        fileName: $companyData['images']['main']['name'],
-                        mime: $companyData['images']['main']['mime']
+                        fileName: $companyData['logo']['name'],
+                        mime: $companyData['logo']['mime']
                     )
                 ];
             }

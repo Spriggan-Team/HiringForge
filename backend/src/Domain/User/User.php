@@ -65,6 +65,8 @@ final class User extends Account
             companyId: $companyId
         );
     }
+
+
     
 
     //----------------------------
@@ -82,6 +84,7 @@ final class User extends Account
     //------------------------------------------
     // - Business change --
     //-----------------------------------------
+
 
     public function changeRole(UserRole $role): self{
         $this->role = $role;

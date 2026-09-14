@@ -93,28 +93,33 @@ const UserNavBar: React.FC<NavBarProps> = ({
 
     return (
         <div className={`${styles.container} ${className}`}>
-
+            
             <div className={styles.leadingSection}>
-                <h1 className={styles.title}>
-                    {
-                        navbar?.title ? 
-                            navbar.title
-                            : navbar?.title === null ?
-                                null
-                                :t("global.messages.welcome", { name: user.company.name })
-                    }
-                </h1>
-                { 
-                    navbar?.description ?
-                     typeof navbar.description === "string" ? 
-                        (
-                            <p className={styles.desc}>{navbar.description}</p>
-                        )
-                        : navbar.description
-                    : navbar?.description === null 
-                        ? null : informationTxt
+                {
+                    (
+                        <>
+                            <h1 className={styles.title}>
+                                {
+                                    navbar?.title ? 
+                                        navbar.title
+                                        : navbar?.title === null ?
+                                            null
+                                            :t("global.messages.welcome", { name: user.company.name })
+                                }
+                            </h1>
+                            { 
+                                navbar?.description ?
+                                typeof navbar.description === "string" ? 
+                                    (
+                                        <p className={styles.desc}>{navbar.description}</p>
+                                    )
+                                    : navbar.description
+                                : navbar?.description === null 
+                                    ? null : informationTxt
+                            }
+                        </>
+                    )
                 }
-          
             </div>
 
             <div className={styles.actionSection}>

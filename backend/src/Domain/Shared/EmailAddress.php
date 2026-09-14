@@ -15,7 +15,7 @@ class EmailAddress
     /**
      * It is responsible to enforce buisness logic
      */
-    public static function create(string$email): self
+    public static function create(string $email): self
     {
         //Buisness logic 
         //TODO: reject temp email

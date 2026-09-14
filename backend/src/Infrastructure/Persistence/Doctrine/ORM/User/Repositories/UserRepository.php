@@ -169,13 +169,20 @@ class UserRepository implements UserRepositoryInterface
     {
         try{
             $company = $this->em->getReference(CompanyEntity::class, $user->companyId());
+            if(!$user->id()){
+                $entity = UserEntityMapper::toDoctrineEntity($user, $company);
+                $this->em->persist($entity);
+            }
+            else{
+                $entity = $this->em->find(UserEntity::class, $user->id());
+                UserEntityMapper::copy($user, $entity);
+            }
 
-            $entity = UserEntityMapper::toDoctrineEntity($user, $company);
-            $this->em->persist($entity);
             $this->em->flush();
         }
-        catch(\Exception $exception){
-            throw new ResourceCreationRejected();
+        catch(\Throwable  $exception){
+            // throw new ResourceCreationRejected(previous: $exception);
+            throw $exception;
         }
     }
 

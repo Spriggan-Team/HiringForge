@@ -49,7 +49,8 @@ class CompanyEntity
     #[ORM\OneToOne(
         inversedBy: 'companyVideoPresentation',
         targetEntity: FileEntity::class,
-        cascade: ['persist', 'remove']
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
     )]
     #[ORM\JoinColumn(nullable: true)]
     private ?FileEntity $videoPresentation = null;
@@ -68,10 +69,12 @@ class CompanyEntity
     #[ORM\OneToMany(
         mappedBy: "company",
         targetEntity: CompanyImageEntity::class,
-        cascade:['persist', 'remove']
+        cascade:['persist', 'remove'],
+        orphanRemoval: true
     )]
     /** @var Collection<int, CompanyImageEntity> */
     private ?Collection $companyImages = null;
+
 
     #[ORM\OneToMany(
         targetEntity: DepartmentEntity::class,
@@ -102,6 +105,7 @@ class CompanyEntity
         $this->companyImages = new ArrayCollection();
         $this->companyAddresses = new ArrayCollection();
         $this->departments = new ArrayCollection();
+        $this->recruiters = new ArrayCollection();
     }
 
     public static function create(
@@ -151,7 +155,7 @@ class CompanyEntity
     }
 
     /**
-    * @return <int, CompanyImageEntity>
+    * @return Collection<int, CompanyImageEntity>
     */
     public function getImages(){
         return $this->companyImages;
@@ -218,7 +222,7 @@ class CompanyEntity
     }
 
 
-    public function attachToImage(?FileEntity $image): static
+    public function attachToImage(?FileEntity $image, bool $isMain = false): static
     {
         if(!$image)
             return $this;
@@ -229,20 +233,55 @@ class CompanyEntity
                 return $this;
             }
         }
-        $companyImages = new CompanyImageEntity($this, $image);
+
+        $companyImages = new CompanyImageEntity(
+            user: $this,
+            image: $image,
+            isMain: $isMain
+        );
         $this->companyImages->add($companyImages);
+
         return $this;
     }
-    
+
+    public function setMainImage(?FileEntity $image): static
+    {
+        foreach ($this->companyImages as $companyImage) {
+            $entityImage = $companyImage->getImage();
+
+            $isMain = false;
+
+            if ($image !== null && $entityImage !== null) {
+                $isMain =
+                    $entityImage === $image
+                    || (
+                        $entityImage->getId() !== null
+                        && $entityImage->getId() === $image->getId()
+                    );
+            }
+
+            $companyImage->setIsMain($isMain);
+        }
+
+        return $this;
+    }
+        
 
     public function removeImage(FileEntity $image): void
     {
-        foreach ($this->companyImages as $userImage) {
-            if ($userImage->getImage() === $image) {
-                $this->companyImages->removeElement($userImage);
+        foreach ($this->companyImages as $companyImage) {
+            $companyImageImage = $companyImage->getImage();
+
+            if (
+                $companyImageImage !== null
+                && $companyImageImage->getId() === $image->getId()
+            ) {
+                $this->companyImages->removeElement($companyImage);
+                break;
             }
         }
     }
+
 
     public function attachPresentation(?FileEntity $video): static
     {

@@ -2,7 +2,7 @@
 
 namespace App\Domain\Company;
 
-
+use App\Domain\Department\Department;
 use App\Domain\File\StaticMedia;
 use App\Domain\File\TimedMedia;
 use App\Domain\Shared\Address;
@@ -15,6 +15,7 @@ use App\Domain\User\UserId;
 class Company{
     private string $id; //-- uuid
     private string $name;
+    private ?string $description = null;
 
     private Siret $siret;
     
@@ -35,13 +36,20 @@ class Company{
      */
     private array $images = [];
 
+    private ?StaticMedia $mainImage = null;
+
     /**
-     * @var ?UploadedFile
+     * @var ?TimedMedia
      * This property is a video presentation of the user
      * it is optionnal
      */
     private ?TimedMedia $videoPresentation = null;
 
+
+    /**
+     * @var array<int,Department> departments
+     */
+    private array $departments = [];
 
 
     public function __construct(
@@ -51,6 +59,8 @@ class Company{
 
         /** @var array<int, Address> */
         array  $address,
+        ?string $description = null,
+        
         /** @var @var array<int, StaticMedia> */
         array $images= [],
 
@@ -66,6 +76,7 @@ class Company{
         $this->siret = $siret;
 
         $this->recruiters = $recruiters;
+        $this->description = $description;
     }
 
 
@@ -79,6 +90,7 @@ class Company{
         array  $address=[],
         array $images= [],
         ?string $id = null,
+        ?string $description = null,
         ?StaticMedia $logo = null,
     ){
         return new self(
@@ -88,6 +100,7 @@ class Company{
             address: $address,
             logo: $logo,
             siret: $siret,
+            description: $description
         );
     }
 
@@ -95,23 +108,42 @@ class Company{
         string $id,
         string $name,
         Siret $siret,
-        /** @var array<int, Address> */
-        array  $address,
+
         /** @var @var array<int, StaticMedia> */
-        array $images,
-        array $recruiters,
-        ?StaticMedia $logo,   
+        array $images = [],
+
+        /** @var array<int,string> */
+        array $recruiters = [],
+
+        /** @var array<int, Address> */
+        array $address = [],
+
+        /** @var array<int,Department> departments */
+        array $departments = [],
+
+        ?StaticMedia $mainImage = null,
+
+        ?StaticMedia $logo = null,
+
+        ?TimedMedia $videoPresentation = null
     ):self
     {
-        return new self(
+        $domain = new self(
             id: $id,
             name: $name,
             siret: $siret,
             address: $address,
             images: $images,
             logo: $logo,
-            recruiters: $recruiters
+            recruiters: $recruiters,
         );
+
+        $domain->mainImage = $mainImage;
+        $domain->address  = $address;
+        $domain->departments = $departments;
+        $domain->videoPresentation = $videoPresentation;
+
+        return $domain;
     }
     
     //----------------------------
@@ -131,6 +163,10 @@ class Company{
         return $this->name;
     }
 
+    public function description(){
+        return $this->description;
+    }
+
     public function logo(): ?StaticMedia{
         return $this->logo;
     }
@@ -143,11 +179,24 @@ class Company{
     public function address(): array { return $this->address; }
 
     
+    public function imageWithId(int $id){
+        foreach($this->images as $img){
+           if($img->id === $id){
+                return $img;
+           } 
+        }
+        return null;
+    }
+
     /**
      * @return array<int, StaticMedia>
      */
     public function images() : array {
         return $this->images;
+    }
+
+    public function mainImage(): ?StaticMedia{
+        return $this->mainImage;
     }
 
     /**
@@ -157,17 +206,47 @@ class Company{
         return $this->recruiters;
     }
     
+
+    /**
+     * @return array<int,Department> departments
+     */
+    public function departments():array{
+        return $this->departments;
+    }
+
+
     //------------------------------------------
     // - Business change --
     //-----------------------------------------
 
-    public function setLogo(StaticMedia $logo): static{
+    public function rename(string $name) : static {
+        $this->name = $name;
+        return $this;
+    }
+
+    public function changeDescription(?string $description = null){
+        $this->description = $description;
+        return $this;
+    }
+
+    public function setLogo(?StaticMedia $logo = null): static{
         $this->logo = $logo;
         return $this;
     }
 
     public function addAddress(Address $address): static{
         $this->address[] = $address;
+        return $this;
+    }
+
+    public function removeAddressById(int $id): static
+    {
+        foreach($this->address as $key => $address){
+            if ($address->id === $id) { //-- id
+                unset($this->address[$key]);
+                break;
+            }
+        }
         return $this;
     }
 
@@ -196,6 +275,7 @@ class Company{
     }
 
     /**
+     * Add images to company
      * Tell if the image respect the format, size limitation and ....
      * before associting it to an user
      */
@@ -206,11 +286,30 @@ class Company{
         return $this;
     }
 
+    public function changeMainImage(?StaticMedia $media){
+        $this->mainImage = $media;
+        return $this;
+    }
+
     public function removeImage(StaticMedia $image): static
     {
         foreach ($this->images as $key => $img) {
-            if ($img->name === $img->name) {
-                unset($images[$key]);
+            if ($image->name === $img->name) {
+                unset($this->images[$key]);
+                $this->images = array_values($this->images);
+                break;
+            }
+        }
+        return $this;
+    }
+
+
+    public function removeImageById(int $id): static
+    {
+        foreach ($this->images as $key => $img) {
+            if ($img->id === $id) {
+                unset($this->images[$key]);
+                $this->images = array_values($this->images);
                 break;
             }
         }
@@ -232,5 +331,29 @@ class Company{
         return $this;
     }
 
+
+    /**
+     * @var array<int,Department> $departments
+     */
+    public function setDepartments(array $departments){
+        $this->departments = $departments;
+        return $this;
+    }
+
+    public function addDepartment(Department $department){
+        $this->departments[] = $department;
+        return $this;
+    }
+
+
+    public function removeDepartmentById(int $departmentId){
+        foreach ($this->departments as $key => $department) {
+            if ($department->id() === $departmentId) {
+                unset($department[$key]);
+                break;
+            }
+        }
+        return $this;
+    }
     
 }
