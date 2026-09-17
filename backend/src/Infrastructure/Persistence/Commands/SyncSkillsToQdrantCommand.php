@@ -56,7 +56,8 @@ class SyncSkillsToQdrantCommand extends Command
                         'skill_id' => $skill->getId(),
                     ],
                 ];
-            } catch (\Exception $e) {
+            }
+            catch (\Exception $e) {
                 $io->error(sprintf('Error with Ollama regarding the skill %s : %s', $textToEmbed, $e->getMessage()));
                 return Command::FAILURE;
             }

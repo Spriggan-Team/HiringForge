@@ -6,6 +6,7 @@ use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -24,6 +25,17 @@ class InitQdrantDataCommand extends Command
     ) {
         parent::__construct($name);
         $this->qdrantHost = $_ENV['QDRANT_URL'] ?? 'http://qdrant:6333';
+    }
+
+    
+    #[Override]
+    protected function configure()
+    {
+        $this->addOption(
+            'path', 'p', 
+            InputOption::VALUE_OPTIONAL, 
+            'Snapshot source', '/var/www/html/src/Infrastructure/docker/qdrant_init/skills_backup.snapshot'
+        );
     }
 
     #[Override]
@@ -61,21 +73,20 @@ class InitQdrantDataCommand extends Command
         }
 
         //-- Verify if collections exist
-// 1. D'abord, on s'assure que la collection existe (on la crée vide si elle n'existe pas)
         try {
             $response = $this->httpClient->request('GET', $this->qdrantHost . '/collections/' . $collectionName);
             if ($response->getStatusCode() !== 200) {
-                // Créer la collection vide si elle n'existe pas (adaptez la taille du vecteur selon vos besoins, ex: 384 ou 1536)
                 $this->httpClient->request('PUT', $this->qdrantHost . '/collections/' . $collectionName, [
                     'json' => [
                         'vectors' => [
-                            'size' => 384, // Remplacez par la dimension de vos vecteurs (ex: 768 ou 1536 selon votre modèle Ollama)
+                            'size' => 1024, 
                             'distance' => 'Cosine'
                         ]
                     ]
                 ]);
             }
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e) {
             // Si la collection n'existe pas, on la crée
             $this->httpClient->request('PUT', $this->qdrantHost . '/collections/' . $collectionName, [
                 'json' => [
@@ -87,8 +98,8 @@ class InitQdrantDataCommand extends Command
             ]);
         }
 
-        // 2. Chemin du fichier sur le disque accessible par le conteneur PHP
-        $localPath = '/var/www/html/src/Infrastructure/docker/qdrant_init/skills_backup.snapshot';
+        // -- File
+        $localPath = $input->getOption("path");
 
         if (!file_exists($localPath)) {
             $io->error("Le fichier de snapshot est introuvable : " . $localPath);
@@ -108,7 +119,7 @@ class InitQdrantDataCommand extends Command
                 return Command::SUCCESS;
             } else {
                 $io->warning("Le snapshot n'a pas pu être restauré (fichier potentiellement incompatible). La collection vide est prête.");
-                return Command::SUCCESS; // On renvoie SUCCESS pour ne pas bloquer le démarrage de l'app
+                return Command::SUCCESS;
             }
         }
         catch (\Exception $e) {

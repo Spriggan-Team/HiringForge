@@ -8,7 +8,7 @@ import {
 } from "../../../api/services/public/responses";
 import { navigateTo } from "../../../App";
 import PublicJobQueries from "../../../api/services/public/queries";
-import { useAppContext, useCandidateContext, useCurrentCandidate } from "../../../hooks/context";
+import { useAppContext, useCandidateContext } from "../../../hooks/context";
 import RouteScheme from "../../../route.scheme";
 import CandidatesQueries from "../../../api/services/candidate/queries";
 

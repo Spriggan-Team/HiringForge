@@ -50,10 +50,10 @@ class ImportSkillsCommand extends Command
         // Configuration
         //--------------------------------
 
-        // 1. Disable SQL Logging
+        //  Disable SQL Logging
         $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
 
-        // 2. Disable Symfony Stopwatch / DBAL Debug Middleware
+        //  Disable Symfony Stopwatch / DBAL Debug Middleware
 
         $config = $this->em->getConnection()->getConfiguration();
         if (method_exists($config, 'getMiddlewares') && method_exists($config, 'setMiddlewares')) {

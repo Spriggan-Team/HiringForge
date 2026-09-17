@@ -2,9 +2,9 @@
 
 namespace App\Domain\User;
 
-use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Shared\Address;
 use App\Domain\Shared\KnownIdentity;
+use App\Domain\Exception\ResourceNotFoundException;
 
 
 interface UserRepositoryInterface 
