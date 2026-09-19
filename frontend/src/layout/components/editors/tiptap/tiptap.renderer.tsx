@@ -5,6 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 
 //-- CSS Styles
 import styles from "./TipTapRenderer.module.css"
+import { useEffect } from "react";
 
 
 interface TipTapRendererProps{
@@ -24,6 +25,14 @@ const TipTapRenderer: React.FC<TipTapRendererProps> = ({
         content,
         immediatelyRender: false
     })
+
+    useEffect(()=>{
+        if(!editor){
+            return;
+        }
+
+        editor.commands.setContent(content);
+    },[editor, content])
 
     return (
         <div className={`${styles.container} ${className}`}>

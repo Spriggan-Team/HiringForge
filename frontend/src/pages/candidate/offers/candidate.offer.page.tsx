@@ -6,13 +6,14 @@ import React, {
     useState,
 } from "react";
 
-import styles from "./CandidateOfferPage.module.css";
-import type { CandidateEmploymentOffer, EmploymentOfferStats, OfferFilter } from "../../../features/employment/offer";
+import { formatDateSafely } from "../../../utils/format";
 import EmploymentOffersQueries from "../../../api/services/employment/queries";
 import EmploymentOffersServices from "../../../api/services/employment/command";
-import { formatDateSafely } from "../../../utils/format";
+import type { CandidateEmploymentOffer, EmploymentOfferStats, OfferFilter } from "../../../features/employment/offer";
+
 import { Pagination } from "../../../layout/components/navigation/pagination/pagination";
 
+import styles from "./CandidateOfferPage.module.css";
 
 
 // --------------------------------------------------
@@ -20,8 +21,6 @@ import { Pagination } from "../../../layout/components/navigation/pagination/pag
 // --------------------------------------------------
 
 type CandidateOfferPageProps = {};
-
-
 type OfferListCache = Map<string, CandidateEmploymentOffer[]>;
 
 type ConfirmAction =
@@ -35,7 +34,6 @@ type ConfirmAction =
 // --------------------------------------------------
 
 const PAGE_LIMIT = 15;
-
 
 
 // --------------------------------------------------
@@ -60,20 +58,16 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
     // Data
     // --------------------------------------------------
 
-    const [employmentStats, setEmploymentStats] =
-        useState<EmploymentOfferStats>({
-            awaiting: 0,
-            accepted: 0,
-            completed: 0,
-            rejected: 0,
-        });
-
-    const [myEmploymentOffers, setMyEmploymentOffers] =
-        useState<CandidateEmploymentOffer[]>([]);
-
-    const [currentEmploymentDetails, setCurrentEmploymentDetails] = useState<CandidateEmploymentOffer | null>(null);
+    const [employmentStats, setEmploymentStats] = useState<EmploymentOfferStats>({
+        awaiting: 0,
+        accepted: 0,
+        completed: 0,
+        rejected: 0,
+    });
 
     const [currentTotal, setCurrentTotal] = useState(0);
+    const [myEmploymentOffers, setMyEmploymentOffers] =  useState<CandidateEmploymentOffer[]>([]);
+    const [currentEmploymentDetails, setCurrentEmploymentDetails] = useState<CandidateEmploymentOffer | null>(null);
 
     // --------------------------------------------------
     // UI state
@@ -83,26 +77,19 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
     const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const [confirmAction, setConfirmAction] =
-        useState<ConfirmAction>(null);
+    const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
 
-    const [rejectionReason, setRejectionReason] =
-        useState("");
+    const [rejectionReason, setRejectionReason] = useState("");
 
     // --------------------------------------------------
     // Cache
     // --------------------------------------------------
 
-    const employmentOffersCache =
-        useRef<OfferListCache>(new Map());
+    const employmentOffersCache = useRef<OfferListCache>(new Map());
 
-    const employmentDetailsCache =
-        useRef<Map<string, CandidateEmploymentOffer>>(
-            new Map()
-        );
+    const employmentDetailsCache = useRef<Map<string, CandidateEmploymentOffer>>(new Map());
 
-    const statsCache =
-        useRef<EmploymentOfferStats | null>(null);
+    const statsCache = useRef<EmploymentOfferStats | null>(null);
 
     // --------------------------------------------------
     // Filter -> backend menu
@@ -112,16 +99,12 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
         switch (currentFilter) {
             case "AWAITING":
                 return "PENDING";
-
             case "ACCEPTED":
                 return "ACCEPTED";
-
             case "COMPLETED":
                 return "COMPLETED";
-
             case "REJECTED":
                 return "REJECTED";
-
             case "ALL":
             default:
                 return "ALL";
@@ -138,10 +121,9 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
             return;
         }
 
-        const stats =
-            await EmploymentOffersQueries.getCandidateEmploymentOfferStats();
-
+        const stats = await EmploymentOffersQueries.getCandidateEmploymentOfferStats();
         statsCache.current = stats;
+
         setEmploymentStats(stats);
     }, []);
 
@@ -156,15 +138,11 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
             menu: backendMenu,
         });
 
-        const cached =
-            employmentOffersCache.current.get(cacheKey);
+        const cached = employmentOffersCache.current.get(cacheKey);
 
         if (cached) {
             setMyEmploymentOffers(cached);
-            setCurrentEmploymentDetails(
-                cached[0] ?? null
-            );
-
+            setCurrentEmploymentDetails(cached[0] ?? null);
             return;
         }
 
@@ -172,7 +150,7 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
         setError(null);
 
         try {
-            const response =await EmploymentOffersQueries.getCandidateEmploymentOffers({
+            const response = await EmploymentOffersQueries.getCandidateEmploymentOffers({
                 skip,
                 limit,
                 menu: backendMenu,
@@ -180,11 +158,7 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
 
             const offers = response?.data ?? response ?? [];
 
-            employmentOffersCache.current.set(
-                cacheKey,
-                offers
-            );
-
+            employmentOffersCache.current.set(cacheKey,offers);
             setMyEmploymentOffers(offers);
 
             if (offers.length === 0) {
@@ -201,20 +175,14 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                 response !== null &&
                 "total" in response
             ) {
-                setCurrentTotal(
-                    Number(response.total ?? 0)
-                );
+                setCurrentTotal(Number(response.total ?? 0));
             }
-        } catch (error) {
-            console.warn(
-                "Something went wrong while loading employment offers",
-                error
-            );
-
-            setError(
-                "Impossible de charger vos offres d'emploi."
-            );
-        } finally {
+        }
+        catch (error) {
+            console.warn("Something went wrong while loading employment offers",error);
+            setError("Impossible de charger vos offres d'emploi.");
+        }
+        finally {
             setLoading(false);
         }
     }, [
@@ -241,25 +209,19 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
 
     const handleSelectOffer = useCallback(
         async (offer: CandidateEmploymentOffer) => {
-            const cached =
-                employmentDetailsCache.current.get(offer.id);
+            const cached = employmentDetailsCache.current.get(offer.id);
 
             if (cached) {
                 setCurrentEmploymentDetails(cached);
                 return;
             }
 
-            /*
-             * Here offer are already cleanly retreived
-             */
             employmentDetailsCache.current.set(
                 offer.id,
                 offer
             );
-
             setCurrentEmploymentDetails(offer);
-        },
-        []
+        },[]
     );
 
     // --------------------------------------------------
@@ -288,35 +250,27 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
         setError(null);
 
         try {
-            await EmploymentOffersServices.handleAcceptEmploymentOffer({
-                employmentId: currentEmploymentDetails.id,
-            });
+            await EmploymentOffersServices.handleAcceptEmploymentOffer({  employmentId: currentEmploymentDetails.id, });
 
             /*
              *  Invalid cache as offer has change status
              */
             employmentOffersCache.current.clear();
-            employmentDetailsCache.current.delete(
-                currentEmploymentDetails.id
-            );
-            statsCache.current = null;
+            employmentDetailsCache.current.delete(currentEmploymentDetails.id);
 
+            statsCache.current = null;
             setConfirmAction(null);
 
             await Promise.all([
                 fetchOffers(),
                 fetchStats(),
             ]);
-        } catch (error) {
-            console.warn(
-                "Something went wrong while accepting employment offer",
-                error
-            );
-
-            setError(
-                "Impossible d'accepter cette offre."
-            );
-        } finally {
+        }
+        catch (error) {
+            console.warn("Something went wrong while accepting employment offer", error);
+            setError("Impossible d'accepter cette offre.");
+        }
+        finally {
             setActionLoading(false);
         }
     }, [
@@ -333,7 +287,6 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
         if (!currentEmploymentDetails?.id) {
             return;
         }
-
         const reason = rejectionReason.trim();
 
         if (!reason) {
@@ -353,9 +306,7 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
             });
 
             employmentOffersCache.current.clear();
-            employmentDetailsCache.current.delete(
-                currentEmploymentDetails.id
-            );
+            employmentDetailsCache.current.delete(currentEmploymentDetails.id);
             statsCache.current = null;
 
             setRejectionReason("");
@@ -365,16 +316,12 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                 fetchOffers(),
                 fetchStats(),
             ]);
-        } catch (error) {
-            console.warn(
-                "Something went wrong while refusing employment offer",
-                error
-            );
-
-            setError(
-                "Impossible de refuser cette offre."
-            );
-        } finally {
+        }
+        catch (error) {
+            console.warn( "Something went wrong while refusing employment offer",error);
+            setError("Impossible de refuser cette offre.");
+        }
+        finally {
             setActionLoading(false);
         }
     }, [
@@ -415,11 +362,9 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
 
     return (
         <div className={styles.container}>
-
             {/* ------------------------------------------------ */}
             {/* Header */}
             {/* ------------------------------------------------ */}
-
             <header className={styles.header}>
                 <div>
                     <span className={styles.eyebrow}>
@@ -466,7 +411,6 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                     <span className={styles.statValue}>
                         {employmentStats.accepted}
                     </span>
-
                     <span className={styles.statLabel}>
                         Acceptées
                     </span>
@@ -528,9 +472,7 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                 ? styles.filterActive
                                 : styles.filter
                         }
-                        onClick={() =>
-                            handleFilterChange(value)
-                        }
+                        onClick={() =>handleFilterChange(value)}
                     >
                         {label}
                     </button>
@@ -577,7 +519,6 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                         </div>
                     )}
 
-
                     {!loading &&
                         myEmploymentOffers.length === 0 && (
                             <div className={styles.empty}>
@@ -617,17 +558,12 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                     <div className={styles.offerTop}>
                                         <div className={styles.company}>
                                             <div
-                                                className={
-                                                    styles.logo
-                                                }
+                                                className={styles.logo}
                                             >
                                                 {offer.company.logoUrl ? (
                                                     <img
-                                                        src={
-                                                            offer.company
-                                                                .logoUrl
-                                                        }
                                                         alt=""
+                                                        src={offer.company.logoUrl }
                                                     />
                                                 ) : (
                                                     <span>
@@ -640,55 +576,38 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                                 <strong>
                                                     { offer.company .name }
                                                 </strong>
-
                                                 <h3>
                                                     {offer.jobOffer.title}
                                                 </h3>
                                             </div>
-
                                         </div>
-
 
                                         <span
                                             className={`${styles.status} ${styles[status.className]}`}
                                         >
                                             {status.label}
                                         </span>
-
                                     </div>
 
-
                                     <div className={styles.offerMeta}>
-
                                         <span>
                                             <b>€</b>
                                             {formatSalary(offer.salary)} {/** Annuel */}
                                         </span>
-
                                         <span>
                                             <b>▣</b>
                                             Jusqu'au{" "}
-                                            {formatDateSafely(
-                                                offer.scheduledEndDate
-                                            )}
+                                            {formatDateSafely(offer.scheduledEndDate)}
                                         </span>
-
                                         <span>
                                             Reçue le{" "}
-                                            {formatDateSafely(
-                                                offer.createdAt
-                                            )}
+                                            {formatDateSafely(offer.createdAt)}
                                         </span>
 
                                     </div>
 
-
                                     {awaiting && (
-                                        <div
-                                            className={
-                                                styles.expiration
-                                            }
-                                        >
+                                        <div className={ styles.expiration } >
                                             Réponse avant le{" "}
                                             <strong>
                                                 {formatDateSafely(
@@ -697,15 +616,12 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                             </strong>
                                         </div>
                                     )}
-
                                 </article>
                             );
                         })}
                     </div>
 
-
                     {/* Pagination */}
-
                     {currentTotal > limit && (
                         <div className={styles.pagination}>
                             <Pagination
@@ -717,28 +633,24 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                             />
                         </div>
                     )}
-
                 </section>
 
 
                 {/* ------------------------------------------------ */}
                 {/* Details */}
                 {/* ------------------------------------------------ */}
-
                 <aside className={styles.details}>
                     {!currentEmploymentDetails ? (
                         <div className={styles.detailsEmpty}>
                             <span>
                                 Sélectionnez une offre
                             </span>
-
                             <p>
                                 Les détails de l'offre
                                 apparaîtront ici.
                             </p>
                         </div>
                     ) : (
-
                         <div>
                             <div className={styles.detailsHeader}>
                                 <div className={styles.detailsLogo}>
@@ -757,28 +669,21 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                             {currentEmploymentDetails
                                                 .company.name
                                                 .charAt(0)
-                                                .toUpperCase()}
+                                                .toUpperCase()
+                                            }
                                         </span>
                                     )}
                                 </div>
 
                                 <div>
                                     <span>
-                                        {
-                                            currentEmploymentDetails
-                                                .company.name
-                                        }
+                                        {currentEmploymentDetails.company.name }
                                     </span>
                                     <h2>
-                                        {
-                                            currentEmploymentDetails
-                                                .jobOffer.title
-                                        }
+                                        {currentEmploymentDetails.jobOffer.title}
                                     </h2>
                                 </div>
-
                             </div>
-
 
                             <div className={styles.detailsStatus}>
                                 <span
@@ -791,51 +696,31 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                         ]
                                     }`}
                                 >
-                                    {
-                                        getStatusConfig(
-                                            currentEmploymentDetails
-                                                .status
-                                        ).label
-                                    }
+                                    {getStatusConfig(currentEmploymentDetails.status).label  }
                                 </span>
                             </div>
 
-
                             {/* Salary */}
-
                             <div className={styles.detailBlock}>
-
                                 <span className={styles.detailLabel}>
                                     Rémunération
                                 </span>
-
                                 <strong className={styles.salary}>
-                                    {formatSalary(
-                                        currentEmploymentDetails
-                                            .salary
-                                    )}
+                                    {formatSalary(currentEmploymentDetails.salary)}
                                     <small>
                                         / an
                                     </small>
                                 </strong>
-
                             </div>
 
-
                             {/* Dates */}
-
                             <div className={styles.dateGrid}>
-
                                 <div>
                                     <span>
                                         Offre reçue
                                     </span>
-
                                     <strong>
-                                        {formatDateSafely(
-                                            currentEmploymentDetails
-                                                .createdAt
-                                        )}
+                                        {formatDateSafely(currentEmploymentDetails.createdAt)}
                                     </strong>
                                 </div>
 
@@ -843,102 +728,61 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                     <span>
                                         Date de fin prévue
                                     </span>
-
                                     <strong>
-                                        {formatDateSafely(
-                                            currentEmploymentDetails
-                                                .scheduledEndDate
-                                        )}
+                                        {formatDateSafely(currentEmploymentDetails.scheduledEndDate)}
                                     </strong>
                                 </div>
 
                                 <div>
-                                    <span>
-                                        Date limite de réponse
-                                    </span>
-
-                                    <strong>
-                                        {formatDateSafely(currentEmploymentDetails.expiredAt.date)}
-                                    </strong>
+                                    <span> Date limite de réponse</span>
+                                    <strong>{formatDateSafely(currentEmploymentDetails.expiredAt.date)}</strong>
                                 </div>
-
                             </div>
 
 
                             {/* Message */}
-
                             {currentEmploymentDetails.message && (
                                 <div className={styles.detailBlock}>
-
                                     <span
-                                        className={
-                                            styles.detailLabel
-                                        }
+                                        className={styles.detailLabel}
                                     >
                                         Message de l'entreprise
                                     </span>
 
-                                    <p
-                                        className={
-                                            styles.message
-                                        }
-                                    >
-                                        {
-                                            currentEmploymentDetails
-                                                .message
-                                        }
+                                    <p className={styles.message}>
+                                        {currentEmploymentDetails.message}
                                     </p>
 
                                 </div>
                             )}
 
-
                             {/* Rejection */}
-
                             {currentEmploymentDetails
                                 .rejectionReason && (
-                                <div
-                                    className={
-                                        styles.rejectionBox
-                                    }
-                                >
+                                <div className={styles.rejectionBox}>
                                     <span>
                                         Motif du refus
                                     </span>
 
                                     <p>
-                                        {
-                                            currentEmploymentDetails
-                                                .rejectionReason
-                                        }
+                                        {currentEmploymentDetails.rejectionReason}
                                     </p>
                                 </div>
                             )}
 
-
                             {/* Actions */}
-
                             {isAwaitingOffer(
                                 currentEmploymentDetails
                             ) && (
                                 <div
-                                    className={
-                                        styles.actions
-                                    }
+                                    className={styles.actions}
                                 >
-
                                     <button
                                         type="button"
-                                        className={
-                                            styles.acceptButton
-                                        }
-                                        disabled={
-                                            actionLoading
-                                        }
+                                        className={styles.acceptButton}
+                                        disabled={actionLoading}
                                         onClick={() =>
-                                            setConfirmAction(
-                                                "accept"
-                                            )
+                                            setConfirmAction("accept")
                                         }
                                     >
                                         Accepter l'offre
@@ -946,57 +790,40 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
 
                                     <button
                                         type="button"
-                                        className={
-                                            styles.refuseButton
-                                        }
-                                        disabled={
-                                            actionLoading
-                                        }
-                                        onClick={() =>
-                                            setConfirmAction(
-                                                "refuse"
-                                            )
-                                        }
+                                        className={ styles.refuseButton }
+                                        disabled={actionLoading}
+                                        onClick={() =>  setConfirmAction("refuse")}
                                     >
                                         Refuser
                                     </button>
 
                                 </div>
                             )}
-
                         </div>
                     )}
-
                 </aside>
-
             </div>
 
 
             {/* ------------------------------------------------ */}
             {/* Confirmation modal */}
             {/* ------------------------------------------------ */}
-
             {confirmAction && (
                 <div
                     className={styles.modalOverlay}
-                    onClick={() =>
-                        !actionLoading &&
-                        setConfirmAction(null)
-                    }
+                    onClick={() =>!actionLoading &&setConfirmAction(null) }
                 >
                     <div
                         className={styles.modal}
-                        onClick={(event) =>
+                        onClick={(event) =>{
                             event.stopPropagation()
-                        }
+                        }}
                     >
-
                         {confirmAction === "accept" ? (
                             <>
                                 <h2>
                                     Accepter cette offre ?
                                 </h2>
-
                                 <p>
                                     Vous êtes sur le point
                                     d'accepter cette proposition
@@ -1004,39 +831,23 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                 </p>
 
                                 <div
-                                    className={
-                                        styles.modalActions
-                                    }
+                                    className={styles.modalActions}
                                 >
                                     <button
                                         type="button"
-                                        onClick={() =>
-                                            setConfirmAction(
-                                                null
-                                            )
-                                        }
-                                        disabled={
-                                            actionLoading
-                                        }
+                                        onClick={() =>setConfirmAction(null) }
+                                        disabled={ actionLoading }
                                     >
                                         Annuler
                                     </button>
 
                                     <button
                                         type="button"
-                                        className={
-                                            styles.acceptButton
-                                        }
-                                        onClick={
-                                            handleAccept
-                                        }
-                                        disabled={
-                                            actionLoading
-                                        }
+                                        className={styles.acceptButton}
+                                        onClick={handleAccept}
+                                        disabled={actionLoading}
                                     >
-                                        {actionLoading
-                                            ? "Acceptation..."
-                                            : "Confirmer"}
+                                        {actionLoading ? "Acceptation..." : "Confirmer"}
                                     </button>
                                 </div>
                             </>
@@ -1045,7 +856,6 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                 <h2>
                                     Refuser cette offre ?
                                 </h2>
-
                                 <p>
                                     Cette action est définitive.
                                     Indiquez pourquoi vous
@@ -1055,66 +865,42 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
 
                                 <textarea
                                     value={rejectionReason}
-                                    onChange={(event) =>
-                                        setRejectionReason(
-                                            event.target.value
-                                        )
-                                    }
+                                    onChange={(event) =>setRejectionReason(event.target.value)}
                                     placeholder="Motif du refus..."
-                                    className={
-                                        styles.reasonInput
-                                    }
+                                    className={styles.reasonInput}
                                     rows={4}
-                                    disabled={
-                                        actionLoading
-                                    }
+                                    disabled={actionLoading}
                                 />
 
-                                <div
-                                    className={
-                                        styles.modalActions
-                                    }
-                                >
+                                <div  className={styles.modalActions}>
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            setConfirmAction(
-                                                null
-                                            );
+                                            setConfirmAction(null);
                                             setRejectionReason("");
                                         }}
-                                        disabled={
-                                            actionLoading
-                                        }
+                                        disabled={actionLoading}
                                     >
                                         Annuler
                                     </button>
 
                                     <button
                                         type="button"
-                                        className={
-                                            styles.refuseButton
-                                        }
-                                        onClick={
-                                            handleRefusal
-                                        }
+                                        className={styles.refuseButton}
+                                        onClick={handleRefusal}
                                         disabled={
                                             actionLoading ||
                                             !rejectionReason.trim()
                                         }
                                     >
-                                        {actionLoading
-                                            ? "Refus..."
-                                            : "Confirmer le refus"}
+                                        {actionLoading ? "Refus..." : "Confirmer le refus"}
                                     </button>
                                 </div>
                             </>
                         )}
-
                     </div>
                 </div>
             )}
-
         </div>
     );
 };

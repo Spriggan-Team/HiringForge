@@ -69,39 +69,39 @@ const PublicJobPage = () => {
     //  Fetching list
     const loadJobOffers = useCallback(
         async (resetSkip = false) => {
-        setIsListLoading(true);
-        const currentSkip = resetSkip ? 0 : skip;
-        if (resetSkip) setSkip(0);
+            setIsListLoading(true);
+            const currentSkip = resetSkip ? 0 : skip;
+            if (resetSkip) setSkip(0);
 
-        try {
-            const response = await PublicJobQueries.getPublicJobs({
-                search: searchContext.title,
-                address: searchContext.address,
-                limit: PAGINATION_LIMIT,
-                skip: currentSkip,
-                locale: i18n.language,
-            });
+            try {
+                const response = await PublicJobQueries.getPublicJobs({
+                    search: searchContext.title,
+                    address: searchContext.address,
+                    limit: PAGINATION_LIMIT,
+                    skip: currentSkip,
+                    locale: i18n.language,
+                });
 
-            console.log({jobOffer: response})
+                console.log({ jobOffer: response })
 
-            setJobOffers(response.items);
-            setTotalJobs(response.total);
+                setJobOffers(response.items);
+                setTotalJobs(response.total);
 
-            // Auto select first item if none selected or on fresh search
-            if (response.items.length > 0 && (resetSkip || !selectedJobId)) {
-                setSelectedJobId(response.items[0].id);
+                // Auto select first item if none selected or on fresh search
+                if (response.items.length > 0 && (resetSkip || !selectedJobId)) {
+                    setSelectedJobId(response.items[0].id);
+                }
+                else if (response.items.length === 0) {
+                    setSelectedJobId(null);
+                    setSelectedJobDetails(null);
+                }
             }
-            else if (response.items.length === 0) {
-                setSelectedJobId(null);
-                setSelectedJobDetails(null);
+            catch (err) {
+                console.error("Error fetching jobs", err);
             }
-        }
-        catch (err) {
-            console.error("Error fetching jobs", err);
-        }
-        finally {
-            setIsListLoading(false);
-        }
+            finally {
+                setIsListLoading(false);
+            }
         },
         [searchContext, skip, i18n.language, selectedJobId]
     );
@@ -273,10 +273,12 @@ const PublicJobPage = () => {
                                             </span>
                                         )}
 
-                                        {job.salary?.min && (
-                                            <span className={styles.badgeSalary}>
-                                                💰 {job.salary?.min} - {job.salary?.max} {job.salary?.currency}
-                                            </span>
+                                        {(job.salary?.min !== 0 || job.salary?.max !== 0) && (
+                                                <span className={styles.badgeSalary}>
+                                                    💰 {job.salary.min}
+                                                    {job.salary.max !== 0 ? ` - ${job.salary.max}` : ''}
+                                                    {job.salary.currency}
+                                                </span>
                                         )}
                                     </div>
                                 </div>

@@ -147,6 +147,7 @@ const CandidateApplicationPage: React.FC<CandidateApplicationPageProps> = () => 
                 },
                 [[], {}]
             );
+            // console.log({data});
 
             cache[cacheKey] = {
                 order,
@@ -174,7 +175,6 @@ const CandidateApplicationPage: React.FC<CandidateApplicationPageProps> = () => 
     const fetchApplicationStats = useCallback(async()=>{
         try{
             const results = await CandidatesQueries.getApplicationsSats();
-            console.log("STATS", results)
             setApplicationsStats(results);
         }
         catch(error){
@@ -190,9 +190,9 @@ const CandidateApplicationPage: React.FC<CandidateApplicationPageProps> = () => 
                 const detailsCache = applicationsDetailsCache.current;
 
                 if (detailsCache[applicationId]) {
-                    setCurrentApplicationDetailsView(
-                        detailsCache[applicationId]
-                    );
+                    const cached =  detailsCache[applicationId];
+                    // console.log("Application: ", cached);
+                    setCurrentApplicationDetailsView({...cached});
                     return;
                 }
 
@@ -252,7 +252,7 @@ const CandidateApplicationPage: React.FC<CandidateApplicationPageProps> = () => 
         <main className={styles.main}>
             {/** Components Header */}
             <div className={styles.headers}>
-                <Title title="Mes applications" />
+                <Title className={styles.title} title="Mes applications" />
                 <TopBarNavigation
                     options={topNavigationItems}
                 />
@@ -298,7 +298,10 @@ const CandidateApplicationPage: React.FC<CandidateApplicationPageProps> = () => 
                 <div className={styles.detials}>
                     {
                         currentApplicationViewDetails ? (
-                            <ApplicationContent details={currentApplicationViewDetails} /> 
+                            <ApplicationContent 
+                                details={currentApplicationViewDetails}
+                                from={currentMenu}
+                            /> 
                         ) :
                         <div className={styles.placeholder}>
                             Aucune selection
@@ -347,7 +350,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
                     src={application.job.image}
                     alt={application.job.title}
                 />
-                <Badge text={application.status}  />
+                <Badge text={application.statuses[0] ?? ""}  />
             </div>
         </div>
     );
@@ -361,10 +364,12 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({
 
 interface ApplicationContentProps{
     details: ApplicationDetails;
+    from: ApplicationMenu
 }
 
 const ApplicationContent: React.FC<ApplicationContentProps> = ({
-    details
+    details,
+    from
 }) => {
     const locationToString = (location?: {
         city?: string;
@@ -378,7 +383,7 @@ const ApplicationContent: React.FC<ApplicationContentProps> = ({
     };
 
     const getApplicationStatusClass = (
-        status: ApplicationStatusValue,
+        statuses: ApplicationStatusValue[],
         step: "pending" | "interview" | "completion"
     ): string => {
 
@@ -389,33 +394,44 @@ const ApplicationContent: React.FC<ApplicationContentProps> = ({
 
         const completedStatuses: ApplicationStatusValue[] = [
             JobApplicationStatus.OFFER_ACCEPTED,
-            JobApplicationStatus.OFFER_DECLINED
+            JobApplicationStatus.OFFER_DECLINED,
+            JobApplicationStatus.OFFER_EXPIRED,
+            JobApplicationStatus.HIRED
         ];
 
+        const pendingStatuses: ApplicationStatusValue[] = [
+            JobApplicationStatus.OFFER_PENDING
+        ];
+
+        // check if at leats one status match with interview
         if (
             step === "interview" &&
-            interviewStatuses.includes(status)
+            statuses.some(status => interviewStatuses.includes(status))
         ) {
             return styles.interview;
         }
 
+        // Check if at leats one of the status match with completion
         if (
             step === "completion" &&
-            completedStatuses.includes(status)
+            statuses.some(status => completedStatuses.includes(status))
         ) {
             return styles.accepted;
         }
 
+        //-- Check if the application is pending
         if (
             step === "pending" &&
-            !interviewStatuses.includes(status) &&
-            !completedStatuses.includes(status)
+            (
+                statuses.some(status => pendingStatuses.includes(status)) ||
+                !statuses.some(status => completedStatuses.includes(status))
+            )
         ) {
             return styles.pending;
         }
 
         return "";
-    }; 
+    };
 
     return (
         <div className={styles.details}>
@@ -433,9 +449,9 @@ const ApplicationContent: React.FC<ApplicationContentProps> = ({
             <div className={styles.applicationsStatus}>
                 <span>Candidature envoyée : </span>
                 <div>
-                    <span className={`${getApplicationStatusClass(details.status, "pending")}`} >En cours</span>
-                    <span className={`${getApplicationStatusClass(details.status, "interview")}`}>Entrerien</span>
-                    <span  className={`${getApplicationStatusClass(details.status, "completion")}`}>Décision</span>
+                    <span className={`${getApplicationStatusClass(details.statuses, "pending")}`} >En cours</span>
+                    <span className={`${getApplicationStatusClass(details.statuses, "interview")}`}>Entrerien</span>
+                    <span  className={`${getApplicationStatusClass(details.statuses, "completion")}`}>Décision</span>
                 </div>
             </div>
             <div className={styles.tiptap}>

@@ -93,6 +93,7 @@ class CandidateEmploymentOfferReader
             'completed' => (int) ($result['completed'] ?? 0),
         ];
     }
+    
 
     /**
      * Retrieve employment offers for a candidate.
@@ -137,7 +138,7 @@ class CandidateEmploymentOfferReader
         string $candidateId,
         array $criteria = [],
         int $skip = 0,
-        int $limit = 15
+        int $limit = 15,
     ): array {
         $menu = $criteria['menu'] ?? EmploymentOfferMenu::ALL;
 

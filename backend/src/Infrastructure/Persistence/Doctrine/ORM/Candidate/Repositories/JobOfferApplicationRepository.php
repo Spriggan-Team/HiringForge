@@ -6,17 +6,16 @@ use App\Api\Responder\ApiResponse;
 use App\Domain\Candidate\Application\Application;
 use App\Domain\Exception\ApplicationNotFoundException;
 
-use App\Domain\Candidate\Application\JobApplicationStatus;
-use App\Domain\Candidate\Application\Pipeline\PipelineStageCriteriaResolver;
-use App\Domain\Candidate\Application\Repositories\ApplicationContext;
-use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
-use App\Domain\Candidate\Application\Repositories\CandidateApplication;
-use App\Domain\Candidate\Application\Pipeline\PipelineStageType;
-use App\Domain\Candidate\Application\Repositories\ApplicationMenu;
+use App\Domain\File\StaticMedia;
 use App\Domain\Candidate\CandidateLightModel;
 use App\Domain\EmploymentOffer\EmploymentOfferStatus;
-use App\Domain\File\StaticMedia;
-
+use App\Domain\Candidate\Application\JobApplicationStatus;
+use App\Domain\Candidate\Application\Pipeline\PipelineStageType;
+use App\Domain\Candidate\Application\Repositories\ApplicationMenu;
+use App\Domain\Candidate\Application\Repositories\ApplicationContext;
+use App\Domain\Candidate\Application\Repositories\CandidateApplication;
+use App\Domain\Candidate\Application\Pipeline\PipelineStageCriteriaResolver;
+use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 
 use App\Infrastructure\Persistence\Doctrine\ORM\Company\CompanyEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\JobOffer\JobOfferEntity;
@@ -97,8 +96,13 @@ class JobOfferApplicationRepository
             )
             ->innerJoin('a.jobOffer', 'j')
             ->innerJoin('j.address', 'addr')
-            ->innerJoin('j.contractType', 'c')
-            ->leftJoin('j.department', 'jd')
+            ->leftJoin('j.contractType', 'c')
+            ->leftJoin(
+                'j.department',
+                'jd',
+                'WITH',
+                'j.showDepartment = true'
+            )
             ->leftJoin('j.skills', 'js')
             ->leftJoin('js.skill', 's')
             ->leftJoin(
@@ -117,7 +121,7 @@ class JobOfferApplicationRepository
 
         if (empty($results)) {
             throw new \DomainException(
-                'Application not found or access denied.'
+                'Application not found'
             );
         }
 
@@ -191,13 +195,14 @@ class JobOfferApplicationRepository
      *                 mime: string
      *             }
      *         },
-     *         status: JobApplicationStatus,
+     *         statuses: array<int, JobApplicationStatus>,
      *         appliedAt: string,
      *         updatedAt: string
      *     }>,
      *     total: int
      * }
-     */#[Override]
+     */
+    #[Override]
     public function getApplicationsViewCollection(
         string $candidateId,
         int $skip = 0,
@@ -210,7 +215,8 @@ class JobOfferApplicationRepository
         * Interviews and employment offers are intentionally not joined here
         * to avoid duplicated rows caused by one-to-many relations.
         */
-        $applications = $this->createQueryBuilder('a')
+        $applications = [];
+        $appQuery = $this->createQueryBuilder('a')
             ->select(
                 'a.id AS id',
                 'a.appliedAt AS appliedAt',
@@ -237,13 +243,72 @@ class JobOfferApplicationRepository
             )
             ->leftJoin('jm.file', 'jf')
             ->where('a.candidate = :candidateId')
-            ->setParameter('candidateId', $candidateId)
-            ->orderBy('a.updatedAt', 'DESC')
-            ->setFirstResult($skip)
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getArrayResult();
+            ->setParameter('candidateId', $candidateId);
+ 
 
+        //-- Count total 
+        $countQuery = $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->where('a.candidate = :candidateId')
+            ->setParameter('candidateId', $candidateId);
+        
+        if($sectionType === ApplicationMenu::PENDING){
+            $subQueryData = $this->getEntityManager()->createQueryBuilder()
+                            ->select('1')
+                            ->from(EmploymentOfferEntity::class, 'eo')
+                            ->where('eo.application = a')
+                            ->andWhere('eo.expiredAt > CURRENT_TIMESTAMP()')
+                            ->andWhere('eo.status IN (:employmentPendingStatus)');
+            
+            $subQueryCount = clone $subQueryData;
+
+            $appQuery->andWhere($appQuery->expr()->exists($subQueryData->getDQL()))
+                     ->setParameter("employmentPendingStatus", [EmploymentOfferStatus::SENT]);
+            
+            $countQuery->andWhere($countQuery->expr()->exists($subQueryCount->getDQL()))
+                       ->setParameter("employmentPendingStatus", [EmploymentOfferStatus::SENT]);
+        }
+        elseif($sectionType === ApplicationMenu::INTERVIEW){ // at least one interview
+            $subQueryData = $this->getEntityManager()->createQueryBuilder()
+                            ->select('1')
+                            ->from(InterviewEntity::class, 'i')
+                            ->where('i.application = a');
+                        
+            $subQueryCount = clone $subQueryData;
+            
+            $appQuery->andWhere($appQuery->expr()->exists($subQueryData->getDQL()));
+            $countQuery->andWhere($countQuery->expr()->exists($subQueryCount->getDQL()));
+        }
+        elseif($sectionType === ApplicationMenu::COMPLETED){
+            $subQueryData = $this->getEntityManager()->createQueryBuilder()
+                            ->select('1')
+                            ->from(EmploymentOfferEntity::class, 'eo')
+                            ->where('eo.application = a')
+                            ->andWhere('eo.status IN (:completedEmploymentStatus)');
+                        
+            $subQueryCount = clone $subQueryData;
+            
+            $statuses = [
+                EmploymentOfferStatus::ACCEPTED, 
+                EmploymentOfferStatus::DECLINED,
+                EmploymentOfferStatus::EXPIRED
+            ];
+
+            $appQuery->andWhere($appQuery->expr()->exists($subQueryData->getDQL()))
+                              ->setParameter('completedEmploymentStatus', $statuses);
+            
+            $countQuery->andWhere($countQuery->expr()->exists($subQueryCount->getDQL()))
+                       ->setParameter('completedEmploymentStatus',$statuses);
+        }
+
+        //-- Apply apagination
+        $appQuery->orderBy('a.updatedAt', 'DESC')
+                 ->setFirstResult($skip)
+                 ->setMaxResults($limit);
+
+
+        $applications = $appQuery->getQuery()->getResult();
+     
         if (empty($applications)) {
             return [
                 "data" => [],
@@ -251,16 +316,11 @@ class JobOfferApplicationRepository
             ];
         }
 
+
         /**
          * Totals applictaions
          */
-        $total = (int) $this->createQueryBuilder('a')
-            ->select('COUNT(a.id)')
-            ->where('a.candidate = :candidateId')
-            ->setParameter('candidateId', $candidateId)
-            ->getQuery()
-            ->getSingleScalarResult();
-
+        $total = (int) $countQuery->getQuery()->getSingleScalarResult();
         $applicationIds = array_column($applications, 'id');
 
         /*
@@ -297,24 +357,18 @@ class JobOfferApplicationRepository
         * Group interview statuses by application.
         */
         $interviewsByApplication = [];
-
         foreach ($interviews as $interview) {
             $applicationId = $interview['applicationId'];
-
-            $interviewsByApplication[$applicationId][] =
-                $interview['status'];
+            $interviewsByApplication[$applicationId][] = $interview['status'];
         }
 
         /*
         * Group employment offer statuses by application.
         */
         $employmentOffersByApplication = [];
-
         foreach ($employmentOffers as $employmentOffer) {
             $applicationId = $employmentOffer['applicationId'];
-
-            $employmentOffersByApplication[$applicationId][] =
-                $employmentOffer['status'];
+            $employmentOffersByApplication[$applicationId][] = $employmentOffer['status'];
         }
 
         /*
@@ -327,16 +381,13 @@ class JobOfferApplicationRepository
             ): array {
                 $applicationId = $application['id'];
 
-                $interviewStatuses =
-                    $interviewsByApplication[$applicationId] ?? [];
+                $interviewStatuses = $interviewsByApplication[$applicationId] ?? [];
+                $employmentOfferStatuses = $employmentOffersByApplication[$applicationId] ?? [];
 
-                $employmentOfferStatuses =
-                    $employmentOffersByApplication[$applicationId] ?? [];
-
-                $resolvedStatus = $this->statusResolver->resolve(
-                    $application['applicationStatus'],
-                    $interviewStatuses,
-                    $employmentOfferStatuses
+                $resolvedStatuses = $this->statusResolver->resolve(
+                    applicationStatus: $application['applicationStatus'],
+                    interviewStatuses: $interviewStatuses,
+                    employmentOfferStatuses: $employmentOfferStatuses
                 );
 
                 return [
@@ -359,7 +410,7 @@ class JobOfferApplicationRepository
                         ],
                     ],
 
-                    'status' => $resolvedStatus,
+                    'statuses' => $resolvedStatuses,
 
                     'appliedAt' => $application['appliedAt']
                         ->format(DATE_ATOM),
@@ -372,68 +423,15 @@ class JobOfferApplicationRepository
         );
 
         /*
-        * Filter the collection using the resolved status.
+        * Response
         */
-        $results =  array_values(
-            array_filter(
-                $resolvedApplications,
-                fn (array $application): bool =>
-                    $this->matchesMenu(
-                        $application['status'],
-                        $sectionType
-                    )
-            )
-        );
-        // ApiResponse::$logger->error("Result/View: ".json_encode($results));
         return [
-            'data' => $results,
+            'data' => $resolvedApplications,
             'total' => $total,
         ];
     }
 
-    
-    /**
-     * Check whether an application status belongs to a menu section.
-     */
-    private function matchesMenu(
-        JobApplicationStatus $status,
-        ApplicationMenu $sectionType
-    ): bool {
-        return match ($sectionType) {
-            ApplicationMenu::ALL => true,
-            ApplicationMenu::PENDING =>
-                !in_array(
-                    $status,
-                    [
-                        JobApplicationStatus::INTERVIEW_SCHEDULED,
-                        JobApplicationStatus::IN_INTERVIEW,
-                        JobApplicationStatus::OFFER_ACCEPTED,
-                        JobApplicationStatus::OFFER_DECLINED,
-                    ],
-                    true
-                ),
 
-            ApplicationMenu::INTERVIEW =>
-                in_array(
-                    $status,
-                    [
-                        JobApplicationStatus::INTERVIEW_SCHEDULED,
-                        JobApplicationStatus::IN_INTERVIEW,
-                    ],
-                    true
-                ),
-
-            ApplicationMenu::COMPLETED =>
-                in_array(
-                    $status,
-                    [
-                        JobApplicationStatus::OFFER_ACCEPTED,
-                        JobApplicationStatus::OFFER_DECLINED,
-                    ],
-                    true
-                ),
-        };
-    }
 
 
     //------------------------------------------

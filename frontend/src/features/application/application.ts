@@ -15,7 +15,8 @@ export const JobApplicationStatus = {
   // --- Final Steps ---
   OFFER_PENDING: 'offer_pending',
   OFFER_ACCEPTED: 'offer_accepted',
-  OFFER_DECLINED: 'offer_declined',
+  OFFER_DECLINED: 'offer_declined',  // Offer declined by the candidate
+  OFFER_EXPIRED: 'offer_expired',   
   HIRED: 'hired',
 
   // --- Pipeline Outputs / Archiving ---
@@ -105,6 +106,7 @@ export const ALLOWED_STATUS_TRANSITIONS: Record<ApplicationStatusValue, Applicat
     JobApplicationStatus.HIRED,
     JobApplicationStatus.WITHDRAWN, // Last-minute cancellation
   ],
+  [JobApplicationStatus.OFFER_EXPIRED]: [],
 
   // Terminal statuses (no further action possible)
   [JobApplicationStatus.OFFER_DECLINED]: [],
@@ -167,7 +169,11 @@ export interface ApplicationView{
         name: string;
         logo: string;
     },
-    status: ApplicationStatusValue; //-- used here (status relative to interview, decision or pending)
+    department?:{
+      id: number;
+      name: string; //-- label
+    };
+    statuses: ApplicationStatusValue[]; //-- used here (statuses relative to interview, decision or pending)
     appliedAt: string;    
 }
 

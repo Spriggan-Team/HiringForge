@@ -38,15 +38,6 @@ interface SchedulingWorkspaceProps{}
 const DAYS_LABEL = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 
-interface CalendarInterviewCollectionItem{
-    id: string;
-    title?: string;
-    startDate: string;
-    minutes: number;
-    type?: InterviewTypeValue,
-    status: InterviewStatusValue
-}
-
 
 type ScheduledCalendartasks = Record<string, CalendarDayProps['scheduleTask']>;
 
@@ -61,17 +52,17 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
     const [hasMore, setHasMore] = useState(false);
 
     //-- Days
-    const [currentMonth, setCurrentMonth] = useState(today); //-- 
-    const [pendingDate, setPendingDate] = useState<Date | null>(null); //-- Selected date
+    const [currentMonth, setCurrentMonth] = useState(today);            //-- current month
+    const [pendingDate, setPendingDate] = useState<Date | null>(null);  //-- Selected date
 
     //-- Interviews
     const [scheduledTasks, setScheduledTasks] = useState<ScheduledCalendartasks>({}); // key: Y-m-d
     const [interviewsCalendarEvent, setInterviewsCalendarEvent] = useState<CalendarEvent[]>();
 
     //-- Memory Cache
-    const calendarScheduleCollection = useRef<Record<string, ScheduledCalendartasks>>({}); //Key: m-d
-    const interviewsCache = useRef<Record<string, CalendarEvent[]>>({}); // key: {skip,limit, date}
-    const imageUrlCache = useRef<Record<string, string>>({}); //-- key: interview.id
+    const imageUrlCache = useRef<Record<string, string>>({}); //-- key: candidate.id
+    const interviewsCache = useRef<Record<string, CalendarEvent[]>>({}); //-- key: {skip,limit, date}
+    const calendarScheduleCollection = useRef<Record<string, ScheduledCalendartasks>>({}); //-- Key: m-d
 
     //-- Get days
     const days = useMemo(()=>{
@@ -115,12 +106,13 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                 );
 
                 let image: string | null = null;
-                const imageKey = t.id;
+                const imageKey = t.candidate.id;
                 const imageCache = imageUrlCache.current;
 
                 if (imageCache[imageKey]) {
                     image = imageCache[imageKey];
-                } else {
+                }
+                else {
                     const blob = await InterviewsQueries.getCandidateImage({
                         interviewId: t.id,
                         candidateId: t.candidate.id
@@ -129,6 +121,7 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                     image = URL.createObjectURL(blob);
                     imageCache[imageKey] = image;
                 }
+
 
                 return {
                     id: t.id,
@@ -193,7 +186,6 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
 
                 //-- current calendar collection
                 const results = await InterviewsQueries.getRecruiterCalendarPlaning({ currentMonth });
-                console.log("RESULTS: ", results);
 
                 //- Normalizing
                 let scheduledTasks: ScheduledCalendartasks = {}
