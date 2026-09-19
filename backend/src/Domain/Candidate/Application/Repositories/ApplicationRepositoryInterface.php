@@ -62,7 +62,7 @@ interface ApplicationRepositoryInterface
      *                 mime: string
      *             }
      *         },
-     *         status: JobApplicationStatus,
+     *         statuses: array<int, JobApplicationStatus>,
      *         appliedAt: string,
      *         updatedAt: string
      *     }>,

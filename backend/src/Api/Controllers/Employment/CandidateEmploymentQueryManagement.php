@@ -3,17 +3,20 @@
 
 namespace App\Api\Controllers\Employment;
 
-use App\Api\Controllers\Helpers\ApiControllerHelpers;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
+use App\Api\Controllers\Helpers\ApiControllerHelpers;
 use App\Domain\EmploymentOffer\CandidateEmploymentOfferReaderInterface;
+use App\Domain\EmploymentOffer\EmploymentOfferMenu;
 use App\Domain\Shared\AccountStorageParams;
 use App\Domain\Shared\PathResolverInterface;
+
 use Psr\Log\LoggerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 
 
@@ -34,7 +37,7 @@ class CandidateEmploymentQueryManagement extends AbstractController
      *  - skip?: number
      *  - limit?: number
      *  - jobTitle?: string
-     * - menu
+     *  - menu: "PENDING" | "ACCEPTED" | "COMPLETED" | "REJECTED" | "ALL"
      */
     #[Route('/', methods: ['GET'])]
     public function getEmploymentOfferView(
@@ -55,10 +58,14 @@ class CandidateEmploymentQueryManagement extends AbstractController
                 )->toJsonResponse();
             }
 
+
             //-- Queries param
             $skipParam = $request->query->get("skip", null);
             $limitParam = $request->query->get("limit", null);
+            $menuParam = $request->query->get("menu", null);
+
             $jobTitle = $request->query->get("jobTitle", null);
+            $menu = $menuParam ? EmploymentOfferMenu::from($menuParam) : EmploymentOfferMenu::ALL;
 
             $skip = is_numeric($skipParam) ? (int) $skipParam : 0;
             $limit = is_numeric($limitParam) ? (int) $limitParam : 15;
@@ -68,8 +75,9 @@ class CandidateEmploymentQueryManagement extends AbstractController
                 skip: $skip,
                 limit: $limit,
                 criteria: [
-                    'jobTitle' => $jobTitle
-                ]
+                    'jobTitle' => $jobTitle,
+                    'menu' => $menu
+                ],
             );
 
             $map = array_map(
@@ -101,7 +109,10 @@ class CandidateEmploymentQueryManagement extends AbstractController
             );
 
             return ApiResponse::success(
-                data: $map,
+                data: [
+                   'data' => $map,
+                   'total' => $results['total']
+                ],
                 message: "Everything is okay"
             )->toJsonResponse();
         }

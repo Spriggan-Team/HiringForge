@@ -81,9 +81,7 @@ const ModifyJobPageContent: React.FC<ModifyJobPageContentProps> = ({}) => {
                 const id = jobId ?? editingJob?.id;
                 const view = await JobQueries.getJobView(id);
                 
-                console.log({view});
                 setEditingJob(view);
-                console.log({view})
             }
             catch(error){
                 console.log("Something went wrong while loading job: ", error);

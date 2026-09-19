@@ -13,7 +13,7 @@ interface TopBarNavigationOptions{
     text: string;
     count?: number;
     current?: boolean;
-    onClick?: ()=>void;
+    onClick?: (item: TopBarNavigationOptions)=>void;
     key?:string;
 }
 
@@ -31,7 +31,7 @@ const TopBarNavigation: React.FC<TopBarNavigationProps> = ({
                         key={index}
                         onClick={()=>{
                             if(item.onClick)
-                                item.onClick();
+                                item.onClick(item);
                             else
                                 onClick?.();
                         }}

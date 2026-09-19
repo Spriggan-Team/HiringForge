@@ -45,7 +45,12 @@ interface CandidateEmploymentOfferReaderInterface
     *   total: int
     *}
     */
-    public function fetchEmploymentOffersForCandidate(string $candidateId, array $criteria = [], int $skip = 0, int $limit = 15): array;
+    public function fetchEmploymentOffersForCandidate(
+        string $candidateId,
+        array $criteria = [],
+        int $skip = 0,
+        int $limit = 15,
+    ): array;
 
 
 

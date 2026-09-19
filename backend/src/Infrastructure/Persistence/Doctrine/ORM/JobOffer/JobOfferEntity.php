@@ -23,8 +23,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-
-
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity]
 #[ORM\Table(name: "job_offer")]
@@ -49,6 +48,9 @@ class JobOfferEntity
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $currency = null;
 
+    #[ORM\Column(type: Types::BOOLEAN)]
+    private bool $showDepartment = false; //-- Help decide wether a department should be private or made public
+
 
     #[ORM\Column(enumType: JobWorkMode::class, nullable: true)]
     private ?JobWorkMode $jobWorkMode = null;
@@ -64,7 +66,7 @@ class JobOfferEntity
 
 
     #[ORM\Column(nullable: false, enumType: JobPublicationStatus::class )]
-    private JobPublicationStatus  $publicationStatus = JobPublicationStatus::DRAFT; //-- publication state
+    private JobPublicationStatus  $publicationStatus = JobPublicationStatus::DRAFT; //-- publication state (visibility)
 
 
     #[ORM\Column(nullable: true, enumType: JobActivityStatus::class)]
@@ -388,6 +390,10 @@ class JobOfferEntity
     }
 
 
+    public function isDepartmentVisible(){
+        return $this->showDepartment;
+    }
+
     /* =======================
      * SETTERS
      * ======================= */
@@ -408,6 +414,12 @@ class JobOfferEntity
     public function setContent(array $content): static
     { 
         $this->content = $content;
+        return $this;
+    }
+
+    public function setShowDepartment(bool $showDepartment): static
+    {
+        $this->showDepartment = $showDepartment;
         return $this;
     }
 

@@ -1,16 +1,17 @@
 import { intercept } from "../../../utils/utils";
 import { handleGenericApiResponseAfter } from "../../api-response-handler";
 
-import { authGet, authPatch } from "../../http";
+import { authGet,  } from "../../http";
 import type { ApiResponseError } from "../../exceptions";
 
 import { type ApiResponse, } from "../response.types";
 import type {  CandidateEmploymentOfferResponse, CandidateEmploymentOffersStats, EmploymentOfferQueryResponse } from "./response";
-import type { OfferFilter } from "../../../features/employment/offer";
 
 
-
-//-- Recruiters
+/**
+ * Recruiters
+ * @returns 
+ */
 const getUserEmploymentOffer = async(
     { 
         jobId,
@@ -83,8 +84,10 @@ async function getCandidateEmploymentOffers({
 
 
 /**
+ * ---------------------------------
  * Retreives candidates stats
  * @returns 
+ * ---------------------------------
  */
 async function getCandidateEmploymentOfferStats() {
     try{

@@ -53,9 +53,10 @@ function App() {
   return (
     <div>
       <Routes>
+          {/** ENTRY PAGE */}
           <Route path={RouteScheme.main} element={<EntryPage />} />
           
-          {/** ALL - USER  PUBLIC */}
+          {/** ALL -  PUBLIC  PAGES*/}
           <Route element={<PublicAppLayout />}>
               <Route
                 path={RouteScheme.jobs}
@@ -66,6 +67,7 @@ function App() {
                 }
               />
           </Route>
+
 
           {/** REGISTERING  */}
           <Route path={RouteScheme.login} element={<Login />} />
@@ -79,6 +81,7 @@ function App() {
             {/** RH DIRECTOR REGISTERING  */}
             <Route path={RouteScheme.directorRegister}  element={<DirectorRegister />} />
           </Route>
+
 
           {/** PROTECTED ROUTES (AUTHENTIFICATION REQUIRED) */}
           <Route 
@@ -132,6 +135,8 @@ function App() {
 
             {/** PUBLIC ACCESS (AUTH) */}
           </Route>
+
+
       </Routes>
     </div>
   )

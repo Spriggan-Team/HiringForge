@@ -14,14 +14,15 @@ enum JobApplicationStatus: string
     // --- Evaluation Phase ---
     case SCREENING = 'screening';               // Initial Screening / Telephone Prequalification
     case PRESELECTED = 'preselected';
-    case INTERVIEW_SCHEDULED = 'interview_scheduled'; // Scheduled Maintenance
-    case IN_INTERVIEW = 'in_interview';         // Interview phase currently underway (HR, Technical, etc.)
-    case ASSESSMENT = 'assessment';             // Undergoing technical testing / case study ..ect
+    case INTERVIEW_SCHEDULED = 'interview_scheduled';   // Scheduled Maintenance
+    case IN_INTERVIEW = 'in_interview';                 // Interview phase currently underway (HR, Technical, etc.)
+    case ASSESSMENT = 'assessment';                     // Undergoing technical testing / case study ..ect
 
     // --- Final Steps  ---
     case OFFER_PENDING = 'offer_pending';       // Job offer sent (awaiting a response)
     case OFFER_ACCEPTED = 'offer_accepted';     // Offer accepted by the candidate
     case OFFER_DECLINED = 'offer_declined';     // Offer declined by the candidate
+    case OFFER_EXPIRED =  'offer_expired';      // Offer expired over time
     case HIRED = 'hired';                       // Officiellement recruté / Embauché
 
     // --- Pipeline Outputs / Archiving ---
