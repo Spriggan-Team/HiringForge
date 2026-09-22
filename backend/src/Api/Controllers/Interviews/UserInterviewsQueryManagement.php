@@ -5,6 +5,7 @@ namespace App\Api\Controllers\Interviews;
 use App\Api\Responder\ApiResponse;
 use App\Application\DTO\Auth\AuthenticatedPerson;
 use App\Api\Controllers\Helpers\ApiControllerHelpers;
+use App\Application\Query\Interviews\Repositories\RecruiterInterviewsQueryRepositoryInterface;
 
 use App\Domain\Interviews\InterviewsRepositoryInterface;
 use App\Domain\Interviews\InterviewStatus;
@@ -14,14 +15,19 @@ use App\Domain\Shared\PathResolverInterface;
 
 
 use Psr\Log\LoggerInterface;
+
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
+
+
+
 #[Route('/interviews/users')]
-class InterviewsUserQueryManagement extends AbstractController{
+class UserInterviewsQueryManagement extends AbstractController{
 
     use ApiControllerHelpers;
 
@@ -29,6 +35,7 @@ class InterviewsUserQueryManagement extends AbstractController{
         LoggerInterface $logger,
         private PathResolverInterface $pathResolver,
         private InterviewsRepositoryInterface $interviewsRepository,
+        private RecruiterInterviewsQueryRepositoryInterface $interviewQueryRepository
     )
     {
         ApiResponse::init($logger);
@@ -131,7 +138,7 @@ class InterviewsUserQueryManagement extends AbstractController{
             $skip = $request->query->getInt('skip', 0);
             $limit = $request->query->getInt('limit', 10);
 
-            $results = $this->interviewsRepository->getInterviewAgenda(
+            $results = $this->interviewQueryRepository->getInterviewAgenda(
                 userId: $user->getId(),
                 skip: $skip,
                 limit: $limit,
@@ -190,7 +197,7 @@ class InterviewsUserQueryManagement extends AbstractController{
             $skip  = max(0, filter_var($request->query->get('skip', 0), FILTER_VALIDATE_INT) ?: 0);
 
             //-- Fetching interviews with projection
-            $results = $this->interviewsRepository->fetchJobInterviewsProjection(
+            $results = $this->interviewQueryRepository->fetchJobInterviewsProjection(
                 jobId: $jobId,
                 limit: $limit,
                 skip: $skip,
@@ -213,9 +220,13 @@ class InterviewsUserQueryManagement extends AbstractController{
                             'mime' => true,
                         ],
                     ],
+                    'job'=>[
+                        'title' => true
+                    ]
                 ],
                 userId: $user->getId()
             );
+
 
             return ApiResponse::success(
                 data: $results,
@@ -254,7 +265,7 @@ class InterviewsUserQueryManagement extends AbstractController{
             }
 
             $currentMonth = new \DateTimeImmutable($currentMonthParam);
-            $results = $this->interviewsRepository->getCalendarCollectionViews(userId: $user->getId(), month: $currentMonth) ?? [];
+            $results = $this->interviewQueryRepository->getCalendarCollectionViews(userId: $user->getId(), month: $currentMonth) ?? [];
 
             return ApiResponse::success(
                 message: "Everyhing is ok",
@@ -270,21 +281,5 @@ class InterviewsUserQueryManagement extends AbstractController{
     }
 
 
-    #[Route('/calendar/day', methods: ['GET'])]
-    public function getInterviewsByDays(
-        string $interviewId
-    )
-    {
-        try{
-            /** @var AuthenticatedPerson $user */
-            $user = $this->getUser();
-        }
-        catch(\Exception $error){
-            return ApiResponse::error(
-                message: "Something went wrong while retreiving details interviw",
-                throwable: $error
-            )->toJsonResponse();
-        } 
-    }
 }
 

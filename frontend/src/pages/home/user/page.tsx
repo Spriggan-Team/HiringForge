@@ -6,8 +6,9 @@ import { useTranslation } from "react-i18next";
 
 //-- Services
 import RouteScheme from "../../../route.scheme";
+import { useAppContext } from "../../../hooks/context";
 import ApplicationQueries from "../../../api/services/application/queries";
-
+import { ViewModelFactory } from "../../../utils/view.model.factory";
 
 //-- Custom Component
 import KpiCard, { KpiCount, KpiPercentage } from "./component/kpi/kpi.card";
@@ -19,6 +20,7 @@ import Agenda from "./component/agenda/agenda";
 import ActiveOfferSection from "./component/offers/active.offer";
 import RecentActionPool from "./component/recent/recent.action.pool";
 import StatsChart from "./component/stats/stast.chart";
+import type { Dataset } from "../../../layout/components/charts/lineChart/lineChart";
 
 
 //-- SVG Components
@@ -29,9 +31,7 @@ import HiredSVG from "/src/assets/svg/menu/hire-a-helper-svgrepo-com.svg?react"
 
 //-- CSS Styles
 import styles from "./UserHome.module.css"
-import type { Dataset } from "../../../layout/components/charts/lineChart/lineChart";
-import { ViewModelFactory } from "../../../utils/view.model.factory";
-import { useAppContext } from "../../../hooks/context";
+
 
 
 

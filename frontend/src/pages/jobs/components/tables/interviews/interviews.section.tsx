@@ -1,15 +1,16 @@
-import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAppContext } from "../../../../../hooks/context";
 import { useDebounce } from "../../../../../hooks/timer";
 import InterviewsQueries from "../../../../../api/services/interviews/queries";
 import InterviewsServices from "../../../../../api/services/interviews/command";
-import JobQueries from "../../../../../api/services/jobs/queries";
 
-import type { CandidateLightModel } from "../../../../../features/candidates/candidates";
-import { INTERVIEW_STATUSES, InterviewStatus, type CreateInterviewFormData, type InterviewStatusValue, type InterviewTypeValue } from "../../../../../features/interviews/interviews";
+import type { PendingRequest } from "../../../../../features/shared/global";
+import type { CompleteJobView } from "../../../../../features/jobs/JobOffer";
+import { UnableResourceDeletion } from "../../../../../api/services/exceptions";
+import { ConcurrentInterviewsException } from "../../../../../api/services/interviews/exceptions";
+import {  InterviewStatus, type CreateInterviewFormData, type InterviewStatusValue,   } from "../../../../../features/interviews/interviews";
 
 
 import InterviewRow from "./components/interviews.table.row";
@@ -19,11 +20,6 @@ import { GenerateInterviewModal } from "./components/generate.interview.modal";
 
 
 import styles from "./Interviews.module.css";
-import { ConcurrentInterviewsException } from "../../../../../api/services/interviews/exceptions";
-import { UnableResourceDeletion } from "../../../../../api/services/exceptions";
-import type { CompleteJobView } from "../../../../../features/jobs/JobOffer";
-import { formatDateSafely } from "../../../../../utils/format";
-import type { PendingRequest } from "../../../../../features/shared/global";
 
 
 
@@ -53,7 +49,7 @@ const getInterviewsCacheKey = ({
     statuses,
     search
 }: {
-    jobId?: string;
+    jobId?: string | null;
     companyId?: string;
     skip: number;
     limit: number;
@@ -83,7 +79,10 @@ type PendingInterviewRequest = PendingRequest<InterviewsQueryCache>;
  */
 export interface Interview {
   id: string;
-  jobTitle: string;
+  job?:Partial<{
+    id: string;
+    jobTitle: string;
+  }>;
   candidate: string;
   email: string;
   scheduledAt: string;
@@ -219,7 +218,6 @@ export default function InterviewsSection({
           Date.now() - cached.fetchedAt < CACHE_DURATION
       ) {
           console.log("Interviews cache HIT", key);
-
           return cached;
       }
 
@@ -230,72 +228,72 @@ export default function InterviewsSection({
       console.log("Interviews cache MISS", key);
 
       const request = InterviewsQueries.getRecruiterJobOfferInterviews({
-              jobId,
-              companyId,
-              skip,
-              limit,
-              statuses,
-              signal ,
-              search
-          })
-          .then(async (responseData) => {
-            const mappedInterviews = await Promise.all(
-              responseData.map(async (value) => {
-                  const candidateId = value.candidate.id;
+          jobId,
+          companyId,
+          skip,
+          limit,
+          statuses,
+          signal ,
+          search
+      }).then(async (responseData) => {
+          const mappedInterviews = await Promise.all(
+            responseData.map(async (value) => {
+                const candidateId = value.candidate.id;
 
-                  let image =
-                      imageUrlCache.current.get(candidateId) ?? null;
+                let image =
+                    imageUrlCache.current.get(candidateId) ?? null;
 
-                  if (!image) {
-                      try {
-                          const blob =
-                              await InterviewsQueries.getCandidateImage({
-                                  candidateId,
-                                  interviewId: value.id,
-                              });
+                if (!image) {
+                    try {
+                        const blob = await InterviewsQueries.getCandidateImage({
+                            candidateId,
+                            interviewId: value.id,
+                        });
 
-                          image = URL.createObjectURL(blob);
+                        image = URL.createObjectURL(blob);
 
-                          imageUrlCache.current.set(
-                              candidateId,
-                              image
-                          );
-                      }
-                      catch {
-                          console.warn(
-                              `Unable to fetch image for ${candidateId}`
-                          );
-                      }
-                  }
+                        imageUrlCache.current.set(
+                            candidateId,
+                            image
+                        );
+                    }
+                    catch {
+                        console.warn(
+                            `Unable to fetch image for ${candidateId}`
+                        );
+                    }
+                }
 
-                  console.log("Format Date: ", value.startDate)
 
-                  return {
-                      ...value,
-                      id: value.id,
-                      jobTitle,
-                      candidate:`${value.candidate.firstName} ${value.candidate.lastName}`,
-                      email: value.candidate.email,
-                      scheduledAt:  formatDateSafely(value.startDate),
-                      locationOrLink: value.url,
-                      status: value.status,
-                      avatarUrl: image,
-                      minutes: value.minutes,
-                      candidateApproval: value.candidateApproval,
-                  };
-              })
-            );
+                return {
+                    ...value,
+                    id: value.id,
+                    job:{
+                      id: value.job?.id,
+                      jobTitle: value.job?.title ?? jobTitle ?? "",
+                    },
+                    candidate:`${value.candidate.firstName} ${value.candidate.lastName}`,
+                    email: value.candidate.email,
+                    scheduledAt:  value.startDate,
+                    locationOrLink: value.url,
+                    status: value.status,
+                    avatarUrl: image,
+                    minutes: value.minutes,
+                    candidateApproval: value.candidateApproval,
+                };
+            })
+          );
 
-            const result: InterviewsQueryCache = {
-                data: mappedInterviews,
-                hasMore: mappedInterviews.length === limit,
-                fetchedAt: Date.now(),
-            };
+          const result: InterviewsQueryCache = {
+              data: mappedInterviews,
+              hasMore: mappedInterviews.length === limit,
+              fetchedAt: Date.now(),
+          };
 
-            interviewsCache.current.set(key, result);
-            return result;
-          })
-          .finally(() => {});
+          interviewsCache.current.set(key, result);
+          return result;
+      })
+      .finally(() => {});
 
       return request;
   }), [jobId, companyId, jobTitle]);
@@ -356,7 +354,6 @@ export default function InterviewsSection({
           const signal = controller?.signal;
 
           try {
-
               const result = await requestInterviews({
                   skip,
                   limit: PAGE_LIMIT,
@@ -533,7 +530,6 @@ export default function InterviewsSection({
   const handleCreateInterview = useCallback(
     async (payload: CreateInterviewFormData) => {
       try{
-        console.log(payload)
         await InterviewsServices.createInterview({
           ...payload,
         });

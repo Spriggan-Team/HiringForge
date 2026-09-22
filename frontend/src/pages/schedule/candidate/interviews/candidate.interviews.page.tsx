@@ -1,40 +1,39 @@
 
+import React, {  useCallback, useEffect, useRef, useState } from "react"
+import { format, startOfToday } from "date-fns";
 
-import { 
-    startOfToday,
-    format,
-} from "date-fns";
-import { useTranslation } from "react-i18next";
-import { useCallback, useEffect, useRef, useState } from "react";
+//-- Services & types
+import InterviewsQueries from "../../../../api/services/interviews/queries";
+import { calculateInterviewTimeRange } from "../../../../utils/dates";
+import type { CalendarEvent } from "../../../../features/planning/planning";
+import { evalInterviewRate, formatInterviewsTitle } from "../../utils/format";
+import type { CalendarDayProps } from "../../../../layout/components/cards/calendar/CalendarDay";
 
-//-- Service 
-import InterviewsQueries from "../../../api/services/interviews/queries";
-import { formatInterviewsTitle, evalInterviewRate } from "../utils/format";
-import type {  CalendarEvent } from "../../../features/planning/planning";
-import { calculateInterviewTimeRange } from "../../../utils/dates";
+//-- Custom
+import SchedulingCalendar from "../../components/calendar/schedule.calendar";
+import SchedulingAside from "../../components/scheduling.aside";
 
-
-//-- Custom compoenents
-import SchedulingAside from "../components/scheduling.aside";
-import SchedulingCalendar from "../components/calendar/schedule.calendar";
-import type { CalendarDayProps } from "../../../layout/components/cards/calendar/CalendarDay";
+//-- SVG
 
 
 //-- CSS Styles
-import styles from "./SchedulingWorkspace.module.css"
+import styles from "./CandidateInterviewsPage.module.css"
 
-
-
-interface SchedulingWorkspaceProps{}
-
-
-
-type ScheduledCalendartasks = Record<string, CalendarDayProps['scheduleTask']>;
 
 
 const PAGE_LIMIT = 15;
+const DAYS_LABEL = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
+
+
+interface CandidateInterviewsPageProps{}
+type ScheduledCalendartasks = Record<string, CalendarDayProps['scheduleTask']>;
+
+
+
+const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({
+
+}) => {
     const today = startOfToday();
 
     //-- Pagination
@@ -50,7 +49,6 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
     const [interviewsCalendarEvent, setInterviewsCalendarEvent] = useState<CalendarEvent[]>();
 
     //-- Memory Cache
-    const imageUrlCache = useRef<Record<string, string>>({}); //-- key: candidate.id
     const interviewsCache = useRef<Record<string, CalendarEvent[]>>({}); //-- key: {skip,limit, date}
     const calendarScheduleCollection = useRef<Record<string, ScheduledCalendartasks>>({}); //-- Key: m-d
 
@@ -71,10 +69,10 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                 return;
             }
 
-            const result = await InterviewsQueries.getInterviewAgendaForRecruiter({
+            const result = await InterviewsQueries.getInterviewAgendaForCandidate({
                 skip, 
                 limit: PAGE_LIMIT, 
-                date: currentDate ,
+                date: currentDate,
             });
 
             const promises: Promise<CalendarEvent>[] = result.map(async (t) => {
@@ -82,25 +80,6 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                     t.startDate,
                     t.minutes
                 );
-
-                let image: string | null = null;
-                const imageKey = t.candidate.id;
-                const imageCache = imageUrlCache.current;
-
-                if (imageCache[imageKey]) {
-                    image = imageCache[imageKey];
-                }
-                else {
-                    const blob = await InterviewsQueries.getCandidateImage({
-                        interviewId: t.id,
-                        candidateId: t.candidate.id
-                    });
-
-                    image = URL.createObjectURL(blob);
-                    imageCache[imageKey] = image;
-                }
-
-                
 
                 return {
                     id: t.id,
@@ -119,8 +98,8 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                         now: today
                     }),
                     members: [{
-                        name: `${t.candidate.firstName} ${t.candidate.lastName}`,
-                        image
+                        name: t.company.name,
+                        image: t.company.logoUrl ?? "/assets/images/company-placeholder.png"
                     }],
                     time: {
                         start: timeRange.startTime,
@@ -164,8 +143,8 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                 }
 
                 //-- current calendar collection
-                const results = await InterviewsQueries.getRecruiterCalendarPlaning({ currentMonth });
-
+                const results = await InterviewsQueries.getCandidateCalendarPlaning({ currentMonth });
+                
                 //- Normalizing
                 let scheduledTasks: ScheduledCalendartasks = {}
                 for(const [key, interview] of Object.entries(results)){ //- key: Y-m-d
@@ -194,30 +173,30 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
     useEffect(()=>{
         if(pendingDate){
             fetchCurrentDateAgenda(pendingDate);
+            fetchCurrentDateAgenda(pendingDate);
         }
     }, [pendingDate, fetchCurrentDateAgenda])
 
 
-    //-- Clean - up
-    useEffect(()=>{
-        return ()=>{
-            Object.values(imageUrlCache.current).forEach((item)=>URL.revokeObjectURL(item))
-        }
-    },[])
 
+    /**
+     * -------------------------
+     * RENDER
+     * -------------------------
+     */
 
-    //--------------
-    //-- Render
-    //---------------
 
     return (
         <div className={styles.container}>
-            {/** CALENDAR */}
             <div className={styles.calendar}>
                 <SchedulingCalendar
                     today={today}
                     currentMonth={currentMonth}
                     setCurrentMonth={setCurrentMonth}
+                    onSelectedDate={(date)=>{
+                        setSkip(0);
+                        setPendingDate(date)
+                    }}
                     taskGenerator={(currentDate)=>{
                         return scheduledTasks[[
                                 currentDate.getFullYear(),
@@ -226,14 +205,11 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                             ].join("-")
                         ]
                     }}
-                    onSelectedDate={(date)=>{
-                        setSkip(0);
-                        setPendingDate(date)
-                    }}
                 />
             </div>
 
-            <SchedulingAside
+            <SchedulingAside 
+                date={pendingDate ?? today}
                 events={interviewsCalendarEvent ?? []}
                 onPrev={()=>{
                     setSkip((prev) => Math.max(0, prev - PAGE_LIMIT));
@@ -243,14 +219,26 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                         setSkip((prev)=> prev + PAGE_LIMIT);
                     }
                 }}
-                date={pendingDate ?? today}
-            />
+            >
+                <div>
+                    <button 
+                        type="button"
+                        className={styles.acceptBtn}
+                    >
+                        Accept
+                    </button>
+                    <button 
+                        type="button"
+                        className={styles.refuseBtn}
+                    >
+                        acceptBtn
+                    </button>
+                </div>
+            </SchedulingAside>
         </div>
     );
 }
-
  
-
-export default SchedulingWorkspace;
+export default CandidateInterviewsPage;
 
 

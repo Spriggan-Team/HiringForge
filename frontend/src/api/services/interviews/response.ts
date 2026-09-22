@@ -1,13 +1,20 @@
-import type {  BaseInterviewData, InterviewStatus, InterviewStatusValue, InterviewTypeValue, InterviewWithCandidateData } from "../../../features/interviews/interviews";
+import type {  
+    BaseInterviewData, 
+    InterviewStatus, 
+    InterviewStatusValue,
+    InterviewTypeValue,
+    InterviewWithCandidateData, 
+    InterviewWithCompanyData
+} from "../../../features/interviews/interviews";
 import type { ApiResponse } from "../response.types";
 
 
-//--- Jobd interviews collections
+//--- Jobd interviews collections (with details)
 export type RecruiterJobInterviewsResponse = ApiResponse<InterviewWithCandidateData[]>;
-
+export type CandidateJobInterviewsResponse = ApiResponse<InterviewWithCompanyData[]>;
 
 //-- Calendar Job interviews (Date key: Y-m-d)
-export type CalendarInterviewsCollectionResponse = ApiResponse<Record<string,{
+export type CalendarInterviewsCollectionResponse = ApiResponse<Record<string, {
     id: string;
     title?: string;
     minutes: number;
@@ -16,8 +23,6 @@ export type CalendarInterviewsCollectionResponse = ApiResponse<Record<string,{
     status: InterviewStatusValue
 }[]>>
 
-
-export type RecruiterJobInterviewsDetails = ApiResponse<BaseInterviewData>;
 
 
 export interface InterviewDetails {

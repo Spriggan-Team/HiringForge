@@ -17,12 +17,13 @@ return name
 };
 
 
-/**
- * Format date
- */
-
-//-- Format date
-export const formatDateSafely = (
+ /**
+  * Safely formats a date with its time.
+  *
+  * @param date Date value to format.
+  * @returns Formatted date and time, or "—" if invalid.
+  */
+export const formatDateTimeSafely  = (
     date: string | null | undefined | { date: string }
 ): string => {
     if (!date) {
@@ -42,22 +43,23 @@ export const formatDateSafely = (
 };
 
 
-/** Parse date safely */
+/**
+ * Safely parses a value into a JavaScript Date object.
+ *
+ * Supported values:
+ * - Date objects
+ * - Date strings
+ * - Numbers
+ * - Symfony date objects in the form `{ date: string; timezone?: string; timezone_type?: number }`
+ *
+ * Unsupported or invalid values return `null`.
+ */
 export const safeParsingDate = (value: unknown): Date | null => {
-    //Symfony date
-    if (
-        typeof value === "object" &&
-        value !== null &&
-        "date" in value
-    ) {
-        const parsedDate = new Date(
-            (value as { date: string }).date
-        );
-
-        return isNaN(parsedDate.getTime())
-            ? null
-            : parsedDate;
+    //-- Is already date
+    if (value instanceof Date) {
+        return isNaN(value.getTime()) ? null : value;
     }
+
 
     if (typeof value === "string" || typeof value === "number") {
         const parsedDate = new Date(value);
@@ -67,12 +69,38 @@ export const safeParsingDate = (value: unknown): Date | null => {
             : parsedDate;
     }
 
-    if (value instanceof Date) {
-        return isNaN(value.getTime()) ? null : value;
+    //-- Symfony Date object
+    if (
+        typeof value === "object" &&
+        value !== null &&
+        "date" in value
+    ) {
+        const dateObject = value as {
+            date: string;
+            timezone?: string;
+            timezone_type: number;
+        };
+
+        if(dateObject.timezone === "UTC"){
+            const parsedDate = new Date(dateObject.date.replace(" ", "T") + "Z");
+
+            return isNaN(parsedDate.getTime()) 
+                ? null
+                : parsedDate;
+        }
+
+        const parsedDate = new Date((value as { date: string }).date);
+
+        return isNaN(parsedDate.getTime())
+            ? null
+            : parsedDate;
     }
+
 
     return null;
 };
+
+
 
 
 

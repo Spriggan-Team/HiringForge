@@ -1,11 +1,14 @@
 
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 /**  Services */
 import { useAppContext } from "../../../../../hooks/context";
 import { type FlatOffer, type RecruiterEmploymentOffer, EmploymentOfferStatus } from "../../../../../features/employment/offer";
 import EmploymentOffersQueries from "../../../../../api/services/employment/queries";
+import { formatDateTimeSafely, getInitials } from "../../../../../utils/format";
+import ApplicationQueries from "../../../../../api/services/application/queries";
 
 //-- Custom Components
 import { CreateOfferForm } from "../../../../components/createOfferForm/create.offer.form";
@@ -17,9 +20,6 @@ import EmploymentOffersServices from "../../../../../api/services/employment/com
 
 //-- Styles
 import styles from "./EmploymentOffersSection.module.css";
-import { useTranslation } from "react-i18next";
-import { formatDateSafely, getInitials } from "../../../../../utils/format";
-import ApplicationQueries from "../../../../../api/services/application/queries";
 
 
 interface OffersSectionProps{
@@ -84,7 +84,8 @@ export default function EmploymentOffersSection({
                         const url = URL.createObjectURL(blob);
                         cache[data.id] = url;
                         avatarUrl = url;
-                    } catch (error) {
+                    }
+                    catch (error) {
                         console.error(`Impossible de charger l'image pour ${data.candidate.id}`, error);
                     }
                 }
@@ -464,12 +465,12 @@ const OfferTable: React.FC<OffersTableProps> = ({
 
                                     {/* Sent date */}
                                     <td data-label="Date d'envoi">
-                                        {formatDateSafely(offer.createdAt)}
+                                        {formatDateTimeSafely(offer.createdAt)}
                                     </td>
 
                                     {/* Expiration */}
                                     <td data-label="Expiration">
-                                        {formatDateSafely(offer.expiresAt)}
+                                        {formatDateTimeSafely(offer.expiresAt)}
                                     </td>
 
                                     {/* Statut : Display strict (Badge) */}

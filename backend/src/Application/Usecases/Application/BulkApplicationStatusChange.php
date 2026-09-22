@@ -7,8 +7,8 @@ use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface
 use App\Domain\Notification\JobApplicationStatusShiftData;
 
 use App\Domain\Notification\Notification;
-use App\Domain\Notification\NotificationRepositoryInterface;
 use App\Domain\Notification\NotificationType;
+use App\Domain\Notification\NotificationRepositoryInterface;
 
 
 class BulkApplicationStatusChange
@@ -63,9 +63,10 @@ class BulkApplicationStatusChange
         foreach ($statuses as $applicationId => $currentStatus) {
             $notifications[] = Notification::create(
                 accountId: $applicationContext->recruiterId,
-                recipientId: $userId,
+                recipientId: $applicationContext->candidateId,
                 type: NotificationType::JOB_APPLICATIONS_STATUS_SHIFT,
                 data: JobApplicationStatusShiftData::create(
+                    jobTitle: $applicationContext->jobTitle,
                     applicationId: $applicationId,
                     prevStatus: $currentStatus,
                     nextStatus: $newStatus

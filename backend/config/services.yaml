@@ -126,6 +126,12 @@ services:
     App\Domain\Interviews\InterviewsRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Interview\Repositories\InterviewsRepository
 
+    App\Application\Query\Interviews\Repositories\RecruiterInterviewsQueryRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Interview\Repositories\RecruiterInterfaceQueryRepository
+
+    App\Application\Query\Interviews\Repositories\CandidateInterviewsQueryRepositoryInterface:
+        alias: App\Infrastructure\Persistence\Doctrine\ORM\Interview\Repositories\CandidateInterviewsQueryRepository
+
     #------ Email -------
     App\Domain\Email\EmailRepositoryInterface:
         alias: App\Infrastructure\Persistence\Doctrine\ORM\Email\EmailRepository

@@ -3,7 +3,7 @@ import React from "react";
 import styles from "../Interviews.module.css";
 import type { Interview } from "../interviews.section";
 import { InterviewStatus, InterviewType } from "../../../../../../features/interviews/interviews";
-import { formatDateSafely, safeParsingDate } from "../../../../../../utils/format";
+import { formatDateTimeSafely, safeParsingDate } from "../../../../../../utils/format";
 
 
 interface InterviewRowProps {
@@ -22,8 +22,12 @@ const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
   onDelete,
   getInitials,
 }) => {
-  const scheduleDate = new Date(interview.scheduledAt);
-  const parsedDate =safeParsingDate(interview.scheduledAt)
+  console.log(interview)
+  const startDate = safeParsingDate(interview.scheduledAt);
+
+  console.log("scheduledAt:", interview.scheduledAt);
+  console.log("startDate:", startDate);
+  console.log("ISO:", startDate?.toISOString());
 
   return (
     <tr className={isUpdating ? styles.rowDisabled : ""}>
@@ -50,7 +54,7 @@ const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
 
       {/* Offre */}
       <td data-label="Offre d'emploi">
-        <span className={styles.jobTitle}>{interview.jobTitle}</span>
+        <span className={styles.jobTitle}>{interview.job?.jobTitle}</span>
       </td>
 
       {/* Date & Heure */}
@@ -58,8 +62,8 @@ const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
         <div className={styles.dateCell}>
           <span className={styles.dateText}>
             {
-              parsedDate
-                ? parsedDate.toLocaleDateString("fr-FR", {
+              startDate
+                ? startDate.toLocaleDateString("fr-FR", {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
@@ -67,11 +71,10 @@ const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
                 : "Date invalide"
             }
           </span>
-
           <span className={styles.timeText}>
             {
-              parsedDate &&
-                parsedDate.toLocaleTimeString("fr-FR", {
+              startDate &&
+                startDate.toLocaleTimeString("fr-FR", {
                   hour: "2-digit",
                   minute: "2-digit",
                 })

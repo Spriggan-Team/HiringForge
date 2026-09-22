@@ -89,6 +89,8 @@ class Interview
         ?InterviewType $type = null,
         ?string $id = null,
     ): self {
+        $startDate = $startDate->setTimezone(new \DateTimeZone('UTC'));
+
         return new self(
             minutes: $minutes,
             startDate: $startDate,
@@ -247,6 +249,7 @@ class Interview
     public function reschedule(
         \DateTimeImmutable $startDate
     ): void {
+        $startDate = $startDate->setTimezone(new \DateTimeZone("UTC"));
         $this->startDate = $startDate;
     }
 

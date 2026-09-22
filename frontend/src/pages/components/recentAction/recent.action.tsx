@@ -1,8 +1,10 @@
+import type React from "react";
+import type { ParseKeys } from "i18next";
 import { useTranslation } from "react-i18next";
-
 
 //-- Services
 import { Notifications, type NotificationTypes, type NotificationValueType } from "../../../features/notfication/notification";
+import { formatRemainingTime } from "../../../utils/format";
 
 // SVG - Components
 import UserPlus from "/src/assets/svg/notifications/user-plus-alt-1-svgrepo-com.svg?react"
@@ -15,9 +17,6 @@ import FileX from "/src/assets/svg/notifications/file-xmark-alt-1-svgrepo-com.sv
 
 //-- CSS Module
 import styles from "./RecentAction.module.css"
-import type React from "react";
-import type { ParseKeys } from "i18next";
-import { formatRemainingTime } from "../../../utils/format";
 
 
 
@@ -119,7 +118,12 @@ export const NOTIFICATION_CONFIGS: Record<NotificationValueType, NotificationCon
     icon: CalendarCheck,
     className: styles.statusShift,
     translationKey: 'notifications.applicationStatusShift',
-    getParams: (n) => ({}),
+    getParams: (n) => {
+      if(n.type !== Notifications.JOB_APPLICATIONS_STATUS_SHIFT) return {}
+      return ({
+        offer: n.data.jobTitle
+      })
+    },
   },
 };
 

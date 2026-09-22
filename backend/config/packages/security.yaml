@@ -40,17 +40,18 @@ security:
         - { path: ^/api/graphql,                         roles: [IS_AUTHENTICATED_FULLY] }
 
         # -- ROUTES PRIVEES 
-        - { path: ^/api/agents,                  roles: ROLE_AGENT }
-        - { path: ^/api/candidates,              roles: ROLE_CANDIDATE }
-        - { path: ^/api/users,                   roles: [ROLE_USER, ROLE_COMPANY_ADMIN] }
-        - { path: ^/api/departments,             roles: [ROLE_USER, ROLE_AGENT] }
-        - { path: ^/api/job_offers,              roles: [ROLE_USER, ROLE_AGENT, ROLE_COMPANY_ADMIN] }
-        - { path: ^/api/applications/candidate, roles: ROLE_CANDIDATE  }
-        - { path: ^/api/interviews/users,        roles: [ROLE_USER] }
-        - { path: ^/api/contract,                roles: [IS_AUTHENTICATED_FULLY] }
-        - { path: ^/api/applications,            roles: [IS_AUTHENTICATED_FULLY] }
-        - { path: ^/api/skills,                  roles: [IS_AUTHENTICATED_FULLY] }
-        - { path: ^/api/notification,            roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: ^/api/agents,                       roles: ROLE_AGENT }
+        - { path: ^/api/candidates,                   roles: ROLE_CANDIDATE }
+        - { path: ^/api/users,                        roles: [ROLE_USER, ROLE_COMPANY_ADMIN] }
+        - { path: ^/api/departments,                  roles: [ROLE_USER, ROLE_AGENT] }
+        - { path: ^/api/job_offers,                   roles: [ROLE_USER, ROLE_AGENT, ROLE_COMPANY_ADMIN] }
+        - { path: ^/api/applications/candidate,       roles: ROLE_CANDIDATE  }
+        - { path: ^/api/interviews/users,             roles: [ROLE_USER] }
+        - { path: ^/api/interviews/candidates,        roles: ROLE_CANDIDATE }
+        - { path: ^/api/contract,                     roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: ^/api/applications,                 roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: ^/api/skills,                       roles: [IS_AUTHENTICATED_FULLY] }
+        - { path: ^/api/notification,                 roles: [IS_AUTHENTICATED_FULLY] }
 
 
 

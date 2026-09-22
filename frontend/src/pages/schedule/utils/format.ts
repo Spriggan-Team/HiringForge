@@ -21,6 +21,20 @@ export const formatInterviewsTitle = ({title, type}: {title?: string, type?: str
 
 
 
+/**
+ * This function helps calculating/evaluating interview rate (flag)
+ * depending on the shcedule date, time & current date
+ *  - "urgent"  : the interview is  currently running
+ *  - "success" : the end time is exceed
+ *  - "danger"  : 15 minutes before start
+ *  - "warning" : one hour before start
+ *  - "high"    : it is plan for today
+ *  - "medium"  : it start tomorrow
+ *  - "normal"  : it is planned with this week
+ *  - "low"     : any other state
+ * @param param0 
+ * @returns 
+ */
 export function evalInterviewRate({
     interview,
     now =  new Date()
@@ -42,8 +56,7 @@ export function evalInterviewRate({
     const startTime = startDate.getTime();
     const endTime = endDate.getTime();
 
-    const minutesUntilStart =
-        (startTime - nowTime) / (1000 * 60);
+    const minutesUntilStart = (startTime - nowTime) / (1000 * 60);
 
     // Interview is currently running
     if (nowTime >= startTime && nowTime < endTime) {

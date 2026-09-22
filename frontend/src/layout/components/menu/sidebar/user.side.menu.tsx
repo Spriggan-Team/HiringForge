@@ -11,8 +11,9 @@ import { navigateTo } from "../../../../App";
 //-- SVG Components
 import LogoSVG from '/src/assets/custom-logo.svg?react';
 import HomeSVG from "/src/assets/svg/menu/home.svg?react"
-import PostSVG from "/src/assets/svg/menu/work-svgrepo-com.svg?react"
+import PostSVG from "/src/assets/svg/menu/job-work-chart-data-analysis-statistic-report-svgrepo-com.svg?react"
 import CandidateSVG from "/src/assets/svg/menu/candidate-for-elections-svgrepo-com.svg?react"
+import EmploymentOfferSVG from "/src/assets/svg/menu/employment-deal-svgrepo-com.svg?react"
 import InterviewsSVG from "/src/assets/svg/menu/user-speak-rounded-svgrepo-com.svg?react"
 import StatsSVG from "/src/assets/svg/analytics/analytics-svgrepo-com.svg?react"
 
@@ -31,6 +32,7 @@ export type MenuKeys = |
         | "offers"
         | "calendar"
         | "stats"
+        | "interviews"
 
 
 const UserSideMenu = () => {
@@ -44,7 +46,8 @@ const UserSideMenu = () => {
         { id: "home", svg: HomeSVG, label: t("global.menu.home"), route: RouteScheme.userHome },
         { id: "poste", svg: PostSVG, label: t("global.menu.poste"), route: RouteScheme.userJobs },
         { id: "candidates", svg: CandidateSVG, label: t("global.menu.candidates"), route: RouteScheme.userCandidate },
-        { id: "offers", svg: InterviewsSVG, label: t("global.menu.offers"), route: RouteScheme.userOffer },
+        { id: "offers", svg: EmploymentOfferSVG, label: t("global.menu.offers"), route: RouteScheme.userOffer },
+        { id: "interviews", svg: InterviewsSVG, label: t("global.menu.Interviews", "Interviews"), route: RouteScheme.userIntervews },
         { id: "calendar", svg: DateSVGComponent, label: t("global.menu.calendar"), route: RouteScheme.userSchedule },
         { id: "stats", svg: StatsSVG, label: t("global.menu.stats"), route: RouteScheme.userStats },
         // { id: "agents", svg: AgentSVG, label: t("global.menu.agents"), route: "" },

@@ -7,18 +7,20 @@ import type { CalendarEvent } from "../../../features/planning/planning";
 //-- Custom components
 import ArrowNavigation from "../../../layout/components/navigation/arrow.navigation";
 import Title from "../../../layout/components/text/title/title";
+import { CardPlaceholder } from "../../../layout/components/cards/placeholder/card.placeholder";
+import EventCard from "../../../layout/components/cards/event/event.card";
 
 
 //-- CSS Modules
 import styles from "./SchedulingAside.module.css"
-import { CardPlaceholder } from "../../../layout/components/cards/placeholder/card.placeholder";
-import EventCard from "../../../layout/components/cards/event/event.card";
 
 
 interface SchedulingAsideProps{
     date: Date;
     events: CalendarEvent[];
     className?: string;
+    children?: React.ReactNode;
+
     onPrev?:(currentLenght: number) => void;
     onNext?: (currentLenght: number) => void;
 }
@@ -26,6 +28,7 @@ interface SchedulingAsideProps{
 const SchedulingAside: React.FC<SchedulingAsideProps> = ({
     date,
     events = [],
+    children,
 
     onNext,
     onPrev,
@@ -60,7 +63,9 @@ const SchedulingAside: React.FC<SchedulingAsideProps> = ({
                                     t={t}
                                     key={index}
                                     event={event}
-                                />
+                                >
+                                    {children && children}
+                                </EventCard>
                             );
                         }) :
                         <CardPlaceholder text="Aucun entretien" />

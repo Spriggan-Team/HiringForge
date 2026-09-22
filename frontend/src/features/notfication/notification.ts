@@ -2,6 +2,8 @@
 //  Notification Data Types
 // ==========================================
 
+import type { ApplicationStatusValue } from "../application/application";
+
 
 /** Interfaces for notification lined to an offer */
 export interface BaseJobNotificationData {
@@ -13,6 +15,13 @@ export interface JobAppliedData extends BaseJobNotificationData {
   candidateId: string;
   candidateName: string;
 }
+
+export interface JobApplicationStatusShift  {
+  applicationId: string;
+  prevStatus: ApplicationStatusValue;
+  nexStatus: ApplicationStatusValue;
+  jobTitle: string;
+} 
 
 export interface InterviewScheduledData extends BaseJobNotificationData {
   scheduledAt: string; // ISO 8601 String
@@ -89,9 +98,14 @@ interface BaseNotification {
 
 
 export type JobAppliedNotification = BaseNotification & {
-  type: 'JOB_APPLIED';
+  type:  'JOB_APPLIED';
   data: JobAppliedData;
 };
+
+export type JobApplicationStatusShiftNotification = BaseNotification & {
+  type: 'JOB_APPLICATIONS_STATUS_SHIFT';
+  data: JobApplicationStatusShift;
+}
 
 
 export type InterviewScheduledNotification = BaseNotification & {
@@ -129,6 +143,7 @@ export type JobNotification = JobAppliedNotification;
 /** Type Global for any notfication  */
 export type NotificationTypes =
   | JobAppliedNotification
+  | JobApplicationStatusShiftNotification
   | InterviewScheduledNotification
   | CandidateRejectedNotification
   | SystemAlertNotification

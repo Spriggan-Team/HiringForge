@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './OfferDetailModal.module.css';
 import type { FlatOffer } from '../../../../features/employment/offer';
-import { formatDateSafely } from '../../../../utils/format';
+import { formatDateTimeSafely } from '../../../../utils/format';
 
 interface OfferDetailModalProps {
   offer: FlatOffer;
@@ -62,7 +62,7 @@ export const OfferDetailModal: React.FC<OfferDetailModalProps> = ({
         <div className={styles.detailItem}>
           <strong>Date d'envoi :</strong>
           <p className={styles.detailValue}>
-            {formatDateSafely(offer.createdAt) || '—'}
+            {formatDateTimeSafely(offer.createdAt) || '—'}
           </p>
         </div>
 
@@ -70,7 +70,7 @@ export const OfferDetailModal: React.FC<OfferDetailModalProps> = ({
         <div className={styles.detailItem}>
           <strong>Expiration :</strong>
           <p className={styles.detailValue}>
-            {formatDateSafely(offer.expiresAt) || '—'}
+            {formatDateTimeSafely(offer.expiresAt) || '—'}
           </p>
         </div>
 
@@ -78,7 +78,7 @@ export const OfferDetailModal: React.FC<OfferDetailModalProps> = ({
         <div className={styles.detailItem}>
           <strong>Date de fin :</strong>
           <p className={styles.detailValue}>
-            {formatDateSafely(offer.scheduledEndDate) || '—'}
+            {formatDateTimeSafely(offer.scheduledEndDate) || '—'}
           </p>
         </div>
 

@@ -199,6 +199,7 @@ export const parseFrenchDate = (dateString: string): Date | null => {
 
 /**
  * Convert date + minutes into time range data
+ * - date + minutes -> start: time, end: time
  */
 export const calculateInterviewTimeRange = (
   startDate: string | Date,

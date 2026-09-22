@@ -32,13 +32,14 @@ import PublicJobPage from './pages/jobs/public/public.job.page'
 import PublicNavBar from './pages/components/navbar/public.navbar'
 import JobApplicationPage from './pages/candidate/apply/job.application.page'
 import CandidateApplicationPage from './pages/candidate/applications/candidate.applications.page'
-import CandidateInterviewsPage from './pages/candidate/interviews/candidate.interviews.page'
 import CandidateOfferPage from './pages/candidate/offers/candidate.offer.page'
 import CandidateProfilPage from './pages/candidate/profile/candidate.profile.page'
 import CandidateContextProvider from './context/candidate.context'
 import CreateJobPage from './pages/jobs/form/create.job.page'
 import ModifyJobPage from './pages/jobs/form/modify.job.page'
 import UserProfilPage from './pages/user/profil/profil.page'
+import CandidateInterviewsPage from './pages/schedule/candidate/interviews/candidate.interviews.page'
+import UserInterviewsPage from './pages/user/interviews/user.interview.page'
 
 
 
@@ -99,7 +100,9 @@ function App() {
                 <Route path={RouteScheme.createJob} element={<CreateJobPage /> }/>
                 {/** Modify JOB */}
                 <Route path={RouteScheme.modifyJob} element={<ModifyJobPage /> }/>
-                {/** SCHEDULE PAGE */}
+                {/** INTERVIEWS PAGES */}
+                <Route path={RouteScheme.userIntervews} element={<UserInterviewsPage />} />
+                {/** SCHEDULE/CALENDAR PAGE */}
                 <Route path={RouteScheme.userSchedule} element={<SchedulingWorkspace />} />
                 {/** CANDIDATES */}
                 <Route path={RouteScheme.userCandidate} element={<CandidatesPage />} />

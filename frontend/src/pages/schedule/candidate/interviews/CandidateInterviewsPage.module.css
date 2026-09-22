@@ -11,19 +11,22 @@
     transition: flex-direction 0.3s ease;
 }
 
+
 .calendar{
     flex: 3.5;
 }
 
 
-/*   RESPONSIVE  */
-
+/* ---------------
+ RESPONSIVE  
+ -------------------*/
 /* Tablet -  Smaller Desktops */
 @media (max-width: 1024px) {
     .container {
         gap: 16px;
         padding: 16px;
     }
+    
 
 }
 

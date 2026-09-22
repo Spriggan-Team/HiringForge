@@ -1,19 +1,9 @@
-/* MAIN LAYOUT & RESPONSIVENESS */
 
-.container {
-    display: flex;
-    gap: 24px;
-    width: 100%;
-    min-height: 100vh;
-    background-color: #f8fafc;
-    padding: 24px;
-    box-sizing: border-box;
-    transition: flex-direction 0.3s ease;
-}
+
+
 
 /* Calendar Section sizing */
 .calendar {
-    flex: 3.5;
     display: flex;
     flex-direction: column;
 
@@ -46,11 +36,11 @@
     pointer-events: none; 
 }
 
+
+
 .disable{
     color: #94a3b8;
 }
-
-/*   RESPONSIVE  */
 
 /* Tablet -  Smaller Desktops */
 @media (max-width: 1024px) {

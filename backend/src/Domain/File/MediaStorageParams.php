@@ -11,7 +11,7 @@ final class MediaStorageParams
         public readonly MediaOwnerType $ownerType,
         public readonly MediaPurpose $purpose,
         public readonly MediaStorageScope $scope = MediaStorageScope::PUBLIC,
-        public ?string $storedFileName = null,
+        public ?string $storedFileName = null, //-- can be useful when use for about storing
         
         /**
          * This is the relative path from the src folder ("/path")

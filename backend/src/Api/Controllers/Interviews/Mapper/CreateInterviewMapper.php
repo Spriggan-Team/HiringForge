@@ -17,15 +17,16 @@ class CreateInterviewMapper
         return new CreateInterviewRequest(
             title: $body['title'] ?? null,
             candidateId: $body['candidateId'],
-            scheduledAt: new \DateTimeImmutable(
-                $body['scheduledAt']
-            ),
+            scheduledAt: new \DateTimeImmutable($body['scheduledAt'] ),
             description: $body['description'] ?? null,
+
             url: $body['url'] ?? null,
             applicationId: $body['applicationId'],
+
             type: !empty($body['type'])
                 ? InterviewType::from($body['type'])
                 : null,
+                
             minutes: isset($body['minutes'])
                 && is_numeric($body['minutes'])
                     ? (int) $body['minutes']

@@ -1,4 +1,6 @@
-import type { SymfonyDateTime } from "../shared/global";
+import type { 
+  SymfonyDateTime
+} from "../shared/global";
 
 export class InterviewStatus {
   static readonly CLOSED = 'closed'; // indicate manual closure/cancellation (handled: ok)
@@ -32,16 +34,20 @@ export const INTERVIEW_TYPES: InterviewTypeValue[] = [
 ]
 
 
+//--------------------------------------
+//-- main interviews object projection
+//--------------------------------------
 
-//-- Helpers
 export type InterviewWithCandidateData = BaseInterviewData & {
-    candidate: CandidateData;
+  candidate: CandidateDataForInterview;
 };
 
 
-//---------------------
-///- Utils/Componets
-//----------------------
+export type InterviewWithCompanyData = BaseInterviewData & CompanyDataForInterview
+
+//-----------------------
+///- Utils/Composition items
+//------------------------
 
 export type BaseInterviewData = {
   id: string;
@@ -54,19 +60,36 @@ export type BaseInterviewData = {
   type?: InterviewTypeValue;
   candidateApproval?: boolean
   rejectionReason?: string | null;
+  job?:{
+    id: string;
+    title: string;
+  }
 };
 
+export interface CandidateDataForInterview  {
+  id:string;
+  firstName: string;
+  lastName: string;
+  imageId?: number;
+  email: string; 
+}
 
-export type CandidateData = {
-    id:string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    imageId?: number;
-};
+
+export interface CompanyDataForInterview{
+  company: {
+    id: string;
+    name: string;
+    logoUrl?: string;
+  }
+}
 
 
+
+
+
+//----------------
 //-- UI
+//-----------------
 
 export interface Interview {
   id: string;
@@ -89,6 +112,5 @@ export interface CreateInterviewFormData {
   url?: string;
   type?: InterviewTypeValue;
   minutes: number;
-
   applicationId: string;
 }

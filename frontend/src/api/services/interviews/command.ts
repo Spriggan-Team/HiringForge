@@ -12,6 +12,7 @@ import type { CreateInterviewRequest } from "./request";
 
 const createInterview = async (data: CreateInterviewRequest)=>{
     try{
+        console.log("Data", data)
         await authPost(`/interviews/users/create`, data);
     }
     catch(error){

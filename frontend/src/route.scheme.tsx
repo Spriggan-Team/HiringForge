@@ -43,7 +43,10 @@ const RouteScheme = {
     userSchedule: "/user/schedule",
 
     //-- USER OFFERS
-    userOffer: '/user/interviews',
+    userOffer: '/user/offers',
+
+    //-- USER INTERVIEWs
+    userIntervews: '/user/interviews',
 
     //-- STATS
     userStats: '/user/stats'

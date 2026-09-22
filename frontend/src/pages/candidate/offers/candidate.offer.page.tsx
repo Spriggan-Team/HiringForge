@@ -6,7 +6,7 @@ import React, {
     useState,
 } from "react";
 
-import { formatDateSafely } from "../../../utils/format";
+import { formatDateTimeSafely } from "../../../utils/format";
 import EmploymentOffersQueries from "../../../api/services/employment/queries";
 import EmploymentOffersServices from "../../../api/services/employment/command";
 import type { CandidateEmploymentOffer, EmploymentOfferStats, OfferFilter } from "../../../features/employment/offer";
@@ -597,11 +597,11 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                         <span>
                                             <b>▣</b>
                                             Jusqu'au{" "}
-                                            {formatDateSafely(offer.scheduledEndDate)}
+                                            {formatDateTimeSafely(offer.scheduledEndDate)}
                                         </span>
                                         <span>
                                             Reçue le{" "}
-                                            {formatDateSafely(offer.createdAt)}
+                                            {formatDateTimeSafely(offer.createdAt)}
                                         </span>
 
                                     </div>
@@ -610,9 +610,7 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                         <div className={ styles.expiration } >
                                             Réponse avant le{" "}
                                             <strong>
-                                                {formatDateSafely(
-                                                    offer.expiredAt
-                                                )}
+                                                {formatDateTimeSafely(offer.expiredAt)}
                                             </strong>
                                         </div>
                                     )}
@@ -720,7 +718,7 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                         Offre reçue
                                     </span>
                                     <strong>
-                                        {formatDateSafely(currentEmploymentDetails.createdAt)}
+                                        {formatDateTimeSafely(currentEmploymentDetails.createdAt)}
                                     </strong>
                                 </div>
 
@@ -729,13 +727,13 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
                                         Date de fin prévue
                                     </span>
                                     <strong>
-                                        {formatDateSafely(currentEmploymentDetails.scheduledEndDate)}
+                                        {formatDateTimeSafely(currentEmploymentDetails.scheduledEndDate)}
                                     </strong>
                                 </div>
 
                                 <div>
                                     <span> Date limite de réponse</span>
-                                    <strong>{formatDateSafely(currentEmploymentDetails.expiredAt.date)}</strong>
+                                    <strong>{formatDateTimeSafely(currentEmploymentDetails.expiredAt.date)}</strong>
                                 </div>
                             </div>
 
