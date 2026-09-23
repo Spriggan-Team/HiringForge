@@ -9,6 +9,7 @@ import AuthServices from "../../../api/services/auth/auth";
 import RouteScheme from "../../../route.scheme";
 import NotificationQueries from "../../../api/services/notification/queries";
 import { useAppNavigate } from "../../../hooks/navigation";
+import type { CurrentUser } from "../../../features/shared/account";
 
 //-- Custom Components
 import MenuDrawer, { MenuDrawerBody, MenuDrawerItem, MenuDrawerTrigger } from "../../../layout/components/menu/dropdown/menu.dropdown";
@@ -148,6 +149,7 @@ const UserNavBar: React.FC<NavBarProps> = ({
                 {/** Profil menu */}
                 <ProfileMenu 
                     t={t}
+                    user={user}
                     handleLogout={handleLogout}
                     handleNavigation={(route)=>{
                         navigate(route)
@@ -167,12 +169,14 @@ export default UserNavBar;
 
 interface ProfileMenuProps{
     t: TFunction;
+    user: CurrentUser;
     handleLogout: ()=> void;
     handleNavigation: (route: string) => void;
 }
 
 const ProfileMenu: React.FC<ProfileMenuProps> = ({ 
     t,
+    user,
     handleLogout,
     handleNavigation
 }) => {
@@ -187,7 +191,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
                             <img 
                                 alt="Photo de profil de Thomas"
                                 className={styles.avatar}
-                                src="/src/assets/images/pngtree-glitch-effect-avatar-profile-vector-png-image_15605578.png" 
+                                src={user.avatarUrl ?? "/src/assets/images/pngtree-glitch-effect-avatar-profile-vector-png-image_15605578.png"} 
                             />
                             <div className={styles.profileDetails}>
                                 <span className={styles.username}>Thomas</span>

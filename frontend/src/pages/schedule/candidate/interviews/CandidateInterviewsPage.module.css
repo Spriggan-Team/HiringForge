@@ -17,10 +17,36 @@
 }
 
 
+/**-------------------------------------------
+ Schedule Aside children (Custom styles)
+ --------------------------------------------
+**/
+
+.taskActionsButtons{
+    width: 100%;
+    display: flex;
+    gap: 5px;
+    justify-content: end;
+}
+
+
+.taskActionsButtons button{
+    border: 0;
+    cursor: pointer;
+    border-radius: 7px;
+    padding: 10px 15px;
+}
+
+.taskActionsButtons .acceptBtn{
+    color: white;
+    background: #2563EB;
+}
+
 /* ---------------
  RESPONSIVE  
  -------------------*/
-/* Tablet -  Smaller Desktops */
+
+ /* Tablet -  Smaller Desktops */
 @media (max-width: 1024px) {
     .container {
         gap: 16px;

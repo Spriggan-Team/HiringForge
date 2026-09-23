@@ -25,7 +25,7 @@ class EmploymentOfferEntity
     private ?string $message = null;
 
     #[ORM\Column(type: Types::FLOAT, nullable: true)]
-    private ?float $salary = null;
+    private ?float $salary = null; //-- annual salary
 
     #[ORM\Column(
         enumType: EmploymentOfferStatus::class
@@ -37,7 +37,7 @@ class EmploymentOfferEntity
     private ?string $rejectionReason = null;
 
     #[ORM\Column]
-    private \DateTimeImmutable $expiredAt;
+    private \DateTimeImmutable $expiredAt; // max date for receiving response
     
     #[ORM\Column]
     private \DateTimeImmutable $scheduledEndDate;

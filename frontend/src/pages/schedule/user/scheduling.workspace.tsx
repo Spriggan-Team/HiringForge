@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import InterviewsQueries from "../../../api/services/interviews/queries";
 import { formatInterviewsTitle, evalInterviewRate } from "../utils/format";
 import type {  CalendarEvent } from "../../../features/planning/planning";
-import { calculateInterviewTimeRange } from "../../../utils/dates";
+import { calculateTimeRange } from "../../../utils/dates";
 
 
 //-- Custom compoenents
@@ -78,7 +78,7 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
             });
 
             const promises: Promise<CalendarEvent>[] = result.map(async (t) => {
-                const timeRange = calculateInterviewTimeRange(
+                const timeRange = calculateTimeRange(
                     t.startDate,
                     t.minutes
                 );
@@ -122,10 +122,7 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                         name: `${t.candidate.firstName} ${t.candidate.lastName}`,
                         image
                     }],
-                    time: {
-                        start: timeRange.startTime,
-                        end: timeRange.endTime
-                    }
+                    durationMinutes: t.minutes
                 };
             });
 

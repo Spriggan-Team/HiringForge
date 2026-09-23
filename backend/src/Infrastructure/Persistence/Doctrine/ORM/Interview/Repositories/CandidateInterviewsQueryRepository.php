@@ -48,6 +48,7 @@ class CandidateInterviewsQueryRepository extends ServiceEntityRepository
      *              mime: string
      *          },
      *      },
+     *      status: InterviewStatus,
      *      description?: string,
      *      startDate: \DateTimeImmutable,
      *      rejectionReason?: string,
@@ -108,6 +109,7 @@ class CandidateInterviewsQueryRepository extends ServiceEntityRepository
                     'id' => $company->getId(),
                     'name' => $company->getName(),
                 ],
+                'status' => $interview->getStatus(),
                 'startDate' => $interview->getStartDate()->format(\DateTimeInterface::ATOM),
                 'minutes' => $interview->getMinutes(),
                 'rejectionReason'=> $interview->getRejectionReason()

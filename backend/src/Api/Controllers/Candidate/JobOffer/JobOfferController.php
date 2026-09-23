@@ -42,7 +42,6 @@ class JobOfferController extends AbstractController
         try{
             /** @var AuthenticatedPerson|null $candidate */
             $candidate = $this->getUser();
-            $this->logger->error("Candidate View maagement yeah yeah !!");
             if(!$candidate){
                 return ApiResponse::error(
                     message: "Unauthorize action",

@@ -131,7 +131,7 @@ export const formatDateInputValue  = (e: React.ChangeEvent<HTMLInputElement>, ca
  * the first inserted date is the representative of
  * the over with its timeframe.
  * @param date 
- * @param timeframe 
+ * @param timeframe - week|month
  * @returns 
  */
 export const getTimeframeCacheKey = (
@@ -201,7 +201,7 @@ export const parseFrenchDate = (dateString: string): Date | null => {
  * Convert date + minutes into time range data
  * - date + minutes -> start: time, end: time
  */
-export const calculateInterviewTimeRange = (
+export const calculateTimeRange = (
   startDate: string | Date,
   minutes: number
 ): TimeRange => {
@@ -229,4 +229,35 @@ export const calculateInterviewTimeRange = (
       minutes: end.getMinutes(),
     },
   };
+};
+
+
+/**
+ * Calculate date progression 
+ * @returns 
+ */
+export const calculateProgress = (
+    startDate: string | Date,
+    durationMinutes: number,
+): number => {
+    const start = new Date(startDate);
+
+    if (Number.isNaN(start.getTime())) {
+        return 0;
+    }
+
+    const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
+    const now = new Date();
+
+    const total = end.getTime() - start.getTime();
+    const elapsed = now.getTime() - start.getTime();
+
+    if (total <= 0) {
+        return 0;
+    }
+
+    return Math.min(
+        1,
+        Math.max(0, elapsed / total)
+    );
 };

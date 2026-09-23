@@ -331,30 +331,6 @@ const CandidateOfferPage: React.FC<CandidateOfferPageProps> = () => {
         fetchStats,
     ]);
 
-    // --------------------------------------------------
-    // Pagination
-    // --------------------------------------------------
-
-    const canGoPrevious = skip > 0;
-    const canGoNext = skip + limit < currentTotal;
-
-    const handlePreviousPage = () => {
-        if (!canGoPrevious) {
-            return;
-        }
-
-        setSkip(
-            Math.max(0, skip - limit)
-        );
-    };
-
-    const handleNextPage = () => {
-        if (!canGoNext) {
-            return;
-        }
-
-        setSkip(skip + limit);
-    };
 
     // --------------------------------------------------
     // Render

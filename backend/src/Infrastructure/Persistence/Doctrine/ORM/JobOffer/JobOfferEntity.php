@@ -102,6 +102,12 @@ class JobOfferEntity
         targetEntity: DepartmentEntity::class,
         inversedBy: "jobOffers",
     )]
+    #[ORM\JoinColumn(
+        name: 'department_id',
+        referencedColumnName: 'id',
+        nullable: true,
+        onDelete: 'SET NULL'
+    )]
     private ?DepartmentEntity $department = null;
 
 
@@ -118,6 +124,11 @@ class JobOfferEntity
     #[ORM\ManyToOne(
         targetEntity: AddressEntity::class,
         cascade: ['persist'],
+    )]
+    #[ORM\JoinColumn(
+        name: 'address_id',
+        referencedColumnName: 'id',
+        onDelete: 'SET NULL'
     )]
     private AddressEntity $address;
 

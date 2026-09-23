@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import {  Routes, Route, Outlet, useNavigate } from 'react-router-dom'
 
 //--Services
 import RouteScheme from './route.scheme'
 import { httpContext } from './api/http-context'
+import { useAppContext } from './hooks/context'
 
 //-- Custom Compoenents
 import UserSideMenu from './layout/components/menu/sidebar/user.side.menu'
@@ -44,11 +46,20 @@ import UserInterviewsPage from './pages/user/interviews/user.interview.page'
 
 
 
+
 function App() {
+  const {t} = useTranslation();
   const navigate = useNavigate();
+  const { setPopup } = useAppContext();
 
   useEffect(()=>{
-    httpContext.setNavigate(navigate)
+    httpContext.setNavigate(navigate);
+    httpContext.setSessionExpiredHandler(()=>{
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("menu");
+      setPopup({ status: 'warning', message: t('global.messages.expiredAuthentificationSession') })
+    })
   },[navigate]);
   
   return (

@@ -202,7 +202,11 @@ export const getElapsedTime = (start: Time, end: Time): string => {
 //-- delat time
 export const toSeconds = ({ hours, minutes }: Time) => hours * 3600 + minutes * 60;
 
-
+/**
+ * Obtains The number of secs elapsed between
+ * two time object ({hours: number , minutes: number}) 
+ * @returns 
+ */
 export const getDeltaSecondeTime = (start: Time, end: Time): number => {
     return Math.max(0, toSeconds(end) - toSeconds(start));
 };

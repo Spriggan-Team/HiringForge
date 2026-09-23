@@ -4,6 +4,7 @@ namespace App\Application\Usecases\User;
 
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\User\UserRepositoryInterface;
+use Smalot\PdfParser\Exception\NotImplementedException;
 
 class UserEraser
 {
@@ -21,6 +22,6 @@ class UserEraser
         string $userId
     ): void
     {
-
+        throw new  NotImplementedException("Usecase : UserEraser is not implemented yet");
     }
 }

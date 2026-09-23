@@ -2,6 +2,8 @@ import type {
   SymfonyDateTime
 } from "../shared/global";
 
+
+
 export class InterviewStatus {
   static readonly CLOSED = 'closed'; // indicate manual closure/cancellation (handled: ok)
   static readonly MISSED = 'missed';

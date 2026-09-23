@@ -4,14 +4,15 @@ import { format, startOfToday } from "date-fns";
 
 //-- Services & types
 import InterviewsQueries from "../../../../api/services/interviews/queries";
-import { calculateInterviewTimeRange } from "../../../../utils/dates";
 import type { CalendarEvent } from "../../../../features/planning/planning";
 import { evalInterviewRate, formatInterviewsTitle } from "../../utils/format";
 import type { CalendarDayProps } from "../../../../layout/components/cards/calendar/CalendarDay";
+import { InterviewStatus, type InterviewStatusValue } from "../../../../features/interviews/interviews";
 
 //-- Custom
 import SchedulingCalendar from "../../components/calendar/schedule.calendar";
 import SchedulingAside from "../../components/scheduling.aside";
+import { SchedulingAsideItemFooter } from "../../components/slot/scheduling.aside.slot";
 
 //-- SVG
 
@@ -21,18 +22,30 @@ import styles from "./CandidateInterviewsPage.module.css"
 
 
 
-const PAGE_LIMIT = 15;
-const DAYS_LABEL = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-
-
-interface CandidateInterviewsPageProps{}
+/**
+ * ------------------
+ * Types (utility)
+ * ------------------
+ */ 
+type CandidateCalendarEvent = {
+    interviewStatus: InterviewStatusValue
+};
 type ScheduledCalendartasks = Record<string, CalendarDayProps['scheduleTask']>;
+
+
+/**
+ * --------------
+ * Components
+ * ------------
+ */
+interface CandidateInterviewsPageProps{}
+
+const PAGE_LIMIT = 15;
 
 
 
 const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({
-
 }) => {
     const today = startOfToday();
 
@@ -46,10 +59,10 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({
 
     //-- Interviews
     const [scheduledTasks, setScheduledTasks] = useState<ScheduledCalendartasks>({}); // key: Y-m-d
-    const [interviewsCalendarEvent, setInterviewsCalendarEvent] = useState<CalendarEvent[]>();
+    const [interviewsCalendarEvent, setInterviewsCalendarEvent] = useState<CalendarEvent<CandidateCalendarEvent>[]>();
 
     //-- Memory Cache
-    const interviewsCache = useRef<Record<string, CalendarEvent[]>>({}); //-- key: {skip,limit, date}
+    const interviewsCache = useRef<Record<string, CalendarEvent<CandidateCalendarEvent>[]>>({}); //-- key: {skip,limit, date}
     const calendarScheduleCollection = useRef<Record<string, ScheduledCalendartasks>>({}); //-- Key: m-d
 
 
@@ -65,7 +78,9 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({
 
             if(cache[cacheKey]){
                 console.log("Interviews deatails: ", cache[cacheKey]);
+                console.log("Event", cache[cacheKey])
                 setInterviewsCalendarEvent(cache[cacheKey]);
+
                 return;
             }
 
@@ -75,12 +90,8 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({
                 date: currentDate,
             });
 
-            const promises: Promise<CalendarEvent>[] = result.map(async (t) => {
-                const timeRange = calculateInterviewTimeRange(
-                    t.startDate,
-                    t.minutes
-                );
 
+            const promises: Promise<CalendarEvent<CandidateCalendarEvent>>[] = result.map(async (t) => {
                 return {
                     id: t.id,
                     title: formatInterviewsTitle({
@@ -90,6 +101,7 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({
                     date: new Date(t.startDate),
                     type: t.type,
                     note: t.description ?? "",
+                    
                     rate: evalInterviewRate({
                         interview: {
                             startDate: t.startDate,
@@ -97,18 +109,19 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({
                         },
                         now: today
                     }),
+
+                    interviewStatus: t.status,
+                    badge: translateInterviewStatus(t.status),
+
                     members: [{
                         name: t.company.name,
                         image: t.company.logoUrl ?? "/assets/images/company-placeholder.png"
                     }],
-                    time: {
-                        start: timeRange.startTime,
-                        end: timeRange.endTime
-                    }
+                    durationMinutes: t.minutes
                 };
             });
 
-            const mapped: CalendarEvent[] = await Promise.all(promises);
+            const mapped: CalendarEvent<CandidateCalendarEvent>[] = await Promise.all(promises);
             cache[cacheKey] = mapped;
 
             setInterviewsCalendarEvent(mapped);
@@ -185,7 +198,6 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({
      * -------------------------
      */
 
-
     return (
         <div className={styles.container}>
             <div className={styles.calendar}>
@@ -208,7 +220,7 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({
                 />
             </div>
 
-            <SchedulingAside 
+            <SchedulingAside<CandidateCalendarEvent>
                 date={pendingDate ?? today}
                 events={interviewsCalendarEvent ?? []}
                 onPrev={()=>{
@@ -220,20 +232,26 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({
                     }
                 }}
             >
-                <div>
-                    <button 
-                        type="button"
-                        className={styles.acceptBtn}
-                    >
-                        Accept
-                    </button>
-                    <button 
-                        type="button"
-                        className={styles.refuseBtn}
-                    >
-                        acceptBtn
-                    </button>
-                </div>
+                <SchedulingAsideItemFooter>
+                    {(event)=> {
+                        const immutableStatus = [InterviewStatus.CLOSED];
+                        const endDate = new Date(event.date.getTime() + event.durationMinutes * 60 * 1000);
+
+                        const isNotMutable  = immutableStatus.includes(
+                                (event as CalendarEvent<CandidateCalendarEvent>).interviewStatus as string
+                            ) || today > endDate ;
+                        
+                        return (
+                             isNotMutable ? null : (
+                                <CandidateScheduleItemActionButtons 
+                                    id={event.id}
+                                    onAcceptCompleted={()=>{}}
+                                    onRefuseCompleted={()=>{}}
+                                />
+                            )
+                        )
+                    }}
+                </SchedulingAsideItemFooter>
             </SchedulingAside>
         </div>
     );
@@ -242,3 +260,62 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({
 export default CandidateInterviewsPage;
 
 
+const CandidateScheduleItemActionButtons = ({
+    id,
+    onAcceptCompleted,
+    onRefuseCompleted
+}: {
+    id: string;
+    onAcceptCompleted: (id: string)=>void;
+    onRefuseCompleted: (id: string, data: { reason: string })=>void
+}) => {
+    /**
+     * -------------
+     * handlers
+     * -------------
+     */
+    const acceptInterviews = useCallback(async()=>{
+
+    },[])
+
+    const refuseInterviews = useCallback(async()=>{
+
+    },[])
+
+    return (
+        <div 
+            key={id}
+            className={styles.taskActionsButtons}
+        >
+            <button 
+                type="button"
+                className={styles.acceptBtn}
+            >
+                Accept
+            </button>
+            <button 
+                type="button"
+                className={styles.refuseBtn}
+            >
+                Refuse
+            </button>
+        </div>
+    );
+}
+ 
+/**
+ * -----------------
+ * Helper
+ * -----------------
+ */
+
+/**
+ * Transforme interview status into
+ * @param status 
+ */
+const translateInterviewStatus = (status: InterviewStatusValue)=>{
+    switch(status){
+        default:
+            return ""
+    }
+}

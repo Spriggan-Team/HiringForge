@@ -3,6 +3,7 @@ import styles from "./styles.module.css"
 
 
 export interface GaugeProps{
+    /**Percent btween 0-1 */
     percent?: number;
     color?: string;
     width?: string | number;

@@ -349,7 +349,7 @@ class Company{
     public function removeDepartmentById(int $departmentId){
         foreach ($this->departments as $key => $department) {
             if ($department->id() === $departmentId) {
-                unset($department[$key]);
+                unset($this->departments[$key]);
                 break;
             }
         }

@@ -12,15 +12,23 @@
     box-sizing: border-box;
 }
 
-/* Event Card Header (Time Tag + Dynamic Timeline Bar) */
-.event > .header {
+/* Event Card Header ( Time Tag + Dynamic Timeline Bar) */
+.event .header{
+    gap: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+.event > .header .timeIndicator {
     display: flex;
     align-items: center;
     gap: 12px;
     width: 100%;
 }
 
-.event > .header .text {
+.event > .header .timeIndicator .text {
     font-size: 0.75rem;
     font-weight: 700;
     color: #475569;
@@ -37,6 +45,8 @@
     border-radius: 2px;
     background-color: #e2e8f0;
 }
+
+
 
 
 /* Title & Description Section */
@@ -135,4 +145,20 @@
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.75rem;
+}
+
+/**
+---------------
+    Status
+---------------
+**/
+
+.status{
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.infoPill{
+    padding: 5px 15px;
 }

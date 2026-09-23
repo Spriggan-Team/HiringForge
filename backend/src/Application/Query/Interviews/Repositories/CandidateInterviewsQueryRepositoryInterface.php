@@ -27,6 +27,7 @@ interface CandidateInterviewsQueryRepositoryInterface
      *              mime: string
      *          },
      *      },
+     *      status: InterviewStatus,
      *      description?: string,
      *      startDate: \DateTimeImmutable,
      *      rejectionReason?: string,

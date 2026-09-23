@@ -244,7 +244,6 @@ class UserQueryManagement extends AbstractController
                     ),
                     mime: $user->image()->mime,
                 );
-                ApiResponse::$logger->error("Company user url : " . $avatar);
             }
 
             $userData = [
@@ -252,7 +251,7 @@ class UserQueryManagement extends AbstractController
                 'firstName' => $user->firstName(),
                 'lastName'  => $user->lastName(),
                 'email'     => $user->email(),
-                'avatarUrl'    => $avatar,
+                'avatarUrl' => $avatar,
             ];
 
             //----------------------------------------------

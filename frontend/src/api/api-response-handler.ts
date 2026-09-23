@@ -9,6 +9,7 @@ export const handleGenericApiResponseAfter =  (
 ) => {
     if (result instanceof HttpBadResponse) {
         if (result.apiCode === ApiResponseCode.AUTH_ACCESS_EXPIRED) {
+            httpContext.triggerSessionExpired();
             return httpContext.navigate(RouteScheme.login);
         }
     }

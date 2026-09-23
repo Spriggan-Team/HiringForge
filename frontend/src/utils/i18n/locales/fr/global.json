@@ -45,7 +45,8 @@
             "seeMore": "Voir plus",
             "logoutSuccess": "Deconnexion réussie",
             "loading": "Chargement",
-            "unexpectedErrorReload": "Une erreur inattendue est survenue. Veuillez recharger la page."
+            "unexpectedErrorReload": "Une erreur inattendue est survenue. Veuillez recharger la page.",
+            "expiredAuthentificationSession": "Votre session de connexion est expirée"
         },
 
 

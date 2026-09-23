@@ -51,7 +51,11 @@ const getProfileData = async ({
 }
 
 
-//-- Queries
+/**
+ * -----------------------
+ * Queries
+ * ----------------
+ */
 const Queries =  { 
     getKPI,
     getCurrentUserContext,
