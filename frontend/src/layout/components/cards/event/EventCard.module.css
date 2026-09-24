@@ -147,18 +147,89 @@
     font-size: 0.75rem;
 }
 
+
 /**
----------------
-    Status
----------------
+*---------------
+*    Links
+* ---------------
 **/
 
-.status{
+.links{
+    gap: 5px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+
+/** 
+ * ----------------
+ * Status
+ * ----------------
+ */
+
+.status {
     width: 100%;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
 }
 
-.infoPill{
+/* Base applied to every status */
+.status :global(.infoPill) {
+    border: 1px solid transparent;
+    font-size: 12px;
+    font-weight: 500;
     padding: 5px 15px;
 }
+
+/* Accepted */
+.status_accepted {
+    --pill-color: #264FEB;
+    --pill-background: #E3EDFE;
+    --pill-border: #B9CDFB;
+}
+
+/* Refused */
+.status_refused {
+    --pill-color: #B42318;
+    --pill-background: #FEE4E2;
+    --pill-border: #FECDCA;
+}
+
+/* Normal / scheduled */
+.status_normal {
+    --pill-color: #475467;
+    --pill-background: #F2F4F7;
+    --pill-border: #D0D5DD;
+}
+
+/* Missed */
+.status_missed {
+    --pill-color: #7A271A;
+    --pill-background: #FEF0C7;
+    --pill-border: #FEDF89;
+}
+
+/* In progress */
+.status_in_progess {
+    --pill-color: #175CD3;
+    --pill-background: #EFF8FF;
+    --pill-border: #B2DDFF;
+}
+
+/* Closed */
+.status_close {
+    --pill-color: #344054;
+    --pill-background: #EAECF0;
+    --pill-border: #D0D5DD;
+}
+
+/**
+------------
+Info flag
+-----------
+**/
+.infoPill{
+}
+
+

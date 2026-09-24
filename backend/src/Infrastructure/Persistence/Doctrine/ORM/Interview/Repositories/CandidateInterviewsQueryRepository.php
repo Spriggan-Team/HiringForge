@@ -40,6 +40,7 @@ class CandidateInterviewsQueryRepository extends ServiceEntityRepository
      *      id: string,
      *      type: string,
      *      title: string,
+     *      url?:string,
      *      company: array{
      *          id: string,
      *          name: string,
@@ -51,8 +52,9 @@ class CandidateInterviewsQueryRepository extends ServiceEntityRepository
      *      status: InterviewStatus,
      *      description?: string,
      *      startDate: \DateTimeImmutable,
+     *      minutes: int,
+     *      candidateApproval: bool,
      *      rejectionReason?: string,
-     *      minutes: int
      * }>
      */
     #[Override]
@@ -80,11 +82,36 @@ class CandidateInterviewsQueryRepository extends ServiceEntityRepository
             ->orderBy('i.startDate', 'ASC')
             ->setFirstResult($skip)
             ->setMaxResults($limit)
-                ->setParameters([
+            ->setParameters([
                 'candidateId' => $candidateId,
                 'dayStart' => $dayStart,
                 'dayEnd' => $dayEnd,
-            ]);;
+            ])
+            ->orderBy(
+                '
+                    CASE
+                        WHEN i.status = :scheduled
+                            AND i.candidateApproval = false
+                        THEN 0
+
+                        WHEN i.status = :progress THEN 1
+                        WHEN i.candidateApproval = true THEN 2
+                        WHEN i.status = :completed THEN 3
+                        WHEN i.candidateApproval = false  THEN 4
+                        WHEN i.status = :close  THEN 5
+                        WHEN i.status = :missed THEN 6
+                        
+                        ELSE 7
+                    END
+                ',
+                'ASC'
+            )
+            ->addOrderBy('i.startDate', 'ASC')
+            ->setParameter('scheduled', InterviewStatus::SCHEDULED->value)
+            ->setParameter('completed', InterviewStatus::COMPLETED->value)
+            ->setParameter('close', InterviewStatus::CLOSED->value)
+            ->setParameter('missed', InterviewStatus::MISSED->value)
+            ->setParameter('progress', InterviewStatus::IN_PROGRESS->value);
 
         //-- Treat statuses
         if(!empty($statuses)){
@@ -109,9 +136,11 @@ class CandidateInterviewsQueryRepository extends ServiceEntityRepository
                     'id' => $company->getId(),
                     'name' => $company->getName(),
                 ],
+                'url' => $interview->getURL(),
                 'status' => $interview->getStatus(),
                 'startDate' => $interview->getStartDate()->format(\DateTimeInterface::ATOM),
                 'minutes' => $interview->getMinutes(),
+                'candidateApproval' => $interview->getCandidateApproval(),
                 'rejectionReason'=> $interview->getRejectionReason()
             ];
 

@@ -18,7 +18,7 @@ class Interview
 
     private InterviewStatus $status;
 
-    private bool $candidateApproval = false;
+    private ?bool $candidateApproval = null;
 
     private ?string $rejectionReason = null;
 

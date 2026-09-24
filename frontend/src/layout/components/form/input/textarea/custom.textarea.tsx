@@ -1,18 +1,21 @@
 
+import React from 'react'
 import styles from "./style.module.css";
 
 
 interface CustomTextareaProps{
-    inputName?: string;
-    placeholder?: string;
-    value?: undefined;
-    setValue?: (v: string) => void;
+  inputName?: string;
+  placeholder?: string;
+  value?: string;
+  setValue?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 
 const CustomTextarea: React.FC<CustomTextareaProps> = ({
     inputName = "textarea",
-    placeholder, value, setValue
+    placeholder, 
+    value="", 
+    setValue
 }) => {
   return (
     <div className={styles.container}>
@@ -22,8 +25,7 @@ const CustomTextarea: React.FC<CustomTextareaProps> = ({
         className={styles.input}
         placeholder={placeholder}
         onChange={(event)=> {
-            if(setValue)
-                 setValue(event.target.value)
+            if(setValue) setValue(event.target.value)
         }}
       />
     </div>

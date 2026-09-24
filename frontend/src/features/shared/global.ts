@@ -1,4 +1,4 @@
-
+import { type FC, type ReactNode } from "react"
 // Time
 
 export interface Time{
@@ -105,6 +105,14 @@ export interface AutoCompleteSearchResultItem {
   [key: string]: unknown; 
 }
 
+//-- component
+export type SlotComponentProps = {
+    children: ReactNode;
+};
+
+export type EventSlotComponentProps<T = {}> = {
+    children: (event: T) => ReactNode;
+};
 
 //----------------------------
 //------ API Only

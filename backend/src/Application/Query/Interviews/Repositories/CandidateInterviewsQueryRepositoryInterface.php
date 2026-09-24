@@ -19,6 +19,7 @@ interface CandidateInterviewsQueryRepositoryInterface
      *      id: string,
      *      type: string,
      *      title: string,
+     *      url?: string,
      *      company: array{
      *          id: string,
      *          name: string,
@@ -31,6 +32,7 @@ interface CandidateInterviewsQueryRepositoryInterface
      *      description?: string,
      *      startDate: \DateTimeImmutable,
      *      rejectionReason?: string,
+     *      candidateApproval: bool,
      *      minutes: int
      * }>
      */

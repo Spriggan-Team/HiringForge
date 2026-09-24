@@ -1,0 +1,44 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    width: 100%;
+    padding: 0.5rem;
+}
+
+.buttonSection {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
+.confirmRefuseBtn {
+    min-width: 130px;
+    max-width: 180px;
+    border-radius: 6px;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #ffffff;
+    background-color: #e53e3e;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 4px rgba(229, 62, 62, 0.2);
+}
+
+.confirmRefuseBtn:hover {
+    background-color: #c53030;
+    box-shadow: 0 4px 8px rgba(229, 62, 62, 0.3);
+}
+
+.confirmRefuseBtn:active {
+    transform: scale(0.98);
+}
+
+
+.container textarea:focus {
+    border-color: #3182ce;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
+}

@@ -1,18 +1,29 @@
 import type { InterviewTypeValue } from "../interviews/interviews";
 import type { Time } from "../shared/global";
 
+
+
 export type CalendarEvent<T = {}> = T & {
     id: string;
     title: string;
-    date: Date;
     type?: InterviewTypeValue;
+    
+    date: Date;
+    endDate: Date;
+    durationMinutes: number;
+
     note?: string;
     rate: TaskRate;
-    status?: string; //-- text for status, ect...
+    badge?: {
+        text: string
+        flag: CalendarEventBadgeCSSFlag 
+    }; //-- text for status, ect...
+
+    links?: {url?: string; isActive?: boolean}[] | null;
     members: {name: string, image?: string | null}[]; //string[]: name[] -> array of name
-    durationMinutes: number;
 } 
 
+export type CalendarEventBadgeCSSFlag =  'accepted' | 'refused'  | 'normal' | 'missed' | 'in_progess' | 'close' | '';
 
 
 export type TaskRate =
@@ -39,9 +50,11 @@ export const INITIAL_CALENDAR_EVENT_VIEW: CalendarEvent = {
     id: "",
     title: "",
     date: new Date(),
+    endDate: new Date(),
     type: undefined,
     note: "string",
     rate: "normal",
     members: [],
-    durationMinutes: 0
+    durationMinutes: 0,
+    links: [],
 }

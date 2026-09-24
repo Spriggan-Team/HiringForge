@@ -4,10 +4,14 @@
 namespace App\Infrastructure\Persistence\Doctrine\ORM\Interview\Repositories\Mapper;
 
 use App\Domain\Interviews\Interview;
+
 use App\Infrastructure\Persistence\Doctrine\ORM\Candidate\ApplicationEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity ;
 use App\Infrastructure\Persistence\Doctrine\ORM\User\UserEntity;
+
+
 use Doctrine\ORM\EntityManagerInterface;
+
 
 class InterviewEntityMapper
 {

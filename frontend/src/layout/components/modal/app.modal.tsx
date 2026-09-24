@@ -56,7 +56,11 @@ export const AppModal: React.FC = () => {
                 </header>
 
                 <div className={styles.body}>
-                    {modal.content}
+                    {
+                        typeof modal.content === "function" ?
+                            modal.content()
+                            : modal.content
+                    }
                 </div>
             </div>
         </div>,

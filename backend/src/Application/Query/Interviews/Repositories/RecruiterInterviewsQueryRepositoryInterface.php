@@ -83,6 +83,7 @@ interface RecruiterInterviewsQueryRepositoryInterface
      *      id: string,
      *      type: string,
      *      title: string,
+     *      url?: string,
      *      candidate: array{
      *          id: string,
      *          firstName: string,

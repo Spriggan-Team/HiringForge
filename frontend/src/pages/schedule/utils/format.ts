@@ -1,6 +1,7 @@
-import { InterviewType } from "../../../features/interviews/interviews";
-import type { TaskRate } from "../../../features/planning/planning";
+import { InterviewStatus, InterviewType, type InterviewStatusValue } from "../../../features/interviews/interviews";
 
+import type { CalendarEventBadgeCSSFlag, TaskRate } from "../../../features/planning/planning";
+import type { ComputedInterviewsStatus } from "./type";
 
 
 export const formatInterviewsTitle = ({title, type}: {title?: string, type?: string})=>{
@@ -112,4 +113,55 @@ function isTomorrow(date: Date, now: Date): boolean {
     tomorrow.setDate(now.getDate() + 1);
 
     return isSameDay(date, tomorrow);
+}
+
+
+
+
+/**
+ * Transforme interview status into
+ * @param status 
+ */
+export const translateInterviewStatus = (status: InterviewStatusValue | ComputedInterviewsStatus)=>{
+    switch(status){
+        case "Accepted":
+            return "Accepté"
+        case "Rejeted":
+            return "Rejeted"
+        case InterviewStatus.SCHEDULED:
+            return "Programmé"
+        case InterviewStatus.CLOSED:
+            return "Closed"
+        case InterviewStatus.COMPLETED:
+            return "InterviewStatus"
+        case InterviewStatus.COMPLETED:
+            return "Completed"
+        case InterviewStatus.IN_PROGRESS:
+            return "Progess"
+        case InterviewStatus.MISSED:
+            return "Missed"
+        default:
+            return "Unknown"
+    }
+}
+
+export const mapInterviewsStatusIntoCalendarEventCSSFlag = (status: InterviewStatusValue | ComputedInterviewsStatus): CalendarEventBadgeCSSFlag  =>{
+    switch(status){
+        case "Accepted":
+            return "accepted"
+        case "Rejeted":
+            return 'refused'
+        case InterviewStatus.SCHEDULED:
+            return 'normal'
+        case InterviewStatus.CLOSED:
+            return 'close'
+        case InterviewStatus.COMPLETED:
+            return 'normal'
+        case InterviewStatus.IN_PROGRESS:
+            return 'in_progess'
+        case InterviewStatus.MISSED:
+            return 'missed'
+        default:
+            return ""
+    }
 }

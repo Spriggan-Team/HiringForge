@@ -246,8 +246,8 @@ export const calculateProgress = (
         return 0;
     }
 
-    const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
     const now = new Date();
+    const end = new Date(start.getTime() + durationMinutes * 60 * 1000);
 
     const total = end.getTime() - start.getTime();
     const elapsed = now.getTime() - start.getTime();
@@ -261,3 +261,27 @@ export const calculateProgress = (
         Math.max(0, elapsed / total)
     );
 };
+
+
+
+/**
+ * Checks whether the date corresponds to a calendar day
+ * strictly after the reference day (tomorrow or later).
+ *
+ * The time of day is ignored when comparing the dates.
+ */
+export const isFuturDay = ({
+    date,
+    today: t
+}:{
+    date:Date,
+    today?: Date
+}): boolean => {
+    const today =  t ?? new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+
+    return targetDate > today;
+}

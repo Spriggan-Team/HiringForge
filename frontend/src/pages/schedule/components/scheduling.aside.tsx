@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 //-- Services & types
 import type { CalendarEvent } from "../../../features/planning/planning";
+import type { EventSlotComponentProps, SlotComponentProps } from '../../../features/shared/global';
 
 //-- Custom components
 import ArrowNavigation from "../../../layout/components/navigation/arrow.navigation";
@@ -13,9 +14,9 @@ import EventCard from "../../../layout/components/cards/event/event.card";
 import { 
     SchedulingAsideItemFooter,
     SchedulingAsideHeader,
-    type BasicSlotComponent,
-    type SchedulingAsideSlotProps
+    SchedulingAsideItemBadge
 } from './slot/scheduling.aside.slot';
+import { EventCardActions, EventCardBadge } from '../../../layout/components/cards/event/event.card.slot';
 
 
 //-- CSS Modules
@@ -34,7 +35,7 @@ type SchedulingAsideProps<T = {}> = {
 }
 
 
-const SchedulingAside = <T,>({
+const SchedulingAside = <T={},>({
     date,
     events = [],
     children,
@@ -51,6 +52,7 @@ const SchedulingAside = <T,>({
      * -----------------
      */
     let header: React.ReactNode = null;
+    let badge: ((event: CalendarEvent<T>) => React.ReactNode) | null  = null;
     let actions: ((event: CalendarEvent<T>) => React.ReactNode) | null  = null;
 
     React.Children.forEach(children, (child)=>{
@@ -58,18 +60,35 @@ const SchedulingAside = <T,>({
             return;
         }
 
-        if (child.type === SchedulingAsideHeader) {
-            header = (child.props as BasicSlotComponent).children;
+        if (React.isValidElement<SlotComponentProps>(child) && child.type === SchedulingAsideHeader) {
+            header = child.props.children;
+            return;
         }
         
-        if (child.type === SchedulingAsideItemFooter) {
-            const actionChildren = (child.props as SchedulingAsideSlotProps<T>).children;
+        if (React.isValidElement<EventSlotComponentProps<CalendarEvent<T>>>(child) && child.type === SchedulingAsideItemFooter) {
+            const actionChildren = child.props.children;
 
             if (typeof actionChildren === "function") {
                 actions = actionChildren;
             }
+            return;
+        }
+
+        if(React.isValidElement<EventSlotComponentProps<CalendarEvent<T>>>(child) && child.type === SchedulingAsideItemBadge){
+            const children = child.props.children;
+            if(typeof children === "function"){
+                badge = children;
+            }
+            return;
         }
     })
+
+    
+    /**
+     * -----------------
+     * Rendering
+     * -----------------
+     */
     
     return (
         <div className={`${styles.aside} ${className}`}>
@@ -101,12 +120,25 @@ const SchedulingAside = <T,>({
                     events.length > 0 ?
                         events.map((event,index)=>{
                             return (
-                                <EventCard
+                                <EventCard<T>
                                     t={t}
                                     key={index}
                                     event={event}
                                 >
-                                    {actions?.(event)}
+                                    {
+                                        actions && (
+                                            <EventCardActions>
+                                                {actions(event)}
+                                            </EventCardActions>
+                                        )
+                                    }
+                                    {
+                                       badge && (
+                                            <EventCardBadge>
+                                                {badge(event)}
+                                            </EventCardBadge>
+                                       ) 
+                                    }
                                 </EventCard>
                             );
                         }) :

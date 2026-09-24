@@ -1,7 +1,13 @@
+import React from "react";
 
 //-- Css styles 
 import styles from "./style.module.css"
 
+type InfoPillStyle = React.CSSProperties & {
+    "--pill-color"?: string;
+    "--pill-background"?: string;
+    "--pill-border-radius"?: string;
+};
 
 export interface InfoPillProps{
     text: string;
@@ -14,7 +20,17 @@ export interface InfoPillProps{
 }
 
 
-
+/**
+ * Displays a compact information pill.
+ *
+ * Styling is controlled through CSS variables:
+ * --pill-color
+ * --pill-background
+ * --pill-border
+ * --pill-border-radius
+ *
+ * Props can override these variables when needed.
+ */
 const InfoPill: React.FC<InfoPillProps> = ({
     text,
     indicator,
@@ -27,14 +43,27 @@ const InfoPill: React.FC<InfoPillProps> = ({
     if(!text)
         return null;
     
+    const style: InfoPillStyle = {};
+
+    if (txtColor !== undefined) {
+        style["--pill-color"] = txtColor;
+    }
+
+    if (backgroundColor !== undefined) {
+        style["--pill-background"] = backgroundColor;
+    }
+
+    if (borderRadius !== undefined) {
+        style["--pill-border-radius"] =
+            typeof borderRadius === "string"
+                ? borderRadius
+                : `${borderRadius}px`;
+    }
+
     return (
         <div 
-            className={`${styles.container} ${className}`}
-            style={{
-                ["--txtColor" as string]: txtColor ?? "#264FEB",
-                ["--backgroundColor" as string]: backgroundColor ?? "#E3EDFE",
-                ["--borderRadius" as string]: typeof borderRadius === "string" ? borderRadius : !borderRadius ? "15px" : `${borderRadius}px`
-            }}
+            className={`${styles.container} ${className ?? ""}`}
+            style={style}
         >
             { indicator && <div className={styles.indicator} /> }
             <span>{ text }</span>

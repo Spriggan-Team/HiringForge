@@ -1,4 +1,6 @@
 
+import React from 'react'
+
 //-------------------
 //--- APP Context
 //--------------------
@@ -20,7 +22,7 @@ export interface AppModalProps{
     isOpen: boolean;
     title?: string;
     /** Jsx component to display */
-    content: React.ReactNode; 
+    content: React.ReactNode | (()=> React.ReactNode); 
     /** run on closing*/
     onClose?: () => void;
 }

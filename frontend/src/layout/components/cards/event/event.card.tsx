@@ -1,54 +1,71 @@
 
-import {  isSameDay } from "date-fns";
+import React from 'react'
 import type { TFunction } from "i18next";
+import { useEffect, useState } from "react";
 
-import { getDeltaSecondeTime, getElapsedTime } from "../../../../utils/format";
-import type { Time, TimeRange } from "../../../../features/shared/global";
+import { getElapsedTime } from "../../../../utils/format";
+import type { SlotComponentProps, Time, TimeRange } from "../../../../features/shared/global";
 import type { CalendarEvent } from "../../../../features/planning/planning";
+import { calculateProgress, calculateTimeRange,  } from "../../../../utils/dates";
 
 //-- Components
+import Title from "../../text/title/title";
+import Gauge from "../../progress/gauge/gauge";
+import InfoPill from "../../badges/pill/info.pill";
+import ShortcurtLink from "../../link/shortcut/shortcut.link";
+import { EventCardActions, EventCardBadge } from "./event.card.slot";
 
 //-- SVG Components
 import TimeSVG from "/src/assets/svg/time/time-svgrepo-com.svg?react"
 
 //-- CSS
 import styles from "./EventCard.module.css"
-import Title from "../../text/title/title";
-import Gauge from "../../progress/gauge/gauge";
-import InfoPill from "../../badges/pill/info.pill";
-import { useEffect, useState } from "react";
-import { calculateProgress, calculateTimeRange } from "../../../../utils/dates";
 
 
 /** -- EventCard -- */
 
-interface EventCardProps{
+
+
+interface EventCardProps<T>{
     className?: string;
-    imageUrls?: string[];
-    
-    event: CalendarEvent;
+    event: CalendarEvent<T>;
     children?: React.ReactNode;
-    status?: string;
     t:  TFunction<"translation", undefined>;
 }
 
+type EventCardComponent = <T>(
+    props: EventCardProps<T>
+) =>  React.ReactNode; 
 
-const EventCard: React.FC<EventCardProps> = ({
+
+const today = new Date();
+
+const EventCard = (<T= {},>({
     t,
     event,
     className,
-    status,
     children,
-    imageUrls = []
-}) => {
-    const today = new Date();
+}: EventCardProps<T>) => {
+
     const [progress, setProgress] = useState(0);
     const [timeRange, setTimeRange] = useState<TimeRange>({
         startTime: {hours: 0, minutes: 0},
         endTime: {hours: 0, minutes: 0}
     });
 
+
+    /**
+     * -------------------------
+     * Computed alues
+     * ------------------------
+     */
+
     useEffect(() => {
+        //-- Time range
+        const timeRange = calculateTimeRange(event.date, event.durationMinutes);
+        setTimeRange(timeRange);
+
+        //-- Progress
         const updateProgress = () => {
             setProgress(
                 calculateProgress(
@@ -60,11 +77,10 @@ const EventCard: React.FC<EventCardProps> = ({
 
         updateProgress();
         const interval = setInterval(updateProgress, 1000);
-        
-        const timeRange = calculateTimeRange(event.date, event.durationMinutes);
-        setTimeRange(timeRange);
 
-        return () => clearInterval(interval);
+        return () =>{ 
+            clearInterval(interval)
+        };
     }, [event.date, event.durationMinutes]);
 
 
@@ -83,7 +99,36 @@ const EventCard: React.FC<EventCardProps> = ({
 
     const membersOutOfDisplayRange = (memberNames.length > 3 ? memberNames.length - 3 : memberNames.length);
 
+    /**
+     * -------------------------
+     * Compound Compoenents
+     * ------------------------
+     */
+    let actions: React.ReactNode = null;
+    let badge: React.ReactNode = null;
 
+    React.Children.forEach(children, (child) => {
+        if (
+            React.isValidElement<SlotComponentProps>(child) &&
+            child.type === EventCardActions
+        ) {
+            actions = child.props.children;
+            return;
+        }
+
+        if(React.isValidElement<SlotComponentProps>(child) && child.type === EventCardBadge){
+            badge = child;
+            return;
+        }
+    });
+
+    console.log("Event: ", event)
+    
+    /**
+     * --------------------------
+     * RENDERING
+     * ---------------------------
+     */
 
     return (
         <div className={`${styles.event} ${className} card`}>
@@ -103,8 +148,6 @@ const EventCard: React.FC<EventCardProps> = ({
 
             {/* Title */}
             <div className={styles.titleSection}>
-
-
                 <Title title={event.title} />
                 {
                     event.note && (
@@ -157,29 +200,73 @@ const EventCard: React.FC<EventCardProps> = ({
                 </div>
             </div>
 
-            { 
-                children && (
+            {/**Links */}
+            {
+                Array.isArray(event.links) &&  event.links.length > 0 && (
                     <>
                         <div className={styles.dotedSeparator} />
-                        <div className={styles.children}>
-                            {children}
+                        <div className={styles.links}>
+                            {
+                                event.links.map((item, index)=>{
+                                        if(!item.url)
+                                            return;
+                                        return (
+                                            <ShortcurtLink 
+                                                key={index}
+                                                link={item.url}
+                                                disabled={item.isActive}
+                                            />
+                                        )
+                                    }
+                                )
+                            }
                         </div>
                     </>
                 )
             }
+
+            {/** Actions */}
+            { 
+                actions  && (
+                    <>
+                        <div className={styles.dotedSeparator} />
+                        <div className={styles.actions}>
+                            {actions}
+                        </div>
+                    </>
+                )
+            }
+
+            {/** Status */}
             {
-                status &&(
-                    <div className={styles.status}> 
-                        <InfoPill  
-                            text={status}
-                            className={styles.infoPill}
-                        />
-                    </div>
+                (badge || event.badge) && (
+                    <>
+                        <div className={styles.dotedSeparator}/>
+                        <div className={`${styles.status} ${event.badge ? styles[`status_${event.badge.flag}`] : ""}`}> 
+                            {
+                                badge ?
+                                    <>{badge}</>
+                                    : event.badge && (
+                                        <InfoPill 
+                                            text={event.badge.text}
+                                            className={styles.infoPill}
+                                        />
+                                    )
+                            }
+                        </div>
+                    </>
                 )
             }
         </div>
     );
+}) as EventCardComponent & {
+    Actions: React.FC<SlotComponentProps>;
+    badge: React.FC<SlotComponentProps>;
 }
+
+
+EventCard.Actions = EventCardActions;
+EventCard.badge = EventCardBadge;
 
 
 export default EventCard;

@@ -1,0 +1,48 @@
+.container,
+.details {
+    display: flex;
+    flex-direction: column;
+}
+
+.details {
+    position: relative;
+}
+
+.text {
+    margin: 0;
+}
+
+.collapsed {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--max-lines);
+    line-clamp: var(--max-lines);
+}
+
+.expanded {
+    display: block;
+}
+
+.icon {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.expandedIcon {
+    transform: rotate(180deg);
+}
+
+.collapsedIcon {
+    transform: rotate(0deg);
+}

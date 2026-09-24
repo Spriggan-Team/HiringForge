@@ -6,9 +6,32 @@ import { ApiResponseCode, HttpBadResponse, type ApiResponseError } from "../../e
 import { authDel, authPatch, authPost } from "../../http";
 import { UnableResourceDeletion } from "../exceptions";
 import type { ApiResponse } from "../response.types";
+
+
 import { ConcurrentInterviewsException } from "./exceptions";
 import type { CreateInterviewRequest } from "./request";
 
+
+/**
+ * ---------------------
+ * Candidate
+ * ---------------------
+ */
+
+const accept = async ({id}: {id: string})=>{
+
+}
+
+const refuse = async ({ id, reason }: {id: string, reason: string})=>{
+
+}
+
+
+/**
+ *---------------------
+ * Recruiter
+ * ------------------- 
+ */
 
 const createInterview = async (data: CreateInterviewRequest)=>{
     try{
@@ -51,10 +74,18 @@ const cancelInterview = async (interviewId: string)=>{
 
 
 //-----------
+// Servicess
+//-----------
+
 const Services = {
+    //-- recruiter
     deleteInterview, 
     createInterview,
     cancelInterview,
+
+    //-- Candidate
+    accept,
+    refuse
 }
 
 

@@ -1,4 +1,5 @@
-import react from 'react'
+import type { EventSlotComponentProps, SlotComponentProps,   } from '../../../../features/shared/global';
+
 
 /**
  * -------------------------
@@ -6,22 +7,29 @@ import react from 'react'
  * ------------------------
  */
 
-import type { CalendarEvent } from "../../../../features/planning/planning";
 
-export type BasicSlotComponent = {
-    children: React.ReactNode;
-}
+/**
+ * Header 
+ */
+export const SchedulingAsideHeader: React.FC<SlotComponentProps> = ({ children }) => <>{children}</>;
 
+/**
+ * ------------------
+ * Children footer 
+ * ----------------
+ */
 
-export const SchedulingAsideHeader: React.FC<BasicSlotComponent> = ({ children }) => <>{children}</>;
-
-
-export type SchedulingAsideSlotProps<T = {}> = {
-    children?: ((event: CalendarEvent<T>) => React.ReactNode);
-};
 
 export const SchedulingAsideItemFooter = <T,>({
     children,
-}: SchedulingAsideSlotProps<T>) => {
+}: EventSlotComponentProps<T>) => {
     return <>{children}</>;
 };
+
+
+
+export const SchedulingAsideItemBadge  = <T,>({children}: EventSlotComponentProps<T>)=>{
+    return (
+        <>{children}</>
+    )
+}

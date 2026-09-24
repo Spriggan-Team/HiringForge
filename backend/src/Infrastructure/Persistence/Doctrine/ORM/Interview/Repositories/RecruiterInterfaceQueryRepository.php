@@ -4,6 +4,7 @@ namespace App\Infrastructure\Persistence\Doctrine\ORM\Interview\Repositories;
 
 
 use App\Application\Query\Interviews\Repositories\RecruiterInterviewsQueryRepositoryInterface;
+use App\Domain\Interviews\InterviewStatus;
 use App\Infrastructure\Persistence\Doctrine\ORM\Interview\InterviewEntity;
 use App\Infrastructure\Persistence\Doctrine\ORM\Interview\Repositories\Mapper\InterviewEntityMapper;
 
@@ -26,6 +27,8 @@ class RecruiterInterfaceQueryRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, InterviewEntity::class);
     }
+
+    
 
     
     #[Override]
@@ -87,6 +90,7 @@ class RecruiterInterfaceQueryRepository extends ServiceEntityRepository
      *      id: string,
      *      type: string,
      *      title: string,
+     *      url?: string,
      *      candidate: array{
      *          id: string,
      *          firstName: string,
@@ -128,8 +132,34 @@ class RecruiterInterfaceQueryRepository extends ServiceEntityRepository
                 'dayStart' => $dayStart,
                 'dayEnd' => $dayEnd,
             ])
+            ->orderBy(
+                '
+                    CASE
+                        WHEN i.status = :scheduled
+                            AND i.candidateApproval = false
+                        THEN 0
+
+                        WHEN i.status = :progress THEN 1
+                        WHEN i.candidateApproval = true THEN 2
+                        WHEN i.status = :completed THEN 3
+                        WHEN i.candidateApproval = false  THEN 4
+                        WHEN i.status = :close  THEN 5
+                        WHEN i.status = :missed THEN 6
+                        
+                        ELSE 7
+                    END
+                ',
+                'ASC'
+            )
+            ->addOrderBy('i.startDate', 'ASC')
+            ->setParameter('scheduled', InterviewStatus::SCHEDULED->value)
+            ->setParameter('completed', InterviewStatus::COMPLETED->value)
+            ->setParameter('close', InterviewStatus::CLOSED->value)
+            ->setParameter('missed', InterviewStatus::MISSED->value)
+            ->setParameter('progress', InterviewStatus::IN_PROGRESS->value)
             ->getQuery()
             ->getResult();
+
 
         return array_map(static function (InterviewEntity $interview): array {
             $application = $interview->getApplication();
@@ -139,6 +169,7 @@ class RecruiterInterfaceQueryRepository extends ServiceEntityRepository
                 'id' => $interview->getId(),
                 'title' =>$interview->getTitle(),
                 'type' => $interview->getType(),
+                'url' => $interview->getURL(),
                 'candidate' => [
                     'id' => $candidate->getId(),
                     'firstName' => $candidate->getFirstName(),

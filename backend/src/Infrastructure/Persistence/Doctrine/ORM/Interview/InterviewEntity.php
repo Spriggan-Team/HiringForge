@@ -40,8 +40,8 @@ class InterviewEntity
     #[ORM\JoinColumn(nullable: false)]
     private InterviewStatus $status = InterviewStatus::SCHEDULED;
 
-    #[ORM\Column(type: Types::BOOLEAN)]
-    private bool $candidateApproval = false;
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $candidateApproval = null;
 
     #[ORM\Column(length: 522, nullable: true)]
     private ?string $rejectionReason = null;
@@ -110,7 +110,7 @@ class InterviewEntity
         ApplicationEntity $application,
         InterviewStatus $status,
         UserEntity $user,
-        bool $candidateApproval,
+        ?bool $candidateApproval,
         ?InterviewStatus $type
     ): self {
         $entity = new self();
@@ -256,7 +256,7 @@ class InterviewEntity
         return $this;
     }
 
-    public function  setCandidateApproval(string $candidateApproval) : self {
+    public function  setCandidateApproval(?bool $candidateApproval) : self {
         $this->candidateApproval = $candidateApproval;
         return $this;   
     }

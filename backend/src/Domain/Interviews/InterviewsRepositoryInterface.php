@@ -71,7 +71,6 @@ interface InterviewsRepositoryInterface
 
 
 
-
     /**
      * @param array $criteria
      *      ex: [
@@ -89,46 +88,5 @@ interface InterviewsRepositoryInterface
     public function cancelInterviewPlansForApplication(string $recruiterId, string $applicationId): void;
 
 
-
-    /**
-     * Get interview details.
-     *
-     * @return array{
-     *     id: string,
-     *     startDate: string,
-     *     title: ?string,
-     *     type: ?InterviewType,
-     *     status: InterviewStatus,
-     *     description: string,
-     *     candidateApproval: bool,
-     *     rejectionReason: ?string,
-     *     createdAt: string
-     * }
-     */
-    public function getInterviewDetails(
-        string $userId,
-        string $interviewId
-    ): array;
-
-
-    /**
-     * Get interview details scheduled for a specific day.
-     *
-     * @return array<int, array{
-     *     id: string,
-     *     startDate: string,
-     *     title: ?string,
-     *     type: ?InterviewType,
-     *     status: InterviewStatus,
-     *     description: ?string,
-     *     candidateApproval: bool,
-     *     rejectionReason: ?string,
-     *     createdAt: string
-     * }>
-     */
-    public function getInterviewDetailsByDay(
-        string $userId,
-        \DateTimeImmutable $day
-    ): array;
 
 }

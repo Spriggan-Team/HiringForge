@@ -11,7 +11,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import InterviewsQueries from "../../../api/services/interviews/queries";
 import { formatInterviewsTitle, evalInterviewRate } from "../utils/format";
 import type {  CalendarEvent } from "../../../features/planning/planning";
-import { calculateTimeRange } from "../../../utils/dates";
 
 
 //-- Custom compoenents
@@ -24,6 +23,9 @@ import type { CalendarDayProps } from "../../../layout/components/cards/calendar
 import styles from "./SchedulingWorkspace.module.css"
 
 
+
+interface RecruiterCalendarEvent{}
+type RecruiterCalendarEventItem = CalendarEvent<RecruiterCalendarEvent>;
 
 interface SchedulingWorkspaceProps{}
 
@@ -47,11 +49,11 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
 
     //-- Interviews
     const [scheduledTasks, setScheduledTasks] = useState<ScheduledCalendartasks>({}); // key: Y-m-d
-    const [interviewsCalendarEvent, setInterviewsCalendarEvent] = useState<CalendarEvent[]>();
+    const [interviewsCalendarEvent, setInterviewsCalendarEvent] = useState<RecruiterCalendarEventItem[]>();
 
     //-- Memory Cache
     const imageUrlCache = useRef<Record<string, string>>({}); //-- key: candidate.id
-    const interviewsCache = useRef<Record<string, CalendarEvent[]>>({}); //-- key: {skip,limit, date}
+    const interviewsCache = useRef<Record<string, RecruiterCalendarEventItem[]>>({}); //-- key: {skip,limit, date}
     const calendarScheduleCollection = useRef<Record<string, ScheduledCalendartasks>>({}); //-- Key: m-d
 
 
@@ -77,12 +79,7 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                 date: currentDate ,
             });
 
-            const promises: Promise<CalendarEvent>[] = result.map(async (t) => {
-                const timeRange = calculateTimeRange(
-                    t.startDate,
-                    t.minutes
-                );
-
+            const promises: Promise<RecruiterCalendarEventItem>[] = result.map(async (t) => {
                 let image: string | null = null;
                 const imageKey = t.candidate.id;
                 const imageCache = imageUrlCache.current;
@@ -100,7 +97,8 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                     imageCache[imageKey] = image;
                 }
 
-                
+                const schedultedAt = new Date(t.startDate);
+                const endDate = new Date(schedultedAt.getTime() + t.minutes * 60 * 1000) ;
 
                 return {
                     id: t.id,
@@ -108,9 +106,14 @@ const SchedulingWorkspace: React.FC<SchedulingWorkspaceProps> = () => {
                         title: t.title,
                         type: t.type
                     }),
-                    date: new Date(t.startDate),
                     type: t.type,
+
+                    url: t.url,
+                    date: schedultedAt,
+                    endDate: endDate,
+
                     note: t.description ?? "",
+                    links: t.url ? [{url: t.url}] : null,
                     rate: evalInterviewRate({
                         interview: {
                             startDate: t.startDate,

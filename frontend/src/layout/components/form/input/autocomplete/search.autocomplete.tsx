@@ -9,9 +9,11 @@ import type { AutoCompleteSearchResultItem } from '../../../../../features/share
 type SearchAutocompleteProps<T extends AutoCompleteSearchResultItem> = {
   onSearch: (query: string) => Promise<T[]>;
   onSelect: (item: T | null) => void;
+  
   debounceMs?: number;
   maxResults?: number;
   placeholder?: string;
+
   groupBy?: (item: T) => string;
   renderItem?: (item: T) => React.ReactNode;
   initialValue?: T | null;
@@ -19,6 +21,8 @@ type SearchAutocompleteProps<T extends AutoCompleteSearchResultItem> = {
   //-- styles
   className?: string;
 }
+
+
 
 export function SearchAutocomplete<
   T extends AutoCompleteSearchResultItem
@@ -35,6 +39,7 @@ export function SearchAutocomplete<
 }: SearchAutocompleteProps<T>) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<T[]>([]);
+  
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<T | null>(initialValue);

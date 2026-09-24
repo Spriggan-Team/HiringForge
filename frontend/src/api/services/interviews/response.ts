@@ -19,6 +19,7 @@ export type CalendarInterviewsCollectionResponse = ApiResponse<Record<string, {
     title?: string;
     minutes: number;
     startDate: string;
+    url?:string;
     type?: InterviewTypeValue,
     status: InterviewStatusValue
 }[]>>

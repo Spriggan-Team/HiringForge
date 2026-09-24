@@ -51,7 +51,7 @@ const getInterviewAgendaForCandidate = async ({
     const url = `/interviews/candidates/agenda?${params.toString()}`
 
     const response = await authGet<CandidateJobInterviewsResponse>(url);
-
+    console.log("Interview response", response)
     return response.data;
 }
 
