@@ -9,6 +9,7 @@ final class InterviewCancelledData extends BaseJobNotificationData implements No
     public function __construct(
         string $jobId,
         string $jobTitle,
+        public string $interviewId,
         public \DateTimeImmutable $scheduledAt,
         public ?string $recruiterName = null,
         public ?string $reason = null,
@@ -20,6 +21,7 @@ final class InterviewCancelledData extends BaseJobNotificationData implements No
     {
         return array_filter([
             'jobTitle' => $this->jobTitle,
+            'interviewId' => $this->interviewId,
             'scheduledAt' => $this->scheduledAt->format(\DateTimeInterface::ATOM),
             'recruiterName' => $this->recruiterName,
             'reason' => $this->reason,

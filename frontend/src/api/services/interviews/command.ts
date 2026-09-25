@@ -19,11 +19,11 @@ import type { CreateInterviewRequest } from "./request";
  */
 
 const accept = async ({id}: {id: string})=>{
-
+    await authPatch(`/interviews/candidates/accept/${id}`);
 }
 
 const refuse = async ({ id, reason }: {id: string, reason: string})=>{
-
+    await authPatch(`/interviews/candidates/refuse/${id}`, {reason});
 }
 
 

@@ -105,7 +105,7 @@ const EventCard = (<T= {},>({
      * ------------------------
      */
     let actions: React.ReactNode = null;
-    let badge: React.ReactNode = null;
+    let badge: React.ReactNode  = null;
 
     React.Children.forEach(children, (child) => {
         if (
@@ -116,14 +116,14 @@ const EventCard = (<T= {},>({
             return;
         }
 
-        if(React.isValidElement<SlotComponentProps>(child) && child.type === EventCardBadge){
+        if(React.isValidElement<SlotComponentProps>(child) && child.type === EventCardBadge &&  child.props.children){
             badge = child;
             return;
         }
     });
 
-    console.log("Event: ", event)
     
+    console.log('badge : ', badge)
     /**
      * --------------------------
      * RENDERING
@@ -239,20 +239,30 @@ const EventCard = (<T= {},>({
 
             {/** Status */}
             {
-                (badge || event.badge) && (
+                badge !== null && (
                     <>
-                        <div className={styles.dotedSeparator}/>
-                        <div className={`${styles.status} ${event.badge ? styles[`status_${event.badge.flag}`] : ""}`}> 
-                            {
-                                badge ?
-                                    <>{badge}</>
-                                    : event.badge && (
-                                        <InfoPill 
-                                            text={event.badge.text}
-                                            className={styles.infoPill}
-                                        />
-                                    )
-                            }
+                        <div
+                            className={`${styles.status} ${
+                                event.badge
+                                    ? styles[`status_${event.badge.flag}`]
+                                    : ""
+                            }`}
+                        >
+                            {badge !== undefined ? (
+                                <>
+                                    <div className={styles.dotedSeparator} />
+                                    {badge}
+                                </>
+                            ) : event.badge ? (
+                                <>
+                                    <div className={styles.dotedSeparator} />
+
+                                    <InfoPill
+                                        text={event.badge.text}
+                                        className={styles.infoPill}
+                                    />
+                                </>
+                            ) : null}
                         </div>
                     </>
                 )

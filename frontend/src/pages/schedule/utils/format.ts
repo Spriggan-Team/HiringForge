@@ -1,7 +1,6 @@
-import { InterviewStatus, InterviewType, type InterviewStatusValue } from "../../../features/interviews/interviews";
+import { InterviewStatus, InterviewType, type ComputedInterviewsStatus, type InterviewStatusValue } from "../../../features/interviews/interviews";
 
 import type { CalendarEventBadgeCSSFlag, TaskRate } from "../../../features/planning/planning";
-import type { ComputedInterviewsStatus } from "./type";
 
 
 export const formatInterviewsTitle = ({title, type}: {title?: string, type?: string})=>{

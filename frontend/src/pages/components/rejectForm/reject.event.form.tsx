@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react'
 
-import CustomTextarea from '../../../../layout/components/form/input/textarea/custom.textarea';
-import InputLabel from '../../../../layout/components/form/input/input.label';
+import CustomTextarea from '../../../layout/components/form/input/textarea/custom.textarea';
+import InputLabel from '../../../layout/components/form/input/input.label';
 
 import styles from './RejectEventForm.module.css'
 
@@ -15,11 +15,13 @@ import styles from './RejectEventForm.module.css'
 
 interface RejectEventFormProps {
     initialValue?: string;
+    placeholder?: string;
     onConfirm: (reason: string) => void;
 }
 
 const RejectEventForm: React.FC<RejectEventFormProps> = ({
     initialValue = "",
+    placeholder,
     onConfirm
 }) => {
     const [localReason, setLocalReason] = useState<string>(initialValue);
@@ -31,6 +33,7 @@ const RejectEventForm: React.FC<RejectEventFormProps> = ({
             />
             <CustomTextarea 
                 value={localReason}
+                placeholder={placeholder}
                 setValue={setLocalReason}
             />
             <div className={styles.buttonSection}>

@@ -7,8 +7,8 @@ use App\Domain\Interviews\InterviewsRepositoryInterface;
 use App\Application\DTO\Interviews\CreateInterviewRequest;
 use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 use App\Domain\Interviews\Interview;
-use App\Domain\Notification\InterviewScheduledData;
 
+use App\Domain\Notification\Interviews\InterviewScheduledNotificationData;
 use App\Domain\Notification\Notification;
 use App\Domain\Notification\NotificationRepositoryInterface;
 use App\Domain\Notification\NotificationType;
@@ -59,7 +59,7 @@ class InterviewGenerator
         );
 
         $this->transactionManagerInterface->execute(function() use($interview, $command, $userId){
-            $this->interviewRepository->save($interview);
+            $savedInterview = $this->interviewRepository->save($interview);
 
             //--------------------
             //-- Notification
@@ -69,12 +69,13 @@ class InterviewGenerator
 
             $recruiterFullName = sprintf('%s %s', $userLightModel['firstName'], $userLightModel['lastName']);
 
-            $notificationData = new InterviewScheduledData(
+            $notificationData = new InterviewScheduledNotificationData(
                 jobId: $applicationContext->jobId,
+                interviewId: $savedInterview->getId(),
                 jobTitle: $applicationContext->jobTitle,
                 scheduledAt: $command->scheduledAt,
                 locationOrLink: $command->url,
-                recruiterName: $recruiterFullName
+                recruiterName: $recruiterFullName,
             );
 
             $notification =  Notification::create(

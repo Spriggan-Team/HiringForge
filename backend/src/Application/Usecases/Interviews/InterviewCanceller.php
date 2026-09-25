@@ -2,9 +2,9 @@
 
 namespace App\Application\Usecases\Interviews;
 
-use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 use App\Domain\Exception\ResourceNotFoundException;
 use App\Domain\Exception\UnauthorizedAction;
+use App\Domain\Candidate\Application\Repositories\ApplicationRepositoryInterface;
 
 use App\Domain\Interviews\InterviewsRepositoryInterface;
 use App\Domain\JobOffer\JobOfferRepositoryInterface;
@@ -16,6 +16,8 @@ use App\Domain\Notification\NotificationType;
 use App\Domain\Shared\Account\AccountRepositoryInterface;
 use App\Domain\Shared\TransactionManagerInterface;
 use App\Domain\User\UserRepositoryInterface;
+
+
 
 class InterviewCanceller
 {
@@ -110,6 +112,7 @@ class InterviewCanceller
                 $notificationData = new InterviewCancelledData(
                     jobId: $interviewContext->jobId,
                     jobTitle: $interviewContext->jobTitle,
+                    interviewId: $interview->getId(),
                     scheduledAt: $interview->getStartDate(),
                     recruiterName: sprintf(
                         '%s %s',

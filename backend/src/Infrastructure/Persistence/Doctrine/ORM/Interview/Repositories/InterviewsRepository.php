@@ -36,6 +36,7 @@ class InterviewsRepository extends ServiceEntityRepository
         parent::__construct($registry, InterviewEntity::class);
     }
 
+
     #[Override]
     public function getInterviewContext(string $interviewId): ?InterviewContext
     {
@@ -44,7 +45,8 @@ class InterviewsRepository extends ServiceEntityRepository
                 'i.id AS interviewId',
                 'j.id AS jobId',
                 'j.title AS jobTitle',
-                'IDENTITY(a.candidate) AS candidateId'
+                'IDENTITY(a.candidate) AS candidateId',
+                'IDENTITY(j.user) AS recruiterId'
             )
             ->innerJoin('i.application', 'a')
             ->innerJoin('a.jobOffer', 'j')
@@ -61,7 +63,8 @@ class InterviewsRepository extends ServiceEntityRepository
             jobId: $data['jobId'],
             jobTitle: $data['jobTitle'],
             interviewId: $data['interviewId'],
-            candidateId: $data['candidateId']
+            candidateId: $data['candidateId'],
+            recruiterId: $data['recruiterId']
         );
     }
 
@@ -87,14 +90,36 @@ class InterviewsRepository extends ServiceEntityRepository
     }
 
 
+    #[Override]
+    public function isCandidateAssociatedWithInterview(
+        string $candidateId,
+        string $interviewId
+    ): bool {
+        $result = $this->createQueryBuilder('i')
+            ->select('1')
+            ->where('a.candidate = :candidateId')
+            ->andWhere('i.id = :interviewId')
+            ->innerJoin('i.application', 'a')
+            ->setParameters([
+                'candidateId' => $candidateId,
+                'interviewId' => $interviewId,
+            ])
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result !== null;
+    }
+
     
     #[Override]
-    public function save(Interview $interview): void
+    public function save(Interview $interview): Interview
     {
+        $em = $this->getEntityManager();
+
         $entity = null;
 
         if ($interview->getId() !== null) {
-            $entity = $this->em->find(
+            $entity = $em->find(
                 InterviewEntity::class,
                 $interview->getId()
             );
@@ -102,12 +127,22 @@ class InterviewsRepository extends ServiceEntityRepository
 
         $entity = $this->mapper->toEntity(
             interview: $interview,
-            entity: $entity
+            entity: $entity,
         );
 
-        $em = $this->getEntityManager();
-        $em->persist($entity);
+        if ($entity === null) {
+            throw new \LogicException('Interview entity could not be created.');
+        }
+
+        if (!$em->contains($entity)) {
+            $em->persist($entity);
+        }
+
         $em->flush();
+
+        $interview->setId($entity->getId());
+
+        return $interview;
     }
 
 

@@ -30,7 +30,7 @@ class InterviewEntity
     #[ORM\Column(nullable: false)]
     private ?int $minutes = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(nullable: true, length: 1200)]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::STRING, nullable: true)]

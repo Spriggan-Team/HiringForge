@@ -7,6 +7,7 @@ import type { CandidateSearchItem } from "../../../../../../features/shared/glob
 import { CandidateApplicationSelector } from "../../../../../components/selector/candidate.application.selector";
 import { useAppContext } from "../../../../../../hooks/context";
 import type { CompleteJobView } from "../../../../../../features/jobs/JobOffer";
+import { getMinDateTime } from "../../../../../../utils/format";
 
 
 import styles from "./GenerateInterviewModal.module.css"
@@ -40,6 +41,21 @@ export const GenerateInterviewModal: React.FC<GenerateInterviewModalProps> = ({
 
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateSearchItem | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  //-- Date time
+  const [minDateTime, setMinDateTime] = useState(getMinDateTime); // minimum date time available
+  useEffect(() => {
+      const updateMinDateTime = () => {
+          setMinDateTime(getMinDateTime());
+      };
+
+      updateMinDateTime();
+
+      const interval = setInterval(updateMinDateTime, 60_000);
+
+      return () => clearInterval(interval);
+  }, []);
+
 
   //-------------------
   //-- Handle selected candidates
@@ -175,6 +191,7 @@ export const GenerateInterviewModal: React.FC<GenerateInterviewModalProps> = ({
           <input
             type="datetime-local"
             required
+            min={minDateTime}
             value={formData.scheduledAt}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, scheduledAt: e.target.value }))
@@ -250,10 +267,14 @@ export const GenerateInterviewModal: React.FC<GenerateInterviewModalProps> = ({
           Description (optionnel)
           <textarea
             rows={3}
+            placeholder="1 200 characters"
             value={formData.description}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, description: e.target.value }))
-            }
+            onChange={(e) =>{
+              const value = e.target.value ;
+              if(value.length <= 1200){
+                setFormData((prev) => ({ ...prev, description: value}))
+              }
+            }}
           />
         </label>
 

@@ -40,7 +40,14 @@ const PAGE_LIMIT = 10;
 
 
 
-
+/**
+ * Builds the cache key for the interview collection.
+ *
+ * If a job ID is provided, the cache entry is scoped to that specific job.
+ * Otherwise, the entry is scoped to the broader company context.
+ *
+ * @returns A stable cache key based on the current query parameters.
+ */
 const getInterviewsCacheKey = ({
     jobId,
     companyId,
@@ -69,8 +76,7 @@ const getInterviewsCacheKey = ({
 };
 
 
-//-- Pendings Requets
-type PendingInterviewRequest = PendingRequest<InterviewsQueryCache>;
+
 
 /**
  * ------------------
@@ -224,9 +230,6 @@ export default function InterviewsSection({
       //--------------------------------
       // CACHE MISS
       //--------------------------------
-
-      console.log("Interviews cache MISS", key);
-
       const request = InterviewsQueries.getRecruiterJobOfferInterviews({
           jobId,
           companyId,

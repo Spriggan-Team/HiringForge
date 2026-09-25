@@ -53,15 +53,12 @@ class InterviewEntityMapper
         }
 
         // Update entity existante
-        $entity->setStartDate($interview->getStartDate());
-        $entity->setDuration($interview->getMinutes());
-        $entity->setTitle($interview->getTitle());
-        $entity->setDescription($interview->getDescription() ?? '');
-        $entity->setStatus($interview->getStatus());
-        $entity->setUrl($interview->getUrl());
-        $entity->setType($interview->getType());
-        $entity->setApplication($application);
-        $entity->setUser($user);
+        $this->updateEntity(
+            entity: $entity,
+            interview: $interview,
+            application: $application,
+            user: $user,
+        );
 
         return $entity;
     }
@@ -93,7 +90,7 @@ class InterviewEntityMapper
     /**
      * Update an existing Doctrine entity
      */
-    private function updateEntity(
+    public function updateEntity(
         InterviewEntity $entity,
         Interview $interview,
         ApplicationEntity $application,

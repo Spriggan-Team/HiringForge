@@ -260,6 +260,7 @@ class RecruiterInterfaceQueryRepository extends ServiceEntityRepository
             'id',
             'title',
             'startDate',
+            'candidateApproval',
             'minutes',
             'description',
             'status',

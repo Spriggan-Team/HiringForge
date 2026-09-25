@@ -4,12 +4,20 @@
     flex-direction: column;
 }
 
+.container{
+    width: 100%;
+    max-width: 450px;
+    padding: 0 5px;
+}
+
 .details {
     position: relative;
 }
 
 .text {
     margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .collapsed {

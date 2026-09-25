@@ -14,6 +14,7 @@ final readonly class InterviewContext
         public string $interviewId,
         public string $jobId,
         public string $jobTitle,
-        public string $candidateId
+        public string $candidateId,
+        public string $recruiterId,
     ) {}
 }

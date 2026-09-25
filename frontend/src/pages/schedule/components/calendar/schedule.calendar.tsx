@@ -88,10 +88,11 @@ const SchedulingCalendar: React.FC<SchedulingCalendarProps> = ({
                                 <CalendarDayView
                                     date={d}
                                     key={index}
+                                    today={t}
                                     defaultDate={today}
                                     className={className}
+                                    disableClick={(tasks ?? []).length === 0}
                                     tasks={tasks}
-                                    disable={!isSameCurrentMonth}
                                     onClick={(date)=>  onSelectedDate?.(date) }
                                 />
                             )
@@ -110,10 +111,12 @@ export default SchedulingCalendar;
 
 /** CalendarDay View */
 interface CalendarDayViewProps{
-    date: Date | null;
+    today?: Date;
+    date: Date;
     defaultDate: Date;
     tasks?: CalendarDayProps['scheduleTask'];
-
+    
+    disableClick: boolean;
     onClick?: (date: Date)=>void;
     onSave?: ()=> void;
 
@@ -124,20 +127,24 @@ interface CalendarDayViewProps{
 
 const CalendarDayView: React.FC<CalendarDayViewProps> = ({
     date,
-    tasks = [],
+    today: t,
     defaultDate,
 
+    tasks = [],
     onClick,
-    disable,
+    disableClick,
+
     className
 }) => {
     const ref = useRef<CalendarHandleContext>(null);
+    const today = t ?? new Date();
 
     return (
         <CalendarDay
             ref={ref}
-            disable={disable}
-            className={`${className} ${disable ? styles.disable : ""}`}
+            disableStyle={date < today}
+            disableOnClick={disableClick}
+            className={`${className}`}
             date={date ?? defaultDate}
             scheduleTask={tasks}
             onClick={onClick}

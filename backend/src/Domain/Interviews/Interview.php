@@ -48,7 +48,7 @@ class Interview
         ?string $description = null,
         ?string $url = null,
         ?InterviewType $type = null,
-        bool $candidateApproval = false,
+        ?bool $candidateApproval = null,
         ?string $rejectionReason = null,
     ) {
         if ($minutes <= 0) {
@@ -118,7 +118,7 @@ class Interview
         ?string $description = null,
         ?string $url = null,
         ?InterviewType $type = null,
-        bool $candidateApproval = false,
+        ?bool $candidateApproval = null,
         ?string $rejectionReason = null,
     ): self {
         return new self(
@@ -204,28 +204,46 @@ class Interview
 
 
     // ==========================================
-    // Business methods
+    // Business methods & Setter
     // ==========================================
 
-    public function accept(): void
-    {
-        $this->candidateApproval = true;
-        $this->rejectionReason = null;
+    public function setId(string $id){
+        $this->id = $id;
+        return $this;
     }
 
 
-    public function reject(string $reason): void
+    public function accept(): void
     {
-        $reason = trim($reason);
+        if ($this->candidateApproval !== null) {
+            return;
+        }
 
-        if ($reason === '') {
-            throw new \InvalidArgumentException(
-                'A valid reason is required to decline an interview.'
+        $now = new \DateTimeImmutable();
+        $endDate = $this->startDate->modify("+{$this->minutes} minutes");
+
+        if ($now < $endDate) {
+            $this->candidateApproval = true;
+            $this->rejectionReason = null;
+        }
+    }
+
+    public function reject(?string $reason = null): void
+    {
+        if ($this->candidateApproval !== null) {
+            return;
+        }
+
+        $endDate = $this->startDate->modify("+{$this->minutes} minutes");
+
+        if (new \DateTimeImmutable() >= $endDate) {
+            throw new \DomainException(
+                'The interview can no longer be rejected because it has ended.'
             );
         }
 
         $this->candidateApproval = false;
-        $this->rejectionReason = $reason;
+        $this->rejectionReason = $reason !== null ? trim($reason) : null;
         $this->status = InterviewStatus::CLOSED;
     }
 

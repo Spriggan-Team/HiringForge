@@ -1,3 +1,4 @@
+
 import type { 
   SymfonyDateTime
 } from "../shared/global";
@@ -12,6 +13,7 @@ export class InterviewStatus {
   static readonly COMPLETED = 'completed'; //(handled: ok)
 }
 
+
 export type InterviewStatusValue = (typeof InterviewStatus)[keyof typeof InterviewStatus];
 
 export const INTERVIEW_STATUSES: InterviewStatusValue[] = [
@@ -21,6 +23,16 @@ export const INTERVIEW_STATUSES: InterviewStatusValue[] = [
   InterviewStatus.IN_PROGRESS,
   InterviewStatus.COMPLETED,
 ];
+
+//-- types for ui (scheduling/calendar ...)
+export  type ComputedInterviewsStatus =  "Accepted" | "Rejeted" ;
+
+export const IMMUTABLE_INTERVIEW_STATUS: (InterviewStatus | ComputedInterviewsStatus)[] = [
+    "Rejeted", "Accepted",
+    InterviewStatus.CLOSED, InterviewStatus.COMPLETED, 
+    InterviewStatus.MISSED, InterviewStatus.IN_PROGRESS
+];
+
 
 
 export const InterviewType = {

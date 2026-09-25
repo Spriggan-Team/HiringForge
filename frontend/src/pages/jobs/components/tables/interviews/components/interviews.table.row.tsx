@@ -15,6 +15,9 @@ interface InterviewRowProps {
 }
 
 
+
+const now = new Date();
+
 const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
   interview,
   isUpdating,
@@ -22,12 +25,11 @@ const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
   onDelete,
   getInitials,
 }) => {
-  console.log(interview)
+  console.log("Interview", interview)
   const startDate = safeParsingDate(interview.scheduledAt);
-
-  console.log("scheduledAt:", interview.scheduledAt);
-  console.log("startDate:", startDate);
-  console.log("ISO:", startDate?.toISOString());
+  const endDate = startDate
+    ? new Date(startDate.getTime() + interview.minutes * 60 * 1000)
+    : null;
 
   return (
     <tr className={isUpdating ? styles.rowDisabled : ""}>
@@ -117,9 +119,22 @@ const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
       <td data-label="Actions" className={styles.actionsCell}>
         <div className={styles.actionGroup}>
           {
-            interview.status == InterviewStatus.SCHEDULED 
-              ?  // manually closed
-                  (
+            interview.candidateApproval != null ?  
+              // manually closed
+                (
+                      <button
+                        type="button"
+                        onClick={() => onCancel(interview.id)}
+                        className={styles.btnDanger}
+                        title="Annuler l'entretien"
+                        disabled={isUpdating}
+                      >
+                        Cancel
+                      </button>
+                )
+              :   endDate && now >= endDate ? (
+                    <span>Aucune actions</span>
+                  ) : (
                     <button
                       type="button"
                       onClick={() => onDelete(interview.id)}
@@ -130,17 +145,6 @@ const InterviewRow: React.FC<InterviewRowProps> = React.memo(({
                       Delete
                     </button>
                   )
-              : interview.candidateApproval && (
-                    <button
-                      type="button"
-                      onClick={() => onCancel(interview.id)}
-                      className={styles.btnDanger}
-                      title="Annuler l'entretien"
-                      disabled={isUpdating}
-                    >
-                      Cancel
-                    </button>
-              )
           }
         </div>
       </td>

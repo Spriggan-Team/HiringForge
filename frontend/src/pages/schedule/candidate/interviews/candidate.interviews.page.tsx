@@ -7,9 +7,8 @@ import InterviewsQueries from "../../../../api/services/interviews/queries";
 import type { CalendarEvent } from "../../../../features/planning/planning";
 import { evalInterviewRate, formatInterviewsTitle, mapInterviewsStatusIntoCalendarEventCSSFlag, translateInterviewStatus } from "../../utils/format";
 import type { CalendarDayProps } from "../../../../layout/components/cards/calendar/CalendarDay";
-import { InterviewStatus, type InterviewStatusValue } from "../../../../features/interviews/interviews";
+import { IMMUTABLE_INTERVIEW_STATUS, InterviewStatus, type ComputedInterviewsStatus, type InterviewStatusValue } from "../../../../features/interviews/interviews";
 import { useAppContext } from "../../../../hooks/context";
-import type { ComputedInterviewsStatus } from "../../utils/type";
 import InterviewsServices from "../../../../api/services/interviews/command";
 
 //-- Custom
@@ -17,15 +16,15 @@ import SchedulingCalendar from "../../components/calendar/schedule.calendar";
 import SchedulingAside from "../../components/scheduling.aside";
 import { SchedulingAsideItemBadge, SchedulingAsideItemFooter } from "../../components/slot/scheduling.aside.slot";
 import InfoPill from "../../../../layout/components/badges/pill/info.pill";
-import RejectEventForm from "../components/reject.event.form";
+import RejectEventForm from "../../../components/rejectForm/reject.event.form";
+import CollapsibleDescriptionText from "../../../../layout/components/text/collapsible/collapsible.description.text";
+import CandidateScheduleItemActionButtons from "../../components/actions/scheduling.aside.action.buttons";
 
 //-- SVG
 
 
 //-- CSS Styles
 import styles from "./CandidateInterviewsPage.module.css"
-import CollapsibleDescriptionText from "../../../../layout/components/text/collapsible/collapsible.description.text";
-import CandidateScheduleItemActionButtons from "../../components/actions/scheduling.aside.action.buttons";
 
 
 
@@ -53,17 +52,12 @@ interface CandidateInterviewsPageProps{}
 
 const PAGE_LIMIT = 15;
 const now = new Date();
-const immutableStatus: (InterviewStatus | ComputedInterviewsStatus)[] = [
-    "Rejeted", "Accepted",
-    InterviewStatus.CLOSED, InterviewStatus.COMPLETED, 
-    InterviewStatus.MISSED, InterviewStatus.IN_PROGRESS
-];
 
 
 
 const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({}) => {
     const today = startOfToday();
-    const {setModal} = useAppContext();
+    const { setLoading, setPopup, setModal } = useAppContext();
 
     //-- Pagination
     const [skip, setSkip] = useState(0);
@@ -114,6 +108,14 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({}) => 
                                 : t.status
 
                 
+                const computedRate = t.candidateApproval != null ? 'normal' : evalInterviewRate({
+                    interview: {
+                        startDate: t.startDate,
+                        minutes: t.minutes
+                    },
+                    now: now
+                })
+
                 return {
                     id: t.id,
                     title: formatInterviewsTitle({
@@ -129,13 +131,7 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({}) => 
                     note: t.description ?? "",
                     candidateApproval: t.candidateApproval,
                     
-                    rate: evalInterviewRate({
-                        interview: {
-                            startDate: t.startDate,
-                            minutes: t.minutes
-                        },
-                        now: now
-                    }),
+                    rate: computedRate,
                     links: t.url ? [{ url: t.url, isActive: now <= endDate  }]: null,
 
                     interviewStatus: computedStatus,
@@ -154,6 +150,8 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({}) => 
             });
 
             const mapped: CalendarEvent<CandidateCalendarEvent>[] = await Promise.all(promises);
+            console.log("Interview Agenda result", mapped);
+
             cache[cacheKey] = mapped;
 
             setInterviewsCalendarEvent(mapped);
@@ -297,31 +295,54 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({}) => 
                          * -------------------
                          */
                         const handleRefusal = async (reason: string)=>{
-                            await InterviewsServices.refuse({
-                                id: event.id,
-                                reason
-                            });
-                            handleUpdateCurrentInterviewsEvent(event, { 
-                                candidateApproval: false, rejectionReason: reason, 
-                                badge: {
-                                    text:  translateInterviewStatus("Rejeted"),
-                                    flag: mapInterviewsStatusIntoCalendarEventCSSFlag("Rejeted")
-                                },
-                                interviewStatus: "Rejeted"
-                            });
-                            setModal(null); 
+                            try{
+                                setLoading({ state: true });
+                                await InterviewsServices.refuse({
+                                    id: event.id,
+                                    reason
+                                });
+                                
+                                setLoading({ state: false });
+                                handleUpdateCurrentInterviewsEvent(event, { 
+                                    candidateApproval: false, rejectionReason: reason, 
+                                    badge: {
+                                        text:  translateInterviewStatus("Rejeted"),
+                                        flag: mapInterviewsStatusIntoCalendarEventCSSFlag("Rejeted")
+                                    },
+                                    interviewStatus: "Rejeted"
+                                });
+
+                                setModal(null); 
+                                setPopup({ status: 'success', message: "Opération executé avec succès" })
+                            }
+                            catch(error){
+                                setLoading({ state: false });
+                                console.log("Something went wrong while refusing interview ", error);
+                                setPopup({ status: 'error', message: 'Une erreur innatendue est survenue' })
+                            }
                         }
 
                         const handleAccept = async()=>{
-                            await InterviewsServices.accept({id: event.id});
-                            handleUpdateCurrentInterviewsEvent(event, { 
-                                candidateApproval: true,
-                                badge: {
-                                    text: translateInterviewStatus("Accepted"),
-                                    flag: mapInterviewsStatusIntoCalendarEventCSSFlag("Accepted")
-                                },
-                                interviewStatus: "Accepted"
-                            })
+                            try{
+                                setLoading({ state: true });
+                                await InterviewsServices.accept({id: event.id});
+
+                                setLoading({ state: false });
+                                handleUpdateCurrentInterviewsEvent(event, { 
+                                    candidateApproval: true,
+                                    badge: {
+                                        text: translateInterviewStatus("Accepted"),
+                                        flag: mapInterviewsStatusIntoCalendarEventCSSFlag("Accepted")
+                                    },
+                                    interviewStatus: "Accepted"
+                                })
+                            }
+                            catch(error){
+                                setLoading({ state: false });
+                                console.log("Something went wrong while accepting interview ", error);
+                                setPopup({ status: 'error', message: 'Une erreur innatendue est survenue' })
+
+                            }
                         }
 
                         /**
@@ -329,7 +350,7 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({}) => 
                          * Rendering
                          * ---------
                          */
-                        const isNotMutable  =  immutableStatus.includes(
+                        const isNotMutable  =  IMMUTABLE_INTERVIEW_STATUS.includes(
                                event.interviewStatus as string
                             ) || now >= event.endDate || event.candidateApproval != null;
 
@@ -346,8 +367,9 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({}) => 
                                                 isOpen: true,
                                                 title: "Reject Event",
                                                 content: () => (
-                                                    <RejectEventForm 
+                                                    <RejectEventForm
                                                         onConfirm={handleRefusal}
+                                                        placeholder="message (optionnel)"
                                                     />
                                                 )
                                             });
@@ -361,7 +383,7 @@ const CandidateInterviewsPage: React.FC<CandidateInterviewsPageProps> = ({}) => 
                 <SchedulingAsideItemBadge<CalendarEvent<CandidateCalendarEvent>>>
                     {(event)=>{
                         console.log("Scheduling aside item : ", event);
-                        const isVisible =  immutableStatus.includes(
+                        const isVisible =  IMMUTABLE_INTERVIEW_STATUS.includes(
                                 event.interviewStatus as string
                             ) || event.endDate <= now;
 

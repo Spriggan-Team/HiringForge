@@ -31,6 +31,16 @@ interface InterviewsRepositoryInterface
 
 
     /**
+     * Verify if a candidate is associated to an interview
+     */
+    public function isCandidateAssociatedWithInterview(
+        string $candidateId,
+        string $interviewId
+    ): bool;
+
+
+
+    /**
      * Seek overlaping interview datetime
      * @throws \App\Domain\Exception\ConcurrentInterviewsException
      */
@@ -47,8 +57,12 @@ interface InterviewsRepositoryInterface
 
 
 
-    // -- Save Interviews
-    public function save(Interview $interview): void;
+    /**
+     * As of now it is able to handle 
+     * new instance of interview or updating.
+     * Save Interviews
+     */
+    public function save(Interview $interview): Interview;
     
     /** Remove an interview */
     public function remove(string $interviewId): void;

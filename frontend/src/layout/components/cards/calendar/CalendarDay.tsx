@@ -33,6 +33,8 @@ export interface CalendarDayProps {
 
     onClick?: (date: Date) => void;
     disable?: boolean;
+    disableStyle?: boolean;
+    disableOnClick?: boolean;
 
     style?: React.CSSProperties;
     className?: string;
@@ -49,6 +51,8 @@ const CalendarDay = forwardRef<CalendarHandleContext, CalendarDayProps>(
             
             onClick,
             disable,
+            disableOnClick,
+            disableStyle,
 
             style,
             children,
@@ -108,18 +112,20 @@ const CalendarDay = forwardRef<CalendarHandleContext, CalendarDayProps>(
 
         /* -------- Render --------- */
 
+        const isClickDisabled = disableOnClick ?? disable;
+        const isVisuallyDisabled = disableStyle ?? disable;
+
         return (
             <div
-                className={`${styles.day} ${className ?? ""} card`}
                 style={{
                     ...style,
                     cursor:
-                        !disable && (onClick || children)
+                        !(isClickDisabled) && (onClick || children)
                             ? "pointer"
                             : undefined,
                 }}
                 onClick={() => {
-                    if(disable) 
+                    if(isClickDisabled) 
                         return;
                     
                     onClick?.(date);
@@ -127,13 +133,17 @@ const CalendarDay = forwardRef<CalendarHandleContext, CalendarDayProps>(
                         setPopoverVisibility(true);
                     }
                 }}
+                className={`${styles.day} ${className ?? ""}  ${isVisuallyDisabled ? styles.disabled : ""} card` }
             >
                 {/*  PRINCIPAL CONTENT (FRONT)  - Main */}
                 <div
-                    className={`${styles.principal} ${!disable ? styles.clickable : ""}`}
-                    style={!style && !className ? {
-                        ['--color' as string]: "#475569"
-                    }: undefined}
+                    style={
+                        !style && !className ? {
+                            ['--color' as string]: "#475569"
+                        }: 
+                        undefined
+                    }
+                    className={`${styles.principal} ${!isClickDisabled ? styles.clickable : ""}`}
                 >
                     <span className={styles.title}>
                         {format(date, "dd")}

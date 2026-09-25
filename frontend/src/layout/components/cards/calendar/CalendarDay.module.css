@@ -17,6 +17,13 @@
     background-color: #f8fafc;
 }
 
+.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #f8fafc;
+    color: #94a3b8;
+}
+
 /*   PRINCIPAL CONTENT (FRONT) */
 
 .principal {
